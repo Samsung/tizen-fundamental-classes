@@ -15,7 +15,7 @@ void ControllerManager_FreeFactory(void* data)
 	delete factory;
 }
 
-ControllerManager::ControllerManager(ApplicationBase* app) :
+ControllerManager::ControllerManager(IAttachable* app) :
 		app(app)
 {
 	this->controllerTable = eina_hash_string_superfast_new(ControllerManager_FreeFactory);

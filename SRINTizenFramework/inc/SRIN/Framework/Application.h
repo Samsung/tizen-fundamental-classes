@@ -325,15 +325,32 @@ namespace SRIN { namespace Framework {
 		virtual LIBAPI ~ControllerBase();
 	};
 
+	/**
+	 * Function pointer to instantiate the specific controller. Should be used along the macro
+	 * RegisterController
+	 */
 	typedef ControllerBase* (*ControllerFactoryMethod) (ControllerManager*);
 
+	/**
+	 * Class that encapsulate dynamic controller instatiation which is required by ControllerManager
+	 */
 	class LIBAPI ControllerFactory {
 	public:
+		/**
+		 * Constructor of ControllerFactory
+		 *
+		 * @param controllerName Name of the controller
+		 * @param factory Factory method which will instantiate the controller
+		 */
 		LIBAPI ControllerFactory(CString controllerName, ControllerFactoryMethod factory);
+
 		CString const controllerName;
 		ControllerFactoryMethod const factoryMethod;
 	};
 
+	/**
+	 * Class that encapsulate controller stack within ControllerManager
+	 */
 	class LIBAPI ControllerChain {
 	public:
 		ControllerBase* instance;
@@ -341,18 +358,28 @@ namespace SRIN { namespace Framework {
 	};
 
 	/**
-	 *
+	 * Class that manages Controller and provides navigation mechanism between loaded controllers
 	 */
 	class LIBAPI ControllerManager {
 	private:
 		Eina_Hash* controllerTable;
 		ControllerChain* chain;
-		ApplicationBase* const app;
+		IAttachable* const app;
 
 		void PushController(ControllerBase* controller);
 		bool PopController();
 	public:
-		LIBAPI ControllerManager(ApplicationBase* app);
+		/**
+		 * Constructor of ControllerManager
+		 *
+		 * @param app IAttachable which this controller manager will attach the underlying view
+		 */
+		LIBAPI ControllerManager(IAttachable* app);
+
+		/**
+		 * Method to register ControllerFactory to this manager so this manager can recognize
+		 * the controller and instantiate it when needed
+		 */
 		LIBAPI void RegisterControllerFactory(ControllerFactory* controller);
 		LIBAPI void NavigateTo(const char* controllerName, void* data);
 		LIBAPI void NavigateTo(const char* controllerName, void* data, bool noTrail);
