@@ -8,7 +8,10 @@
 #ifndef CORE_H_
 #define CORE_H_
 
+#define LOG_TAG "SRINFW"
+
 typedef const char* CString;
+
 template<class DefiningClass, class ValueType, ValueType (DefiningClass::* GetFunc)(), void (DefiningClass::* SetFunc)(const ValueType&)>
 class Property {
 private:
@@ -44,7 +47,7 @@ public:
 class Event;
 
 class EventClass {};
-typedef void (EventClass::*EventHandler)(Event* eventSource, Evas_Object* objSource, void* eventData);
+typedef void (EventClass::*EventHandler)(Event* eventSource, void* objSource, void* eventData);
 
 class Event {
 public:
@@ -53,40 +56,18 @@ public:
 	EventClass* eventSource;
 	CString eventLabel;
 
-	inline Event() :
-		instance(nullptr), eventHandler(nullptr), eventSource(nullptr), eventLabel(nullptr)
-	{ }
+	Event();
 
-	inline Event(EventClass* eventSource) :
-		instance(nullptr), eventHandler(nullptr), eventSource(eventSource), eventLabel(nullptr)
-	{ }
+	Event(EventClass* eventSource);
 
-	inline Event(EventClass* instance, EventHandler eventHandler, CString eventLabel = nullptr) :
-		instance(instance), eventHandler(eventHandler), eventSource(nullptr), eventLabel(eventLabel)
-	{ }
+	Event(EventClass* instance, EventHandler eventHandler, CString eventLabel = nullptr);
 
-	inline void operator=(const Event& other)
-	{
-		this->instance = other.instance;
-		this->eventHandler = other.eventHandler;
-	}
+	void operator=(const Event& other);
 
-	inline void Invoke(void* eventInfo)
-	{
-		if(this->instance && this->eventHandler)
-			(this->instance->*(this->eventHandler))(this, nullptr, eventInfo);
-	}
+	void Invoke(void* eventInfo);
 
-	inline void operator()(Evas_Object* objSource, void* eventData)
-	{
-		if(this->instance && this->eventHandler)
-			(this->instance->*(this->eventHandler))(this, objSource, eventData);
-	}
+	void operator()(void* objSource, void* eventData);
 };
-
-void SmartEventHandler(void* data, Evas_Object* obj, void* eventData);
-void ObjectEventHandler(void* data, Evas* evas, Evas_Object* obj, void* eventData);
-
 
 #define AddEventHandler(EVENT_METHOD) ::Event(this, (::EventHandler) & EVENT_METHOD)
 

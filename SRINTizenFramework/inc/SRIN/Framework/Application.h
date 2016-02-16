@@ -17,7 +17,8 @@
 #include <string>
 #include <vector>
 
-#include "SRIN/Framework/Core.h"
+#include "SRIN/Core.h"
+#include "SRIN/ELMInterface.h"
 
 #ifdef LIBBUILD
 #define LIBAPI __attribute__((__visibility__("default")))
