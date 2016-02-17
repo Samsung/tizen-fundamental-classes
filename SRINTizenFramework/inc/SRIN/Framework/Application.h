@@ -9,23 +9,20 @@
 #define __APPLICATION_H__
 
 #include <app.h>
-#include <Elementary.h>
+
+extern "C"
+{
 #include <eina_hash.h>
+}
+
 #include <system_settings.h>
 #include <efl_extension.h>
-#include <dlog.h>
+
 #include <string>
 #include <vector>
 
 #include "SRIN/Core.h"
 #include "SRIN/ELMInterface.h"
-
-#ifdef LIBBUILD
-#define LIBAPI __attribute__((__visibility__("default")))
-#else
-#define LIBAPI
-#endif
-
 
 #define RegisterController(CONTROLLER_NAME, CONTROLLER_TYPE) RegisterControllerFactory(new SRIN::Framework::ControllerFactory(CONTROLLER_NAME, [] (SRIN::Framework::ControllerManager* m) -> SRIN::Framework::ControllerBase* { return new CONTROLLER_TYPE (m); }))
 

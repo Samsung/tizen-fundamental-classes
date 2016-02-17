@@ -9,6 +9,13 @@
 #define CORE_H_
 
 #define LOG_TAG "SRINFW"
+#include <dlog.h>
+
+#ifdef LIBBUILD
+#define LIBAPI __attribute__((__visibility__("default")))
+#else
+#define LIBAPI
+#endif
 
 typedef const char* CString;
 
@@ -57,15 +64,11 @@ public:
 	CString eventLabel;
 
 	Event();
-
 	Event(EventClass* eventSource);
-
 	Event(EventClass* instance, EventHandler eventHandler, CString eventLabel = nullptr);
 
-	void operator=(const Event& other);
-
+	void operator+=(const Event& other);
 	void Invoke(void* eventInfo);
-
 	void operator()(void* objSource, void* eventData);
 };
 

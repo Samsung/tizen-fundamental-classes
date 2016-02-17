@@ -10,7 +10,7 @@
 using namespace SRIN::Framework;
 
 ControllerBase::ControllerBase(ControllerManager* m, ViewBase* v, CString c) :
-		Manager(m), ControllerName(c), View(v)
+		Manager(m), View(v), ControllerName(c)
 {
 	Title = "";
 }

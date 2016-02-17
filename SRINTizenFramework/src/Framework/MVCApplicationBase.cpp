@@ -10,8 +10,8 @@
 using namespace SRIN::Framework;
 
 MVCApplicationBase::MVCApplicationBase(CString appPackage, CString mainController) :
-		ControllerManager(this),
 		ApplicationBase(appPackage),
+		ControllerManager(this),
 		mainController(mainController)
 {
 }

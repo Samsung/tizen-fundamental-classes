@@ -10,10 +10,9 @@
 
 #include "SRIN/Core.h"
 
+#include <Elementary.h>
+
 void SmartEventHandler(void* data, Evas_Object* obj, void* eventData);
 void ObjectEventHandler(void* data, Evas* evas, Evas_Object* obj, void* eventData);
-
-
-
 
 #endif /* ELMINTERFACE_H_ */

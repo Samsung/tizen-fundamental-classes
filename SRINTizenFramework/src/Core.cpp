@@ -18,11 +18,11 @@ Event::Event(EventClass* eventSource) :
 		instance(nullptr), eventHandler(nullptr), eventSource(eventSource), eventLabel(nullptr)
 	{ }
 
-Event::Event(EventClass* instance, EventHandler eventHandler, CString eventLabel = nullptr) :
+Event::Event(EventClass* instance, EventHandler eventHandler, CString eventLabel) :
 		instance(instance), eventHandler(eventHandler), eventSource(nullptr), eventLabel(eventLabel)
 	{ }
 
-void Event::operator=(const Event& other)
+void Event::operator+=(const Event& other)
 {
 	this->instance = other.instance;
 	this->eventHandler = other.eventHandler;
@@ -34,7 +34,7 @@ void Event::Invoke(void* eventInfo)
 		(this->instance->*(this->eventHandler))(this, nullptr, eventInfo);
 }
 
-void Event::operator()(Evas_Object* objSource, void* eventData)
+void Event::operator()(void* objSource, void* eventData)
 {
 	if(this->instance && this->eventHandler)
 		(this->instance->*(this->eventHandler))(this, objSource, eventData);
