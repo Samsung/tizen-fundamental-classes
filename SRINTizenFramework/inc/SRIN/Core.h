@@ -8,11 +8,12 @@
 #ifndef CORE_H_
 #define CORE_H_
 
-#define LOG_TAG "SRINFW"
+
 #include <dlog.h>
 
 #ifdef LIBBUILD
 #define LIBAPI __attribute__((__visibility__("default")))
+#define LOG_TAG "SRINFW"
 #else
 #define LIBAPI
 #endif

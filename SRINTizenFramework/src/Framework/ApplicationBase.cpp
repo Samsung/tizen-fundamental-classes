@@ -81,6 +81,13 @@ void ui_app_low_memory(app_event_info_h event_info, void *data)
 	app->LowMemory(event_info);
 }
 
+void win_delete_request_cb(void *data, Evas_Object *obj, void *event_info)
+{
+	ApplicationBase* app = (ApplicationBase*)data;
+	dlog_print(DLOG_DEBUG, LOG_TAG, "Back button pressed");
+	app->BackButtonPressed();
+}
+
 
 int ApplicationBase::Main(ApplicationBase* app, int argc, char* argv[])
 {
@@ -146,6 +153,15 @@ bool ApplicationBase::OnBackButtonPressed()
 
 void SRIN::Framework::ApplicationBase::EnableBackButtonCallback(bool enable)
 {
+	if(enable){
+		if(!this->haveEventBackPressed){
+			eext_object_event_callback_add(this->win, EEXT_CALLBACK_BACK, win_delete_request_cb, this);
+			this->haveEventBackPressed = true;
+		}
+	} else {
+		eext_object_event_callback_del(this->win,EEXT_CALLBACK_BACK,win_delete_request_cb);
+		this->haveEventBackPressed = false;
+	}
 }
 
 bool SRIN::Framework::ApplicationBase::AcquireExclusiveBackButtonPressed(EventClass* instance, BackButtonCallback callback)
@@ -210,6 +226,9 @@ void SRIN::Framework::ApplicationBase::Exit()
 
 void SRIN::Framework::ApplicationBase::BackButtonPressed()
 {
+	bool backResult = backButtonCallback ? (backButtonInstance->*backButtonCallback)() : OnBackButtonPressed();
+	if(backResult)
+		ui_app_exit();
 }
 
 bool SRIN::Framework::ApplicationBase::ApplicationCreate()
