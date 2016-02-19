@@ -210,16 +210,16 @@ namespace SRIN { namespace Framework {
 		bool ApplicationCreate();
 
 		/**
+		 * Destructor of ApplicationBase
+		 */
+		virtual ~ApplicationBase();
+
+		/**
 		 * Main method to start the application loop using an ApplicationBase instance
 		 */
 		static int Main(ApplicationBase* app, int argc, char *argv[]);
 
 		static SimpleReadOnlyProperty<ApplicationBase, ApplicationBase*> CurrentInstance;
-
-		/**
-		 * Destructor of ApplicationBase
-		 */
-		virtual ~ApplicationBase();
 	};
 
 	/**
@@ -375,28 +375,43 @@ namespace SRIN { namespace Framework {
 	{
 	private:
 		Eina_Hash* controllerTable;
-		ControllerChain* chain;
-		IAttachable* const app;
-
-		void PushController(ControllerBase* controller);bool PopController();
+	protected:
+		ControllerFactory* GetControllerFactoryEntry(const char* controllerName);
 	public:
-		/**
-		 * Constructor of ControllerManager
-		 *
-		 * @param app IAttachable which this controller manager will attach the underlying view
-		 */
-		ControllerManager(IAttachable* app);
+		ControllerManager();
 
 		/**
 		 * Method to register ControllerFactory to this manager so this manager can recognize
 		 * the controller and instantiate it when needed
 		 */
 		void RegisterControllerFactory(ControllerFactory* controller);
-		void NavigateTo(const char* controllerName, void* data);
-		void NavigateTo(const char* controllerName, void* data, bool noTrail);bool NavigateBack();
 	};
 
-	class LIBAPI MVCApplicationBase: public ApplicationBase, public ControllerManager
+	class NavigatingControllerManager : public ControllerManager {
+	private:
+		ControllerChain* chain;
+		IAttachable* const app;
+		void PushController(ControllerBase* controller);
+		bool PopController();
+	public:
+		/**
+		 * Constructor of NAvigatingControllerManager
+		 *
+		 * @param app IAttachable which this controller manager will attach the underlying view
+		 */
+		NavigatingControllerManager(IAttachable* app);
+
+		void NavigateTo(const char* controllerName, void* data);
+		void NavigateTo(const char* controllerName, void* data, bool noTrail);
+		bool NavigateBack();
+	};
+
+	class SwitchingControllerManager {
+		// TODO Implement Switching Controller Manager
+	};
+
+
+	class LIBAPI MVCApplicationBase: public ApplicationBase, public NavigatingControllerManager
 	{
 	private:
 		CString mainController;
@@ -406,6 +421,8 @@ namespace SRIN { namespace Framework {
 		virtual void OnApplicationCreated() final;
 		virtual ~MVCApplicationBase();
 	};
+
+
 
 	/**
 	 * Abstract base class for encapsulation of View definition and logic. Each view class represent

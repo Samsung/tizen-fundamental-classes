@@ -15,11 +15,9 @@ void ControllerManager_FreeFactory(void* data)
 	delete factory;
 }
 
-LIBAPI ControllerManager::ControllerManager(IAttachable* app) :
-	app(app)
+SRIN::Framework::ControllerManager::ControllerManager()
 {
 	this->controllerTable = eina_hash_string_superfast_new(ControllerManager_FreeFactory);
-	this->chain = nullptr;
 }
 
 LIBAPI void ControllerManager::RegisterControllerFactory(ControllerFactory* controller)
@@ -35,12 +33,25 @@ LIBAPI void ControllerManager::RegisterControllerFactory(ControllerFactory* cont
 	}
 }
 
-LIBAPI void ControllerManager::NavigateTo(const char* controllerName, void* data)
+LIBAPI ControllerFactory* ControllerManager::GetControllerFactoryEntry(const char* controllerName)
 {
 	void* entry = eina_hash_find(this->controllerTable, controllerName);
-	if (entry != 0)
+
+	return static_cast<ControllerFactory*>(entry);
+}
+
+LIBAPI NavigatingControllerManager::NavigatingControllerManager(IAttachable* app) :
+	app(app)
+{
+
+	this->chain = nullptr;
+}
+
+LIBAPI void NavigatingControllerManager::NavigateTo(const char* controllerName, void* data)
+{
+	ControllerFactory* factory = GetControllerFactoryEntry(controllerName);
+	if (factory != nullptr)
 	{
-		ControllerFactory* factory = static_cast<ControllerFactory*>(entry);
 		ControllerBase* newInstance = factory->factoryMethod(this);
 
 		PushController(newInstance);
@@ -49,7 +60,7 @@ LIBAPI void ControllerManager::NavigateTo(const char* controllerName, void* data
 	}
 }
 
-void ControllerManager::PushController(ControllerBase* controller)
+void NavigatingControllerManager::PushController(ControllerBase* controller)
 {
 	ControllerChain* newChain = new ControllerChain();
 	newChain->instance = controller;
@@ -57,7 +68,7 @@ void ControllerManager::PushController(ControllerBase* controller)
 	this->chain = newChain;
 }
 
-bool ControllerManager::PopController()
+bool NavigatingControllerManager::PopController()
 {
 	if (this->chain != nullptr)
 	{
@@ -73,7 +84,7 @@ bool ControllerManager::PopController()
 		return false;
 }
 
-LIBAPI bool ControllerManager::NavigateBack()
+LIBAPI bool NavigatingControllerManager::NavigateBack()
 {
 	void* returnedData = this->chain->instance->Unload();
 	app->Detach();
@@ -87,7 +98,7 @@ LIBAPI bool ControllerManager::NavigateBack()
 	return popResult;
 }
 
-LIBAPI void ControllerManager::NavigateTo(const char* controllerName, void* data, bool noTrail)
+LIBAPI void NavigatingControllerManager::NavigateTo(const char* controllerName, void* data, bool noTrail)
 {
 	if (noTrail)
 	{
@@ -102,4 +113,6 @@ LIBAPI void ControllerManager::NavigateTo(const char* controllerName, void* data
 LIBAPI ControllerFactory::ControllerFactory(CString controllerName, ControllerFactoryMethod factory) :
 	controllerName(controllerName), factoryMethod(factory)
 {
+
 }
+
