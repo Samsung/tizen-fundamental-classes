@@ -9,12 +9,12 @@
 
 using namespace SRIN::Framework;
 
-ViewBase::ViewBase(CString viewName) :
+LIBAPI ViewBase::ViewBase(CString viewName) :
 		viewName(viewName)
 {
 	viewRoot = nullptr;
 }
-Evas_Object* ViewBase::Create(Evas_Object* root)
+LIBAPI Evas_Object* ViewBase::Create(Evas_Object* root)
 {
 	if(!this->viewRoot)
 		this->viewRoot = CreateView(root);
@@ -22,22 +22,22 @@ Evas_Object* ViewBase::Create(Evas_Object* root)
 	return viewRoot;
 }
 
-CString ViewBase::GetStyle()
+LIBAPI CString ViewBase::GetStyle()
 {
 	return nullptr;
 }
 
-bool ViewBase::IsCreated()
+LIBAPI bool ViewBase::IsCreated()
 {
 	return viewRoot != nullptr;
 }
 
-Evas_Object* ViewBase::GetViewRoot()
+LIBAPI Evas_Object* ViewBase::GetViewRoot()
 {
 	return viewRoot;
 }
 
-ViewBase::~ViewBase()
+LIBAPI ViewBase::~ViewBase()
 {
 
 }

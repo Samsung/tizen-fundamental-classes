@@ -9,22 +9,25 @@
 
 using namespace SRIN::Framework;
 
-MVCApplicationBase::MVCApplicationBase(CString appPackage, CString mainController) :
+LIBAPI MVCApplicationBase::MVCApplicationBase(CString appPackage, CString mainController) :
 		ApplicationBase(appPackage),
 		ControllerManager(this),
 		mainController(mainController)
 {
 }
 
-bool MVCApplicationBase::OnBackButtonPressed()
+LIBAPI bool MVCApplicationBase::OnBackButtonPressed()
 {
 	return !this->NavigateBack();
 }
 
-void MVCApplicationBase::OnApplicationCreated()
+LIBAPI void MVCApplicationBase::OnApplicationCreated()
 {
 	this->NavigateTo(mainController, nullptr);
 }
 
 
 
+LIBAPI MVCApplicationBase::~MVCApplicationBase()
+{
+}

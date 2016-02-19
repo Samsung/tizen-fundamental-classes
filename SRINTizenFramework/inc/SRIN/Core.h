@@ -28,7 +28,7 @@ public:
 	Property(DefiningClass* inst) : instance(inst) { }
 	operator ValueType() { return (instance->*GetFunc)(); }
 	void operator=(const ValueType& val) { (instance->*SetFunc)(val); }
-	ValueType &operator->() const { return instance->*GetFunc(); }
+	ValueType* operator->() const { return &(instance->*GetFunc()); }
 };
 
 template<class DefiningClass, class ValueType, ValueType DefiningClass::* LocalVar>
@@ -51,6 +51,37 @@ public:
 	operator ValueType() { return instance->*GetFunc(); }
 };
 
+template<class DefiningClass, class ValueType>
+class SimpleReadOnlyPropertyBase {
+protected:
+	ValueType value;
+public:
+	friend DefiningClass;
+	operator ValueType() { return value; }
+	ValueType* operator->() const;
+};
+
+template<class DefiningClass, class ValueType>
+class SimpleReadOnlyProperty : public SimpleReadOnlyPropertyBase<DefiningClass, ValueType> {
+public:
+	ValueType* operator->() const;
+};
+
+template<class DefiningClass, class ValueType>
+ValueType* SimpleReadOnlyProperty<DefiningClass, ValueType>::operator->() const {
+	return &this->value;
+}
+
+template<class DefiningClass, class ValueType>
+class SimpleReadOnlyProperty<DefiningClass, ValueType*> : public SimpleReadOnlyPropertyBase<DefiningClass, ValueType*> {
+public:
+	ValueType* operator->() const;
+};
+
+template<class DefiningClass, class ValueType>
+ValueType* SimpleReadOnlyProperty<DefiningClass, ValueType*>::operator->() const {
+	return this->value;
+}
 
 class Event;
 

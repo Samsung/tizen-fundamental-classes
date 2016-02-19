@@ -9,41 +9,41 @@
 
 using namespace SRIN::Framework;
 
-ControllerBase::ControllerBase(ControllerManager* m, ViewBase* v, CString c) :
+LIBAPI ControllerBase::ControllerBase(ControllerManager* m, ViewBase* v, CString c) :
 		Manager(m), View(v), ControllerName(c)
 {
 	Title = "";
 }
 
-void ControllerBase::OnLoad(void* data)
+LIBAPI void ControllerBase::OnLoad(void* data)
 {
 }
 
-void* ControllerBase::OnUnload()
+LIBAPI void* ControllerBase::OnUnload()
 {
 	return NULL;
 }
 
-void ControllerBase::Load(void* data)
+LIBAPI void ControllerBase::Load(void* data)
 {
 	OnLoad(data);
 }
 
-void* ControllerBase::Unload()
+LIBAPI void* ControllerBase::Unload()
 {
 	return OnUnload();
 }
 
-void ControllerBase::OnReload(void* data)
+LIBAPI void ControllerBase::OnReload(void* data)
 {
 }
 
-void ControllerBase::Reload(void* data)
+LIBAPI void ControllerBase::Reload(void* data)
 {
 	OnReload(data);
 }
 
-ControllerBase::~ControllerBase()
+LIBAPI ControllerBase::~ControllerBase()
 {
 }
 

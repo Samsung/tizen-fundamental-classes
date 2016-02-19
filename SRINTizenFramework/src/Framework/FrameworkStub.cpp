@@ -10,11 +10,11 @@
 
 using namespace SRIN::Framework;
 
-SRIN::Framework::IAttachable::~IAttachable()
+LIBAPI IAttachable::~IAttachable()
 {
 
 }
 
-SRIN::Framework::ITitleButton::~ITitleButton()
+LIBAPI ITitleButton::~ITitleButton()
 {
 }

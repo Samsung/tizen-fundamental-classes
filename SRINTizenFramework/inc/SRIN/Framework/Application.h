@@ -10,8 +10,7 @@
 
 #include <app.h>
 
-extern "C"
-{
+extern "C" {
 #include <eina_hash.h>
 }
 
@@ -24,9 +23,16 @@ extern "C"
 #include "SRIN/Core.h"
 #include "SRIN/ELMInterface.h"
 
-#define RegisterController(CONTROLLER_NAME, CONTROLLER_TYPE) RegisterControllerFactory(new SRIN::Framework::ControllerFactory(CONTROLLER_NAME, [] (SRIN::Framework::ControllerManager* m) -> SRIN::Framework::ControllerBase* { return new CONTROLLER_TYPE (m); }))
-
-
+/**
+ * Macro to register a controller to a ControllerManager by providing a controller name and controller type
+ *
+ * @param CONTROLLER_NAME name of the controller to identify this controller
+ * @param CONTROLLER_TYPE the class or typensme of the controller to register
+ */
+#define RegisterController(CONTROLLER_NAME, CONTROLLER_TYPE) \
+	RegisterControllerFactory(new SRIN::Framework::ControllerFactory(CONTROLLER_NAME, \
+	[] (SRIN::Framework::ControllerManager* m) -> \
+	SRIN::Framework::ControllerBase* { return new CONTROLLER_TYPE (m); }))
 
 namespace SRIN { namespace Framework {
 	class ViewBase;
@@ -40,7 +46,8 @@ namespace SRIN { namespace Framework {
 	 * Interface that represents an attachable object. A class that implements this
 	 * interface should be able to receive a ViewBase and attach its content internally
 	 */
-	class LIBAPI IAttachable {
+	class LIBAPI IAttachable
+	{
 	public:
 
 		/**
@@ -48,17 +55,17 @@ namespace SRIN { namespace Framework {
 		 *
 		 * @param view A view to be attached
 		 */
-		virtual LIBAPI void Attach(ViewBase* view) = 0;
+		virtual void Attach(ViewBase* view) = 0;
 
 		/**
 		 * Method to be called to detach the currently attached view from the object
 		 */
-		virtual LIBAPI void Detach() = 0;
+		virtual void Detach() = 0;
 
 		/**
 		 * Virtual destructor for the interface
 		 */
-		virtual LIBAPI ~IAttachable();
+		virtual ~IAttachable();
 	};
 
 	/**
@@ -70,7 +77,8 @@ namespace SRIN { namespace Framework {
 	 * Any view class inheriting ViewBase can be attached to this application and will be displayed
 	 * on to screen.
 	 */
-	class LIBAPI ApplicationBase : public IAttachable {
+	class LIBAPI ApplicationBase: public IAttachable
+	{
 	private:
 
 		bool haveEventBackPressed;
@@ -98,67 +106,67 @@ namespace SRIN { namespace Framework {
 		/**
 		 * Constructor of ApplicationBase class
 		 */
-		LIBAPI ApplicationBase(CString packageName);
+		ApplicationBase(CString packageName);
 
 		/**
 		 * Method that will be called after the application creation process is finished. At this
 		 * point, the application is ready to receive Attach action from any component.
 		 */
-		virtual LIBAPI void OnApplicationCreated();
+		virtual void OnApplicationCreated();
 
 		/**
 		 * Method that will be called by Tizen system for any Control event received. Override this
 		 * method to react to the event.
 		 */
-		virtual LIBAPI void ApplicationControl(app_control_h app_control);
+		virtual void ApplicationControl(app_control_h app_control);
 
 		/**
 		 * Method that will be called by Tizen system for any Pause event received. Override this
 		 * method to react to the event.
 		 */
-		virtual LIBAPI void ApplicationPause();
+		virtual void ApplicationPause();
 
 		/**
 		 * Method that will be called by Tizen system for any Resume event received. Override this
 		 * method to react to the event.
 		 */
-		virtual LIBAPI void ApplicationResume();
+		virtual void ApplicationResume();
 
 		/**
 		 * Method that will be called by Tizen system for any Terminate event received. Override
 		 * this method to react to the event.
 		 */
-		virtual LIBAPI void ApplicationTerminate();
+		virtual void ApplicationTerminate();
 
 		/**
 		 * Method that will be called by Tizen system for any Language Changed event received.
 		 * Override this method to react to the event.
 		 */
-		virtual LIBAPI void LanguageChanged(app_event_info_h event_info, const char* locale);
+		virtual void LanguageChanged(app_event_info_h event_info, const char* locale);
 
 		/**
 		 * Method that will be called by Tizen system for any Orientation Changed event received.
 		 * Override this method to react to the event.
 		 */
-		virtual LIBAPI void OrientationChanged(app_event_info_h event_info);
+		virtual void OrientationChanged(app_event_info_h event_info);
 
 		/**
 		 * Method that will be called by Tizen system for any Region Changed event received.
 		 * Override this method to react to the event.
 		 */
-		virtual LIBAPI void RegionChanged(app_event_info_h event_info);
+		virtual void RegionChanged(app_event_info_h event_info);
 
 		/**
 		 * Method that will be called by Tizen system for any Low Battery event received. Override
 		 * this method to react to the event.
 		 */
-		virtual LIBAPI void LowBattery(app_event_info_h event_info);
+		virtual void LowBattery(app_event_info_h event_info);
 
 		/**
 		 * Method that will be called by Tizen system for any Low Memory event received. Override
 		 * this method to react to the event.
 		 */
-		virtual LIBAPI void LowMemory(app_event_info_h event_info);
+		virtual void LowMemory(app_event_info_h event_info);
 
 		/**
 		 * Method that will be called when the user called back button. Override this method to
@@ -167,49 +175,51 @@ namespace SRIN { namespace Framework {
 		 * @return true if the application should be closed after clicking back
 		 * 		   false to cancel closing the application
 		 */
-		virtual LIBAPI bool OnBackButtonPressed();
+		virtual bool OnBackButtonPressed();
 
-		LIBAPI void EnableBackButtonCallback(bool enable);
-		LIBAPI bool AcquireExclusiveBackButtonPressed(EventClass* instance, BackButtonCallback callback);
+		void EnableBackButtonCallback(bool enable);bool AcquireExclusiveBackButtonPressed(EventClass* instance,
+			BackButtonCallback callback);
 
-		LIBAPI bool ReleaseExclusiveBackButtonPressed(EventClass* instance, BackButtonCallback callback);
+		bool ReleaseExclusiveBackButtonPressed(EventClass* instance, BackButtonCallback callback);
 
 		/**
 		 * Method to be called to attach a view inside this attachable object
 		 *
 		 * @param view A view to be attached
 		 */
-		LIBAPI void Attach(ViewBase* view);
+		void Attach(ViewBase* view);
 
 		/**
 		 * Method to be called to detach the currently attached view from the object
 		 */
-		LIBAPI void Detach();
+		void Detach();
 
 		/**
 		 * Method to initiate exit the application
 		 */
-		LIBAPI void Exit();
+		void Exit();
 
 		/**
 		 * Method that will be called by Tizen system when the user clicks the back button
 		 */
-		LIBAPI void BackButtonPressed();
+		void BackButtonPressed();
 
 		/**
 		 * Method that will be called by Tizen system to create the application.
 		 */
-		LIBAPI bool ApplicationCreate();
+		bool ApplicationCreate();
 
 		/**
 		 * Main method to start the application loop using an ApplicationBase instance
 		 */
-		static LIBAPI int Main(ApplicationBase* app, int argc, char *argv[]);
+		static int Main(ApplicationBase* app, int argc, char *argv[]);
+
+		static SimpleReadOnlyProperty<ApplicationBase, ApplicationBase*> CurrentInstance;
 
 		/**
 		 * Destructor of ApplicationBase
 		 */
-		virtual LIBAPI ~ApplicationBase();
+		virtual ~ApplicationBase();
 	};
 
 	/**
@@ -221,7 +231,8 @@ namespace SRIN { namespace Framework {
 	 * controller will be managed by ControllerManager to support navigation between controllers,
 	 * and control passing.
 	 */
-	class LIBAPI ControllerBase : virtual public EventClass {
+	class LIBAPI ControllerBase: virtual public EventClass
+	{
 	protected:
 		/**
 		 * Reference to ControllerManager
@@ -237,7 +248,7 @@ namespace SRIN { namespace Framework {
 		 * @note The data parameter must be freed by this controller as the owner of the object is
 		 * 		 passed onto this controller.
 		 */
-		virtual LIBAPI void OnLoad(void* data);
+		virtual void OnLoad(void* data);
 
 		/**
 		 * Method that will be called during the unloading of this controller. This method will be
@@ -248,7 +259,7 @@ namespace SRIN { namespace Framework {
 		 * @note The data to be returned must be allocated in the heap, and the responsible party
 		 * 		 to clean up the data is the receiver controller.
 		 */
-		virtual LIBAPI void* OnUnload();
+		virtual void* OnUnload();
 
 		/**
 		 * Method that will be called during the reloading of this controller after returning from
@@ -261,7 +272,7 @@ namespace SRIN { namespace Framework {
 		 * @note The data parameter must be freed by this controller as the owner of the object is
 		 * 		 passed onto this controller.
 		 */
-		virtual LIBAPI void OnReload(void* data);
+		virtual void OnReload(void* data);
 	public:
 		/**
 		 * The standard constructor for ControllerBase class.
@@ -279,7 +290,7 @@ namespace SRIN { namespace Framework {
 		 *
 		 * @see {RegisterController}
 		 */
-		LIBAPI ControllerBase(ControllerManager* manager, ViewBase* view, CString controllerName);
+		ControllerBase(ControllerManager* manager, ViewBase* view, CString controllerName);
 
 		/**
 		 * The reference to the view instance for this controller
@@ -301,38 +312,39 @@ namespace SRIN { namespace Framework {
 		 *
 		 * @param data Parameter to pass to this controller
 		 */
-		LIBAPI void Load(void* data);
+		void Load(void* data);
 
 		/**
 		 * Method that will be called by ControllerManager to unload the controller
 		 *
 		 * @return The returned data from this controller
 		 */
-		LIBAPI void* Unload();
+		void* Unload();
 
 		/**
 		 * Method that will be called by ControllerManager to reload the controller
 		 *
 		 * @param data Parameter to pass to this controller
 		 */
-		LIBAPI void Reload(void* data);
+		void Reload(void* data);
 
 		/**
 		 * Destructor of ControllerBase instance
 		 */
-		virtual LIBAPI ~ControllerBase();
+		virtual ~ControllerBase();
 	};
 
 	/**
 	 * Function pointer to instantiate the specific controller. Should be used along the macro
 	 * RegisterController
 	 */
-	typedef ControllerBase* (*ControllerFactoryMethod) (ControllerManager*);
+	typedef ControllerBase* (*ControllerFactoryMethod)(ControllerManager*);
 
 	/**
 	 * Class that encapsulate dynamic controller instatiation which is required by ControllerManager
 	 */
-	class LIBAPI ControllerFactory {
+	class LIBAPI ControllerFactory
+	{
 	public:
 		/**
 		 * Constructor of ControllerFactory
@@ -340,7 +352,7 @@ namespace SRIN { namespace Framework {
 		 * @param controllerName Name of the controller
 		 * @param factory Factory method which will instantiate the controller
 		 */
-		LIBAPI ControllerFactory(CString controllerName, ControllerFactoryMethod factory);
+		ControllerFactory(CString controllerName, ControllerFactoryMethod factory);
 
 		CString const controllerName;
 		ControllerFactoryMethod const factoryMethod;
@@ -349,7 +361,8 @@ namespace SRIN { namespace Framework {
 	/**
 	 * Class that encapsulate controller stack within ControllerManager
 	 */
-	class LIBAPI ControllerChain {
+	class ControllerChain
+	{
 	public:
 		ControllerBase* instance;
 		ControllerChain* next;
@@ -358,73 +371,40 @@ namespace SRIN { namespace Framework {
 	/**
 	 * Class that manages Controller and provides navigation mechanism between loaded controllers
 	 */
-	class LIBAPI ControllerManager {
+	class LIBAPI ControllerManager
+	{
 	private:
 		Eina_Hash* controllerTable;
 		ControllerChain* chain;
 		IAttachable* const app;
 
-		void PushController(ControllerBase* controller);
-		bool PopController();
+		void PushController(ControllerBase* controller);bool PopController();
 	public:
 		/**
 		 * Constructor of ControllerManager
 		 *
 		 * @param app IAttachable which this controller manager will attach the underlying view
 		 */
-		LIBAPI ControllerManager(IAttachable* app);
+		ControllerManager(IAttachable* app);
 
 		/**
 		 * Method to register ControllerFactory to this manager so this manager can recognize
 		 * the controller and instantiate it when needed
 		 */
-		LIBAPI void RegisterControllerFactory(ControllerFactory* controller);
-		LIBAPI void NavigateTo(const char* controllerName, void* data);
-		LIBAPI void NavigateTo(const char* controllerName, void* data, bool noTrail);
-		LIBAPI bool NavigateBack();
+		void RegisterControllerFactory(ControllerFactory* controller);
+		void NavigateTo(const char* controllerName, void* data);
+		void NavigateTo(const char* controllerName, void* data, bool noTrail);bool NavigateBack();
 	};
 
-	class LIBAPI MVCApplicationBase : public ApplicationBase, public ControllerManager {
+	class LIBAPI MVCApplicationBase: public ApplicationBase, public ControllerManager
+	{
 	private:
 		CString mainController;
 	public:
-		LIBAPI MVCApplicationBase(CString appPackage, CString mainController);
-		virtual LIBAPI bool OnBackButtonPressed() final;
-		virtual LIBAPI void OnApplicationCreated() final;
-		virtual LIBAPI ~MVCApplicationBase() { }
-	};
-
-
-	class LIBAPI ComponentBase : virtual public EventClass {
-	private:
-		bool created;
-		bool enabled;
-		bool visible;
-		CString name;
-	protected:
-		Evas_Object* componentRoot;
-		double weightX, weightY, alignX, alignY;
-		virtual LIBAPI Evas_Object* CreateComponent(Evas_Object* root) = 0;
-
-		virtual LIBAPI void SetEnabled(const bool& enabled);
-		virtual LIBAPI bool GetEnabled();
-
-		virtual LIBAPI void SetVisible(const bool& visible);
-		virtual LIBAPI bool GetVisible();
-
-		virtual LIBAPI void SetName(const CString& name);
-		virtual LIBAPI CString GetName();
-	public:
-		ComponentBase();
-		inline bool IsCreated() { return created; }
-		Evas_Object* LIBAPI Create(Evas_Object* root);
-
-		Property<ComponentBase, bool, &ComponentBase::GetEnabled, &ComponentBase::SetEnabled> Enabled;
-		Property<ComponentBase, bool, &ComponentBase::GetVisible, &ComponentBase::SetVisible> Visible;
-		Property<ComponentBase, CString, &ComponentBase::GetName, &ComponentBase::SetName> Name;
-
-		virtual LIBAPI ~ComponentBase();
-		operator LIBAPI Evas_Object*() const;
+		MVCApplicationBase(CString appPackage, CString mainController);
+		virtual bool OnBackButtonPressed() final;
+		virtual void OnApplicationCreated() final;
+		virtual ~MVCApplicationBase();
 	};
 
 	/**
@@ -435,32 +415,29 @@ namespace SRIN { namespace Framework {
 	 * of this class can be attached into an IAttachable instance to display it to designated window
 	 * or placeholder.
 	 */
-	class LIBAPI ViewBase : virtual public EventClass {
+	class LIBAPI ViewBase: virtual public EventClass
+	{
 	private:
 		Evas_Object* viewRoot;
 	protected:
-		virtual LIBAPI Evas_Object* CreateView(Evas_Object* root) = 0;
+		virtual Evas_Object* CreateView(Evas_Object* root) = 0;
 	public:
-		LIBAPI ViewBase(CString viewName);
+		ViewBase(CString viewName);
+		virtual Evas_Object* Create(Evas_Object* root);
+		virtual CString GetStyle();bool IsCreated();
+		Evas_Object* GetViewRoot();
+		virtual ~ViewBase();
+
 		CString const viewName;
-
-		virtual LIBAPI Evas_Object* Create(Evas_Object* root);
-		virtual LIBAPI CString GetStyle();
-
-		LIBAPI bool IsCreated();
-		LIBAPI Evas_Object* GetViewRoot();
-
-		virtual LIBAPI ~ViewBase();
 	};
 
-	class LIBAPI ITitleButton {
+	class LIBAPI ITitleButton
+	{
 	public:
 		virtual LIBAPI Evas_Object* GetTitleLeftButton() = 0;
 		virtual LIBAPI Evas_Object* GetTitleRightButton() = 0;
 		virtual LIBAPI ~ITitleButton();
 	};
-}
-}
-
+}}
 
 #endif

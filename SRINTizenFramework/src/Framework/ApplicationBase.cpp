@@ -11,8 +11,6 @@
 
 using namespace SRIN::Framework;
 
-
-
 bool ApplicationBase_AppCreateHandler(void *data)
 {
 	ApplicationBase* app = static_cast<ApplicationBase*>(data);
@@ -83,30 +81,32 @@ void ui_app_low_memory(app_event_info_h event_info, void *data)
 
 void win_delete_request_cb(void *data, Evas_Object *obj, void *event_info)
 {
-	ApplicationBase* app = (ApplicationBase*)data;
+	ApplicationBase* app = (ApplicationBase*) data;
 	dlog_print(DLOG_DEBUG, LOG_TAG, "Back button pressed");
 	app->BackButtonPressed();
 }
 
+SimpleReadOnlyProperty<ApplicationBase, ApplicationBase*> ApplicationBase::CurrentInstance;
 
 int ApplicationBase::Main(ApplicationBase* app, int argc, char* argv[])
 {
+	ApplicationBase::CurrentInstance.value = app;
 
-	::ui_app_lifecycle_callback_s event_callback ={
-			ApplicationBase_AppCreateHandler,
-			ApplicationBase_AppTerminateHandler,
-			ApplicationBase_AppPauseHandler,
-			ApplicationBase_AppResumeHandler,
-			ApplicationBase_AppControlHandler };
+	::ui_app_lifecycle_callback_s event_callback =
+	{ ApplicationBase_AppCreateHandler, ApplicationBase_AppTerminateHandler, ApplicationBase_AppPauseHandler,
+		ApplicationBase_AppResumeHandler, ApplicationBase_AppControlHandler };
 
 	::app_event_handler_h handlers[5] =
 	{ NULL, };
 
 	ui_app_add_event_handler(&handlers[APP_EVENT_LOW_BATTERY], APP_EVENT_LOW_BATTERY, ui_app_low_battery, app);
 	ui_app_add_event_handler(&handlers[APP_EVENT_LOW_MEMORY], APP_EVENT_LOW_MEMORY, ui_app_low_memory, app);
-	ui_app_add_event_handler(&handlers[APP_EVENT_DEVICE_ORIENTATION_CHANGED], APP_EVENT_DEVICE_ORIENTATION_CHANGED, ui_app_orient_changed, app);
-	ui_app_add_event_handler(&handlers[APP_EVENT_LANGUAGE_CHANGED], APP_EVENT_LANGUAGE_CHANGED, ui_app_lang_changed, app);
-	ui_app_add_event_handler(&handlers[APP_EVENT_REGION_FORMAT_CHANGED], APP_EVENT_REGION_FORMAT_CHANGED, ui_app_region_changed, app);
+	ui_app_add_event_handler(&handlers[APP_EVENT_DEVICE_ORIENTATION_CHANGED], APP_EVENT_DEVICE_ORIENTATION_CHANGED,
+		ui_app_orient_changed, app);
+	ui_app_add_event_handler(&handlers[APP_EVENT_LANGUAGE_CHANGED], APP_EVENT_LANGUAGE_CHANGED, ui_app_lang_changed,
+		app);
+	ui_app_add_event_handler(&handlers[APP_EVENT_REGION_FORMAT_CHANGED], APP_EVENT_REGION_FORMAT_CHANGED,
+		ui_app_region_changed, app);
 
 	int ret = ::ui_app_main(argc, argv, &event_callback, app);
 	if (ret != APP_ERROR_NONE)
@@ -117,9 +117,8 @@ int ApplicationBase::Main(ApplicationBase* app, int argc, char* argv[])
 	return ret;
 }
 
-
-ApplicationBase::ApplicationBase(CString packageName) :
-		packageName(packageName)
+LIBAPI ApplicationBase::ApplicationBase(CString packageName) :
+	packageName(packageName)
 {
 	this->rootFrame = this->win = this->conform = NULL;
 	this->backButtonCallback = nullptr;
@@ -127,68 +126,92 @@ ApplicationBase::ApplicationBase(CString packageName) :
 	this->haveEventBackPressed = false;
 }
 
+LIBAPI void ApplicationBase::ApplicationControl(app_control_h app_control)
+{
+}
 
-void ApplicationBase::ApplicationControl(app_control_h app_control) { }
+LIBAPI void ApplicationBase::ApplicationPause()
+{
+}
 
-void ApplicationBase::ApplicationPause() { }
+LIBAPI void ApplicationBase::ApplicationResume()
+{
+}
 
-void ApplicationBase::ApplicationResume() { }
+LIBAPI void ApplicationBase::ApplicationTerminate()
+{
+}
 
-void ApplicationBase::ApplicationTerminate() { }
+LIBAPI void ApplicationBase::LanguageChanged(app_event_info_h event_info, const char* locale)
+{
+}
 
-void ApplicationBase::LanguageChanged(app_event_info_h event_info, const char* locale) { }
+LIBAPI void ApplicationBase::OrientationChanged(app_event_info_h event_info)
+{
+}
 
-void ApplicationBase::OrientationChanged(app_event_info_h event_info) { }
+LIBAPI void ApplicationBase::RegionChanged(app_event_info_h event_info)
+{
+}
 
-void ApplicationBase::RegionChanged(app_event_info_h event_info) { }
+LIBAPI void ApplicationBase::LowBattery(app_event_info_h event_info)
+{
+}
 
-void ApplicationBase::LowBattery(app_event_info_h event_info) { }
+LIBAPI void ApplicationBase::LowMemory(app_event_info_h event_info)
+{
+}
 
-void ApplicationBase::LowMemory(app_event_info_h event_info) { }
-
-bool ApplicationBase::OnBackButtonPressed()
+LIBAPI bool ApplicationBase::OnBackButtonPressed()
 {
 	return true;
 }
 
-void SRIN::Framework::ApplicationBase::EnableBackButtonCallback(bool enable)
+LIBAPI void ApplicationBase::EnableBackButtonCallback(bool enable)
 {
-	if(enable){
-		if(!this->haveEventBackPressed){
+	if (enable)
+	{
+		if (!this->haveEventBackPressed)
+		{
 			eext_object_event_callback_add(this->win, EEXT_CALLBACK_BACK, win_delete_request_cb, this);
 			this->haveEventBackPressed = true;
 		}
-	} else {
-		eext_object_event_callback_del(this->win,EEXT_CALLBACK_BACK,win_delete_request_cb);
+	}
+	else
+	{
+		eext_object_event_callback_del(this->win, EEXT_CALLBACK_BACK, win_delete_request_cb);
 		this->haveEventBackPressed = false;
 	}
 }
 
-bool SRIN::Framework::ApplicationBase::AcquireExclusiveBackButtonPressed(EventClass* instance, BackButtonCallback callback)
+LIBAPI bool ApplicationBase::AcquireExclusiveBackButtonPressed(EventClass* instance,
+	BackButtonCallback callback)
 {
 }
 
-bool SRIN::Framework::ApplicationBase::ReleaseExclusiveBackButtonPressed(EventClass* instance, BackButtonCallback callback)
+LIBAPI bool ApplicationBase::ReleaseExclusiveBackButtonPressed(EventClass* instance,
+	BackButtonCallback callback)
 {
 }
 
-void SRIN::Framework::ApplicationBase::Attach(ViewBase* view)
+LIBAPI void ApplicationBase::Attach(ViewBase* view)
 {
 	Evas_Object* viewComponent = view->Create(this->rootFrame);
 
 	//show to window
-	if(viewComponent != NULL)
+	if (viewComponent != NULL)
 	{
-		auto naviframeItem = elm_naviframe_item_push(this->rootFrame, view->viewName, NULL, NULL, viewComponent, view->GetStyle());
+		auto naviframeItem = elm_naviframe_item_push(this->rootFrame, view->viewName, NULL, NULL, viewComponent,
+			view->GetStyle());
 		auto backButton = elm_object_item_part_content_get(naviframeItem, "elm.swallow.prev_btn");
 		auto style = elm_object_style_get(backButton);
 
 		// Title button handling
 		auto titleButton = dynamic_cast<ITitleButton*>(view);
-		if(titleButton)
+		if (titleButton)
 		{
 			auto left = titleButton->GetTitleLeftButton();
-			if(left)
+			if (left)
 			{
 				auto oldObj = elm_object_item_part_content_unset(naviframeItem, "title_left_btn");
 				evas_object_hide(oldObj);
@@ -197,7 +220,7 @@ void SRIN::Framework::ApplicationBase::Attach(ViewBase* view)
 			}
 
 			auto right = titleButton->GetTitleRightButton();
-			if(right)
+			if (right)
 			{
 				auto oldObj = elm_object_item_part_content_unset(naviframeItem, "title_right_btn");
 				evas_object_hide(oldObj);
@@ -206,32 +229,32 @@ void SRIN::Framework::ApplicationBase::Attach(ViewBase* view)
 			}
 		}
 
-
 		dlog_print(DLOG_DEBUG, LOG_TAG, "Prev Button Style: %s", style);
 
-		evas_object_smart_callback_add(backButton, "clicked", [] (void* a, Evas_Object* b, void* c) { static_cast<ApplicationBase*>(a)->BackButtonPressed(); }, this);
+		evas_object_smart_callback_add(backButton, "clicked", [] (void* a, Evas_Object* b, void* c)
+		{	static_cast<ApplicationBase*>(a)->BackButtonPressed();}, this);
 
 		evas_object_show(viewComponent);
 	}
 }
 
-void SRIN::Framework::ApplicationBase::Detach()
+LIBAPI void ApplicationBase::Detach()
 {
 	elm_naviframe_item_pop(this->rootFrame);
 }
 
-void SRIN::Framework::ApplicationBase::Exit()
+LIBAPI void ApplicationBase::Exit()
 {
 }
 
-void SRIN::Framework::ApplicationBase::BackButtonPressed()
+LIBAPI void ApplicationBase::BackButtonPressed()
 {
 	bool backResult = backButtonCallback ? (backButtonInstance->*backButtonCallback)() : OnBackButtonPressed();
-	if(backResult)
+	if (backResult)
 		ui_app_exit();
 }
 
-bool SRIN::Framework::ApplicationBase::ApplicationCreate()
+LIBAPI bool ApplicationBase::ApplicationCreate()
 {
 	elm_config_accel_preference_set("3d");
 
@@ -280,12 +303,12 @@ bool SRIN::Framework::ApplicationBase::ApplicationCreate()
 	return true;
 }
 
-void SRIN::Framework::ApplicationBase::OnApplicationCreated()
+LIBAPI void ApplicationBase::OnApplicationCreated()
 {
 
 }
 
-ApplicationBase::~ApplicationBase()
+LIBAPI ApplicationBase::~ApplicationBase()
 {
 }
 
