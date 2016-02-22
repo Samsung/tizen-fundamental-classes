@@ -63,7 +63,10 @@ public:
 
 template<class DefiningClass, class ValueType>
 class SimpleReadOnlyProperty : public SimpleReadOnlyPropertyBase<DefiningClass, ValueType> {
+private:
+	void operator=(const ValueType& val) { this->value = (val); }
 public:
+	friend DefiningClass;
 	ValueType* operator->() const;
 };
 
@@ -74,7 +77,10 @@ ValueType* SimpleReadOnlyProperty<DefiningClass, ValueType>::operator->() const 
 
 template<class DefiningClass, class ValueType>
 class SimpleReadOnlyProperty<DefiningClass, ValueType*> : public SimpleReadOnlyPropertyBase<DefiningClass, ValueType*> {
+private:
+	void operator=(ValueType* val) { this->value = (val); }
 public:
+	friend DefiningClass;
 	ValueType* operator->() const;
 };
 

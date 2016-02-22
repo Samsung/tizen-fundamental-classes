@@ -356,6 +356,7 @@ namespace SRIN { namespace Framework {
 
 		CString const controllerName;
 		ControllerFactoryMethod const factoryMethod;
+		void* attachedData;
 	};
 
 	/**
@@ -387,7 +388,7 @@ namespace SRIN { namespace Framework {
 		void RegisterControllerFactory(ControllerFactory* controller);
 	};
 
-	class NavigatingControllerManager : public ControllerManager {
+	class StackingControllerManager : public ControllerManager {
 	private:
 		ControllerChain* chain;
 		IAttachable* const app;
@@ -399,19 +400,26 @@ namespace SRIN { namespace Framework {
 		 *
 		 * @param app IAttachable which this controller manager will attach the underlying view
 		 */
-		NavigatingControllerManager(IAttachable* app);
+		StackingControllerManager(IAttachable* app);
 
 		void NavigateTo(const char* controllerName, void* data);
 		void NavigateTo(const char* controllerName, void* data, bool noTrail);
 		bool NavigateBack();
 	};
 
-	class SwitchingControllerManager {
-		// TODO Implement Switching Controller Manager
+	class SwitchingControllerManager : public ControllerManager {
+	private:
+		IAttachable* const iattachable;
+		ControllerBase* GetController(CString controllerName);
+	public:
+		SwitchingControllerManager(IAttachable* iattachable);
+		void SwitchTo(CString controllerName);
+
+		SimpleReadOnlyProperty<SwitchingControllerManager, ControllerBase*> CurrentController;
 	};
 
 
-	class LIBAPI MVCApplicationBase: public ApplicationBase, public NavigatingControllerManager
+	class LIBAPI MVCApplicationBase: public ApplicationBase, public StackingControllerManager
 	{
 	private:
 		CString mainController;
@@ -448,12 +456,13 @@ namespace SRIN { namespace Framework {
 		CString const viewName;
 	};
 
-	class LIBAPI ITitleButton
+	class LIBAPI INaviframeContent
 	{
 	public:
 		virtual LIBAPI Evas_Object* GetTitleLeftButton() = 0;
 		virtual LIBAPI Evas_Object* GetTitleRightButton() = 0;
-		virtual LIBAPI ~ITitleButton();
+		virtual LIBAPI CString GetContentStyle() = 0;
+		virtual LIBAPI ~INaviframeContent();
 	};
 }}
 

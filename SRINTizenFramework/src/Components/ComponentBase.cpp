@@ -5,9 +5,9 @@
  *      Author: gilang
  */
 
-#include "SRIN/Component/ComponentBase.h"
+#include "SRIN/Components/ComponentBase.h"
 
-using namespace SRIN::Component;
+using namespace SRIN::Components;
 
 ComponentBase::ComponentBase() :
 		Enabled(this),

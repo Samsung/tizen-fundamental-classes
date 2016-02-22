@@ -15,6 +15,6 @@ LIBAPI IAttachable::~IAttachable()
 
 }
 
-LIBAPI ITitleButton::~ITitleButton()
+LIBAPI INaviframeContent::~INaviframeContent()
 {
 }

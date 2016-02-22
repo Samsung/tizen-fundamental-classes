@@ -13,7 +13,7 @@
 
 #include <string>
 
-namespace SRIN { namespace Component {
+namespace SRIN { namespace Components {
 
 	class LIBAPI ComponentBase : virtual public EventClass {
 	private:

@@ -90,7 +90,7 @@ SimpleReadOnlyProperty<ApplicationBase, ApplicationBase*> ApplicationBase::Curre
 
 int ApplicationBase::Main(ApplicationBase* app, int argc, char* argv[])
 {
-	ApplicationBase::CurrentInstance.value = app;
+	ApplicationBase::CurrentInstance = app;
 
 	::ui_app_lifecycle_callback_s event_callback =
 	{ ApplicationBase_AppCreateHandler, ApplicationBase_AppTerminateHandler, ApplicationBase_AppPauseHandler,
@@ -201,16 +201,24 @@ LIBAPI void ApplicationBase::Attach(ViewBase* view)
 	//show to window
 	if (viewComponent != NULL)
 	{
+		auto naviframeContent = dynamic_cast<INaviframeContent*>(view);
+
+		CString naviframeStyle = nullptr;
+
+		if(naviframeContent)
+			naviframeStyle = naviframeContent->GetContentStyle();
+
 		auto naviframeItem = elm_naviframe_item_push(this->rootFrame, view->viewName, NULL, NULL, viewComponent,
-			view->GetStyle());
+			naviframeStyle);
+
 		auto backButton = elm_object_item_part_content_get(naviframeItem, "elm.swallow.prev_btn");
 		auto style = elm_object_style_get(backButton);
 
 		// Title button handling
-		auto titleButton = dynamic_cast<ITitleButton*>(view);
-		if (titleButton)
+
+		if (naviframeContent)
 		{
-			auto left = titleButton->GetTitleLeftButton();
+			auto left = naviframeContent->GetTitleLeftButton();
 			if (left)
 			{
 				auto oldObj = elm_object_item_part_content_unset(naviframeItem, "title_left_btn");
@@ -219,7 +227,7 @@ LIBAPI void ApplicationBase::Attach(ViewBase* view)
 				evas_object_show(left);
 			}
 
-			auto right = titleButton->GetTitleRightButton();
+			auto right = naviframeContent->GetTitleRightButton();
 			if (right)
 			{
 				auto oldObj = elm_object_item_part_content_unset(naviframeItem, "title_right_btn");
@@ -311,4 +319,5 @@ LIBAPI void ApplicationBase::OnApplicationCreated()
 LIBAPI ApplicationBase::~ApplicationBase()
 {
 }
+
 

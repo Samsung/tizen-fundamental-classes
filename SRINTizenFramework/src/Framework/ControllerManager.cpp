@@ -40,14 +40,14 @@ LIBAPI ControllerFactory* ControllerManager::GetControllerFactoryEntry(const cha
 	return static_cast<ControllerFactory*>(entry);
 }
 
-LIBAPI NavigatingControllerManager::NavigatingControllerManager(IAttachable* app) :
+LIBAPI StackingControllerManager::StackingControllerManager(IAttachable* app) :
 	app(app)
 {
 
 	this->chain = nullptr;
 }
 
-LIBAPI void NavigatingControllerManager::NavigateTo(const char* controllerName, void* data)
+LIBAPI void StackingControllerManager::NavigateTo(const char* controllerName, void* data)
 {
 	ControllerFactory* factory = GetControllerFactoryEntry(controllerName);
 	if (factory != nullptr)
@@ -60,7 +60,7 @@ LIBAPI void NavigatingControllerManager::NavigateTo(const char* controllerName, 
 	}
 }
 
-void NavigatingControllerManager::PushController(ControllerBase* controller)
+void StackingControllerManager::PushController(ControllerBase* controller)
 {
 	ControllerChain* newChain = new ControllerChain();
 	newChain->instance = controller;
@@ -68,7 +68,7 @@ void NavigatingControllerManager::PushController(ControllerBase* controller)
 	this->chain = newChain;
 }
 
-bool NavigatingControllerManager::PopController()
+bool StackingControllerManager::PopController()
 {
 	if (this->chain != nullptr)
 	{
@@ -84,7 +84,7 @@ bool NavigatingControllerManager::PopController()
 		return false;
 }
 
-LIBAPI bool NavigatingControllerManager::NavigateBack()
+LIBAPI bool StackingControllerManager::NavigateBack()
 {
 	void* returnedData = this->chain->instance->Unload();
 	app->Detach();
@@ -98,7 +98,7 @@ LIBAPI bool NavigatingControllerManager::NavigateBack()
 	return popResult;
 }
 
-LIBAPI void NavigatingControllerManager::NavigateTo(const char* controllerName, void* data, bool noTrail)
+LIBAPI void StackingControllerManager::NavigateTo(const char* controllerName, void* data, bool noTrail)
 {
 	if (noTrail)
 	{
@@ -113,6 +113,6 @@ LIBAPI void NavigatingControllerManager::NavigateTo(const char* controllerName, 
 LIBAPI ControllerFactory::ControllerFactory(CString controllerName, ControllerFactoryMethod factory) :
 	controllerName(controllerName), factoryMethod(factory)
 {
-
+	attachedData = nullptr;
 }
 
