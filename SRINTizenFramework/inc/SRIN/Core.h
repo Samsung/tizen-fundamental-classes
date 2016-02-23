@@ -10,6 +10,7 @@
 
 
 #include <dlog.h>
+#include <functional>
 
 #ifdef LIBBUILD
 #define LIBAPI __attribute__((__visibility__("default")))

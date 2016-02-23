@@ -11,8 +11,6 @@
 
 using namespace SRIN::Components;
 
-
-
 LIBAPI SidebarView::SidebarView() :
 	Framework::ViewBase("SidebarView")
 {
