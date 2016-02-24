@@ -211,6 +211,8 @@ LIBAPI void ApplicationBase::Attach(ViewBase* view)
 		auto naviframeItem = elm_naviframe_item_push(this->rootFrame, view->viewName, NULL, NULL, viewComponent,
 			naviframeStyle);
 
+		auto edjePart = edje_object_part_object_get(naviframeItem, "title_bg");
+
 		auto backButton = elm_object_item_part_content_get(naviframeItem, "elm.swallow.prev_btn");
 		auto style = elm_object_style_get(backButton);
 

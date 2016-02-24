@@ -11,7 +11,7 @@
 #include "SRIN/Framework/Application.h"
 
 namespace SRIN { namespace Components {
-	class SidebarView: public Framework::ViewBase, public Framework::IAttachable, public Framework::INaviframeContent
+	class LIBAPI SidebarView: public Framework::ViewBase, public Framework::IAttachable, public Framework::INaviframeContent
 	{
 	private:
 		Evas_Object* layout;
@@ -20,16 +20,22 @@ namespace SRIN { namespace Components {
 		Evas_Object* currentContent;
 
 		Event drawerButtonClick;
+
+		void OnDrawerButtonClick(Event* eventSource, Evas_Object* objSource, void* eventData);
 	protected:
 		virtual Evas_Object* CreateView(Evas_Object* root);
 		virtual Evas_Object* CreateSidebar(Evas_Object* root) = 0;
+		virtual void DrawerButtonStyle(Evas_Object* button);
 	public:
 		SidebarView();
 		virtual void Attach(ViewBase* view);
 		virtual void Detach();
-		virtual Evas_Object* GetTitleLeftButton();
-		virtual Evas_Object* GetTitleRightButton();
+		virtual Evas_Object* GetTitleLeftButton(CString* buttonPart) final;
+		virtual Evas_Object* GetTitleRightButton(CString* buttonPart) final;
 		virtual CString GetContentStyle();
+
+		typedef void (*DrawerButtonStyleFunc)(Evas_Object* btn);
+
 	};
 }}
 

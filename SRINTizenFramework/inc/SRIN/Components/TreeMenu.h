@@ -57,6 +57,8 @@ namespace SRIN { namespace Components {
 		virtual LIBAPI Evas_Object* CreateComponent(Evas_Object* root);
 	public:
 		TreeMenu();
+		void AddMenu(MenuItem* menu);
+		virtual ~TreeMenu();
 	};
 
 }}

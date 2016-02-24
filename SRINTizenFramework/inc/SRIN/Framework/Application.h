@@ -380,7 +380,9 @@ namespace SRIN { namespace Framework {
 		ControllerFactory* GetControllerFactoryEntry(const char* controllerName);
 	public:
 		ControllerManager();
-
+		virtual bool NavigateBack() = 0;
+		virtual void NavigateTo(const char* controllerName, void* data) = 0;
+		virtual void NavigateTo(const char* controllerName, void* data, bool noTrail) = 0;
 		/**
 		 * Method to register ControllerFactory to this manager so this manager can recognize
 		 * the controller and instantiate it when needed
@@ -402,9 +404,9 @@ namespace SRIN { namespace Framework {
 		 */
 		StackingControllerManager(IAttachable* app);
 
-		void NavigateTo(const char* controllerName, void* data);
-		void NavigateTo(const char* controllerName, void* data, bool noTrail);
-		bool NavigateBack();
+		virtual void NavigateTo(const char* controllerName, void* data);
+		virtual void NavigateTo(const char* controllerName, void* data, bool noTrail);
+		virtual bool NavigateBack();
 	};
 
 	class SwitchingControllerManager : public ControllerManager {
@@ -413,7 +415,11 @@ namespace SRIN { namespace Framework {
 		ControllerBase* GetController(CString controllerName);
 	public:
 		SwitchingControllerManager(IAttachable* iattachable);
-		void SwitchTo(CString controllerName);
+		//void SwitchTo(CString controllerName);
+
+		virtual void NavigateTo(const char* controllerName, void* data);
+		virtual void NavigateTo(const char* controllerName, void* data, bool noTrail);
+		virtual bool NavigateBack();
 
 		SimpleReadOnlyProperty<SwitchingControllerManager, ControllerBase*> CurrentController;
 	};
