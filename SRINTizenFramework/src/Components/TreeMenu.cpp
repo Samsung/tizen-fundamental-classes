@@ -2,7 +2,7 @@
  * TreeMenu.cpp
  *
  *  Created on: Feb 23, 2016
- *      Author: gilang
+ *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
 #include "SRIN/Components/TreeMenu.h"
@@ -16,7 +16,12 @@ typedef struct
 } TreeMenuItemPackage;
 
 MenuItem::MenuItem(std::string menuText, std::string menuIcon) :
-	itemData(nullptr), OnMenuItemClick(this), menuText(menuText), menuIcon(menuIcon)
+	itemData(nullptr),
+	OnMenuItemClick(this),
+	menuText(menuText),
+	menuIcon(menuIcon),
+	genlistItem(nullptr),
+	expanded(false)
 {
 }
 
@@ -35,16 +40,28 @@ const std::vector<MenuItem*>& MenuItem::GetSubMenus() const
 	return subMenus;
 }
 
-void TreeMenu::MenuSelected(Event* eventSource, Evas_Object* objSource, void* eventData)
+void TreeMenu::MenuSelected(Event* eventSource, Evas_Object* objSource, Elm_Object_Item* genlistItem)
 {
+	elm_genlist_item_selected_set(genlistItem, EINA_FALSE);
+
+	auto expanded = elm_genlist_item_expanded_get(genlistItem);
+	elm_genlist_item_expanded_set(genlistItem, !expanded);
 }
 
-void TreeMenu::MenuExpanded(Event* eventSource, Evas_Object* objSource, void* eventData)
+void TreeMenu::MenuExpanded(Event* eventSource, Evas_Object* objSource, Elm_Object_Item* genlistItem)
 {
+	auto item = reinterpret_cast<MenuItem*>(elm_object_item_data_get(genlistItem));
+	GenerateSubMenu(item);
+	item->expanded = true;
+	elm_genlist_item_fields_update(genlistItem, "elm.swallow.end", ELM_GENLIST_ITEM_FIELD_CONTENT);
 }
 
-void TreeMenu::MenuContracted(Event* eventSource, Evas_Object* objSource, void* eventData)
+void TreeMenu::MenuContracted(Event* eventSource, Evas_Object* objSource, Elm_Object_Item* genlistItem)
 {
+	auto item = reinterpret_cast<MenuItem*>(elm_object_item_data_get(genlistItem));
+	elm_genlist_item_subitems_clear(genlistItem);
+	item->expanded = false;
+	elm_genlist_item_fields_update(genlistItem, "elm.swallow.end", ELM_GENLIST_ITEM_FIELD_CONTENT);
 }
 
 Evas_Object* TreeMenu::CreateComponent(Evas_Object* root)
@@ -54,7 +71,7 @@ Evas_Object* TreeMenu::CreateComponent(Evas_Object* root)
 	itemClass = elm_genlist_item_class_new();
 
 	itemClass->item_style = "group_index/expandable";
-	itemClass->func.text_get = [] (void *data, Evas_Object *obj, const char *part)
+	itemClass->func.text_get = [] (void *data, Evas_Object *obj, const char *part) -> char*
 	{
 		auto menuItem = reinterpret_cast<MenuItem*>(data);
 
@@ -63,6 +80,21 @@ Evas_Object* TreeMenu::CreateComponent(Evas_Object* root)
 			auto text = menuItem->menuText.c_str();
 			return strdup(text);
 		}
+		return nullptr;
+	};
+
+	submenuItemClass = elm_genlist_item_class_new();
+	submenuItemClass->item_style = "type1";
+	submenuItemClass->func.text_get = [] (void *data, Evas_Object *obj, const char *part) -> char*
+	{
+		auto menuItem = reinterpret_cast<MenuItem*>(data);
+
+		if (!strcmp("elm.text", part))
+		{
+			auto text = menuItem->menuText.c_str();
+			return strdup(text);
+		}
+		return nullptr;
 	};
 
 	elm_genlist_block_count_set(genlist, 14);
@@ -93,6 +125,8 @@ void TreeMenu::GenerateRootMenu()
 			ELM_GENLIST_ITEM_TREE, // type
 			nullptr, // callback
 			item);
+
+		item->genlistItem = genlistItem;
 	}
 }
 
@@ -104,14 +138,30 @@ TreeMenu::TreeMenu() :
 
 }
 
-void SRIN::Components::TreeMenu::AddMenu(MenuItem* menu)
+void TreeMenu::AddMenu(MenuItem* menu)
 {
 	rootMenu.push_back(menu);
 }
 
-SRIN::Components::TreeMenu::~TreeMenu()
+TreeMenu::~TreeMenu()
 {
 	if (itemClass)
 		elm_genlist_item_class_free(itemClass);
 	itemClass = nullptr;
+}
+
+void TreeMenu::GenerateSubMenu(MenuItem* rootMenu)
+{
+	for(auto item : rootMenu->subMenus)
+	{
+		auto genlistItem = elm_genlist_item_append(genlist, // genlist object
+			submenuItemClass, // item class
+			item, // item class user data
+			rootMenu->genlistItem, // parent
+			ELM_GENLIST_ITEM_NONE, // type
+			nullptr, // callback
+			item);
+
+		item->genlistItem = genlistItem;
+	}
 }

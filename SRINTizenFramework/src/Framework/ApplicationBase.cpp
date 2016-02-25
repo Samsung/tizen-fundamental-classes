@@ -4,7 +4,7 @@
  * Source file for class ApplicationBase
  *
  *  Created on: Feb 12, 2016
- *      Author: gilang
+ *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
 #include "SRIN/Framework/Application.h"
@@ -208,13 +208,13 @@ LIBAPI void ApplicationBase::Attach(ViewBase* view)
 		if(naviframeContent)
 			naviframeStyle = naviframeContent->GetContentStyle();
 
-		auto naviframeItem = elm_naviframe_item_push(this->rootFrame, view->viewName, NULL, NULL, viewComponent,
+		auto naviframeItem = elm_naviframe_item_push(this->rootFrame, view->ViewTitle->c_str(), NULL, NULL, viewComponent,
 			naviframeStyle);
 
-		auto edjePart = edje_object_part_object_get(naviframeItem, "title_bg");
 
 		auto backButton = elm_object_item_part_content_get(naviframeItem, "elm.swallow.prev_btn");
 		auto style = elm_object_style_get(backButton);
+
 
 		// Title button handling
 
@@ -323,3 +323,15 @@ LIBAPI ApplicationBase::~ApplicationBase()
 }
 
 
+
+void SRIN::Framework::ApplicationBase::SetIndicatorVisibility(bool value)
+{
+	if(value)
+	{
+		elm_win_indicator_mode_set(win, ELM_WIN_INDICATOR_SHOW);
+	}
+	else
+	{
+		elm_win_indicator_mode_set(win, ELM_WIN_INDICATOR_HIDE);
+	}
+}

@@ -2,15 +2,15 @@
  * ViewBase.cpp
  *
  *  Created on: Feb 15, 2016
- *      Author: gilang
+ *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
 #include "SRIN/Framework/Application.h"
 
 using namespace SRIN::Framework;
 
-LIBAPI ViewBase::ViewBase(CString viewName) :
-		viewName(viewName)
+LIBAPI ViewBase::ViewBase() :
+		ViewTitle(this)
 {
 	viewRoot = nullptr;
 }
@@ -40,4 +40,14 @@ LIBAPI Evas_Object* ViewBase::GetViewRoot()
 LIBAPI ViewBase::~ViewBase()
 {
 
+}
+
+void SRIN::Framework::ViewBase::SetViewTitle(const std::string& value)
+{
+	this->viewTitle = value;
+}
+
+std::string& SRIN::Framework::ViewBase::GetViewTitle()
+{
+	return this->viewTitle;
 }

@@ -2,7 +2,7 @@
  * ControllerManager.cpp
  *
  *  Created on: Feb 15, 2016
- *      Author: gilang
+ *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
 #include "SRIN/Framework/Application.h"

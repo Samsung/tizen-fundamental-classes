@@ -2,7 +2,7 @@
  * ComponentBase.h
  *
  *  Created on: Feb 19, 2016
- *      Author: gilang
+ *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
 #ifndef COMPONENTBASE_H_
@@ -27,13 +27,13 @@ namespace SRIN { namespace Components {
 		virtual LIBAPI Evas_Object* CreateComponent(Evas_Object* root) = 0;
 
 		virtual LIBAPI void SetEnabled(const bool& enabled);
-		virtual LIBAPI bool GetEnabled();
+		virtual LIBAPI bool& GetEnabled();
 
 		virtual LIBAPI void SetVisible(const bool& visible);
-		virtual LIBAPI bool GetVisible();
+		virtual LIBAPI bool& GetVisible();
 
 		virtual LIBAPI void SetName(const std::string& name);
-		virtual LIBAPI std::string GetName();
+		virtual LIBAPI std::string& GetName();
 	public:
 		ComponentBase();
 		inline bool IsCreated() { return created; }

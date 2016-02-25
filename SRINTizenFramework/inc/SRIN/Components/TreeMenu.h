@@ -2,7 +2,7 @@
  * TreeMenu.h
  *
  *  Created on: Feb 23, 2016
- *      Author: gilang
+ *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
 #ifndef TREEMENU_H_
@@ -22,8 +22,7 @@ namespace SRIN { namespace Components {
 		std::string menuText;
 		void* itemData;
 		Elm_Object_Item* genlistItem;
-
-		void GenerateSubMenu();
+		bool expanded;
 	public:
 		MenuItem(std::string menuText, std::string menuIcon);
 		void AddSubMenu(MenuItem* subMenu);
@@ -40,14 +39,17 @@ namespace SRIN { namespace Components {
 	private:
 		Evas_Object* genlist;
 		Elm_Genlist_Item_Class* itemClass;
+		Elm_Genlist_Item_Class* submenuItemClass;
+
 
 		std::vector<MenuItem*> rootMenu;
 
 		void GenerateRootMenu();
+		void GenerateSubMenu(MenuItem* subMenu);
 
-		void MenuSelected(Event* eventSource, Evas_Object* objSource, void* eventData);
-		void MenuExpanded(Event* eventSource, Evas_Object* objSource, void* eventData);
-		void MenuContracted(Event* eventSource, Evas_Object* objSource, void* eventData);
+		void MenuSelected(Event* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
+		void MenuExpanded(Event* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
+		void MenuContracted(Event* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
 
 		Event OnMenuSelected;
 		Event OnMenuExpanded;

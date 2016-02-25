@@ -2,7 +2,7 @@
  * TabbarControllerBase.h
  *
  *  Created on: Feb 19, 2016
- *      Author: gilang
+ *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
 #ifndef TABBARCONTROLLERBASE_H_

@@ -2,7 +2,7 @@
  * Application.h
  *
  *  Created on: Feb 12, 2016
- *      Author: gilang
+ *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
 #ifndef __APPLICATION_H__
@@ -85,6 +85,8 @@ namespace SRIN { namespace Framework {
 		EventClass* backButtonInstance;
 
 		BackButtonCallback backButtonCallback;
+
+
 	public:
 		/**
 		 * Root win object
@@ -209,15 +211,19 @@ namespace SRIN { namespace Framework {
 		 */
 		bool ApplicationCreate();
 
+
 		/**
 		 * Destructor of ApplicationBase
 		 */
 		virtual ~ApplicationBase();
 
+		void SetIndicatorVisibility(bool value);
+
 		/**
 		 * Main method to start the application loop using an ApplicationBase instance
 		 */
 		static int Main(ApplicationBase* app, int argc, char *argv[]);
+
 
 		static SimpleReadOnlyProperty<ApplicationBase, ApplicationBase*> CurrentInstance;
 	};
@@ -450,16 +456,21 @@ namespace SRIN { namespace Framework {
 	{
 	private:
 		Evas_Object* viewRoot;
+		std::string viewTitle;
 	protected:
 		virtual Evas_Object* CreateView(Evas_Object* root) = 0;
+
+		void SetViewTitle(const std::string& value);
+		std::string& GetViewTitle();
+
 	public:
-		ViewBase(CString viewName);
+		ViewBase();
 		virtual Evas_Object* Create(Evas_Object* root);
 		virtual CString GetStyle();bool IsCreated();
 		Evas_Object* GetViewRoot();
 		virtual ~ViewBase();
 
-		CString const viewName;
+		Property<ViewBase, std::string, &ViewBase::GetViewTitle, &ViewBase::SetViewTitle> ViewTitle;
 	};
 
 	class LIBAPI INaviframeContent

@@ -2,7 +2,7 @@
  * ComponentBase.cpp
  *
  *  Created on: Feb 19, 2016
- *      Author: gilang
+ *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
 #include "SRIN/Components/ComponentBase.h"
@@ -70,7 +70,7 @@ void ComponentBase::SetEnabled(const bool& enabled)
 		elm_object_disabled_set(componentRoot, !enabled);
 }
 
-bool ComponentBase::GetEnabled()
+bool& ComponentBase::GetEnabled()
 {
 	return this->enabled;
 }
@@ -86,7 +86,7 @@ void ComponentBase::SetVisible(const bool& visible)
 			evas_object_hide(componentRoot);
 }
 
-bool ComponentBase::GetVisible()
+bool& ComponentBase::GetVisible()
 {
 	return this->visible;
 }
@@ -96,7 +96,7 @@ void ComponentBase::SetName(const std::string& name)
 	this->name = name;
 }
 
-std::string ComponentBase::GetName()
+std::string& ComponentBase::GetName()
 {
 	return this->name;
 }

@@ -2,7 +2,7 @@
  * SidebarView.cpp
  *
  *  Created on: Feb 22, 2016
- *      Author: gilang
+ *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
 
@@ -12,7 +12,7 @@
 using namespace SRIN::Components;
 
 LIBAPI SidebarView::SidebarView() :
-	Framework::ViewBase("SidebarView"),
+	Framework::ViewBase(),
 	drawerButtonClick(this, (EventHandler)&SidebarView::OnDrawerButtonClick)
 {
 	layout = leftPanel = background = currentContent = nullptr;
