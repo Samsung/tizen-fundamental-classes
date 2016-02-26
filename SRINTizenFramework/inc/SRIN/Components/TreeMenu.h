@@ -31,7 +31,7 @@ namespace SRIN { namespace Components {
 
 
 		friend class TreeMenu;
-		Event OnMenuItemClick;
+		Event<MenuItem*, Elm_Object_Item*> OnMenuItemClick;
 	};
 
 	class LIBAPI TreeMenu : virtual public ComponentBase
@@ -47,13 +47,15 @@ namespace SRIN { namespace Components {
 		void GenerateRootMenu();
 		void GenerateSubMenu(MenuItem* subMenu);
 
-		void MenuSelected(Event* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
-		void MenuExpanded(Event* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
-		void MenuContracted(Event* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
+		typedef Event<Evas_Object*, Elm_Object_Item*> GenlistEvent;
 
-		Event OnMenuSelected;
-		Event OnMenuExpanded;
-		Event OnMenuContracted;
+		void MenuSelected(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
+		void MenuExpanded(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
+		void MenuContracted(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
+
+		GenlistEvent OnMenuSelected;
+		GenlistEvent OnMenuExpanded;
+		GenlistEvent OnMenuContracted;
 
 	protected:
 		virtual LIBAPI Evas_Object* CreateComponent(Evas_Object* root);

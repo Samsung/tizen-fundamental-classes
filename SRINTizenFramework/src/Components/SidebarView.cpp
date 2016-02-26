@@ -13,7 +13,7 @@ using namespace SRIN::Components;
 
 LIBAPI SidebarView::SidebarView() :
 	Framework::ViewBase(),
-	drawerButtonClick(this, (EventHandler)&SidebarView::OnDrawerButtonClick)
+	drawerButtonClick(this, register_handler<>(&SidebarView::OnDrawerButtonClick))
 {
 	layout = leftPanel = background = currentContent = nullptr;
 }
@@ -65,13 +65,11 @@ LIBAPI Evas_Object* SidebarView::GetTitleLeftButton(CString* buttonPart)
 	return btn;
 }
 
-LIBAPI void SidebarView::OnDrawerButtonClick(Event* eventSource, Evas_Object* objSource, void* eventData)
+LIBAPI void SidebarView::OnDrawerButtonClick(ElementaryEvent* eventSource, Evas_Object* objSource, void* eventData)
 {
 	if (!elm_object_disabled_get(leftPanel))
 		elm_panel_toggle(leftPanel);
 }
-
-
 
 Evas_Object* SidebarView::GetTitleRightButton(CString* buttonPart)
 {

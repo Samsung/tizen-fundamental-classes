@@ -40,7 +40,7 @@ const std::vector<MenuItem*>& MenuItem::GetSubMenus() const
 	return subMenus;
 }
 
-void TreeMenu::MenuSelected(Event* eventSource, Evas_Object* objSource, Elm_Object_Item* genlistItem)
+void TreeMenu::MenuSelected(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* genlistItem)
 {
 	elm_genlist_item_selected_set(genlistItem, EINA_FALSE);
 
@@ -48,7 +48,7 @@ void TreeMenu::MenuSelected(Event* eventSource, Evas_Object* objSource, Elm_Obje
 	elm_genlist_item_expanded_set(genlistItem, !expanded);
 }
 
-void TreeMenu::MenuExpanded(Event* eventSource, Evas_Object* objSource, Elm_Object_Item* genlistItem)
+void TreeMenu::MenuExpanded(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* genlistItem)
 {
 	auto item = reinterpret_cast<MenuItem*>(elm_object_item_data_get(genlistItem));
 	GenerateSubMenu(item);
@@ -56,7 +56,7 @@ void TreeMenu::MenuExpanded(Event* eventSource, Evas_Object* objSource, Elm_Obje
 	elm_genlist_item_fields_update(genlistItem, "elm.swallow.end", ELM_GENLIST_ITEM_FIELD_CONTENT);
 }
 
-void TreeMenu::MenuContracted(Event* eventSource, Evas_Object* objSource, Elm_Object_Item* genlistItem)
+void TreeMenu::MenuContracted(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* genlistItem)
 {
 	auto item = reinterpret_cast<MenuItem*>(elm_object_item_data_get(genlistItem));
 	elm_genlist_item_subitems_clear(genlistItem);
@@ -131,8 +131,8 @@ void TreeMenu::GenerateRootMenu()
 }
 
 TreeMenu::TreeMenu() :
-	genlist(nullptr), itemClass(nullptr), OnMenuSelected(this, (EventHandler) &TreeMenu::MenuSelected), OnMenuExpanded(
-		this, (EventHandler) &TreeMenu::MenuExpanded), OnMenuContracted(this, (EventHandler) &TreeMenu::MenuContracted)
+	genlist(nullptr), itemClass(nullptr), OnMenuSelected(this, &TreeMenu::MenuSelected), OnMenuExpanded(
+		this, &TreeMenu::MenuExpanded), OnMenuContracted(this, &TreeMenu::MenuContracted)
 
 {
 

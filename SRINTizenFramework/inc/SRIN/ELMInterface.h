@@ -15,4 +15,6 @@
 void SmartEventHandler(void* data, Evas_Object* obj, void* eventData);
 void ObjectEventHandler(void* data, Evas* evas, Evas_Object* obj, void* eventData);
 
+typedef Event<Evas_Object*, void*> ElementaryEvent;
+
 #endif /* ELMINTERFACE_H_ */

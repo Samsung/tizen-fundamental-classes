@@ -90,26 +90,38 @@ ValueType* SimpleReadOnlyProperty<DefiningClass, ValueType*>::operator->() const
 	return this->value;
 }
 
-class Event;
-
 class EventClass {};
-typedef void (EventClass::*EventHandler)(Event* eventSource, void* objSource, void* eventData);
 
+template<class ObjectSourceType = void*, class EventDataType = void*>
 class Event {
 public:
-	EventClass* instance;
-	EventHandler eventHandler;
-	EventClass* eventSource;
-	CString eventLabel;
+	typedef void (EventClass::*EventHandler)(Event<ObjectSourceType, EventDataType>* eventSource, ObjectSourceType objSource, EventDataType eventData);
 
 	Event();
 	Event(EventClass* eventSource);
 	Event(EventClass* instance, EventHandler eventHandler, CString eventLabel = nullptr);
 
+	template<class EventClassType>
+	Event(EventClassType* instance, void (EventClassType::* eventHandler)(Event<ObjectSourceType, EventDataType>* eventSource, ObjectSourceType objSource, EventDataType eventData) , CString eventLabel = nullptr);
+
 	void operator+=(const Event& other);
 	void Invoke(void* eventInfo);
-	void operator()(void* objSource, void* eventData);
+	void operator()(ObjectSourceType objSource, EventDataType eventData);
+
+private:
+	EventClass* instance;
+	EventHandler eventHandler;
+	EventClass* eventSource;
+	CString eventLabel;
 };
+
+template<class EventClassType, class ObjectSourceType, class EventDataType>
+typename Event<ObjectSourceType, EventDataType>::EventHandler register_handler(void (EventClassType::*EventHandler)(Event<ObjectSourceType, EventDataType>* eventSource, ObjectSourceType objSource, EventDataType eventData))
+{
+
+}
+
+#include "SRIN/Core.inc"
 
 #define AddEventHandler(EVENT_METHOD) ::Event(this, (::EventHandler) & EVENT_METHOD)
 

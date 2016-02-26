@@ -19,9 +19,9 @@ namespace SRIN { namespace Components {
 		Evas_Object* background;
 		Evas_Object* currentContent;
 
-		Event drawerButtonClick;
+		ElementaryEvent drawerButtonClick;
 
-		void OnDrawerButtonClick(Event* eventSource, Evas_Object* objSource, void* eventData);
+		void OnDrawerButtonClick(ElementaryEvent* eventSource, Evas_Object* objSource, void* eventData);
 	protected:
 		virtual Evas_Object* CreateView(Evas_Object* root);
 		virtual Evas_Object* CreateSidebar(Evas_Object* root) = 0;
