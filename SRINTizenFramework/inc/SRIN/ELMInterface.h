@@ -5,8 +5,8 @@
  *      Author: SRIN
  */
 
-#ifndef ELMINTERFACE_H_
-#define ELMINTERFACE_H_
+#ifndef SRINFW_ELMINTERFACE_H_
+#define SRINFW_ELMINTERFACE_H_
 
 #include "SRIN/Core.h"
 

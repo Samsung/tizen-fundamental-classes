@@ -5,8 +5,8 @@
  *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
-#ifndef __APPLICATION_H__
-#define __APPLICATION_H__
+#ifndef SRINFW__APPLICATION_H__
+#define SRINFW__APPLICATION_H__
 
 #include <app.h>
 

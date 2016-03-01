@@ -5,8 +5,8 @@
  *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
-#ifndef SIDEBARVIEW_H_
-#define SIDEBARVIEW_H_
+#ifndef SRINFW_SIDEBARVIEW_H_
+#define SRINFW_SIDEBARVIEW_H_
 
 #include "SRIN/Framework/Application.h"
 

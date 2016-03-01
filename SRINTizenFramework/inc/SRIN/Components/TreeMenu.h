@@ -5,8 +5,8 @@
  *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
-#ifndef TREEMENU_H_
-#define TREEMENU_H_
+#ifndef SRINFW_TREEMENU_H_
+#define SRINFW_TREEMENU_H_
 
 #include <vector>
 #include <string>

@@ -5,8 +5,8 @@
  *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
-#ifndef TABBARCONTROLLERBASE_H_
-#define TABBARCONTROLLERBASE_H_
+#ifndef SRINFW_TABBARCONTROLLERBASE_H_
+#define SRINFW_TABBARCONTROLLERBASE_H_
 
 #include "SRIN/Framework/Application.h"
 

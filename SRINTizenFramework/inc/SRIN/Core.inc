@@ -35,12 +35,6 @@ inline void Event<ObjectSourceType, EventDataType>::operator+=(const Event& othe
 	this->eventHandler = other.eventHandler;
 }
 
-template<class ObjectSourceType, class EventDataType>
-inline void Event<ObjectSourceType, EventDataType>::Invoke(void* eventInfo)
-{
-	if(this->instance && this->eventHandler)
-		(this->instance->*(this->eventHandler))(this, nullptr, eventInfo);
-}
 
 template<class ObjectSourceType, class EventDataType>
 inline void Event<ObjectSourceType, EventDataType>::operator()(ObjectSourceType objSource, EventDataType eventData)

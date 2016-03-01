@@ -5,8 +5,8 @@
  *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
-#ifndef NAVIGATIONCOMPONENTS_H_
-#define NAVIGATIONCOMPONENTS_H_
+#ifndef SRINFW_NAVIGATIONCOMPONENTS_H_
+#define SRINFW_NAVIGATIONCOMPONENTS_H_
 
 namespace SRIN { namespace Components {
 

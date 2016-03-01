@@ -9,6 +9,7 @@
 #include <curl/curl.h>
 
 #include "SRIN/Net/REST.h"
+#include "SRIN/Net/Util.h"
 
 
 
@@ -99,13 +100,17 @@ LIBAPI std::string SRIN::Net::BasicAuthParameter<ParameterType::Query>::GetEncod
 template<>
 LIBAPI std::string SRIN::Net::BasicAuthParameter<ParameterType::Header>::GetRawValue()
 {
-	return std::string();
+	std::string combined = this->value.username + ":" + this->value.password;
+	std::string encoded = "Basic " + Base64Encode((uint8_t*)combined.c_str(), combined.length());
+
+
+	return encoded;
 }
 
 template<>
 LIBAPI std::string SRIN::Net::BasicAuthParameter<ParameterType::Header>::GetEncodedValue()
 {
-	return std::string();
+	abort();
 }
 
 struct curl_slist* SRIN::Net::RESTServiceTemplateBase::PrepareHeader()

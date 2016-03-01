@@ -5,8 +5,8 @@
  *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
-#ifndef COMPONENTBASE_H_
-#define COMPONENTBASE_H_
+#ifndef SRINFW_COMPONENTBASE_H_
+#define SRINFW_COMPONENTBASE_H_
 
 #include "SRIN/Core.h"
 #include "SRIN/ELMInterface.h"

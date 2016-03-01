@@ -5,8 +5,8 @@
  *      Author: Gilang M. Hamidy (g.hamidy@samsung.com) M. Hamidy (g.hamidy@samsung.com)
  */
 
-#ifndef REST_H_
-#define REST_H_
+#ifndef SRINFW_REST_H_
+#define SRINFW_REST_H_
 
 #include "SRIN/Core.h"
 
@@ -68,8 +68,8 @@ namespace SRIN { namespace Net {
 			void operator=(const ValueType& val) { if(!instance->working) this->value = val; }
 		};
 
-		Event<> OnSuccess;
-		Event<> OnFailed;
+		Event<void*, void*> OnSuccess;
+		Event<void*, void*> OnFailed;
 
 		void CallAsync();
 	protected:

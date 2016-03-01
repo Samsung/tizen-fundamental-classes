@@ -10,7 +10,7 @@
 
 void SmartEventHandler(void* data, Evas_Object* obj, void* eventData)
 {
-	Event<>* package = static_cast<Event<>*>(data);
+	auto package = static_cast<Event<Evas_Object*, void*>*>(data);
 
 #if _DEBUG
 	if(package->eventLabel)
@@ -22,7 +22,7 @@ void SmartEventHandler(void* data, Evas_Object* obj, void* eventData)
 
 void ObjectEventHandler(void* data, Evas* evas, Evas_Object* obj, void* eventData)
 {
-	Event<>* package = static_cast<Event<>*>(data);
+	auto package = static_cast<Event<Evas_Object*, void*>*>(data);
 
 #if _DEBUG
 	if(package->eventLabel)
