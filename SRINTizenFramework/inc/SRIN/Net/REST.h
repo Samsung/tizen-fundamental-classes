@@ -64,7 +64,7 @@ namespace SRIN { namespace Net {
 			RESTServiceTemplateBase* instance;
 			CString key;
 		public:
-			Parameter(RESTServiceTemplateBase* instance, CString key) : key(key) { instance->RegisterParameter(ParamType, key, this); }
+			Parameter(RESTServiceTemplateBase* instance, CString key) : key(key), instance(instance) { instance->RegisterParameter(ParamType, key, this); }
 			void operator=(const ValueType& val) { if(!instance->working) this->value = val; }
 		};
 
@@ -73,10 +73,10 @@ namespace SRIN { namespace Net {
 
 		void CallAsync();
 	protected:
-		RESTServiceTemplateBase(CString url);
+		RESTServiceTemplateBase(std::string url, HTTPMode httpMode);
 
 		virtual std::string PreparePostData();
-
+		std::string UserAgent, Url;
 
 	private:
 		virtual void* OnProcessResponseIntl(const std::string& responseStr) = 0;
@@ -84,7 +84,6 @@ namespace SRIN { namespace Net {
 		void RegisterParameter(ParameterType paramType, CString key, IServiceParameter* ref);
 
 		bool working;
-		CString url;
 		HTTPMode httpMode;
 		void* result;
 
@@ -104,14 +103,14 @@ namespace SRIN { namespace Net {
 	private:
 		virtual void* OnProcessResponseIntl(const std::string& responseStr) { return OnProcessResponse(responseStr); }
 	protected:
-		RESTServiceBase(CString url) : RESTServiceTemplateBase(url) { }
+		RESTServiceBase(std::string url, HTTPMode httpMode) : RESTServiceTemplateBase(url, httpMode) { }
 		virtual ResponseType* OnProcessResponse(const std::string& responseStr) = 0;
 	};
 
 	class SimpleRESTServiceBase : public RESTServiceBase<std::string>
 	{
 	protected:
-		SimpleRESTServiceBase(CString url) : RESTServiceBase(url) { }
+		SimpleRESTServiceBase(std::string url) : RESTServiceBase(url, HTTPMode::Get) { }
 		virtual std::string* OnProcessResponse(const std::string& responseStr);
 	};
 
@@ -127,7 +126,7 @@ namespace SRIN { namespace Net {
 	{
 	public:
 		BasicAuthParameter(RESTServiceTemplateBase* instance) : RESTServiceTemplateBase::Parameter<ParamType, BasicAuthAccount>(instance, "Authorization") { }
-
+		void operator=(const BasicAuthAccount& val) { RESTServiceTemplateBase::Parameter<ParamType, BasicAuthAccount>::operator=(val); }
 	protected:
 		virtual std::string GetRawValue();
 		virtual std::string GetEncodedValue();

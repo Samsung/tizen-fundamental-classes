@@ -126,8 +126,8 @@ struct curl_slist* SRIN::Net::RESTServiceTemplateBase::PrepareHeader()
 	return headerList;
 }
 
-SRIN::Net::RESTServiceTemplateBase::RESTServiceTemplateBase(CString url) :
-	url(url), result(nullptr)
+SRIN::Net::RESTServiceTemplateBase::RESTServiceTemplateBase(std::string url, HTTPMode httpMode) :
+	Url(url), result(nullptr), UserAgent("srin-framework-tizen/1.0"), httpMode(httpMode)
 {
 }
 
@@ -135,7 +135,7 @@ std::string SRIN::Net::RESTServiceTemplateBase::PrepareUrl()
 {
 	// Construct query string
 	std::stringstream urlBuffer;
-	urlBuffer << this->url;
+	urlBuffer << this->Url;
 	if (queryStringParam.size())
 	{
 		urlBuffer << "?";
@@ -176,83 +176,6 @@ size_t RESTServiceTemplateBase_WriteCallback(char *data, size_t size, size_t nme
 	return realsize;
 }
 
-/*
- * http://stackoverflow.com/questions/5371081/provide-a-stdistream-interface-to-an-existing-buffer-without-copying-it
- */
-class ConstBufferDevice
-{
-public:
-   typedef char char_type;
-
-   struct category :
-      virtual boost::iostreams::device_tag,
-      virtual boost::iostreams::input_seekable
-   {
-   };
-
-   ConstBufferDevice(const char_type* buffer, size_t buffersize)
-      : buffer_(buffer)
-      , buffersize_(buffersize)
-      , pos_(0)
-   {
-   }
-
-   std::streamsize read(char_type* buffer, std::streamsize buffersize)
-   {
-      const std::streamsize amount = static_cast<std::streamsize>(buffersize_ - pos_);
-      const std::streamsize result = (std::min)(buffersize, amount);
-      if (result != 0)
-      {
-         std::copy(buffer_ + pos_, buffer_ + pos_ + result, buffer);
-         pos_ += result;
-         return result;
-      }
-      else
-      {
-         return buffersize ? -1 : 0; // EOF
-      }
-   }
-
-   std::streampos seek(boost::iostreams::stream_offset offset,
-                       std::ios_base::seekdir seekdir)
-   {
-      // Determine new value of pos_
-      boost::iostreams::stream_offset newpos;
-
-      if (seekdir == std::ios_base::beg)
-      {
-         newpos = offset;
-      }
-      else if (seekdir == std::ios_base::cur)
-      {
-         newpos = pos_ + offset;
-      }
-      else if (seekdir == std::ios_base::end)
-      {
-         newpos = buffersize_ + offset;
-      }
-      else
-      {
-         throw std::ios_base::failure("bad seek direction");
-      }
-
-      // Check for errors
-      if (newpos < 0 || newpos > buffersize_)
-      {
-         throw std::ios_base::failure("bad seek offset");
-      }
-
-      pos_ = static_cast<size_t>(newpos);
-      return boost::iostreams::offset_to_position(newpos);
-   }
-
-private:
-   const char_type* buffer_;
-   size_t buffersize_;
-   size_t pos_;
-};
-
-typedef boost::iostreams::stream<ConstBufferDevice> ConstBufferStream;
 
 void SRIN::Net::RESTServiceTemplateBase::PerformCall()
 {
@@ -309,7 +232,7 @@ void SRIN::Net::RESTServiceTemplateBase::PerformCall()
 		}
 
 		// USer Agent
-		curl_easy_setopt(curlHandle, CURLOPT_USERAGENT, "srin-tizen-framework/1.0");
+		curl_easy_setopt(curlHandle, CURLOPT_USERAGENT, UserAgent.c_str());
 
 		dlog_print(DLOG_DEBUG, LOG_TAG, "Before Sending");
 
