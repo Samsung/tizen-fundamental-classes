@@ -16,10 +16,6 @@
 #include <sstream>
 #include <vector>
 
-#include <boost/iostreams/device/array.hpp>
-#include <boost/iostreams/stream.hpp>
-typedef boost::iostreams::stream<boost::iostreams::array_source> ResponseBuffer;
-
 using namespace SRIN::Net;
 
 void RESTServiceTemplateBase::RegisterParameter(ParameterType paramType, CString key, IServiceParameter* ref)
