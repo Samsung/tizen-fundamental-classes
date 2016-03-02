@@ -95,7 +95,7 @@ class EventClass {};
 template<class ObjectSourceType = void*, class EventDataType = void*>
 class Event {
 public:
-	typedef void (EventClass::*EventHandler)(Event<ObjectSourceType, EventDataType>* eventSource, ObjectSourceType objSource, EventDataType eventData);
+	typedef void (EventClass::*EventHandler)(const Event<ObjectSourceType, EventDataType>* eventSource, ObjectSourceType objSource, EventDataType eventData);
 
 	Event();
 	Event(EventClass* eventSource);
@@ -106,7 +106,7 @@ public:
 
 	void operator+=(const Event& other);
 	void Invoke(void* eventInfo);
-	void operator()(ObjectSourceType objSource, EventDataType eventData);
+	void operator()(ObjectSourceType objSource, EventDataType eventData) const;
 
 private:
 	EventClass* instance;

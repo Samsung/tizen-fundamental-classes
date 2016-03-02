@@ -14,23 +14,7 @@
 #include <memory>
 #include "SRIN/Core.h"
 
-
-/**
- * Handle for every asynchronous task that is performed using async keyword. The handle of this object is returned when
- * calling async. The user needs to store the handle to this object to refer to the task on later operation.
- */
-class AsyncTask;
-
-
-template<class Lambda>
-AsyncTask* async(Lambda lambda);
-
-template<class R>
-R await(AsyncTask* task);
-
-template<class R>
-void dwait(AsyncTask* task, Event<R>& eventTarget);
-
+namespace SRIN {
 
 /*
  * http://stackoverflow.com/questions/7943525/is-it-possible-to-figure-out-the-parameter-type-and-return-type-of-a-lambda
@@ -54,60 +38,122 @@ struct function_traits<ReturnType(ClassType::*)(Args...) const>
     };
 };
 
+/**
+ * Handle for every asynchronous task that is performed using async keyword. The handle of this object is returned when
+ * calling async. The user needs to store the handle to this object to refer to the task on later operation.
+ */
+
 template<class R>
-AsyncTask* AsyncCall(std::function<R(void)> func);
+class AsyncTask;
+
+class AsyncTaskObj;
+
+void dwait(AsyncTask<void>* task, Event<AsyncTask<void>*>& eventTarget);
+
+template<class R>
+void dwait(AsyncTask<R>* task, Event<AsyncTask<R>*, R>& eventTarget);
+
+template<class R>
+AsyncTask<R>* AsyncCall(std::function<R(void)> func);
 
 template<class V>
-AsyncTask* CreateAsyncTask(std::function<V(void)> func);
+AsyncTaskObj* CreateAsyncTask(std::function<V(void)> func);
 
 template<>
-AsyncTask* CreateAsyncTask(std::function<void*(void)> func);
+AsyncTaskObj* CreateAsyncTask(std::function<void*(void)> func);
 
 template<>
-AsyncTask* CreateAsyncTask(std::function<void(void)> func);
+AsyncTaskObj* CreateAsyncTask(std::function<void(void)> func);
 
-void* AwaitImpl(AsyncTask* task);
+void* AwaitImpl(AsyncTaskObj* task);
+void DwaitImplVal(AsyncTaskObj* task, std::function<void(void*)> dispatcher);
+void AbortImpl(AsyncTaskObj* task);
 
-
-template<>
-void await(AsyncTask* task);
+struct AsyncBuilder
+{
+public:
+	template<class Lambda>
+	AsyncTask<typename function_traits<Lambda>::result_type>* operator+(Lambda lambda)
+	{
+		typedef function_traits<Lambda> trait;
+		return AsyncCall(std::function<typename trait::result_type()>(lambda));
+	}
+};
 
 template<class R>
-AsyncTask* AsyncCall(std::function<R(void)> func)
+struct DispatchAwaitBuilder
 {
-	return CreateAsyncTask(std::function<void*(void)>([func] () -> void* {
+	AsyncTask<R>* task;
+	Event<AsyncTask<R>*, R>& eventTarget;
+};
+
+struct AwaitBuilder
+{
+public:
+	template<class R>
+	R operator&(AsyncTask<R>* task)
+	{
+		std::unique_ptr<R> ret(reinterpret_cast<R*>(AwaitImpl(reinterpret_cast<AsyncTaskObj*>(task))));
+		return *ret;
+	}
+
+	template<class R>
+	void operator&(DispatchAwaitBuilder<R> dwaitBuild)
+	{
+		dwait(dwaitBuild.task, dwaitBuild.eventTarget);
+	}
+};
+
+struct AbortBuilder
+{
+public:
+	template<class R>
+	void operator&(AsyncTask<R>* task)
+	{
+		AbortImpl(reinterpret_cast<AsyncTaskObj*>(task));
+	}
+};
+
+
+
+template<class R>
+DispatchAwaitBuilder<R> operator>>(AsyncTask<R>* task, Event<AsyncTask<R>*, R>& eventTarget)
+{
+	return { task, eventTarget };
+}
+
+bool IsAborting();
+
+#define async AsyncBuilder() +
+#define await AwaitBuilder() &
+#define abort_return if(IsAborting()) return
+#define abort_async AbortBuilder() &
+
+template<class R>
+AsyncTask<R>* AsyncCall(std::function<R(void)> func)
+{
+	return reinterpret_cast<AsyncTask<R>*>(CreateAsyncTask(std::function<void*(void)>([func] () -> void* {
 		R ret = func();
 		void* retPtr = malloc(sizeof(R));
 		memcpy(retPtr, &ret, sizeof(R));
 		return retPtr;
-	}));
+	})));
 }
 
 template<>
-AsyncTask* AsyncCall<void>(std::function<void(void)> func)
-{
-	return CreateAsyncTask(std::function<void(void)>([func] () -> void {
-		func();
-	}));
-}
+AsyncTask<void>* AsyncCall<void>(std::function<void(void)> func);
 
 template<class R>
-R await(AsyncTask* task)
+void dwait(AsyncTask<R>* task, Event<AsyncTask<R>*, R>& eventTarget)
 {
-	std::unique_ptr<R> ret(reinterpret_cast<R*>(AwaitImpl(task)));
-	return *ret;
+	DwaitImplVal(reinterpret_cast<AsyncTaskObj*>(task), [task, eventTarget] (void* r) {
+		std::unique_ptr<R> ret(reinterpret_cast<R*>(r));
+		eventTarget(task, *ret);
+	});
 }
 
-template<class Lambda>
-AsyncTask* async(Lambda lambda)
-{
-	typedef function_traits<Lambda> trait;
-	return AsyncCall(std::function<typename trait::result_type()>(lambda));
+
 }
 
-template<class R>
-void dwait(AsyncTask* task, Event<R>& eventTarget)
-{
-}
 
 #endif /* ASYNCTASK_H_ */

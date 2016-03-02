@@ -9,6 +9,7 @@
 #define SRINFW_REST_H_
 
 #include "SRIN/Core.h"
+#include "SRIN/Async.h"
 
 #include <tuple>
 #include <vector>
@@ -127,9 +128,11 @@ namespace SRIN { namespace Net {
 	public:
 		BasicAuthParameter(RESTServiceTemplateBase* instance) : RESTServiceTemplateBase::Parameter<ParamType, BasicAuthAccount>(instance, "Authorization") { }
 		void operator=(const BasicAuthAccount& val) { RESTServiceTemplateBase::Parameter<ParamType, BasicAuthAccount>::operator=(val); }
+		virtual ~BasicAuthParameter() { }
 	protected:
 		virtual std::string GetRawValue();
 		virtual std::string GetEncodedValue();
+
 	};
 
 	template<>

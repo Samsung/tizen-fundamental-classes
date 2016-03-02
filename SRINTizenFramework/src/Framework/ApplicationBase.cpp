@@ -335,3 +335,5 @@ void SRIN::Framework::ApplicationBase::SetIndicatorVisibility(bool value)
 		elm_win_indicator_mode_set(win, ELM_WIN_INDICATOR_HIDE);
 	}
 }
+
+

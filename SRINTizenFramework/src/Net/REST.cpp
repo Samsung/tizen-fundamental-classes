@@ -198,7 +198,6 @@ void SRIN::Net::RESTServiceTemplateBase::PerformCall()
 			RESTServiceTemplateBase_WriteCallback
 		);
 
-
 		dlog_print(DLOG_DEBUG, LOG_TAG, "Prepare URL");
 
 		// Construct query string

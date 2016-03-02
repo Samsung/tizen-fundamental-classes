@@ -37,7 +37,7 @@ inline void Event<ObjectSourceType, EventDataType>::operator+=(const Event& othe
 
 
 template<class ObjectSourceType, class EventDataType>
-inline void Event<ObjectSourceType, EventDataType>::operator()(ObjectSourceType objSource, EventDataType eventData)
+inline void Event<ObjectSourceType, EventDataType>::operator()(ObjectSourceType objSource, EventDataType eventData) const
 {
 	if(this->instance && this->eventHandler)
 		(this->instance->*(this->eventHandler))(this, objSource, eventData);

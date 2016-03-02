@@ -40,6 +40,10 @@ LIBAPI ControllerFactory* ControllerManager::GetControllerFactoryEntry(const cha
 	return static_cast<ControllerFactory*>(entry);
 }
 
+SRIN::Framework::ControllerManager::~ControllerManager()
+{
+}
+
 LIBAPI StackingControllerManager::StackingControllerManager(IAttachable* app) :
 	app(app)
 {

@@ -394,6 +394,7 @@ namespace SRIN { namespace Framework {
 		 * the controller and instantiate it when needed
 		 */
 		void RegisterControllerFactory(ControllerFactory* controller);
+		virtual ~ControllerManager();
 	};
 
 	class StackingControllerManager : public ControllerManager {
