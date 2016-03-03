@@ -8,7 +8,7 @@
 #include "SRIN/ELMInterface.h"
 
 
-void SmartEventHandler(void* data, Evas_Object* obj, void* eventData)
+LIBAPI void SmartEventHandler(void* data, Evas_Object* obj, void* eventData)
 {
 	auto package = static_cast<Event<Evas_Object*, void*>*>(data);
 
@@ -20,7 +20,7 @@ void SmartEventHandler(void* data, Evas_Object* obj, void* eventData)
 	(*package)(obj, eventData);
 }
 
-void ObjectEventHandler(void* data, Evas* evas, Evas_Object* obj, void* eventData)
+LIBAPI void ObjectEventHandler(void* data, Evas* evas, Evas_Object* obj, void* eventData)
 {
 	auto package = static_cast<Event<Evas_Object*, void*>*>(data);
 
