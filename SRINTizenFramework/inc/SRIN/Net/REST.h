@@ -34,6 +34,13 @@ namespace SRIN { namespace Net {
 		Header = 2,
 	};
 
+	enum class ResultType
+	{
+		OK = 0,
+		ServerError = 1,
+		LocalError = 2,
+	};
+
 
 	class LIBAPI IServiceParameter
 	{
@@ -53,7 +60,12 @@ namespace SRIN { namespace Net {
 		virtual std::string GetEncodedValue();
 	};
 
-
+	class LIBAPI RESTResultBase
+	{
+	private:
+		void* resultObj;
+		friend class RESTServiceTemplateBase;
+	};
 
 	class LIBAPI RESTServiceTemplateBase
 	{
@@ -69,10 +81,7 @@ namespace SRIN { namespace Net {
 			void operator=(const ValueType& val) { if(!instance->working) this->value = val; }
 		};
 
-		Event<void*, void*> OnSuccess;
-		Event<void*, void*> OnFailed;
-
-		void CallAsync();
+		RESTResultBase Call();
 	protected:
 		RESTServiceTemplateBase(std::string url, HTTPMode httpMode);
 
@@ -81,7 +90,7 @@ namespace SRIN { namespace Net {
 
 	private:
 		virtual void* OnProcessResponseIntl(const std::string& responseStr) = 0;
-		void PerformCall();
+		RESTResultBase PerformCall();
 		void RegisterParameter(ParameterType paramType, CString key, IServiceParameter* ref);
 
 		bool working;

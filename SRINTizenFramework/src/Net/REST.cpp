@@ -178,9 +178,11 @@ size_t RESTServiceTemplateBase_WriteCallback(char *data, size_t size, size_t nme
 }
 
 
-void SRIN::Net::RESTServiceTemplateBase::PerformCall()
+RESTResultBase SRIN::Net::RESTServiceTemplateBase::PerformCall()
 {
 	auto curlHandle = curl_easy_init();
+
+	RESTResultBase returnObj;
 
 	if(curlHandle)
 	{
@@ -249,13 +251,19 @@ void SRIN::Net::RESTServiceTemplateBase::PerformCall()
 			auto responseObj = OnProcessResponseIntl(response);
 		}
 	}
+	else
+	{
+
+	}
+
+	return returnObj;
 }
 
 std::string* SRIN::Net::SimpleRESTServiceBase::OnProcessResponse(const std::string& responseStr)
 {
 }
 
-void SRIN::Net::RESTServiceTemplateBase::CallAsync()
+RESTResultBase SRIN::Net::RESTServiceTemplateBase::Call()
 {
-	PerformCall();
+	return PerformCall();
 }

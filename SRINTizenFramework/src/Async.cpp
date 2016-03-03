@@ -37,7 +37,7 @@ public:
 	void* retVal;
 	TaskState state;
 	bool dwait;
-	std::function<void(void*)> dwaitCaller;
+	std::function<void(void*, void*)> dwaitCaller;
 	std::mutex taskMutex;
 	pthread_t threadId;
 
@@ -60,6 +60,11 @@ public:
 	{
 		threadId = 0;
 		ecoreThreadMap.erase(threadId);
+	}
+
+	~AsyncTaskObj()
+	{
+		dlog_print(DLOG_DEBUG, LOG_TAG, "Task destroyed %d", this);
 	}
 
 };
@@ -154,7 +159,7 @@ void AsyncTaskEnd(void* data, Ecore_Thread* thread)
 
 	if(context->task->dwait)
 	{
-		context->task->dwaitCaller(context->task->retVal);
+		context->task->dwaitCaller(context->task, context->task->retVal);
 		delete context->task;
 	}
 
@@ -183,29 +188,36 @@ LIBAPI void await(AsyncTask<void>* task)
 */
 
 template<class T>
-AsyncTaskObj* CreateAsyncTaskGeneric(std::function<T(void)> func)
+AsyncTaskObj* CreateAsyncTaskGeneric(std::function<T(void)> func, std::function<void(void*, void*)> dispatcher)
 {
 	auto context = new TaskContext<T>();
 	context->func = func;
 	auto task = new AsyncTaskObj();
 	context->task = task;
+
+	if(dispatcher)
+	{
+		task->dwait = true;
+		task->dwaitCaller = dispatcher;
+	}
+
 	task->handle = ecore_thread_run(AsyncTaskWorker<T>, AsyncTaskEnd<T>, AsyncTaskCancel<T>, context);
 	return task;
 }
 
 template<>
-LIBAPI AsyncTaskObj* CreateAsyncTask(std::function<void*(void)> func)
+LIBAPI AsyncTaskObj* CreateAsyncTask(std::function<void*(void)> func, std::function<void(void*, void*)> dispatcher)
 {
-	return CreateAsyncTaskGeneric(func);
+	return CreateAsyncTaskGeneric(func, dispatcher);
 }
 
 template<>
-LIBAPI AsyncTaskObj* CreateAsyncTask(std::function<void(void)> func)
+LIBAPI AsyncTaskObj* CreateAsyncTask(std::function<void(void)> func, std::function<void(void*, void*)> dispatcher)
 {
-	return CreateAsyncTaskGeneric(func);
+	return CreateAsyncTaskGeneric(func, dispatcher);
 }
 
-LIBAPI void DwaitImplVal(AsyncTaskObj* task, std::function<void(void*)> dispatcher)
+LIBAPI void DwaitImplVal(AsyncTaskObj* task, std::function<void(void*, void*)> dispatcher)
 {
 	std::lock_guard<std::mutex> lock(task->taskMutex);
 
@@ -217,7 +229,7 @@ LIBAPI void DwaitImplVal(AsyncTaskObj* task, std::function<void(void*)> dispatch
 	if(task->state == TaskState::Completed)
 	{
 		// If the task is already completed, just perform the dispatching
-		dispatcher(task->retVal);
+		dispatcher(task, task->retVal);
 		delete task;
 	}
 	else if(task->state != TaskState::Cancelled)
@@ -232,19 +244,19 @@ LIBAPI void DwaitImplVal(AsyncTaskObj* task, std::function<void(void*)> dispatch
 
 LIBAPI void dwait(AsyncTask<void>* task, Event<AsyncTask<void>*>& ev)
 {
-	auto dispatcher = [task, ev] (void* r) {
-		ev(task, nullptr);
+	auto dispatcher = [ev] (void* t, void* r) {
+		ev(reinterpret_cast<AsyncTask<void>*>(t), nullptr);
 	};
 
 	DwaitImplVal(reinterpret_cast<AsyncTaskObj*>(task), dispatcher);
 }
 
 template<>
-LIBAPI AsyncTask<void>* AsyncCall<void>(std::function<void(void)> func)
+LIBAPI AsyncTask<void>* AsyncCall<void>(std::function<void(void)> func, std::function<void(void*, void*)> dispatcher)
 {
 	return reinterpret_cast<AsyncTask<void>*>(CreateAsyncTask(std::function<void(void)>([func] () -> void {
 		func();
-	})));
+	}), dispatcher));
 }
 
 LIBAPI void AbortImpl(AsyncTaskObj* task)
@@ -258,6 +270,13 @@ LIBAPI void AbortImpl(AsyncTaskObj* task)
 	ecore_thread_cancel(task->handle);
 
 	AwaitImpl(task);
+}
+
+LIBAPI 	std::function<void(void*, void*)> GetDispatcher(Event<AsyncTask<void> *>& ev)
+{
+	return [ev] (void* t, void* r) {
+		ev(reinterpret_cast<AsyncTask<void>*>(t), nullptr);
+	};
 }
 
 LIBAPI bool IsAborting()
