@@ -1,0 +1,75 @@
+collections{
+ group { name: "main";
+      parts {
+         part { name: "background";
+            type: RECT;
+            description { state: "default" 0.0;
+               color: 0 0 0 0;
+            }
+         }
+         
+         part { name: "content";
+            type: SWALLOW;
+            description { state: "default" 0.0;
+               rel1 {
+                  relative: 0.0 0.0;
+                  to: "background";
+               }
+               rel2 {
+                  relative: 1.0 1.0;
+                  to: "background";
+               }
+            }
+         }
+         
+         part{ name: "bottom_border";
+            type: RECT;
+            description { state: "default" 0.0;
+               color: 0 0 0 255;
+;               rel1 {
+                  relative: 0.0 0.998;
+                  to: "content";
+               }
+               
+               rel2 {
+                 relative: 1.0 1.0;
+                  to: "content";
+               }
+            }
+         
+         }
+         
+      } //end of parts
+      
+      
+   } //end of group
+   
+   group { name: "no_border";
+      parts {
+         part { name: "background";
+            type: RECT;
+            description { state: "default" 0.0;
+               color: 0 0 0 0;
+            }
+         }
+         
+         part { name: "content";
+            type: SWALLOW;
+            description { state: "default" 0.0;
+               rel1 {
+                  relative: 0.0 0.0;
+                  to: "background";
+               }
+               rel2 {
+                  relative: 1.0 1.0;
+                  to: "background";
+               }
+            }
+         }
+         
+      } //end of parts
+      
+      
+   } //end of group
+   
+} //end of collections

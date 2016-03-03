@@ -124,10 +124,10 @@ DispatchAwaitBuilder<R> operator>>(AsyncTask<R>* task, Event<AsyncTask<R>*, R>& 
 
 bool IsAborting();
 
-#define async AsyncBuilder() +
-#define await AwaitBuilder() &
-#define abort_return if(IsAborting()) return
-#define abort_async AbortBuilder() &
+#define s_async AsyncBuilder() +
+#define s_await AwaitBuilder() &
+#define s_abort_return if(IsAborting()) return
+#define s_abort_async AbortBuilder() &
 
 template<class R>
 AsyncTask<R>* AsyncCall(std::function<R(void)> func)

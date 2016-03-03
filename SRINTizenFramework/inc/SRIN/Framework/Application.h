@@ -226,6 +226,8 @@ namespace SRIN { namespace Framework {
 
 
 		static SimpleReadOnlyProperty<ApplicationBase, ApplicationBase*> CurrentInstance;
+		static SimpleReadOnlyProperty<ApplicationBase, CString> ResourcePath;
+		static std::string GetResourcePath(CString path);
 	};
 
 	/**

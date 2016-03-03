@@ -87,10 +87,12 @@ void win_delete_request_cb(void *data, Evas_Object *obj, void *event_info)
 }
 
 SimpleReadOnlyProperty<ApplicationBase, ApplicationBase*> ApplicationBase::CurrentInstance;
+SimpleReadOnlyProperty<ApplicationBase, CString> ApplicationBase::ResourcePath;
 
 int ApplicationBase::Main(ApplicationBase* app, int argc, char* argv[])
 {
 	ApplicationBase::CurrentInstance = app;
+	ApplicationBase::ResourcePath = app_get_resource_path();
 
 	::ui_app_lifecycle_callback_s event_callback =
 	{ ApplicationBase_AppCreateHandler, ApplicationBase_AppTerminateHandler, ApplicationBase_AppPauseHandler,
@@ -124,6 +126,7 @@ LIBAPI ApplicationBase::ApplicationBase(CString packageName) :
 	this->backButtonCallback = nullptr;
 	this->backButtonInstance = nullptr;
 	this->haveEventBackPressed = false;
+
 }
 
 LIBAPI void ApplicationBase::ApplicationControl(app_control_h app_control)
@@ -336,4 +339,9 @@ void SRIN::Framework::ApplicationBase::SetIndicatorVisibility(bool value)
 	}
 }
 
-
+std::string SRIN::Framework::ApplicationBase::GetResourcePath(CString path)
+{
+	std::string ret = CString(ApplicationBase::ResourcePath);
+	ret += path;
+	return ret;
+}

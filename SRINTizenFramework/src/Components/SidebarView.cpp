@@ -13,7 +13,7 @@ using namespace SRIN::Components;
 
 LIBAPI SidebarView::SidebarView() :
 	Framework::ViewBase(),
-	drawerButtonClick(this, register_handler<>(&SidebarView::OnDrawerButtonClick))
+	drawerButtonClick(this, &SidebarView::OnDrawerButtonClick)
 {
 	layout = leftPanel = background = currentContent = nullptr;
 }

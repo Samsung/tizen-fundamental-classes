@@ -69,6 +69,7 @@ private:
 public:
 	friend DefiningClass;
 	ValueType* operator->() const;
+	operator ValueType() { return this->value; }
 };
 
 template<class DefiningClass, class ValueType>
