@@ -244,16 +244,20 @@ RESTResultBase SRIN::Net::RESTServiceTemplateBase::PerformCall()
 		if (res != CURLE_OK)
 		{
 			auto err = curl_easy_strerror(res);
+			returnObj.resultType = ResultType::LocalError;
+			returnObj.errorMessage = err;
 		}
 		else
 		{
 			std::string response(buffer.data(), buffer.size());
-			auto responseObj = OnProcessResponseIntl(response);
+			curl_easy_getinfo(curlHandle,  CURLINFO_RESPONSE_CODE, &returnObj.httpCode);
+			returnObj.responseObj = OnProcessResponseIntl(returnObj.httpCode, response, returnObj.errorCode, returnObj.errorMessage);
 		}
 	}
 	else
 	{
-
+		returnObj.resultType = ResultType::LocalError;
+		returnObj.errorMessage = "Unknown error";
 	}
 
 	return returnObj;
@@ -263,7 +267,11 @@ std::string* SRIN::Net::SimpleRESTServiceBase::OnProcessResponse(const std::stri
 {
 }
 
-RESTResultBase SRIN::Net::RESTServiceTemplateBase::Call()
+RESTResultBase SRIN::Net::RESTServiceTemplateBase::CallInternal()
 {
 	return PerformCall();
+}
+
+SRIN::Net::RESTResultBase::RESTResultBase()
+{
 }

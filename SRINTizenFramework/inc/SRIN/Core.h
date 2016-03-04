@@ -42,14 +42,16 @@ public:
 	void operator=(const ValueType& val) { instance->*LocalVar = (val); }
 };
 
-template<class DefiningClass, class ValueType, ValueType& (DefiningClass::* GetFunc)()>
+template<class DefiningClass, class ValueType, ValueType (DefiningClass::* GetFunc)()>
 class ReadOnlyProperty {
 private:
 	DefiningClass* instance;
 public:
 	ReadOnlyProperty(DefiningClass* inst) : instance(inst) { }
-	operator ValueType() { return (instance->*GetFunc)(); }
-	ValueType* operator->() const { auto ret = (instance->*GetFunc)(); return &ret; }
+	operator ValueType() {
+		auto val = (instance->*GetFunc)();
+		return val;
+	}
 };
 
 template<class DefiningClass, class ValueType>

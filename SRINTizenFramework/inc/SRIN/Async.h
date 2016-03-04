@@ -211,7 +211,7 @@ template<class R>
 AsyncTask<R>* AsyncCall(std::function<R(void)> func, std::function<void(void*, void*)> dispatcher)
 {
 	return reinterpret_cast<AsyncTask<R>*>(CreateAsyncTask(std::function<void*(void)>([func] () -> void* {
-		R ret = func();
+		R ret(func());
 		void* retPtr = malloc(sizeof(R));
 		memcpy(retPtr, &ret, sizeof(R));
 		return retPtr;
