@@ -70,12 +70,12 @@ private:
 	void operator=(const ValueType& val) { this->value = (val); }
 public:
 	friend DefiningClass;
-	ValueType* operator->() const;
+	const ValueType* operator->() const;
 	operator ValueType() { return this->value; }
 };
 
 template<class DefiningClass, class ValueType>
-ValueType* SimpleReadOnlyProperty<DefiningClass, ValueType>::operator->() const {
+const ValueType* SimpleReadOnlyProperty<DefiningClass, ValueType>::operator->() const {
 	return &this->value;
 }
 
@@ -126,7 +126,7 @@ typename Event<ObjectSourceType, EventDataType>::EventHandler register_handler(v
 
 #include "SRIN/Core.inc"
 
-#define AddEventHandler(EVENT_METHOD) ::Event(this, (::EventHandler) & EVENT_METHOD)
+#define AddEventHandler(EVENT_METHOD) { this, & EVENT_METHOD }
 
 
 #endif /* CORE_H_ */

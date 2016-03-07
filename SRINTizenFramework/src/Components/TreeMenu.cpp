@@ -15,14 +15,14 @@ typedef struct
 	TreeMenu* treeMenuRef;
 } TreeMenuItemPackage;
 
-MenuItem::MenuItem(std::string menuText, std::string menuIcon) :
-	itemData(nullptr),
+MenuItem::MenuItem(std::string menuText, std::string menuIcon, void* itemData) :
+	itemData(itemData),
 	OnMenuItemClick(this),
-	menuText(menuText),
 	menuIcon(menuIcon),
 	genlistItem(nullptr),
 	expanded(false)
 {
+	MenuText = menuText;
 }
 
 void MenuItem::AddSubMenu(MenuItem* subMenu)
@@ -40,12 +40,15 @@ const std::vector<MenuItem*>& MenuItem::GetSubMenus() const
 	return subMenus;
 }
 
-void TreeMenu::MenuSelected(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* genlistItem)
+void TreeMenu::MenuSelectedInternal(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* genlistItem)
 {
+	auto item = reinterpret_cast<MenuItem*>(elm_object_item_data_get(genlistItem));
 	elm_genlist_item_selected_set(genlistItem, EINA_FALSE);
 
 	auto expanded = elm_genlist_item_expanded_get(genlistItem);
 	elm_genlist_item_expanded_set(genlistItem, !expanded);
+
+	OnMenuSelected(this, item);
 }
 
 void TreeMenu::MenuExpanded(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* genlistItem)
@@ -77,7 +80,7 @@ Evas_Object* TreeMenu::CreateComponent(Evas_Object* root)
 
 		if (!strcmp("elm.text", part))
 		{
-			auto text = menuItem->menuText.c_str();
+			auto text = menuItem->MenuText->c_str();
 			return strdup(text);
 		}
 		return nullptr;
@@ -91,7 +94,7 @@ Evas_Object* TreeMenu::CreateComponent(Evas_Object* root)
 
 		if (!strcmp("elm.text", part))
 		{
-			auto text = menuItem->menuText.c_str();
+			auto text = menuItem->MenuText->c_str();
 			return strdup(text);
 		}
 		return nullptr;
@@ -105,7 +108,7 @@ Evas_Object* TreeMenu::CreateComponent(Evas_Object* root)
 	//evas_object_smart_callback_add(genlist, "realized", gl_realized_cb, NULL);
 	//evas_object_smart_callback_add(genlist, "loaded", gl_loaded_cb, NULL);
 	//evas_object_smart_callback_add(genlist, "longpressed", gl_longpressed_cb, NULL);
-	evas_object_smart_callback_add(genlist, "selected", SmartEventHandler, &OnMenuSelected);
+	evas_object_smart_callback_add(genlist, "selected", SmartEventHandler, &OnMenuSelectedInternal);
 	evas_object_smart_callback_add(genlist, "expanded", SmartEventHandler, &OnMenuExpanded);
 	evas_object_smart_callback_add(genlist, "contracted", SmartEventHandler, &OnMenuContracted);
 
@@ -131,8 +134,12 @@ void TreeMenu::GenerateRootMenu()
 }
 
 TreeMenu::TreeMenu() :
-	genlist(nullptr), itemClass(nullptr), OnMenuSelected(this, &TreeMenu::MenuSelected), OnMenuExpanded(
-		this, &TreeMenu::MenuExpanded), OnMenuContracted(this, &TreeMenu::MenuContracted)
+	genlist(nullptr),
+	itemClass(nullptr),
+	OnMenuSelectedInternal(this, &TreeMenu::MenuSelectedInternal),
+	OnMenuExpanded(this, &TreeMenu::MenuExpanded),
+	OnMenuContracted(this, &TreeMenu::MenuContracted),
+	OnMenuSelected(this)
 
 {
 
@@ -141,6 +148,19 @@ TreeMenu::TreeMenu() :
 void TreeMenu::AddMenu(MenuItem* menu)
 {
 	rootMenu.push_back(menu);
+
+	if (genlist)
+	{
+		auto genlistItem = elm_genlist_item_append(genlist, // genlist object
+			itemClass, // item class
+			menu, // item class user data
+			nullptr, // parent
+			ELM_GENLIST_ITEM_TREE, // type
+			nullptr, // callback
+			menu);
+
+		menu->genlistItem = genlistItem;
+	}
 }
 
 TreeMenu::~TreeMenu()
@@ -152,7 +172,7 @@ TreeMenu::~TreeMenu()
 
 void TreeMenu::GenerateSubMenu(MenuItem* rootMenu)
 {
-	for(auto item : rootMenu->subMenus)
+	for (auto item : rootMenu->subMenus)
 	{
 		auto genlistItem = elm_genlist_item_append(genlist, // genlist object
 			submenuItemClass, // item class
@@ -164,4 +184,13 @@ void TreeMenu::GenerateSubMenu(MenuItem* rootMenu)
 
 		item->genlistItem = genlistItem;
 	}
+}
+
+void SRIN::Components::TreeMenu::AddMenu(const std::vector<MenuItem*>& listOfMenus)
+{
+	for (auto item : listOfMenus)
+	{
+		AddMenu(item);
+	}
+
 }

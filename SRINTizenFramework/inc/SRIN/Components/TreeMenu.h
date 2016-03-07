@@ -19,16 +19,19 @@ namespace SRIN { namespace Components {
 	private:
 		std::vector<MenuItem*> subMenus;
 		std::string menuIcon;
-		std::string menuText;
 		void* itemData;
 		Elm_Object_Item* genlistItem;
 		bool expanded;
 	public:
-		MenuItem(std::string menuText, std::string menuIcon);
+		MenuItem(std::string menuText, std::string menuIcon, void* itemData = nullptr);
 		void AddSubMenu(MenuItem* subMenu);
 		void RemoveSubMenu(int index);
 		const std::vector<MenuItem*>& GetSubMenus() const;
 
+		SimpleReadOnlyProperty<MenuItem, std::string> MenuText;
+
+		template<class T>
+		T* GetItemData();
 
 		friend class TreeMenu;
 		Event<MenuItem*, Elm_Object_Item*> OnMenuItemClick;
@@ -49,24 +52,34 @@ namespace SRIN { namespace Components {
 
 		typedef Event<Evas_Object*, Elm_Object_Item*> GenlistEvent;
 
-		void MenuSelected(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
+		void MenuSelectedInternal(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
 		void MenuExpanded(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
 		void MenuContracted(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
 
-		GenlistEvent OnMenuSelected;
+		GenlistEvent OnMenuSelectedInternal;
 		GenlistEvent OnMenuExpanded;
 		GenlistEvent OnMenuContracted;
 
 	protected:
 		virtual LIBAPI Evas_Object* CreateComponent(Evas_Object* root);
+
 	public:
 		TreeMenu();
 		void AddMenu(MenuItem* menu);
+		void AddMenu(const std::vector<MenuItem*>& listOfMenus);
 		virtual ~TreeMenu();
+
+		typedef Event<TreeMenu*, MenuItem*> TreeMenuEvent;
+
+		TreeMenuEvent OnMenuSelected;
 	};
 
 }}
 
-
+template<class T>
+T* SRIN::Components::MenuItem::GetItemData()
+{
+	return reinterpret_cast<T*>(itemData);
+}
 
 #endif /* TREEMENU_H_ */
