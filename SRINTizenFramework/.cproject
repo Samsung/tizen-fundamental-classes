@@ -117,7 +117,6 @@
 								</option>
 								<option id="gnu.cpp.compiler.option.include.paths.164284422" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/inc}&quot;"/>
-									<listOptionValue builtIn="false" value="/home/gilang/bin/boost_1_60_0/"/>
 								</option>
 								<option id="sbi.gnu.cpp.compiler.option.frameworks.core.782992959" name="Tizen-Frameworks" superClass="sbi.gnu.cpp.compiler.option.frameworks.core" useByScannerDiscovery="false" valueType="userObjs">
 									<listOptionValue builtIn="false" value="Native_API"/>
