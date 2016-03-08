@@ -5,7 +5,6 @@
  *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
-
 #include "SRIN/Framework/Application.h"
 
 using namespace SRIN::Framework;
@@ -19,7 +18,7 @@ LIBAPI ControllerBase* SwitchingControllerManager::GetController(CString control
 {
 	auto entry = this->GetControllerFactoryEntry(controllerName);
 
-	if(entry->attachedData == nullptr)
+	if (entry->attachedData == nullptr)
 		entry->attachedData = entry->factoryMethod(this);
 
 	return static_cast<ControllerBase*>(entry->attachedData);

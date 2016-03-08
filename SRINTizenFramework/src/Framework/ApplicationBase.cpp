@@ -187,13 +187,11 @@ LIBAPI void ApplicationBase::EnableBackButtonCallback(bool enable)
 	}
 }
 
-LIBAPI bool ApplicationBase::AcquireExclusiveBackButtonPressed(EventClass* instance,
-	BackButtonCallback callback)
+LIBAPI bool ApplicationBase::AcquireExclusiveBackButtonPressed(EventClass* instance, BackButtonCallback callback)
 {
 }
 
-LIBAPI bool ApplicationBase::ReleaseExclusiveBackButtonPressed(EventClass* instance,
-	BackButtonCallback callback)
+LIBAPI bool ApplicationBase::ReleaseExclusiveBackButtonPressed(EventClass* instance, BackButtonCallback callback)
 {
 }
 
@@ -208,16 +206,14 @@ LIBAPI void ApplicationBase::Attach(ViewBase* view)
 
 		CString naviframeStyle = nullptr;
 
-		if(naviframeContent)
+		if (naviframeContent)
 			naviframeStyle = naviframeContent->GetContentStyle();
 
-		auto naviframeItem = elm_naviframe_item_push(this->rootFrame, view->ViewTitle->c_str(), NULL, NULL, viewComponent,
-			naviframeStyle);
-
+		auto naviframeItem = elm_naviframe_item_push(this->rootFrame, view->ViewTitle->c_str(), NULL, NULL,
+			viewComponent, naviframeStyle);
 
 		auto backButton = elm_object_item_part_content_get(naviframeItem, "elm.swallow.prev_btn");
 		auto style = elm_object_style_get(backButton);
-
 
 		// Title button handling
 
@@ -325,11 +321,9 @@ LIBAPI ApplicationBase::~ApplicationBase()
 {
 }
 
-
-
 void SRIN::Framework::ApplicationBase::SetIndicatorVisibility(bool value)
 {
-	if(value)
+	if (value)
 	{
 		elm_win_indicator_mode_set(win, ELM_WIN_INDICATOR_SHOW);
 	}

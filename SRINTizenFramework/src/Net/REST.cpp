@@ -5,13 +5,10 @@
  *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
-
 #include <curl/curl.h>
 
 #include "SRIN/Net/REST.h"
 #include "SRIN/Net/Util.h"
-
-
 
 #include <istream>
 #include <sstream>
@@ -21,22 +18,20 @@ using namespace SRIN::Net;
 
 void RESTServiceTemplateBase::RegisterParameter(ParameterType paramType, CString key, IServiceParameter* ref)
 {
-	if(paramType == ParameterType::Header)
+	if (paramType == ParameterType::Header)
 	{
 		headerParam.push_back(std::make_pair(key, ref));
 	}
-	else if(paramType == ParameterType::Query)
+	else if (paramType == ParameterType::Query)
 	{
 		queryStringParam.push_back(std::make_pair(key, ref));
 	}
 }
 
-
 std::string RESTServiceTemplateBase::PreparePostData()
 {
 	return std::string();
 }
-
 
 /*
  * GenericServiceParameter Template Definiition
@@ -69,8 +64,6 @@ GSPDefineDefault(uint64_t);
 GSPDefineDefault(float);
 GSPDefineDefault(double);
 
-
-
 template<>
 LIBAPI std::string GenericServiceParameter<BasicAuthAccount>::GetRawValue()
 {
@@ -83,7 +76,6 @@ std::string GenericServiceParameter<BasicAuthAccount>::GetEncodedValue()
 {
 	abort(); // The application must never reach this place
 }
-
 
 template<>
 LIBAPI std::string SRIN::Net::BasicAuthParameter<ParameterType::Query>::GetRawValue()
@@ -101,8 +93,7 @@ template<>
 LIBAPI std::string SRIN::Net::BasicAuthParameter<ParameterType::Header>::GetRawValue()
 {
 	std::string combined = this->value.username + ":" + this->value.password;
-	std::string encoded = "Basic " + Base64Encode((uint8_t*)combined.c_str(), combined.length());
-
+	std::string encoded = "Basic " + Base64Encode((uint8_t*) combined.c_str(), combined.length());
 
 	return encoded;
 }
@@ -119,6 +110,9 @@ struct curl_slist* SRIN::Net::RESTServiceTemplateBase::PrepareHeader()
 
 	for (auto header : headerParam)
 	{
+		if (!header.second->isSet)
+			continue;
+
 		std::string headerString = header.first;
 		headerString.append(": ");
 		headerString.append(header.second->GetRawValue());
@@ -143,6 +137,9 @@ std::string SRIN::Net::RESTServiceTemplateBase::PrepareUrl()
 		bool first = true;
 		for (auto queryString : queryStringParam)
 		{
+			if (!queryString.second->isSet)
+				continue;
+
 			if (first)
 				first = false;
 			else
@@ -155,14 +152,16 @@ std::string SRIN::Net::RESTServiceTemplateBase::PrepareUrl()
 	return finalUrl;
 }
 
-class VectorWrapper : public std::streambuf {
+class VectorWrapper: public std::streambuf
+{
 public:
-	VectorWrapper(std::vector<char> &vec) {
+	VectorWrapper(std::vector<char> &vec)
+	{
 		char* firstPtr = vec.data();
 		char* endPtr = firstPtr + vec.size();
 
-        this->setg(firstPtr, firstPtr, endPtr);
-    }
+		this->setg(firstPtr, firstPtr, endPtr);
+	}
 };
 
 size_t RESTServiceTemplateBase_WriteCallback(char *data, size_t size, size_t nmemb, void* d)
@@ -177,14 +176,14 @@ size_t RESTServiceTemplateBase_WriteCallback(char *data, size_t size, size_t nme
 	return realsize;
 }
 
-
 RESTResultBase SRIN::Net::RESTServiceTemplateBase::PerformCall()
 {
+	this->working = true;
 	auto curlHandle = curl_easy_init();
 
 	RESTResultBase returnObj;
 
-	if(curlHandle)
+	if (curlHandle)
 	{
 		dlog_print(DLOG_DEBUG, LOG_TAG, "Prepare Header");
 
@@ -195,10 +194,8 @@ RESTResultBase SRIN::Net::RESTServiceTemplateBase::PerformCall()
 		// Write function
 		std::vector<char> buffer;
 
-		curl_easy_setopt(curlHandle, CURLOPT_WRITEDATA, (void*) &buffer);
-		curl_easy_setopt(curlHandle, CURLOPT_WRITEFUNCTION,
-			RESTServiceTemplateBase_WriteCallback
-		);
+		curl_easy_setopt(curlHandle, CURLOPT_WRITEDATA, (void* ) &buffer);
+		curl_easy_setopt(curlHandle, CURLOPT_WRITEFUNCTION, RESTServiceTemplateBase_WriteCallback);
 
 		dlog_print(DLOG_DEBUG, LOG_TAG, "Prepare URL");
 
@@ -212,7 +209,7 @@ RESTResultBase SRIN::Net::RESTServiceTemplateBase::PerformCall()
 
 		// Prepare post data
 		std::string postData;
-		switch(httpMode)
+		switch (httpMode)
 		{
 		case HTTPMode::Get:
 			break;
@@ -222,8 +219,7 @@ RESTResultBase SRIN::Net::RESTServiceTemplateBase::PerformCall()
 		case HTTPMode::Put:
 			curl_easy_setopt(curlHandle, CURLOPT_CUSTOMREQUEST, "PUT");
 
-			HTTP_PreparePostData:
-			postData = PreparePostData();
+			HTTP_PreparePostData: postData = PreparePostData();
 
 			curl_easy_setopt(curlHandle, CURLOPT_POSTFIELDSIZE, postData.size());
 			curl_easy_setopt(curlHandle, CURLOPT_POSTFIELDS, postData.c_str());
@@ -250,8 +246,9 @@ RESTResultBase SRIN::Net::RESTServiceTemplateBase::PerformCall()
 		else
 		{
 			std::string response(buffer.data(), buffer.size());
-			curl_easy_getinfo(curlHandle,  CURLINFO_RESPONSE_CODE, &returnObj.httpCode);
-			returnObj.responseObj = OnProcessResponseIntl(returnObj.httpCode, response, returnObj.errorCode, returnObj.errorMessage);
+			curl_easy_getinfo(curlHandle, CURLINFO_RESPONSE_CODE, &returnObj.httpCode);
+			returnObj.responseObj = OnProcessResponseIntl(returnObj.httpCode, response, returnObj.errorCode,
+				returnObj.errorMessage);
 		}
 	}
 	else
@@ -260,6 +257,7 @@ RESTResultBase SRIN::Net::RESTServiceTemplateBase::PerformCall()
 		returnObj.errorMessage = "Unknown error";
 	}
 
+	this->working = false;
 	return returnObj;
 }
 

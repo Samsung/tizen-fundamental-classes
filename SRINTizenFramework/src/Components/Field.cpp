@@ -105,9 +105,7 @@ bool& SRIN::Components::Field::GetBottomBorderVisible()
 }
 
 SRIN::Components::Field::Field() :
-		Text(this),
-		Multiline(this),
-		BottomBorderVisible(this)
+	Text(this), Multiline(this), BottomBorderVisible(this)
 {
 	field = nullptr;
 	text = "";
@@ -117,9 +115,12 @@ SRIN::Components::Field::Field() :
 
 void SRIN::Components::Field::SetDisable(const bool& disable)
 {
-	if(disable){
+	if (disable)
+	{
 		elm_object_disabled_set(field, EINA_TRUE);
-	}else{
+	}
+	else
+	{
 		elm_object_disabled_set(field, EINA_FALSE);
 	}
 }
@@ -131,9 +132,12 @@ void SRIN::Components::Field::SetHint(const CString& hint)
 
 void SRIN::Components::Field::SetFocus(const bool& disable)
 {
-	if(disable){
+	if (disable)
+	{
 		elm_object_focus_set(field, EINA_TRUE);
-	} else {
+	}
+	else
+	{
 		elm_object_focus_set(field, EINA_FALSE);
 	}
 }

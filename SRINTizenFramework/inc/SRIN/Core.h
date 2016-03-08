@@ -8,7 +8,6 @@
 #ifndef CORE_H_
 #define CORE_H_
 
-
 #include <dlog.h>
 #include <functional>
 
@@ -21,91 +20,144 @@
 
 typedef const char* CString;
 
-template<class DefiningClass, class ValueType, ValueType& (DefiningClass::* GetFunc)(), void (DefiningClass::* SetFunc)(const ValueType&)>
-class Property {
+template<class DefiningClass, class ValueType, ValueType& (DefiningClass::*GetFunc)(), void (DefiningClass::*SetFunc)(
+	const ValueType&)>
+class Property
+{
 private:
 	DefiningClass* instance;
 public:
-	Property(DefiningClass* inst) : instance(inst) { }
-	operator ValueType() { return (instance->*GetFunc)(); }
-	void operator=(const ValueType& val) { (instance->*SetFunc)(val); }
-	ValueType* operator->() const { auto ret = (instance->*GetFunc)(); return &ret; }
+	Property(DefiningClass* inst) :
+		instance(inst)
+	{
+	}
+	operator ValueType()
+	{
+		return (instance->*GetFunc)();
+	}
+	void operator=(const ValueType& val)
+	{
+		(instance->*SetFunc)(val);
+	}
+	ValueType* operator->() const
+	{
+		auto ret = (instance->*GetFunc)();
+		return &ret;
+	}
 };
 
 template<class DefiningClass, class ValueType, ValueType DefiningClass::* LocalVar>
-class SimpleProperty {
+class SimpleProperty
+{
 private:
 	DefiningClass* instance;
 public:
-	SimpleProperty(DefiningClass* inst) : instance(inst) { }
-	operator ValueType() { return instance->*LocalVar; }
-	void operator=(const ValueType& val) { instance->*LocalVar = (val); }
+	SimpleProperty(DefiningClass* inst) :
+		instance(inst)
+	{
+	}
+	operator ValueType()
+	{
+		return instance->*LocalVar;
+	}
+	void operator=(const ValueType& val)
+	{
+		instance->*LocalVar = (val);
+	}
 };
 
-template<class DefiningClass, class ValueType, ValueType (DefiningClass::* GetFunc)()>
-class ReadOnlyProperty {
+template<class DefiningClass, class ValueType, ValueType (DefiningClass::*GetFunc)()>
+class ReadOnlyProperty
+{
 private:
 	DefiningClass* instance;
 public:
-	ReadOnlyProperty(DefiningClass* inst) : instance(inst) { }
-	operator ValueType() {
+	ReadOnlyProperty(DefiningClass* inst) :
+		instance(inst)
+	{
+	}
+	operator ValueType()
+	{
 		auto val = (instance->*GetFunc)();
 		return val;
 	}
 };
 
 template<class DefiningClass, class ValueType>
-class SimpleReadOnlyPropertyBase {
+class SimpleReadOnlyPropertyBase
+{
 protected:
 	ValueType value;
 public:
 	friend DefiningClass;
-	operator ValueType() { return value; }
+	operator ValueType()
+	{
+		return value;
+	}
 	ValueType* operator->() const;
 };
 
 template<class DefiningClass, class ValueType>
-class SimpleReadOnlyProperty : public SimpleReadOnlyPropertyBase<DefiningClass, ValueType> {
+class SimpleReadOnlyProperty: public SimpleReadOnlyPropertyBase<DefiningClass, ValueType>
+{
 private:
-	void operator=(const ValueType& val) { this->value = (val); }
+	void operator=(const ValueType& val)
+	{
+		this->value = (val);
+	}
 public:
 	friend DefiningClass;
 	const ValueType* operator->() const;
-	operator ValueType() { return this->value; }
+	operator ValueType()
+	{
+		return this->value;
+	}
 };
 
 template<class DefiningClass, class ValueType>
-const ValueType* SimpleReadOnlyProperty<DefiningClass, ValueType>::operator->() const {
+const ValueType* SimpleReadOnlyProperty<DefiningClass, ValueType>::operator->() const
+{
 	return &this->value;
 }
 
 template<class DefiningClass, class ValueType>
-class SimpleReadOnlyProperty<DefiningClass, ValueType*> : public SimpleReadOnlyPropertyBase<DefiningClass, ValueType*> {
+class SimpleReadOnlyProperty<DefiningClass, ValueType*> : public SimpleReadOnlyPropertyBase<DefiningClass, ValueType*>
+{
 private:
-	void operator=(ValueType* val) { this->value = (val); }
+	void operator=(ValueType* val)
+	{
+		this->value = (val);
+	}
 public:
 	friend DefiningClass;
 	ValueType* operator->() const;
 };
 
 template<class DefiningClass, class ValueType>
-ValueType* SimpleReadOnlyProperty<DefiningClass, ValueType*>::operator->() const {
+ValueType* SimpleReadOnlyProperty<DefiningClass, ValueType*>::operator->() const
+{
 	return this->value;
 }
 
-class EventClass {};
+class EventClass
+{
+};
 
 template<class ObjectSourceType = void*, class EventDataType = void*>
-class Event {
+class Event
+{
 public:
-	typedef void (EventClass::*EventHandler)(const Event<ObjectSourceType, EventDataType>* eventSource, ObjectSourceType objSource, EventDataType eventData);
+	typedef void (EventClass::*EventHandler)(const Event<ObjectSourceType, EventDataType>* eventSource,
+		ObjectSourceType objSource, EventDataType eventData);
 
 	Event();
 	Event(EventClass* eventSource);
 	Event(EventClass* instance, EventHandler eventHandler, CString eventLabel = nullptr);
 
 	template<class EventClassType>
-	Event(EventClassType* instance, void (EventClassType::* eventHandler)(Event<ObjectSourceType, EventDataType>* eventSource, ObjectSourceType objSource, EventDataType eventData) , CString eventLabel = nullptr);
+	Event(EventClassType* instance,
+		void (EventClassType::*eventHandler)(Event<ObjectSourceType, EventDataType>* eventSource,
+			ObjectSourceType objSource, EventDataType eventData), CString eventLabel = nullptr);
 
 	void operator+=(const Event& other);
 	void Invoke(void* eventInfo);
@@ -119,7 +171,9 @@ private:
 };
 
 template<class EventClassType, class ObjectSourceType, class EventDataType>
-typename Event<ObjectSourceType, EventDataType>::EventHandler register_handler(void (EventClassType::*EventHandler)(Event<ObjectSourceType, EventDataType>* eventSource, ObjectSourceType objSource, EventDataType eventData))
+typename Event<ObjectSourceType, EventDataType>::EventHandler register_handler(
+	void (EventClassType::*EventHandler)(Event<ObjectSourceType, EventDataType>* eventSource,
+		ObjectSourceType objSource, EventDataType eventData))
 {
 
 }
@@ -127,6 +181,5 @@ typename Event<ObjectSourceType, EventDataType>::EventHandler register_handler(v
 #include "SRIN/Core.inc"
 
 #define AddEventHandler(EVENT_METHOD) { this, & EVENT_METHOD }
-
 
 #endif /* CORE_H_ */

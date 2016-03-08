@@ -5,15 +5,12 @@
  *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
-
-
 #include "SRIN/Components/SidebarView.h"
 
 using namespace SRIN::Components;
 
 LIBAPI SidebarView::SidebarView() :
-	Framework::ViewBase(),
-	drawerButtonClick(this, &SidebarView::OnDrawerButtonClick)
+	Framework::ViewBase(), drawerButtonClick(this, &SidebarView::OnDrawerButtonClick)
 {
 	layout = leftPanel = background = currentContent = nullptr;
 }
@@ -42,7 +39,7 @@ LIBAPI Evas_Object* SidebarView::CreateView(Evas_Object* root)
 
 LIBAPI void SidebarView::Attach(ViewBase* view)
 {
-	if(currentContent != nullptr)
+	if (currentContent != nullptr)
 		Detach();
 
 	currentContent = view->Create(layout);
@@ -78,7 +75,7 @@ Evas_Object* SidebarView::GetTitleRightButton(CString* buttonPart)
 
 LIBAPI CString SRIN::Components::SidebarView::GetContentStyle()
 {
-	return nullptr;//"drawers";
+	return nullptr; //"drawers";
 }
 
 void SRIN::Components::SidebarView::DrawerButtonStyle(Evas_Object* button)

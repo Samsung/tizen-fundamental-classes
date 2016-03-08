@@ -10,13 +10,13 @@
 using namespace SRIN::Framework;
 
 LIBAPI ViewBase::ViewBase() :
-		ViewTitle(this)
+	ViewTitle(this)
 {
 	viewRoot = nullptr;
 }
 LIBAPI Evas_Object* ViewBase::Create(Evas_Object* root)
 {
-	if(!this->viewRoot)
+	if (!this->viewRoot)
 		this->viewRoot = CreateView(root);
 
 	return viewRoot;

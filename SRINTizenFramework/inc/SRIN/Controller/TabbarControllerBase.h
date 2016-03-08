@@ -10,12 +10,13 @@
 
 #include "SRIN/Framework/Application.h"
 
-namespace SRIN { namespace Controller {
-	class TabbarControllerBase : public Framework::ControllerBase, public Framework::ViewBase {
+namespace SRIN {
+namespace Controller {
+class TabbarControllerBase: public Framework::ControllerBase, public Framework::ViewBase
+{
 
-	};
-}}
-
-
+};
+}
+}
 
 #endif /* TABBARCONTROLLERBASE_H_ */

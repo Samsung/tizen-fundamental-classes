@@ -10,9 +10,7 @@
 using namespace SRIN::Components;
 
 ComponentBase::ComponentBase() :
-		Enabled(this),
-		Visible(this),
-		Name(this)
+	Enabled(this), Visible(this), Name(this)
 {
 	weightX = EVAS_HINT_EXPAND;
 	alignY = EVAS_HINT_FILL;
@@ -33,7 +31,7 @@ ComponentBase::~ComponentBase()
 
 Evas_Object* ComponentBase::Create(Evas_Object* root)
 {
-	if(!created)
+	if (!created)
 	{
 		this->componentRoot = CreateComponent(root);
 		this->created = true;
@@ -41,32 +39,28 @@ Evas_Object* ComponentBase::Create(Evas_Object* root)
 		evas_object_size_hint_weight_set(this->componentRoot, weightX, weightY);
 		evas_object_size_hint_align_set(this->componentRoot, alignX, alignY);
 
-		if(visible)
+		if (visible)
 			evas_object_show(componentRoot);
 		else
 			evas_object_hide(componentRoot);
 
-		if(!enabled)
+		if (!enabled)
 			elm_object_disabled_set(this->componentRoot, EINA_TRUE);
 	}
 
 	return this->componentRoot;
 }
 
-
-
 ComponentBase::operator Evas_Object*() const
 {
 	return this->componentRoot;
 }
 
-
-
 void ComponentBase::SetEnabled(const bool& enabled)
 {
 	this->enabled = enabled;
 
-	if(componentRoot)
+	if (componentRoot)
 		elm_object_disabled_set(componentRoot, !enabled);
 }
 
@@ -79,8 +73,8 @@ void ComponentBase::SetVisible(const bool& visible)
 {
 	this->visible = visible;
 
-	if(componentRoot)
-		if(visible)
+	if (componentRoot)
+		if (visible)
 			evas_object_show(componentRoot);
 		else
 			evas_object_hide(componentRoot);
@@ -100,5 +94,4 @@ std::string& ComponentBase::GetName()
 {
 	return this->name;
 }
-
 

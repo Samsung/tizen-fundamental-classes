@@ -10,7 +10,7 @@
 using namespace SRIN::Framework;
 
 LIBAPI ControllerBase::ControllerBase(ControllerManager* m, ViewBase* v, CString c) :
-		Manager(m), View(v), ControllerName(c)
+	Manager(m), View(v), ControllerName(c)
 {
 	Title = "";
 }
@@ -46,6 +46,4 @@ LIBAPI void ControllerBase::Reload(void* data)
 LIBAPI ControllerBase::~ControllerBase()
 {
 }
-
-
 

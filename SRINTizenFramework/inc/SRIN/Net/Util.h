@@ -10,10 +10,10 @@
 
 #include <string>
 
-namespace SRIN { namespace Net {
-	std::string Base64Encode(const uint8_t* buffer, size_t length);
-}}
-
-
+namespace SRIN {
+namespace Net {
+std::string Base64Encode(const uint8_t* buffer, size_t length);
+}
+}
 
 #endif /* UTIL_H_ */

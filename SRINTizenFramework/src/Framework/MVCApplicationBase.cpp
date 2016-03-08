@@ -10,9 +10,7 @@
 using namespace SRIN::Framework;
 
 LIBAPI MVCApplicationBase::MVCApplicationBase(CString appPackage, CString mainController) :
-		ApplicationBase(appPackage),
-		StackingControllerManager(this),
-		mainController(mainController)
+	ApplicationBase(appPackage), StackingControllerManager(this), mainController(mainController)
 {
 }
 
@@ -25,8 +23,6 @@ LIBAPI void MVCApplicationBase::OnApplicationCreated()
 {
 	this->NavigateTo(mainController, nullptr);
 }
-
-
 
 LIBAPI MVCApplicationBase::~MVCApplicationBase()
 {

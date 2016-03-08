@@ -5,7 +5,6 @@
  *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
-
 #include "SRIN/Framework/Application.h"
 
 using namespace SRIN::Framework;

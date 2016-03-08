@@ -1,4 +1,3 @@
-
 /*
  * AsyncTask.cpp
  *
@@ -21,13 +20,9 @@ class AsyncTaskObj;
 
 std::map<pthread_t, AsyncTaskObj*> ecoreThreadMap;
 
-enum class TaskState {
-	Undefined = 0,
-	Created = 1,
-	Running = 2,
-	Completed = 3,
-	Cancelling = 4,
-	Cancelled = 5
+enum class TaskState
+{
+	Undefined = 0, Created = 1, Running = 2, Completed = 3, Cancelling = 4, Cancelled = 5
 };
 
 class AsyncTaskObj
@@ -72,14 +67,14 @@ public:
 LIBAPI void* AwaitImpl(AsyncTaskObj* task)
 {
 	{
-		std::lock_guard<std::mutex> lock(task->taskMutex);
+		std::lock_guard < std::mutex > lock(task->taskMutex);
 
 		// If it was dwaited, clear dwait
-		if(task->dwait)
+		if (task->dwait)
 			return nullptr;
 	}
 
-	while(task->state == TaskState::Running || task->state == TaskState::Cancelling)
+	while (task->state == TaskState::Running || task->state == TaskState::Cancelling)
 		usleep(100);
 
 	auto retVal = task->retVal;
@@ -89,7 +84,8 @@ LIBAPI void* AwaitImpl(AsyncTaskObj* task)
 }
 
 template<class R>
-struct TaskContext {
+struct TaskContext
+{
 	std::function<R(void)> func;
 	AsyncTaskObj* task;
 	//Event<R> event;
@@ -108,7 +104,7 @@ void AsyncTaskWorker<void*>(void* data, Ecore_Thread *thread)
 
 	// Sync with other thread to tell that this thread is start processing
 	{
-		std::lock_guard<std::mutex> lock(context->task->taskMutex);
+		std::lock_guard < std::mutex > lock(context->task->taskMutex);
 		context->task->state = TaskState::Running;
 		context->task->Start();
 	}
@@ -116,9 +112,9 @@ void AsyncTaskWorker<void*>(void* data, Ecore_Thread *thread)
 	auto retVal = context->func();
 
 	{
-		std::lock_guard<std::mutex> lock(context->task->taskMutex);
+		std::lock_guard < std::mutex > lock(context->task->taskMutex);
 		context->task->retVal = retVal;
-		if(context->task->state == TaskState::Cancelling)
+		if (context->task->state == TaskState::Cancelling)
 			context->task->state = TaskState::Cancelled;
 		else
 			context->task->state = TaskState::Completed;
@@ -133,7 +129,7 @@ void AsyncTaskWorker<void>(void* data, Ecore_Thread *thread)
 
 	// Sync with other thread to tell that this thread is start processing
 	{
-		std::lock_guard<std::mutex> lock(context->task->taskMutex);
+		std::lock_guard < std::mutex > lock(context->task->taskMutex);
 		context->task->state = TaskState::Running;
 		context->task->Start();
 	}
@@ -142,8 +138,8 @@ void AsyncTaskWorker<void>(void* data, Ecore_Thread *thread)
 
 	// Sync with other thread before notifying that this task is completed
 	{
-		std::lock_guard<std::mutex> lock(context->task->taskMutex);
-		if(context->task->state == TaskState::Cancelling)
+		std::lock_guard < std::mutex > lock(context->task->taskMutex);
+		if (context->task->state == TaskState::Cancelling)
 			context->task->state = TaskState::Cancelled;
 		else
 			context->task->state = TaskState::Completed;
@@ -156,8 +152,7 @@ void AsyncTaskEnd(void* data, Ecore_Thread* thread)
 {
 	TaskContext<T>* context = reinterpret_cast<TaskContext<T>*>(data);
 
-
-	if(context->task->dwait)
+	if (context->task->dwait)
 	{
 		context->task->dwaitCaller(context->task, context->task->retVal);
 		delete context->task;
@@ -171,7 +166,7 @@ void AsyncTaskCancel(void* data, Ecore_Thread* thread)
 {
 	TaskContext<T>* context = reinterpret_cast<TaskContext<T>*>(data);
 
-	if(context->task->dwait)
+	if (context->task->dwait)
 	{
 		delete context->task;
 	}
@@ -180,12 +175,12 @@ void AsyncTaskCancel(void* data, Ecore_Thread* thread)
 }
 
 /*
-template<>
-LIBAPI void await(AsyncTask<void>* task)
-{
-	AwaitImpl(reinterpret_cast<AsyncTaskObj*>(task));
-}
-*/
+ template<>
+ LIBAPI void await(AsyncTask<void>* task)
+ {
+ AwaitImpl(reinterpret_cast<AsyncTaskObj*>(task));
+ }
+ */
 
 template<class T>
 AsyncTaskObj* CreateAsyncTaskGeneric(std::function<T(void)> func, std::function<void(void*, void*)> dispatcher)
@@ -195,7 +190,7 @@ AsyncTaskObj* CreateAsyncTaskGeneric(std::function<T(void)> func, std::function<
 	auto task = new AsyncTaskObj();
 	context->task = task;
 
-	if(dispatcher)
+	if (dispatcher)
 	{
 		task->dwait = true;
 		task->dwaitCaller = dispatcher;
@@ -219,20 +214,20 @@ LIBAPI AsyncTaskObj* CreateAsyncTask(std::function<void(void)> func, std::functi
 
 LIBAPI void DwaitImplVal(AsyncTaskObj* task, std::function<void(void*, void*)> dispatcher)
 {
-	std::lock_guard<std::mutex> lock(task->taskMutex);
+	std::lock_guard < std::mutex > lock(task->taskMutex);
 
 	// If it is already dispatched, just return
 	// TODO try to implement exception later
-	if(task->dwait)
+	if (task->dwait)
 		return;
 
-	if(task->state == TaskState::Completed)
+	if (task->state == TaskState::Completed)
 	{
 		// If the task is already completed, just perform the dispatching
 		dispatcher(task, task->retVal);
 		delete task;
 	}
-	else if(task->state != TaskState::Cancelled)
+	else if (task->state != TaskState::Cancelled)
 	{
 		// If the task is not completed, dispatch the completion notification
 		// to event
@@ -241,10 +236,10 @@ LIBAPI void DwaitImplVal(AsyncTaskObj* task, std::function<void(void*, void*)> d
 	}
 }
 
-
 LIBAPI void dwait(AsyncTask<void>* task, Event<AsyncTask<void>*>& ev)
 {
-	auto dispatcher = [ev] (void* t, void* r) {
+	auto dispatcher = [ev] (void* t, void* r)
+	{
 		ev(reinterpret_cast<AsyncTask<void>*>(t), nullptr);
 	};
 
@@ -254,7 +249,8 @@ LIBAPI void dwait(AsyncTask<void>* task, Event<AsyncTask<void>*>& ev)
 template<>
 LIBAPI AsyncTask<void>* AsyncCall<void>(std::function<void(void)> func, std::function<void(void*, void*)> dispatcher)
 {
-	return reinterpret_cast<AsyncTask<void>*>(CreateAsyncTask(std::function<void(void)>([func] () -> void {
+	return reinterpret_cast<AsyncTask<void>*>(CreateAsyncTask(std::function<void(void)>([func] () -> void
+	{
 		func();
 	}), dispatcher));
 }
@@ -262,7 +258,7 @@ LIBAPI AsyncTask<void>* AsyncCall<void>(std::function<void(void)> func, std::fun
 LIBAPI void AbortImpl(AsyncTaskObj* task)
 {
 	{
-		std::lock_guard<std::mutex> lock(task->taskMutex);
+		std::lock_guard < std::mutex > lock(task->taskMutex);
 		// If it was dwaited, cancel
 		task->dwait = false;
 	}
@@ -272,9 +268,10 @@ LIBAPI void AbortImpl(AsyncTaskObj* task)
 	AwaitImpl(task);
 }
 
-LIBAPI 	std::function<void(void*, void*)> GetDispatcher(Event<AsyncTask<void> *>& ev)
+LIBAPI std::function<void(void*, void*)> GetDispatcher(Event<AsyncTask<void> *>& ev)
 {
-	return [ev] (void* t, void* r) {
+	return [ev] (void* t, void* r)
+	{
 		ev(reinterpret_cast<AsyncTask<void>*>(t), nullptr);
 	};
 }
@@ -283,12 +280,12 @@ LIBAPI bool IsAborting()
 {
 	auto task = ecoreThreadMap[pthread_self()];
 
-	if(task)
+	if (task)
 	{
 		auto cancelling = ecore_thread_check(task->handle);
-		if(cancelling)
+		if (cancelling)
 		{
-			std::lock_guard<std::mutex> lock(task->taskMutex);
+			std::lock_guard < std::mutex > lock(task->taskMutex);
 			task->state = TaskState::Cancelling;
 		}
 
