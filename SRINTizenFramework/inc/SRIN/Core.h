@@ -150,33 +150,33 @@ public:
 	typedef void (EventClass::*EventHandler)(const Event<ObjectSourceType, EventDataType>* eventSource,
 		ObjectSourceType objSource, EventDataType eventData);
 
+	class EventDelegate
+	{
+		EventClass* instance;
+		EventHandler eventHandler;
+	public:
+		template<class EventClassType>
+		EventDelegate(EventClassType* instance,
+				void (EventClassType::*eventHandler)(Event<ObjectSourceType, EventDataType>* eventSource,
+					ObjectSourceType objSource, EventDataType eventData));
+
+		friend class Event;
+	};
+
 	Event();
-	Event(EventClass* eventSource);
-	Event(EventClass* instance, EventHandler eventHandler, CString eventLabel = nullptr);
 
-	template<class EventClassType>
-	Event(EventClassType* instance,
-		void (EventClassType::*eventHandler)(Event<ObjectSourceType, EventDataType>* eventSource,
-			ObjectSourceType objSource, EventDataType eventData), CString eventLabel = nullptr);
-
-	void operator+=(const Event& other);
-	void Invoke(void* eventInfo);
+	void operator+=(const EventDelegate& other);
 	void operator()(ObjectSourceType objSource, EventDataType eventData) const;
 
 private:
-	EventClass* instance;
-	EventHandler eventHandler;
-	EventClass* eventSource;
-	CString eventLabel;
+	struct EventNode
+	{
+		EventClass* instance;
+		EventHandler eventHandler;
+		EventNode* next;
+	};
+	EventNode* first;
 };
-
-template<class EventClassType, class ObjectSourceType, class EventDataType>
-typename Event<ObjectSourceType, EventDataType>::EventHandler register_handler(
-	void (EventClassType::*EventHandler)(Event<ObjectSourceType, EventDataType>* eventSource,
-		ObjectSourceType objSource, EventDataType eventData))
-{
-
-}
 
 #include "SRIN/Core.inc"
 

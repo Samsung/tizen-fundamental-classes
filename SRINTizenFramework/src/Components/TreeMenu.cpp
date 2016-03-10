@@ -16,7 +16,7 @@ typedef struct
 } TreeMenuItemPackage;
 
 MenuItem::MenuItem(std::string menuText, std::string menuIcon, void* itemData) :
-	itemData(itemData), OnMenuItemClick(this), menuIcon(menuIcon), genlistItem(nullptr), expanded(false)
+	itemData(itemData), menuIcon(menuIcon), genlistItem(nullptr), expanded(false)
 {
 	MenuText = menuText;
 }
@@ -130,11 +130,12 @@ void TreeMenu::GenerateRootMenu()
 }
 
 TreeMenu::TreeMenu() :
-	genlist(nullptr), itemClass(nullptr), OnMenuSelectedInternal(this, &TreeMenu::MenuSelectedInternal), OnMenuExpanded(
-		this, &TreeMenu::MenuExpanded), OnMenuContracted(this, &TreeMenu::MenuContracted), OnMenuSelected(this)
+	genlist(nullptr), itemClass(nullptr)
 
 {
-
+	OnMenuSelectedInternal +=  { this, &TreeMenu::MenuSelectedInternal };
+	OnMenuExpanded += { this, &TreeMenu::MenuExpanded };
+	OnMenuContracted += { this, &TreeMenu::MenuContracted };
 }
 
 void TreeMenu::AddMenu(MenuItem* menu)

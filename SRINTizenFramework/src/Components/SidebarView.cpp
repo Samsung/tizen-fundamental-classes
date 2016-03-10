@@ -10,9 +10,10 @@
 using namespace SRIN::Components;
 
 LIBAPI SidebarView::SidebarView() :
-	Framework::ViewBase(), drawerButtonClick(this, &SidebarView::OnDrawerButtonClick)
+	Framework::ViewBase()
 {
 	layout = leftPanel = background = currentContent = nullptr;
+	drawerButtonClick += { this, &SidebarView::OnDrawerButtonClick };
 }
 
 LIBAPI Evas_Object* SidebarView::CreateView(Evas_Object* root)

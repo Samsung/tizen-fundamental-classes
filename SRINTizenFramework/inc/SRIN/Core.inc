@@ -7,38 +7,35 @@
 
 template<class ObjectSourceType, class EventDataType>
 inline Event<ObjectSourceType, EventDataType>::Event() :
-		instance(nullptr), eventHandler(nullptr), eventSource(nullptr), eventLabel(nullptr)
+	first(nullptr)
 {
 }
 
-template<class ObjectSourceType, class EventDataType>
-inline Event<ObjectSourceType, EventDataType>::Event(EventClass* eventSource) :
-		instance(nullptr), eventHandler(nullptr), eventSource(eventSource), eventLabel(nullptr)
-	{ }
-
-template<class ObjectSourceType, class EventDataType>
-inline Event<ObjectSourceType, EventDataType>::Event(EventClass* instance, EventHandler eventHandler, CString eventLabel) :
-		instance(instance), eventHandler(eventHandler), eventSource(nullptr), eventLabel(eventLabel)
-	{ }
 
 template<class ObjectSourceType, class EventDataType>
 template<class EventClassType>
-inline Event<ObjectSourceType, EventDataType>::Event(EventClassType* instance, void (EventClassType::* eventHandler)(Event<ObjectSourceType, EventDataType>* eventSource, ObjectSourceType objSource, EventDataType eventData) , CString eventLabel) :
-	instance(instance), eventHandler(reinterpret_cast<Event::EventHandler>(eventHandler)), eventSource(nullptr), eventLabel(eventLabel)
+inline Event<ObjectSourceType, EventDataType>::EventDelegate::EventDelegate(EventClassType* instance, void (EventClassType::* eventHandler)(Event<ObjectSourceType, EventDataType>* eventSource, ObjectSourceType objSource, EventDataType eventData)) :
+	instance(instance), eventHandler(reinterpret_cast<Event::EventHandler>(eventHandler))
 	{ }
 
 
 template<class ObjectSourceType, class EventDataType>
-inline void Event<ObjectSourceType, EventDataType>::operator+=(const Event& other)
+inline void Event<ObjectSourceType, EventDataType>::operator+=(const EventDelegate& other)
 {
-	this->instance = other.instance;
-	this->eventHandler = other.eventHandler;
+	auto newNode = new EventNode({ other.instance, other.eventHandler, this->first });
+	this->first = newNode;
 }
 
 
 template<class ObjectSourceType, class EventDataType>
 inline void Event<ObjectSourceType, EventDataType>::operator()(ObjectSourceType objSource, EventDataType eventData) const
 {
-	if(this->instance && this->eventHandler)
-		(this->instance->*(this->eventHandler))(this, objSource, eventData);
+	auto current = this->first;
+	
+	while(current != nullptr)
+	{
+		if(current->instance && current->eventHandler)
+			(current->instance->*(current->eventHandler))(this, objSource, eventData);
+		current = current->next;
+	}
 }
