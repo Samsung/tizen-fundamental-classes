@@ -87,7 +87,9 @@ private:
 
 	BackButtonCallback backButtonCallback;
 
-public:
+
+
+protected:
 	/**
 	 * Root win object
 	 */
@@ -102,6 +104,9 @@ public:
 	 * Root frame object. Should never be modified in any condition
 	 */
 	Evas_Object* rootFrame;
+
+public:
+
 
 	const CString packageName;
 
@@ -439,7 +444,7 @@ private:
 public:
 	MVCApplicationBase(CString appPackage, CString mainController);
 	virtual bool OnBackButtonPressed() final;
-	virtual void OnApplicationCreated() final;
+	virtual void OnApplicationCreated();
 	virtual ~MVCApplicationBase();
 };
 
