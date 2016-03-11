@@ -65,8 +65,7 @@ LIBAPI Evas_Object* SidebarView::GetTitleLeftButton(CString* buttonPart)
 
 LIBAPI void SidebarView::OnDrawerButtonClick(ElementaryEvent* eventSource, Evas_Object* objSource, void* eventData)
 {
-	if (!elm_object_disabled_get(leftPanel))
-		elm_panel_toggle(leftPanel);
+	ToggleSidebar();
 }
 
 Evas_Object* SidebarView::GetTitleRightButton(CString* buttonPart)
@@ -82,4 +81,10 @@ LIBAPI CString SRIN::Components::SidebarView::GetContentStyle()
 void SRIN::Components::SidebarView::DrawerButtonStyle(Evas_Object* button)
 {
 	elm_object_style_set(button, "naviframe/drawers");
+}
+
+void SRIN::Components::SidebarView::ToggleSidebar()
+{
+	if (!elm_object_disabled_get(leftPanel))
+		elm_panel_toggle(leftPanel);
 }

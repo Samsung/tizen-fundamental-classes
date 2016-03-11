@@ -1,7 +1,5 @@
 /*
- * SidebarView.h * @note When overriding this method, always apply the changes to the EFL directly to ensure the appropriate
-	 * 		 UI will be rendered. Check IsCreated method to indicate whether this component has been created or not.
-	 * 		 And always call the parent method to ensure the state is stored internally
+ * SidebarView.h
  *
  *  Created on: Feb 22, 2016
  *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
@@ -35,6 +33,7 @@ public:
 	SidebarView();
 	virtual void Attach(ViewBase* view);
 	virtual void Detach();
+	void ToggleSidebar();
 	virtual Evas_Object* GetTitleLeftButton(CString* buttonPart) final;
 	virtual Evas_Object* GetTitleRightButton(CString* buttonPart) final;
 	virtual CString GetContentStyle();

@@ -26,6 +26,30 @@ inline void Event<ObjectSourceType, EventDataType>::operator+=(const EventDelega
 	this->first = newNode;
 }
 
+template<class ObjectSourceType, class EventDataType>
+inline void Event<ObjectSourceType, EventDataType>::operator-=(const EventDelegate& other)
+{
+	auto current = this->first;
+		
+	while(current != nullptr)
+	{
+		if(current->instance == other.instance && current->eventHandler == other.eventHandler)
+		{
+			if(current == this->first)
+				this->first = current->next;
+			
+			auto deleted = current;
+			current = current->next;
+			delete deleted;
+		}
+		else
+		{
+			current = current->next;
+		}
+	}
+}
+
+
 
 template<class ObjectSourceType, class EventDataType>
 inline void Event<ObjectSourceType, EventDataType>::operator()(ObjectSourceType objSource, EventDataType eventData) const

@@ -14,6 +14,12 @@
 #include <memory>
 #include "SRIN/Core.h"
 
+#if _DEBUG
+
+#include <cassert>
+
+#endif
+
 namespace SRIN {
 
 /*

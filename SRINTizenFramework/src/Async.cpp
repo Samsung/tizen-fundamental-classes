@@ -14,6 +14,13 @@
 #include <mutex>
 #include <map>
 
+#ifdef LOG_TAG
+#undef LOG_TAG
+#endif
+
+#define LOG_TAG "SRINFW-Async"
+
+
 namespace SRIN {
 
 class AsyncTaskObj;
@@ -43,6 +50,7 @@ public:
 		state = TaskState::Created;
 		dwait = false;
 		threadId = 0;
+		dlog_print(DLOG_DEBUG, LOG_TAG, "Task created %d", this);
 	}
 
 	void Start()
@@ -89,6 +97,16 @@ struct TaskContext
 	std::function<R(void)> func;
 	AsyncTaskObj* task;
 	//Event<R> event;
+
+	TaskContext()
+	{
+		dlog_print(DLOG_DEBUG, LOG_TAG, "Context created");
+	}
+
+	~TaskContext()
+	{
+		dlog_print(DLOG_DEBUG, LOG_TAG, "Context destroyed");
+	}
 };
 
 template<class R>
@@ -115,7 +133,10 @@ void AsyncTaskWorker<void*>(void* data, Ecore_Thread *thread)
 		std::lock_guard < std::mutex > lock(context->task->taskMutex);
 		context->task->retVal = retVal;
 		if (context->task->state == TaskState::Cancelling)
+		{
 			context->task->state = TaskState::Cancelled;
+			delete context;
+		}
 		else
 			context->task->state = TaskState::Completed;
 	}
@@ -140,7 +161,10 @@ void AsyncTaskWorker<void>(void* data, Ecore_Thread *thread)
 	{
 		std::lock_guard < std::mutex > lock(context->task->taskMutex);
 		if (context->task->state == TaskState::Cancelling)
+		{
 			context->task->state = TaskState::Cancelled;
+			delete context;
+		}
 		else
 			context->task->state = TaskState::Completed;
 	}
@@ -196,7 +220,7 @@ AsyncTaskObj* CreateAsyncTaskGeneric(std::function<T(void)> func, std::function<
 		task->dwaitCaller = dispatcher;
 	}
 
-	task->handle = ecore_thread_run(AsyncTaskWorker<T>, AsyncTaskEnd<T>, AsyncTaskCancel<T>, context);
+	task->handle = ecore_thread_run(AsyncTaskWorker<T>, AsyncTaskEnd<T>, nullptr, context);
 	return task;
 }
 

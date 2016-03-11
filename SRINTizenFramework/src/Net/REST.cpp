@@ -143,12 +143,13 @@ std::string SRIN::Net::RESTServiceTemplateBase::PrepareUrl()
 			if (first)
 				first = false;
 			else
-				urlBuffer << "+";
+				urlBuffer << "&";
 
 			urlBuffer << queryString.first << "=" << queryString.second->GetEncodedValue();
 		}
 	}
 	std::string finalUrl = urlBuffer.str();
+	dlog_print(DLOG_DEBUG, LOG_TAG, "Final url: %s", finalUrl.c_str());
 	return finalUrl;
 }
 
@@ -247,8 +248,13 @@ RESTResultBase SRIN::Net::RESTServiceTemplateBase::PerformCall()
 		{
 			std::string response(buffer.data(), buffer.size());
 			curl_easy_getinfo(curlHandle, CURLINFO_RESPONSE_CODE, &returnObj.httpCode);
+
 			returnObj.responseObj = OnProcessResponseIntl(returnObj.httpCode, response, returnObj.errorCode,
 				returnObj.errorMessage);
+
+			if(returnObj.errorCode)
+				returnObj.resultType = ResultType::ServerError;
+
 		}
 	}
 	else
@@ -263,6 +269,7 @@ RESTResultBase SRIN::Net::RESTServiceTemplateBase::PerformCall()
 
 std::string* SRIN::Net::SimpleRESTServiceBase::OnProcessResponse(const std::string& responseStr)
 {
+	return nullptr;
 }
 
 RESTResultBase SRIN::Net::RESTServiceTemplateBase::CallInternal()
@@ -270,6 +277,10 @@ RESTResultBase SRIN::Net::RESTServiceTemplateBase::CallInternal()
 	return PerformCall();
 }
 
-SRIN::Net::RESTResultBase::RESTResultBase()
+SRIN::Net::RESTResultBase::RESTResultBase() :
+	responseObj(nullptr),
+	httpCode(0),
+	errorCode(0),
+	resultType(ResultType::OK)
 {
 }
