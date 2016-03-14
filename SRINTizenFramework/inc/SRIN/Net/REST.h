@@ -9,7 +9,6 @@
 #define SRINFW_REST_H_
 
 #include "SRIN/Core.h"
-#include "SRIN/Async.h"
 
 #include <tuple>
 #include <vector>

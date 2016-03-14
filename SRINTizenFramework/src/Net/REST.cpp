@@ -167,8 +167,6 @@ public:
 
 size_t RESTServiceTemplateBase_WriteCallback(char *data, size_t size, size_t nmemb, void* d)
 {
-	dlog_print(DLOG_DEBUG, LOG_TAG, "Buffer Write...");
-
 	auto str = reinterpret_cast<std::vector<char>*>(d);
 
 	size_t realsize = nmemb * size;

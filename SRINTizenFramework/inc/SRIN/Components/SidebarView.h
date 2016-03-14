@@ -17,7 +17,7 @@ namespace Components {
 class LIBAPI SidebarView: public Framework::ViewBase, public Framework::IAttachable, public Framework::INaviframeContent
 {
 private:
-	Evas_Object* layout;
+
 	Evas_Object* leftPanel;
 	Evas_Object* background;
 	Evas_Object* currentContent;
@@ -26,6 +26,7 @@ private:
 
 	void OnDrawerButtonClick(ElementaryEvent* eventSource, Evas_Object* objSource, void* eventData);
 protected:
+	Evas_Object* layout;
 	virtual Evas_Object* CreateView(Evas_Object* root);
 	virtual Evas_Object* CreateSidebar(Evas_Object* root) = 0;
 	virtual void DrawerButtonStyle(Evas_Object* button);

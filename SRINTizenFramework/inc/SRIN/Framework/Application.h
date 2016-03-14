@@ -8,6 +8,8 @@
 #ifndef SRINFW__APPLICATION_H__
 #define SRINFW__APPLICATION_H__
 
+#define __STDBOOL_H // Remove STDBOOL
+
 #include <app.h>
 
 extern "C" {
