@@ -71,7 +71,7 @@ namespace Components {
 		SimpleGenericListItemClass(CString styleName);
 	public:
 		virtual std::string GetString(T* data, Evas_Object *obj, const char *part) final;
-		virtual Evas_Object* GetContent(T* data, Evas_Object *obj, const char *part) final;
+		virtual Evas_Object* GetContent(T* data, Evas_Object *obj, const char *part);
 		virtual ~SimpleGenericListItemClass() { };
 	};
 

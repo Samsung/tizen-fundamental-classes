@@ -34,8 +34,8 @@ public:
 	virtual void Attach(ViewBase* view);
 	virtual void Detach();
 	void ToggleSidebar();
-	virtual Evas_Object* GetTitleLeftButton(CString* buttonPart) final;
-	virtual Evas_Object* GetTitleRightButton(CString* buttonPart) final;
+	virtual Evas_Object* GetTitleLeftButton(CString* buttonPart);
+	virtual Evas_Object* GetTitleRightButton(CString* buttonPart);
 	virtual CString GetContentStyle();
 
 	typedef void (*DrawerButtonStyleFunc)(Evas_Object* btn);
