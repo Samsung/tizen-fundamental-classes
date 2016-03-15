@@ -20,7 +20,7 @@ typedef struct
 void Genlist_ClickedEventHandler(void* data, Evas_Object* obj, void* eventData)
 {
 	auto package = static_cast<GenlistItemClassPackage*>(data);
-	package->genlist->OnItemClicked(package->genlist, package->data);
+	package->genlist->ItemClicked(package->genlist, package->data);
 }
 
 /* =================================================================================================================
@@ -146,6 +146,8 @@ LIBAPI SRIN::Components::GenericList::GenericList() :
 	onScrolledBottomInternal += { this, &GenericList::OnScrolledBottomInternal };
 	onScrolledTopInternal += { this, &GenericList::OnScrolledTopInternal };
 	onDummyRealized += { this, &GenericList::OnDummyRealized };
+	onScrollingStart += { this, &GenericList::OnScrollingStart };
+	onScrollingEnd += { this, &GenericList::OnScrollingEnd };
 
 	dummyBottom = nullptr;
 	dummyBottomItemClass = elm_genlist_item_class_new();
@@ -248,6 +250,8 @@ LIBAPI Evas_Object* SRIN::Components::GenericList::CreateComponent(Evas_Object* 
 	evas_object_smart_callback_add(genlist, "edge,top", SmartEventHandler, &onScrolledTopInternal);
 	evas_object_smart_callback_add(genlist, "edge,bottom", SmartEventHandler, &onScrolledBottomInternal);
 	evas_object_smart_callback_add(genlist, "realized", SmartEventHandler, &onDummyRealized);
+	evas_object_smart_callback_add(genlist, "scroll,drag,start", SmartEventHandler, &onScrollingStart);
+	evas_object_smart_callback_add(genlist, "scroll,drag,stop", SmartEventHandler, &onScrollingEnd);
 	elm_genlist_highlight_mode_set(genlist, EINA_FALSE);
 	return genlist;
 }
@@ -259,12 +263,12 @@ LIBAPI GenericListAdapter*& SRIN::Components::GenericList::GetAdapter()
 
 void SRIN::Components::GenericList::OnScrolledBottomInternal(ElementaryEvent* event, Evas_Object* obj, void* eventData)
 {
-	OnScrolledBottom(this, eventData);
+	ScrolledBottom(this, eventData);
 }
 
 void SRIN::Components::GenericList::OnScrolledTopInternal(ElementaryEvent* event, Evas_Object* obj, void* eventData)
 {
-	OnScrolledTop(this, eventData);
+	ScrolledTop(this, eventData);
 }
 
 void SRIN::Components::GenericList::OnDummyRealized(ElementaryEvent* event, Evas_Object* obj, void* eventData)
@@ -272,7 +276,7 @@ void SRIN::Components::GenericList::OnDummyRealized(ElementaryEvent* event, Evas
 	if(eventData == dummyBottom)
 	{
 		// If the dummy bottom is realized, call the reaching bottom function
-		OnReachingBottom(this, nullptr);
+		ReachingBottom(this, nullptr);
 	}
 }
 
@@ -298,4 +302,14 @@ void SRIN::Components::GenericList::SetOverscroll(const bool& o)
 bool& SRIN::Components::GenericList::GetOverscroll()
 {
 	return this->overscroll;
+}
+
+void SRIN::Components::GenericList::OnScrollingStart(ElementaryEvent* event, Evas_Object* obj, void* eventData)
+{
+	ScrollingStart(this, nullptr);
+}
+
+void SRIN::Components::GenericList::OnScrollingEnd(ElementaryEvent* event, Evas_Object* obj, void* eventData)
+{
+	ScrollingEnd(this, nullptr);
 }

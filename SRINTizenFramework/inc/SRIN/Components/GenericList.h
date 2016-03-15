@@ -136,21 +136,27 @@ namespace Components {
 		ElementaryEvent onScrolledTopInternal;
 		ElementaryEvent onDummyRealized;
 		ElementaryEvent onItemClickedInternal;
+		ElementaryEvent onScrollingStart;
+		ElementaryEvent onScrollingEnd;
 
 
 		void OnScrolledBottomInternal(ElementaryEvent* event, Evas_Object* obj, void* eventData);
 		void OnScrolledTopInternal(ElementaryEvent* event, Evas_Object* obj, void* eventData);
 		void OnDummyRealized(ElementaryEvent* event, Evas_Object* obj, void* eventData);
+		void OnScrollingStart(ElementaryEvent* event, Evas_Object* obj, void* eventData);
+		void OnScrollingEnd(ElementaryEvent* event, Evas_Object* obj, void* eventData);
 	protected:
 		virtual Evas_Object* CreateComponent(Evas_Object* root);
 	public:
 		GenericList();
 		Property<GenericList, GenericListAdapter*, &GenericList::GetAdapter, &GenericList::SetAdapter> Adapter;
 		Property<GenericList, bool, &GenericList::GetOverscroll, &GenericList::SetOverscroll> Overscroll;
-		Event<GenericList*, void*> OnScrolledBottom;
-		Event<GenericList*, void*> OnScrolledTop;
-		Event<GenericList*, void*> OnReachingBottom;
-		Event<GenericList*, void*> OnItemClicked;
+		Event<GenericList*, void*> ScrolledBottom;
+		Event<GenericList*, void*> ScrolledTop;
+		Event<GenericList*, void*> ReachingBottom;
+		Event<GenericList*, void*> ItemClicked;
+		Event<GenericList*, void*> ScrollingStart;
+		Event<GenericList*, void*> ScrollingEnd;
 	};
 }
 }
