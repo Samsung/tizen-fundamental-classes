@@ -12,7 +12,7 @@
 
 namespace SRIN {
 namespace Components {
-class Field: public ComponentBase
+class LIBAPI Field: public ComponentBase
 {
 private:
 	std::string text;
@@ -34,6 +34,10 @@ public:
 	void SetHint(const CString& hint);
 	void SetFocus(const bool& disable);
 	void SetFontStyle(const CString& style);
+	void SetReturnKeyType(const Elm_Input_Panel_Return_Key_Type& type);
+	void SetKeyboardType(const Elm_Input_Panel_Layout& type);
+
+	ElementaryEvent onReturnKeyClick;
 
 	Property<Field, std::string, &Field::GetText, &Field::SetText> Text;
 	Property<Field, bool, &Field::GetMultiline, &Field::SetMultiline> Multiline;

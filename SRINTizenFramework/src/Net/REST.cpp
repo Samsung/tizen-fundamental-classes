@@ -65,6 +65,30 @@ GSPDefineDefault(float);
 GSPDefineDefault(double);
 
 template<>
+LIBAPI std::string SRIN::Net::GenericServiceParameter<std::string>::GetRawValue()
+{
+	return this->value;
+}
+
+template<>
+LIBAPI std::string SRIN::Net::GenericServiceParameter<std::string>::GetEncodedValue()
+{
+	std::stringstream st;
+	size_t len = this->value.length();
+	auto str = this->value.c_str();
+
+	for(int i = 0; i <= len; i++)
+	{
+		if(isalnum(str[i]))
+			st << str[i];
+		else
+			st << "%" << std::to_string((int)str[i]);
+	}
+	return st.str();
+}
+
+
+template<>
 LIBAPI std::string GenericServiceParameter<BasicAuthAccount>::GetRawValue()
 {
 	abort(); // The application must never reach this place

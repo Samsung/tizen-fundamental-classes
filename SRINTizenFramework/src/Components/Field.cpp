@@ -8,9 +8,9 @@
 #include "SRIN/Framework/Application.h"
 #include "SRIN/Components/Field.h"
 
-#define FILE_EDC_FIELD "srin/edc/FieldView.edj"
+#define FILE_EDC_FIELD "SRIN/edc/Field.edj"
 
-Evas_Object* SRIN::Components::Field::CreateComponent(Evas_Object* root)
+LIBAPI Evas_Object* SRIN::Components::Field::CreateComponent(Evas_Object* root)
 {
 	Evas_Object* box;
 
@@ -47,11 +47,11 @@ Evas_Object* SRIN::Components::Field::CreateComponent(Evas_Object* root)
 	}
 
 	elm_entry_editable_set(field, EINA_TRUE);
-
+	evas_object_smart_callback_add(field, "activated", SmartEventHandler, &onReturnKeyClick);
 	return box;
 }
 
-void SRIN::Components::Field::SetText(const std::string& text)
+LIBAPI void SRIN::Components::Field::SetText(const std::string& text)
 {
 	this->text = text;
 
@@ -59,7 +59,7 @@ void SRIN::Components::Field::SetText(const std::string& text)
 		elm_object_text_set(this->field, this->text.c_str());
 }
 
-std::string& SRIN::Components::Field::GetText()
+LIBAPI std::string& SRIN::Components::Field::GetText()
 {
 	if (field)
 	{
@@ -70,7 +70,7 @@ std::string& SRIN::Components::Field::GetText()
 	return this->text;
 }
 
-void SRIN::Components::Field::SetMultiline(const bool& val)
+LIBAPI void SRIN::Components::Field::SetMultiline(const bool& val)
 {
 	this->multiline = val;
 	if (this->componentRoot)
@@ -89,22 +89,22 @@ void SRIN::Components::Field::SetMultiline(const bool& val)
 	}
 }
 
-bool& SRIN::Components::Field::GetMultiline()
+LIBAPI bool& SRIN::Components::Field::GetMultiline()
 {
 	return multiline;
 }
 
-void SRIN::Components::Field::SetBottomBorderVisible(const bool& visible)
+LIBAPI void SRIN::Components::Field::SetBottomBorderVisible(const bool& visible)
 {
 	bottomBorder = visible;
 }
 
-bool& SRIN::Components::Field::GetBottomBorderVisible()
+LIBAPI bool& SRIN::Components::Field::GetBottomBorderVisible()
 {
 	return bottomBorder;
 }
 
-SRIN::Components::Field::Field() :
+LIBAPI SRIN::Components::Field::Field() :
 	Text(this), Multiline(this), BottomBorderVisible(this)
 {
 	field = nullptr;
@@ -113,7 +113,7 @@ SRIN::Components::Field::Field() :
 	bottomBorder = false;
 }
 
-void SRIN::Components::Field::SetDisable(const bool& disable)
+LIBAPI void SRIN::Components::Field::SetDisable(const bool& disable)
 {
 	if (disable)
 	{
@@ -125,24 +125,37 @@ void SRIN::Components::Field::SetDisable(const bool& disable)
 	}
 }
 
-void SRIN::Components::Field::SetHint(const CString& hint)
+LIBAPI void SRIN::Components::Field::SetHint(const CString& hint)
 {
 	elm_object_part_text_set(field, "guide", hint);
 }
 
-void SRIN::Components::Field::SetFocus(const bool& disable)
+LIBAPI void SRIN::Components::Field::SetFocus(const bool& disable)
 {
 	if (disable)
 	{
 		elm_object_focus_set(field, EINA_TRUE);
+		elm_entry_input_panel_show_on_demand_set(field, EINA_FALSE);
 	}
 	else
 	{
 		elm_object_focus_set(field, EINA_FALSE);
+		elm_entry_input_panel_show_on_demand_set(field, EINA_TRUE);
 	}
 }
 
-void SRIN::Components::Field::SetFontStyle(const CString& style)
+LIBAPI void SRIN::Components::Field::SetFontStyle(const CString& style)
 {
 	elm_entry_text_style_user_push(field, style);
+}
+
+void SRIN::Components::Field::SetReturnKeyType(
+		const Elm_Input_Panel_Return_Key_Type& type) {
+	elm_entry_input_panel_return_key_type_set(field, type);
+
+}
+
+void SRIN::Components::Field::SetKeyboardType(
+		const Elm_Input_Panel_Layout& type) {
+	elm_entry_input_panel_layout_set(field, type);
 }
