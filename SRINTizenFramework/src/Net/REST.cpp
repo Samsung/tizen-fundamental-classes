@@ -82,7 +82,7 @@ LIBAPI std::string SRIN::Net::GenericServiceParameter<std::string>::GetEncodedVa
 		if(isalnum(str[i]))
 			st << str[i];
 		else
-			st << "%" << std::to_string((int)str[i]);
+			st << "%" << std::hex << ((int)str[i]);
 	}
 	return st.str();
 }
