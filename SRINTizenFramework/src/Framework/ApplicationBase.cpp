@@ -263,6 +263,11 @@ LIBAPI void ApplicationBase::BackButtonPressed()
 		ui_app_exit();
 }
 
+LIBAPI Evas_Object* ApplicationBase::GetApplicationConformant()
+{
+	return this->conform;
+}
+
 LIBAPI bool ApplicationBase::ApplicationCreate()
 {
 	elm_config_accel_preference_set("3d");

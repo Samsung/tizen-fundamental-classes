@@ -225,6 +225,8 @@ public:
 
 	void SetIndicatorVisibility(bool value);
 
+	Evas_Object* GetApplicationConformant();
+
 	/**
 	 * Main method to start the application loop using an ApplicationBase instance
 	 */
