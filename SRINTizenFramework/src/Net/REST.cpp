@@ -294,6 +294,11 @@ std::string* SRIN::Net::SimpleRESTServiceBase::OnProcessResponse(const std::stri
 	return nullptr;
 }
 
+SRIN::Net::RESTServiceTemplateBase::~RESTServiceTemplateBase()
+{
+	dlog_print(DLOG_DEBUG, LOG_TAG, "REST service destroyed");
+}
+
 RESTResultBase SRIN::Net::RESTServiceTemplateBase::CallInternal()
 {
 	return PerformCall();

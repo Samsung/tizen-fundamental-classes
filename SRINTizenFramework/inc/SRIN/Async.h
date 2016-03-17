@@ -22,29 +22,7 @@
 
 namespace SRIN {
 
-/*
- * http://stackoverflow.com/questions/7943525/is-it-possible-to-figure-out-the-parameter-type-and-return-type-of-a-lambda
- */
-template<typename T>
-struct function_traits: public function_traits<decltype(&T::operator())>
-{
-};
 
-template<typename ClassType, typename ReturnType, typename ... Args>
-struct function_traits<ReturnType (ClassType::*)(Args...) const>
-{
-	enum
-	{
-		arity = sizeof...(Args)};
-
-	typedef ReturnType result_type;
-
-	template <size_t i>
-	struct arg
-	{
-		typedef typename std::tuple_element<i, std::tuple<Args...>>::type type;
-	};
-};
 
 /**
  * Handle for every asynchronous task that is performed using async keyword. The handle of this object is returned when
@@ -76,6 +54,7 @@ AsyncTaskObj* CreateAsyncTask(std::function<void(void)> func, std::function<void
 void* AwaitImpl(AsyncTaskObj* task);
 void DwaitImplVal(AsyncTaskObj* task, std::function<void(void*, void*)> dispatcher);
 void AbortImpl(AsyncTaskObj* task);
+void AbortImplNoBlock(AsyncTaskObj* task);
 
 template<class R>
 struct DispatchAwaitBuilder
@@ -104,18 +83,7 @@ struct DispatchAsyncBuilder<void>
 	EventType& eventTarget;
 };
 
-// Cancelling function trait for type DispatchAsyncBuilder so the overload can call correct function
-template<>
-template<class Lambda>
-struct function_traits<DispatchAsyncBuilder<Lambda>>
-{
-};
 
-template<>
-template<class R>
-struct function_traits<AsyncTask<R>*>
-{
-};
 
 template<>
 template<class R>
@@ -196,6 +164,16 @@ public:
 	}
 };
 
+struct AbortBuilderNoBlock
+{
+public:
+	template<class R>
+	void operator&(AsyncTask<R>* task)
+	{
+		AbortImplNoBlock(reinterpret_cast<AsyncTaskObj*>(task));
+	}
+};
+
 template<class R>
 DispatchAwaitBuilder<R> operator>>(AsyncTask<R>* task, Event<AsyncTask<R>*, R>& eventTarget)
 {
@@ -216,7 +194,8 @@ bool IsAborting();
 #define s_async AsyncBuilder() &
 #define s_await AwaitBuilder() &
 #define s_abort_return if(IsAborting()) return
-#define s_abort_async AbortBuilder() &
+#define s_abort_async AbortBuilderNoBlock() &
+#define s_abort_await AbortBuilder() &
 
 template<class R>
 AsyncTask<R>* AsyncCall(std::function<R(void)> func, std::function<void(void*, void*)> dispatcher)
@@ -242,5 +221,18 @@ void dwait(AsyncTask<R>* task, Event<AsyncTask<R>*, R>& eventTarget)
 }
 
 }
+
+// Cancelling function trait for type DispatchAsyncBuilder so the overload can call correct function
+template<>
+template<class Lambda>
+struct function_traits<SRIN::DispatchAsyncBuilder<Lambda>>
+{
+};
+
+template<>
+template<class R>
+struct function_traits<SRIN::AsyncTask<R>*>
+{
+};
 
 #endif /* ASYNCTASK_H_ */

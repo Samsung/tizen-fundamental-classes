@@ -140,6 +140,8 @@ public:
 		}
 	};
 
+	virtual ~RESTServiceTemplateBase();
+
 protected:
 	RESTServiceTemplateBase(std::string url, HTTPMode httpMode);
 
@@ -183,6 +185,11 @@ public:
 	RESTResult<ResponseType> Call()
 	{
 		return RESTResult<ResponseType>(CallInternal());
+	}
+
+	virtual ~RESTServiceBase()
+	{
+
 	}
 };
 

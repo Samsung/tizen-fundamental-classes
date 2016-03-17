@@ -292,6 +292,19 @@ LIBAPI void AbortImpl(AsyncTaskObj* task)
 	AwaitImpl(task);
 }
 
+LIBAPI void AbortImplNoBlock(AsyncTaskObj* task)
+{
+	{
+		std::lock_guard < std::mutex > lock(task->taskMutex);
+		// Redirect the waiting to a dummy empty event
+		task->dwait = true;
+		task->dwaitCaller = [] (void* a, void* b) { };
+	}
+
+	// Sign it to cancel the thread
+	ecore_thread_cancel(task->handle);
+}
+
 LIBAPI std::function<void(void*, void*)> GetDispatcher(Event<AsyncTask<void> *>& ev)
 {
 	return [ev] (void* t, void* r)
@@ -300,7 +313,9 @@ LIBAPI std::function<void(void*, void*)> GetDispatcher(Event<AsyncTask<void> *>&
 	};
 }
 
-LIBAPI bool IsAborting()
+
+
+bool IsAborting()
 {
 	auto task = ecoreThreadMap[pthread_self()];
 

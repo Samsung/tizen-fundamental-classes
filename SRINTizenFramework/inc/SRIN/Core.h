@@ -20,6 +20,31 @@
 
 typedef const char* CString;
 
+/*
+ * http://stackoverflow.com/questions/7943525/is-it-possible-to-figure-out-the-parameter-type-and-return-type-of-a-lambda
+ */
+template<typename T>
+struct function_traits: public function_traits<decltype(&T::operator())>
+{
+};
+
+template<typename ClassType, typename ReturnType, typename ... Args>
+struct function_traits<ReturnType (ClassType::*)(Args...) const>
+{
+	enum
+	{
+		arity = sizeof...(Args)
+	};
+
+	typedef ReturnType result_type;
+
+	template <size_t i>
+	struct arg
+	{
+		typedef typename std::tuple_element<i, std::tuple<Args...>>::type type;
+	};
+};
+
 template<class DefiningClass, class ValueType, ValueType& (DefiningClass::*GetFunc)(), void (DefiningClass::*SetFunc)(
 	const ValueType&)>
 class Property
