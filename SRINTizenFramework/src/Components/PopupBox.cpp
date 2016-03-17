@@ -82,7 +82,7 @@ LIBAPI void SRIN::Components::PopupBox::Show() {
 		elm_object_style_set(btn, "popup");
 		elm_object_text_set(btn, buttonOneText.c_str());
 		elm_object_part_content_set(popup, "button1", btn);
-		evas_object_smart_callback_add(btn, "clicked", SmartEventHandler, &buttonOneClick);
+		evas_object_smart_callback_add(btn, "clicked", &SmartEventHandler, &buttonOneClick);
 
 		if(buttonOneImage.size() > 0)
 		{
@@ -102,7 +102,7 @@ LIBAPI void SRIN::Components::PopupBox::Show() {
 		elm_object_style_set(btn, "popup");
 		elm_object_text_set(btn, buttonTwoText.c_str());
 		elm_object_part_content_set(popup, "button2", btn);
-		evas_object_smart_callback_add(btn, "clicked", SmartEventHandler, &buttonTwoClick);
+		evas_object_smart_callback_add(btn, "clicked", &SmartEventHandler, &buttonTwoClick);
 
 		if(buttonTwoImage.size() > 0)
 		{
@@ -124,7 +124,7 @@ LIBAPI void SRIN::Components::PopupBox::Show() {
 		elm_object_style_set(btn, "popup");
 		elm_object_text_set(btn, buttonThreeText.c_str());
 		elm_object_part_content_set(popup, "button3", btn);
-		evas_object_smart_callback_add(btn, "clicked", SmartEventHandler, &buttonThreeClick);
+		evas_object_smart_callback_add(btn, "clicked", &SmartEventHandler, &buttonThreeClick);
 
 		if(buttonThreeImage.size() > 0)
 		{
