@@ -110,7 +110,7 @@ std::function<void(void*, void*)> GetDispatcher(Event<AsyncTask<void>*>& eventTa
 template<class R>
 std::function<void(void*, void*)> GetDispatcher(Event<AsyncTask<R>*, R>& eventTarget)
 {
-	return [eventTarget] (void* t, void* r)
+	return [&eventTarget] (void* t, void* r)
 	{
 		std::unique_ptr<R> ret(reinterpret_cast<R*>(r));
 		eventTarget(reinterpret_cast<AsyncTask<R>*>(t), *ret);

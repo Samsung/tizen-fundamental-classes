@@ -307,7 +307,7 @@ LIBAPI void AbortImplNoBlock(AsyncTaskObj* task)
 
 LIBAPI std::function<void(void*, void*)> GetDispatcher(Event<AsyncTask<void> *>& ev)
 {
-	return [ev] (void* t, void* r)
+	return [&ev] (void* t, void* r)
 	{
 		ev(reinterpret_cast<AsyncTask<void>*>(t), nullptr);
 	};
