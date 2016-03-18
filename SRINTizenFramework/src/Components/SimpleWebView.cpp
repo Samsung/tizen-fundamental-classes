@@ -74,6 +74,9 @@ using namespace SRIN;
 Evas_Object* SRIN::Components::SimpleWebView::CreateComponent(Evas_Object* root)
 {
 	this->box = elm_box_add(root);
+	evas_object_size_hint_weight_set(this->box, EVAS_HINT_EXPAND, 0);
+	evas_object_size_hint_align_set(this->box, EVAS_HINT_FILL, EVAS_HINT_FILL);
+	elm_box_padding_set(this->box, 0, 12);
 	Render();
 
 	return this->box;
