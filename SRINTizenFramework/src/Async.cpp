@@ -207,7 +207,7 @@ void AsyncTaskCancel(void* data, Ecore_Thread* thread)
  */
 
 template<class T>
-AsyncTaskObj* CreateAsyncTaskGeneric(std::function<T(void)> func, std::function<void(void*, void*)> dispatcher)
+AsyncTaskObj* CreateAsyncTaskGeneric(std::function<T(void)> func, std::function<void(void*, void*)> dispatcher, bool priority)
 {
 	auto context = new TaskContext<T>();
 	context->func = func;
@@ -220,20 +220,20 @@ AsyncTaskObj* CreateAsyncTaskGeneric(std::function<T(void)> func, std::function<
 		task->dwaitCaller = dispatcher;
 	}
 
-	task->handle = ecore_thread_run(AsyncTaskWorker<T>, AsyncTaskEnd<T>, nullptr, context);
+	task->handle = ecore_thread_feedback_run(AsyncTaskWorker<T>, nullptr, AsyncTaskEnd<T>, nullptr, context, (priority ? EINA_TRUE : EINA_FALSE));
 	return task;
 }
 
 template<>
-LIBAPI AsyncTaskObj* CreateAsyncTask(std::function<void*(void)> func, std::function<void(void*, void*)> dispatcher)
+LIBAPI AsyncTaskObj* CreateAsyncTask(std::function<void*(void)> func, std::function<void(void*, void*)> dispatcher, bool priority)
 {
-	return CreateAsyncTaskGeneric(func, dispatcher);
+	return CreateAsyncTaskGeneric(func, dispatcher, priority);
 }
 
 template<>
-LIBAPI AsyncTaskObj* CreateAsyncTask(std::function<void(void)> func, std::function<void(void*, void*)> dispatcher)
+LIBAPI AsyncTaskObj* CreateAsyncTask(std::function<void(void)> func, std::function<void(void*, void*)> dispatcher, bool priority)
 {
-	return CreateAsyncTaskGeneric(func, dispatcher);
+	return CreateAsyncTaskGeneric(func, dispatcher, priority);
 }
 
 LIBAPI void DwaitImplVal(AsyncTaskObj* task, std::function<void(void*, void*)> dispatcher)
@@ -271,12 +271,12 @@ LIBAPI void dwait(AsyncTask<void>* task, Event<AsyncTask<void>*>& ev)
 }
 
 template<>
-LIBAPI AsyncTask<void>* AsyncCall<void>(std::function<void(void)> func, std::function<void(void*, void*)> dispatcher)
+LIBAPI AsyncTask<void>* AsyncCall<void>(std::function<void(void)> func, std::function<void(void*, void*)> dispatcher, bool priority)
 {
 	return reinterpret_cast<AsyncTask<void>*>(CreateAsyncTask(std::function<void(void)>([func] () -> void
 	{
 		func();
-	}), dispatcher));
+	}), dispatcher, priority));
 }
 
 LIBAPI void AbortImpl(AsyncTaskObj* task)

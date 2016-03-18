@@ -146,7 +146,7 @@ struct curl_slist* SRIN::Net::RESTServiceTemplateBase::PrepareHeader()
 }
 
 SRIN::Net::RESTServiceTemplateBase::RESTServiceTemplateBase(std::string url, HTTPMode httpMode) :
-	Url(url), result(nullptr), UserAgent("srin-framework-tizen/1.0"), httpMode(httpMode)
+	Url(url), result(nullptr), UserAgent("srin-framework-tizen/1.0"), httpMode(httpMode), working(false)
 {
 }
 
@@ -161,6 +161,8 @@ std::string SRIN::Net::RESTServiceTemplateBase::PrepareUrl()
 		bool first = true;
 		for (auto queryString : queryStringParam)
 		{
+			dlog_print(DLOG_DEBUG, LOG_TAG, "Param: %s", queryString.first);
+
 			if (!queryString.second->isSet)
 				continue;
 
@@ -169,7 +171,10 @@ std::string SRIN::Net::RESTServiceTemplateBase::PrepareUrl()
 			else
 				urlBuffer << "&";
 
-			urlBuffer << queryString.first << "=" << queryString.second->GetEncodedValue();
+			auto val = queryString.second->GetEncodedValue();
+
+
+			urlBuffer << queryString.first << "=" << val;
 		}
 	}
 	std::string finalUrl = urlBuffer.str();

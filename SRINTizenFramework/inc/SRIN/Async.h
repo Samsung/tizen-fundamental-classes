@@ -40,16 +40,16 @@ template<class R>
 void dwait(AsyncTask<R>* task, Event<AsyncTask<R>*, R>& eventTarget);
 
 template<class R>
-AsyncTask<R>* AsyncCall(std::function<R(void)> func, std::function<void(void*, void*)> dispatcher);
+AsyncTask<R>* AsyncCall(std::function<R(void)> func, std::function<void(void*, void*)> dispatcher, bool priority = false);
 
 template<class V>
-AsyncTaskObj* CreateAsyncTask(std::function<V(void)> func, std::function<void(void*, void*)> dispatcher);
+AsyncTaskObj* CreateAsyncTask(std::function<V(void)> func, std::function<void(void*, void*)> dispatcher, bool priority = false);
 
 template<>
-AsyncTaskObj* CreateAsyncTask(std::function<void*(void)> func, std::function<void(void*, void*)> dispatcher);
+AsyncTaskObj* CreateAsyncTask(std::function<void*(void)> func, std::function<void(void*, void*)> dispatcher, bool priority);
 
 template<>
-AsyncTaskObj* CreateAsyncTask(std::function<void(void)> func, std::function<void(void*, void*)> dispatcher);
+AsyncTaskObj* CreateAsyncTask(std::function<void(void)> func, std::function<void(void*, void*)> dispatcher, bool priority);
 
 void* AwaitImpl(AsyncTaskObj* task);
 void DwaitImplVal(AsyncTaskObj* task, std::function<void(void*, void*)> dispatcher);
@@ -137,6 +137,26 @@ struct AsyncBuilder
 	}
 };
 
+struct PriorityBuilder
+{
+	template<class Lambda>
+	AsyncTask<typename function_traits<Lambda>::result_type>* operator&(Lambda lambda)
+	{
+		std::function<void(void*, void*)> dispatcher;
+		typedef function_traits<Lambda> trait;
+		return AsyncCall(std::function < typename trait::result_type() > (lambda), dispatcher, true);
+	}
+
+	template<class T>
+	AsyncTask<typename DispatchAsyncBuilder<T>::R>* operator&(DispatchAsyncBuilder<T> builder)
+	{
+		typedef typename DispatchAsyncBuilder<T>::R R;
+		auto eventTarget = builder.eventTarget;
+		std::function<void(void*, void*)> dispatcher = GetDispatcher(builder.eventTarget);
+		return AsyncCall(builder.lambda, dispatcher, true);
+	}
+};
+
 struct AwaitBuilder
 {
 public:
@@ -192,13 +212,16 @@ DispatchAsyncBuilder<typename function_traits<Lambda>::result_type> operator>>(L
 bool IsAborting();
 
 #define s_async AsyncBuilder() &
+#define s_async_priority PriorityBuilder() &
 #define s_await AwaitBuilder() &
 #define s_abort_return if(IsAborting()) return
 #define s_abort_async AbortBuilderNoBlock() &
 #define s_abort_await AbortBuilder() &
 
+
+
 template<class R>
-AsyncTask<R>* AsyncCall(std::function<R(void)> func, std::function<void(void*, void*)> dispatcher)
+AsyncTask<R>* AsyncCall(std::function<R(void)> func, std::function<void(void*, void*)> dispatcher, bool priority)
 {
 	return reinterpret_cast<AsyncTask<R>*>(CreateAsyncTask(std::function<void*(void)>([func] () -> void*
 	{
@@ -207,7 +230,7 @@ AsyncTask<R>* AsyncCall(std::function<R(void)> func, std::function<void(void*, v
 }
 
 template<>
-AsyncTask<void>* AsyncCall<void>(std::function<void(void)> func, std::function<void(void*, void*)> dispatcher);
+AsyncTask<void>* AsyncCall<void>(std::function<void(void)> func, std::function<void(void*, void*)> dispatcher, bool priority);
 
 template<class R>
 void dwait(AsyncTask<R>* task, Event<AsyncTask<R>*, R>& eventTarget)
