@@ -226,7 +226,7 @@ AsyncTask<R>* AsyncCall(std::function<R(void)> func, std::function<void(void*, v
 	return reinterpret_cast<AsyncTask<R>*>(CreateAsyncTask(std::function<void*(void)>([func] () -> void*
 	{
 		return new R(func());
-	}), dispatcher));
+	}), dispatcher, priority));
 }
 
 template<>
