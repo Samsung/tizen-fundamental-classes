@@ -70,7 +70,7 @@ struct DispatchAsyncBuilder
 	typedef AsyncTask<R> AsyncTaskType;
 	typedef Event<AsyncTaskType*, R> EventType;
 	std::function<R(void)> lambda;
-	EventType& eventTarget;
+	EventType* eventTarget;
 };
 
 template<>
@@ -80,7 +80,7 @@ struct DispatchAsyncBuilder<void>
 	typedef AsyncTask<void> AsyncTaskType;
 	typedef Event<AsyncTaskType*> EventType;
 	std::function<void(void)> lambda;
-	EventType& eventTarget;
+	EventType* eventTarget;
 };
 
 
@@ -105,15 +105,15 @@ struct Async<void>
 	typedef Event<Task*> Event;
 };
 
-std::function<void(void*, void*)> GetDispatcher(Event<AsyncTask<void>*>& eventTarget);
+std::function<void(void*, void*)> GetDispatcher(Event<AsyncTask<void>*>* eventTarget);
 
 template<class R>
-std::function<void(void*, void*)> GetDispatcher(Event<AsyncTask<R>*, R>& eventTarget)
+std::function<void(void*, void*)> GetDispatcher(Event<AsyncTask<R>*, R>* eventTarget)
 {
-	return [&eventTarget] (void* t, void* r)
+	return [eventTarget] (void* t, void* r)
 	{
 		std::unique_ptr<R> ret(reinterpret_cast<R*>(r));
-		eventTarget(reinterpret_cast<AsyncTask<R>*>(t), *ret);
+		(*eventTarget)(reinterpret_cast<AsyncTask<R>*>(t), *ret);
 	};
 }
 
@@ -198,7 +198,7 @@ template<class R>
 DispatchAwaitBuilder<R> operator>>(AsyncTask<R>* task, Event<AsyncTask<R>*, R>& eventTarget)
 {
 	return
-	{	task, eventTarget};
+	{	task, &eventTarget};
 }
 
 template<class Lambda>
@@ -206,7 +206,7 @@ DispatchAsyncBuilder<typename function_traits<Lambda>::result_type> operator>>(L
 	typename DispatchAsyncBuilder<typename function_traits<Lambda>::result_type>::EventType& eventTarget)
 {
 	return
-	{	lambda, eventTarget};
+	{	lambda, &eventTarget};
 }
 
 bool IsAborting();

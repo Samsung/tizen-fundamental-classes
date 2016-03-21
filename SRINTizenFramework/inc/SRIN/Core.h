@@ -189,7 +189,7 @@ public:
 	};
 
 	Event();
-
+	~Event();
 	void operator+=(const EventDelegate& other);
 	void operator-=(const EventDelegate& other);
 	void operator()(ObjectSourceType objSource, EventDataType eventData) const;

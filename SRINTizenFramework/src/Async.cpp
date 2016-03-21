@@ -305,11 +305,11 @@ LIBAPI void AbortImplNoBlock(AsyncTaskObj* task)
 	ecore_thread_cancel(task->handle);
 }
 
-LIBAPI std::function<void(void*, void*)> GetDispatcher(Event<AsyncTask<void> *>& ev)
+LIBAPI std::function<void(void*, void*)> GetDispatcher(Event<AsyncTask<void> *>* ev)
 {
-	return [&ev] (void* t, void* r)
+	return [ev] (void* t, void* r)
 	{
-		ev(reinterpret_cast<AsyncTask<void>*>(t), nullptr);
+		(*ev)(reinterpret_cast<AsyncTask<void>*>(t), nullptr);
 	};
 }
 

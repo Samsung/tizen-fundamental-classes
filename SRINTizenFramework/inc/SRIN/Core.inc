@@ -11,6 +11,20 @@ inline Event<ObjectSourceType, EventDataType>::Event() :
 {
 }
 
+template<class ObjectSourceType, class EventDataType>
+inline Event<ObjectSourceType, EventDataType>::~Event()
+{
+	auto current = this->first;
+		
+	while(current != nullptr)
+	{
+		auto deleted = current;
+		current = current->next;
+		delete deleted;
+	}
+	
+}
+
 
 template<class ObjectSourceType, class EventDataType>
 template<class EventClassType>
