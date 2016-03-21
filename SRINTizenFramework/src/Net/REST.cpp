@@ -77,7 +77,7 @@ LIBAPI std::string SRIN::Net::GenericServiceParameter<std::string>::GetEncodedVa
 	size_t len = this->value.length();
 	auto str = this->value.c_str();
 
-	for(int i = 0; i <= len; i++)
+	for(int i = 0; i < len; i++)
 	{
 		if(isalnum(str[i]))
 			st << str[i];
