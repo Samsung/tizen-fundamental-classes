@@ -13,26 +13,17 @@
 
 namespace SRIN {
 	namespace Components {
-		class LIBAPI Toast : public ComponentBase {
+		class LIBAPI Toast : public EventClass {
 		private:
 			Evas_Object* popup;
-			void OnDismissEnded(Framework::ViewBase* viewSource, Evas_Object* objSource, void* eventData);
-
-			ElementaryEvent onBackButtonPressed;
-		protected:
-			std::string message;
-			virtual Evas_Object* CreateComponent(Evas_Object* root) final;
-			virtual Evas_Object* CreateContent(Evas_Object* root);
-			virtual bool BackButtonPressed();
+			void OnDismiss(ElementaryEvent* event, Evas_Object* objSource, void* eventData);
+			bool BackButtonPressed(ElementaryEvent* event, Evas_Object* objSource, void* eventData);
+			ElementaryEvent onDismiss;
 		public:
 			Toast();
 
-			void SetMessage(const std::string& text);
-			std::string& GetMessageString();
-
-			void Show();
-			void Show(double timeout);
-			void Dismiss();
+			static void Show(const std::string& message);
+			static void Show(const std::string& message, double timeout);
 		};
 	}
 }

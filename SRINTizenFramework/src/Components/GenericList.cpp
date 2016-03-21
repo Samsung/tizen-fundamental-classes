@@ -77,7 +77,7 @@ LIBAPI SRIN::Components::GenericListItemClassBase::~GenericListItemClassBase()
 /* =================================================================================================================
  * IMPLEMENTATION: GenericListAdapter
  * ================================================================================================================= */
-
+/*
 LIBAPI SRIN::Components::GenericListAdapter::GenericListAdapter()
 {
 
@@ -135,13 +135,13 @@ int SRIN::Components::GenericListAdapter::GetCount()
 {
 	return adapterItems.size();
 }
-
+*/
 /* =================================================================================================================
  * IMPLEMENTATION: GenericList
  * ================================================================================================================= */
 
 LIBAPI SRIN::Components::GenericList::GenericList() :
-	adapter(nullptr), genlist(nullptr), Adapter(this), Overscroll(this), realBottom(nullptr)
+	dataSource(nullptr), genlist(nullptr), DataSource(this), Overscroll(this), realBottom(nullptr)
 {
 	onScrolledBottomInternal += { this, &GenericList::OnScrolledBottomInternal };
 	onScrolledTopInternal += { this, &GenericList::OnScrolledTopInternal };
@@ -163,12 +163,12 @@ LIBAPI SRIN::Components::GenericList::GenericList() :
 	};
 }
 
-LIBAPI void SRIN::Components::GenericList::SetAdapter(GenericListAdapter* const & newAdapter)
+LIBAPI void SRIN::Components::GenericList::SetDataSource(Adapter* const & newAdapter)
 {
 	// Unbind the old adapter
-	if(adapter != nullptr)
+	if(dataSource != nullptr)
 	{
-		auto oldList = adapter->GetAll();
+		auto oldList = dataSource->GetAll();
 		for(auto& item : oldList)
 		{
 			// Remove all item
@@ -177,39 +177,43 @@ LIBAPI void SRIN::Components::GenericList::SetAdapter(GenericListAdapter* const 
 		}
 
 		// Remove event
-		adapter->OnItemAdd -= { this, &GenericList::OnItemAdd };
-		adapter->OnItemRemove -= { this, &GenericList::OnItemRemove };
+		dataSource->OnItemAdd -= { this, &GenericList::OnItemAdd };
+		dataSource->OnItemRemove -= { this, &GenericList::OnItemRemove };
 	}
 
 	// Assign new adapter
-	this->adapter = newAdapter;
+	this->dataSource = newAdapter;
 
 	// Append all existing item in adapter
-	auto all = adapter->GetAll();
+	auto all = dataSource->GetAll();
 	for(auto& item : all)
 	{
 		AppendItemToGenlist(&item);
 	}
 
 	// Attach to event
-	adapter->OnItemAdd += { this, &GenericList::OnItemAdd };
-	adapter->OnItemRemove += { this, &GenericList::OnItemRemove };
+	dataSource->OnItemAdd += { this, &GenericList::OnItemAdd };
+	dataSource->OnItemRemove += { this, &GenericList::OnItemRemove };
 }
 
-LIBAPI void SRIN::Components::GenericList::AppendItemToGenlist(GenericListAdapter::GenlistItem* data)
+LIBAPI void SRIN::Components::GenericList::AppendItemToGenlist(Adapter::AdapterItem* data)
 {
-	auto package = (*(data->itemClass))(this, data->data);
+	auto itemClass = dynamic_cast<GenericListItemClassBase*>(data->itemClass);
+	if(itemClass == nullptr)
+		throw std::runtime_error("Invalid item class specified for generic list. Use GenericListItemClass type");
+
+	auto package = (*(itemClass))(this, data->data);
 	if(realBottom != nullptr)
 	{
 		// BUG ON EFL: insert before dummy bottom will create UI render error if at some point dummy bottom is disabled
 		// so the workaround is to store the realbottom of the list, which is an item before dummy bottom, and insert
 		// after that item
-		realBottom = elm_genlist_item_insert_after(genlist, *(data->itemClass), (*(data->itemClass))(this, data->data), nullptr, realBottom, ELM_GENLIST_ITEM_NONE, Genlist_ClickedEventHandler, package);
+		realBottom = elm_genlist_item_insert_after(genlist, *(itemClass), (*(itemClass))(this, data->data), nullptr, realBottom, ELM_GENLIST_ITEM_NONE, Genlist_ClickedEventHandler, package);
 		data->objectItem = realBottom;
 	}
 	else
 	{
-		realBottom = elm_genlist_item_append(genlist, *(data->itemClass), package, nullptr, ELM_GENLIST_ITEM_NONE, Genlist_ClickedEventHandler, package);
+		realBottom = elm_genlist_item_append(genlist, *(itemClass), package, nullptr, ELM_GENLIST_ITEM_NONE, Genlist_ClickedEventHandler, package);
 		data->objectItem = realBottom;
 
 
@@ -218,14 +222,14 @@ LIBAPI void SRIN::Components::GenericList::AppendItemToGenlist(GenericListAdapte
 	}
 }
 
-LIBAPI void SRIN::Components::GenericList::OnItemAdd(Event<GenericListAdapter*, GenericListAdapter::GenlistItem*>* event, GenericListAdapter* adapter,
-	GenericListAdapter::GenlistItem* data)
+LIBAPI void SRIN::Components::GenericList::OnItemAdd(Event<Adapter*, Adapter::AdapterItem*>* event, Adapter* adapter,
+	Adapter::AdapterItem* data)
 {
 	AppendItemToGenlist(data);
 }
 
-LIBAPI void SRIN::Components::GenericList::OnItemRemove(Event<GenericListAdapter*, GenericListAdapter::GenlistItem*>* event, GenericListAdapter* adapter,
-	GenericListAdapter::GenlistItem* data)
+LIBAPI void SRIN::Components::GenericList::OnItemRemove(Event<Adapter*, Adapter::AdapterItem*>* event, Adapter* adapter,
+	Adapter::AdapterItem* data)
 {
 	// BUG ON EFL: insert before dummy bottom will create UI render error if at some point dummy bottom is disabled
 	// so the workaround is to store the realbottom of the list. Tis part is replacing the realBottom if the item
@@ -256,9 +260,9 @@ LIBAPI Evas_Object* SRIN::Components::GenericList::CreateComponent(Evas_Object* 
 	return genlist;
 }
 
-LIBAPI GenericListAdapter*& SRIN::Components::GenericList::GetAdapter()
+LIBAPI SRIN::Components::Adapter*& SRIN::Components::GenericList::GetDataSource()
 {
-	return adapter;
+	return dataSource;
 }
 
 void SRIN::Components::GenericList::OnScrolledBottomInternal(ElementaryEvent* event, Evas_Object* obj, void* eventData)

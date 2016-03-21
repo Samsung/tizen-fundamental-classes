@@ -9,6 +9,7 @@
 #define SRIN_ADAPTER_H_
 
 #include "SRIN/Components/ComponentBase.h"
+#include "SRIN/Components/Adapter.h"
 
 #include <list>
 #include <unordered_map>
@@ -19,7 +20,7 @@ namespace SRIN {
 namespace Components {
 	class GenericList;
 
-	class LIBAPI GenericListItemClassBase
+	class LIBAPI GenericListItemClassBase : public virtual AdapterItemClassBase
 	{
 	private:
 		Elm_Genlist_Item_Class* itemClass;
@@ -29,23 +30,14 @@ namespace Components {
 		void* operator()(GenericList* genlist, void* itemData);
 		operator Elm_Genlist_Item_Class*();
 		virtual ~GenericListItemClassBase();
-
-		virtual std::string GetString(void* data, Evas_Object* obj, const char* part) = 0;
-		virtual Evas_Object* GetContent(void* data, Evas_Object* obj, const char* part) = 0;
-		virtual void Deallocator(void* data) = 0;
 	};
 
 	template<class T>
-	class GenericListItemClass : public GenericListItemClassBase
+	class GenericListItemClass : public AdapterItemClass<T>, public GenericListItemClassBase
 	{
 	protected:
 		GenericListItemClass(CString styleName);
 	public:
-		virtual std::string GetString(void* data, Evas_Object *obj, const char *part) final;
-		virtual Evas_Object* GetContent(void* data, Evas_Object *obj, const char *part) final;
-		virtual void Deallocator(void* data) final;
-		virtual std::string GetString(T* data, Evas_Object *obj, const char *part) = 0;
-		virtual Evas_Object* GetContent(T* data, Evas_Object *obj, const char *part) = 0;
 		virtual ~GenericListItemClass() { };
 	};
 
@@ -75,43 +67,6 @@ namespace Components {
 		virtual ~SimpleGenericListItemClass() { };
 	};
 
-	class LIBAPI GenericListAdapter
-	{
-	private:
-		struct GenlistItem
-		{
-			void* data;
-			GenericListItemClassBase* itemClass;
-			Elm_Object_Item* objectItem;
-		};
-		int count;
-		std::list<GenlistItem> adapterItems;
-		Event<GenericListAdapter*, GenlistItem*> OnItemAdd;
-		Event<GenericListAdapter*, GenlistItem*> OnItemRemove;
-	protected:
-		void AddItemInternal(void* data, GenericListItemClassBase* itemClass);
-		void RemoveItemInternal(void* data);
-
-		std::list<GenlistItem>& GetAll();
-	public:
-		GenericListAdapter();
-		GenericListAdapter(GenericListAdapter&) = delete;
-		~GenericListAdapter();
-
-		template<class T>
-		void AddItem(T* data, GenericListItemClass<T>* itemClass);
-
-		template<class T>
-		void RemoveItem(T* data);
-
-		void Clear(bool preserve = false);
-
-		int GetCount();
-
-		friend class GenericList;
-	};
-
-
 	class LIBAPI GenericList : public ComponentBase
 	{
 	private:
@@ -119,18 +74,18 @@ namespace Components {
 		Elm_Object_Item* dummyBottom;
 		Elm_Object_Item* realBottom;
 		Elm_Genlist_Item_Class* dummyBottomItemClass;
-		GenericListAdapter* adapter;
+		Adapter* dataSource;
 		bool overscroll;
 
-		void SetAdapter(GenericListAdapter* const & adapter);
-		GenericListAdapter*& GetAdapter();
+		void SetDataSource(Adapter* const & adapter);
+		Adapter*& GetDataSource();
 
 		void SetOverscroll(bool const& o);
 		bool& GetOverscroll();
 
-		void AppendItemToGenlist(GenericListAdapter::GenlistItem* data);
-		void OnItemAdd(Event<GenericListAdapter*, GenericListAdapter::GenlistItem*>* event, GenericListAdapter* adapter, GenericListAdapter::GenlistItem* data);
-		void OnItemRemove(Event<GenericListAdapter*, GenericListAdapter::GenlistItem*>* event, GenericListAdapter* adapter, GenericListAdapter::GenlistItem* data);
+		void AppendItemToGenlist(Adapter::AdapterItem* data);
+		void OnItemAdd(Event<Adapter*, Adapter::AdapterItem*>* event, Adapter* adapter, Adapter::AdapterItem* data);
+		void OnItemRemove(Event<Adapter*, Adapter::AdapterItem*>* event, Adapter* adapter, Adapter::AdapterItem* data);
 
 		ElementaryEvent onScrolledBottomInternal;
 		ElementaryEvent onScrolledTopInternal;
@@ -149,7 +104,7 @@ namespace Components {
 		virtual Evas_Object* CreateComponent(Evas_Object* root);
 	public:
 		GenericList();
-		Property<GenericList, GenericListAdapter*, &GenericList::GetAdapter, &GenericList::SetAdapter> Adapter;
+		Property<GenericList, Adapter*, &GenericList::GetDataSource, &GenericList::SetDataSource> DataSource;
 		Property<GenericList, bool, &GenericList::GetOverscroll, &GenericList::SetOverscroll> Overscroll;
 		Event<GenericList*, void*> ScrolledBottom;
 		Event<GenericList*, void*> ScrolledTop;
@@ -167,17 +122,6 @@ SRIN::Components::GenericListItemClass<T>::GenericListItemClass(CString styleNam
 
 }
 
-template<class T>
-void SRIN::Components::GenericListAdapter::AddItem(T* data, GenericListItemClass<T>* itemClass)
-{
-	AddItemInternal(data, itemClass);
-}
-
-template<class T>
-void SRIN::Components::GenericListAdapter::RemoveItem(T* data)
-{
-	RemoveItemInternal(data);
-}
 
 template<class T>
 SRIN::Components::SimpleGenericListItemClass<T>::SimpleGenericListItemClass(CString styleName) :
@@ -185,25 +129,6 @@ SRIN::Components::SimpleGenericListItemClass<T>::SimpleGenericListItemClass(CStr
 {
 }
 
-
-template<class T>
-std::string SRIN::Components::GenericListItemClass<T>::GetString(void* data, Evas_Object* obj, const char* part)
-{
-	return this->GetString(reinterpret_cast<T*>(data), obj, part);
-}
-
-template<class T>
-Evas_Object* SRIN::Components::GenericListItemClass<T>::GetContent(void* data, Evas_Object* obj, const char* part)
-{
-	return this->GetContent(reinterpret_cast<T*>(data), obj, part);
-}
-
-template<class T>
-void SRIN::Components::GenericListItemClass<T>::Deallocator(void* data)
-{
-	auto obj = reinterpret_cast<T*>(data);
-	delete obj;
-}
 
 template<class T>
 std::string SRIN::Components::SimpleGenericListItemClass<T>::GetString(T* data, Evas_Object* obj,
