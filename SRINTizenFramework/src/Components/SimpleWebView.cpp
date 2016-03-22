@@ -215,7 +215,10 @@ void SRIN::Components::SimpleWebView::AddParagraph(std::string& paragraph)
 	auto textField = elm_entry_add(this->box);
 	evas_object_size_hint_weight_set(textField, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
 	evas_object_size_hint_align_set(textField, EVAS_HINT_FILL, EVAS_HINT_FILL);
-	elm_object_text_set(textField, paragraph.c_str());
+	std::string formatted = "<font=Tizen font_size=30>";
+	formatted.append(paragraph);
+	formatted.append("</font>");
+	elm_object_text_set(textField, formatted.c_str());
 	elm_entry_single_line_set(textField, EINA_FALSE);
 	elm_entry_scrollable_set(textField, EINA_FALSE);
 	elm_entry_line_wrap_set(textField, ELM_WRAP_MIXED);

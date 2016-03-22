@@ -33,7 +33,6 @@ private:
 
 	void ShowDropdown();
 	void OnDropDownButtonClick(ElementaryEvent* viewSource, Evas_Object* objSource, void* eventData);
-
 protected:
 	virtual Evas_Object* CreateComponent(Evas_Object* root);
 
