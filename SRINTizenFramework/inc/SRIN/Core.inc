@@ -14,6 +14,7 @@ inline Event<ObjectSourceType, EventDataType>::Event() :
 template<class ObjectSourceType, class EventDataType>
 inline Event<ObjectSourceType, EventDataType>::~Event()
 {
+	/*
 	auto current = this->first;
 		
 	while(current != nullptr)
@@ -22,7 +23,7 @@ inline Event<ObjectSourceType, EventDataType>::~Event()
 		current = current->next;
 		delete deleted;
 	}
-	
+	*/
 }
 
 
