@@ -76,3 +76,49 @@ LIBAPI int SRIN::Components::Adapter::GetCount()
 {
 	return adapterItems.size();
 }
+
+/* =================================================================================================================
+ * IMPLEMENTATION: BasicListAdapter
+ * ================================================================================================================= */
+
+SRIN::Components::BasicListAdapter::BasicListItemClass SRIN::Components::BasicListAdapter::basicListItemClass;
+
+SRIN::Components::BasicListAdapter::BasicListAdapter()
+{
+}
+
+SRIN::Components::BasicListAdapter::BasicListAdapter(std::initializer_list<std::string> init)
+{
+	for(auto& item : init)
+	{
+		AddItem(item);
+	}
+}
+
+SRIN::Components::BasicListAdapter::~BasicListAdapter()
+{
+
+}
+
+void SRIN::Components::BasicListAdapter::AddItem(std::string string)
+{
+	int currentCount = this->GetCount();
+	Adapter::AddItem(new BasicAdapterItem({ currentCount, string }), &basicListItemClass);
+}
+
+void SRIN::Components::BasicListAdapter::RemoveItem(std::string string)
+{
+	// Unimplemented
+}
+
+std::string SRIN::Components::BasicListAdapter::BasicListItemClass::GetString(BasicAdapterItem* data, Evas_Object* obj,
+	const char* part)
+{
+	return data->value;
+}
+
+Evas_Object* SRIN::Components::BasicListAdapter::BasicListItemClass::GetContent(BasicAdapterItem* data, Evas_Object* obj,
+	const char* part)
+{
+	return nullptr;
+}

@@ -35,7 +35,7 @@ protected:
 public:
 	virtual std::string GetString(void* data, Evas_Object *obj, const char *part) final;
 	virtual Evas_Object* GetContent(void* data, Evas_Object *obj, const char *part) final;
-	virtual void Deallocator(void* data) final;
+	virtual void Deallocator(void* data);
 	virtual std::string GetString(T* data, Evas_Object *obj, const char *part) = 0;
 	virtual Evas_Object* GetContent(T* data, Evas_Object *obj, const char *part) = 0;
 	virtual ~AdapterItemClass() { };
@@ -76,7 +76,29 @@ private:
 
 };
 
+class LIBAPI BasicListAdapter : public Adapter
+{
+public:
+	struct BasicAdapterItem
+	{
+		int index;
+		std::string value;
+	};
 
+	BasicListAdapter();
+	BasicListAdapter(std::initializer_list<std::string> init);
+	~BasicListAdapter();
+
+	void AddItem(std::string string);
+	void RemoveItem(std::string string);
+private:
+	class BasicListItemClass : public AdapterItemClass<BasicAdapterItem>
+	{
+	public:
+		virtual std::string GetString(BasicAdapterItem* data, Evas_Object *obj, const char *part);
+		virtual Evas_Object* GetContent(BasicAdapterItem* data, Evas_Object *obj, const char *part);
+	} static basicListItemClass;
+};
 
 }
 }
