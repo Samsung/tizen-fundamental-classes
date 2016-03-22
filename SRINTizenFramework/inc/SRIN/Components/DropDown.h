@@ -28,8 +28,8 @@ private:
 	std::string text;
 	void* selectedItem;
 
-	void SetDataSource(Adapter* const & adapter);
-	Adapter*& GetDataSource();
+	void SetDataSource(Adapter* adapter);
+	Adapter* GetDataSource();
 
 	void ShowDropdown();
 	void OnDropDownButtonClick(ElementaryEvent* viewSource, Evas_Object* objSource, void* eventData);
@@ -42,7 +42,7 @@ public:
 	void ItemClick(Adapter::AdapterItem* item);
 
 	Event<DropDown*, void*> ItemSelected;
-	Property<DropDown, Adapter*, &DropDown::GetDataSource, &DropDown::SetDataSource> DataSource;
+	Property<DropDown, Adapter*>::GetSet<&DropDown::GetDataSource, &DropDown::SetDataSource> DataSource;
 
 };
 

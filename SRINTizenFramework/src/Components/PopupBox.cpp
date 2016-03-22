@@ -41,9 +41,8 @@ LIBAPI std::string& SRIN::Components::PopupBox::GetMessageString() {
 	return this->message;
 }
 
-LIBAPI SRIN::Components::PopupBox::PopupBox() :
-		Title(this),
-		Message(this) {
+LIBAPI SRIN::Components::PopupBox::PopupBox() : Message(this), Title(this)
+{
 
 	this->popup 		= nullptr;
 	this->popupLayout 	= nullptr;

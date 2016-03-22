@@ -20,6 +20,8 @@
 
 typedef const char* CString;
 
+//extern thread_local void* currentConstruct;
+
 /*
  * http://stackoverflow.com/questions/7943525/is-it-possible-to-figure-out-the-parameter-type-and-return-type-of-a-lambda
  */
@@ -45,6 +47,210 @@ struct function_traits<ReturnType (ClassType::*)(Args...) const>
 	};
 };
 
+
+
+class PropertyClass
+{
+private:
+
+	class PropertyBase
+	{
+	protected:
+		void* instance;
+		PropertyBase(void* instance);
+		PropertyBase(const PropertyBase&) = delete;
+	};
+
+public:
+	template<typename DefiningClass, typename ValueType>
+	struct Property
+	{
+		typedef ValueType (DefiningClass::*GetFunc)();
+		typedef void (DefiningClass::*SetFunc)(const ValueType&);
+
+		template<GetFunc func>
+		class Get : protected PropertyBase
+		{
+		public:
+			typedef std::false_type Mutable;
+			typedef ValueType Type;
+			Get(DefiningClass* instance) : PropertyBase(instance) { }
+			operator ValueType() const
+			{
+				return (reinterpret_cast<DefiningClass*>(instance)->*func)();
+			}
+		};
+
+		template<GetFunc getFunc, SetFunc func>
+		class GetSet : public Get<getFunc>
+		{
+		public:
+			typedef std::true_type Mutable;
+			typedef ValueType Type;
+			GetSet(DefiningClass* instance) : Get<getFunc>(instance) { }
+			void operator=(const ValueType val)
+			{
+				(reinterpret_cast<DefiningClass*>(this->instance)->*func)(val);
+			}
+		};
+
+		class Auto
+		{
+		private:
+			ValueType data;
+		public:
+			class ReadOnly;
+			class ReadWrite;
+		};
+	};
+
+	template<typename DefiningClass, typename ValueType>
+	struct Property<DefiningClass, ValueType&>
+	{
+		typedef ValueType& (DefiningClass::*GetFunc)();
+		typedef void (DefiningClass::*SetFunc)(const ValueType&);
+
+		template<GetFunc func>
+		class Get : protected PropertyBase
+		{
+		public:
+			typedef std::false_type Mutable;
+			typedef ValueType Type;
+			Get(DefiningClass* instance) : PropertyBase(instance) { }
+			operator ValueType&() const
+			{
+				return (reinterpret_cast<DefiningClass*>(this->instance)->*func)();
+			}
+			ValueType* operator->()
+			{
+				return &((reinterpret_cast<DefiningClass*>(this->instance)->*func)());
+			}
+		};
+
+		template<GetFunc getFunc, SetFunc func>
+		class GetSet : public Get<getFunc>
+		{
+		public:
+			typedef std::true_type Mutable;
+			typedef ValueType Type;
+			GetSet(DefiningClass* instance) : Get<getFunc>(instance) { }
+			void operator=(const ValueType& val)
+			{
+				(reinterpret_cast<DefiningClass*>(this->instance)->*func)(val);
+			}
+		};
+	};
+
+	template<typename DefiningClass, typename ValueType>
+	struct Property<DefiningClass, ValueType*>
+	{
+		typedef ValueType* (DefiningClass::*GetFunc)();
+		typedef void (DefiningClass::*SetFunc)(ValueType*);
+
+		template<GetFunc func>
+		class Get : protected PropertyBase
+		{
+		public:
+			typedef std::false_type Mutable;
+			typedef ValueType Type;
+			Get(DefiningClass* instance) : PropertyBase(instance) { }
+			operator ValueType*()
+			{
+				return (reinterpret_cast<DefiningClass*>(this->instance)->*func)();
+			}
+			ValueType* operator->()
+			{
+				return (reinterpret_cast<DefiningClass*>(this->instance)->*func)();
+			}
+		};
+
+		template<GetFunc getFunc, SetFunc func>
+		class GetSet : public Get<getFunc>
+		{
+		public:
+			typedef std::true_type Mutable;
+			typedef ValueType Type;
+			GetSet(DefiningClass* instance) : Get<getFunc>(instance) { }
+			void operator=(ValueType* val)
+			{
+				(reinterpret_cast<DefiningClass*>(this->instance)->*func)(val);
+			}
+		};
+
+		class Auto
+		{
+		private:
+			ValueType* data;
+		public:
+			class ReadOnly;
+			class ReadWrite;
+		};
+	};
+};
+
+template<typename DefiningClass, typename ValueType>
+class PropertyClass::Property<DefiningClass, ValueType>::Auto::ReadOnly : Auto
+{
+protected:
+	void operator=(const ValueType& val)
+	{
+		this->data = val;
+	}
+
+	friend DefiningClass;
+public:
+	typedef std::false_type Mutable;
+	typedef ValueType Type;
+	operator ValueType()
+	{
+		return this->data;
+	}
+};
+
+template<typename DefiningClass, typename ValueType>
+class PropertyClass::Property<DefiningClass, ValueType>::Auto::ReadWrite : ReadOnly
+{
+public:
+	typedef std::true_type Mutable;
+	typedef ValueType Type;
+	void operator=(const ValueType& val)
+	{
+		ReadOnly::operator =(val);
+	}
+};
+
+template<typename DefiningClass, typename ValueType>
+class PropertyClass::Property<DefiningClass, ValueType*>::Auto::ReadOnly : Auto
+{
+protected:
+	void operator=(const ValueType& val)
+	{
+		this->data = val;
+	}
+
+	friend DefiningClass;
+public:
+	typedef std::false_type Mutable;
+	typedef ValueType Type;
+	operator ValueType()
+	{
+		return this->data;
+	}
+};
+
+template<typename DefiningClass, typename ValueType>
+class PropertyClass::Property<DefiningClass, ValueType*>::Auto::ReadWrite : ReadOnly
+{
+public:
+	typedef std::true_type Mutable;
+	typedef ValueType Type;
+	void operator=(const ValueType& val)
+	{
+		ReadOnly::operator =(val);
+	}
+};
+
+/*
 template<class DefiningClass, class ValueType, ValueType& (DefiningClass::*GetFunc)(), void (DefiningClass::*SetFunc)(
 	const ValueType&)>
 class Property
@@ -107,7 +313,7 @@ public:
 		return val;
 	}
 };
-
+*/
 template<class DefiningClass, class ValueType>
 class SimpleReadOnlyPropertyBase
 {

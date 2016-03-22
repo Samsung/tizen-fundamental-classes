@@ -274,6 +274,7 @@ RESTResultBase SRIN::Net::RESTServiceTemplateBase::PerformCall()
 		else
 		{
 			std::string response(buffer.data(), buffer.size());
+			dlog_print(DLOG_DEBUG, LOG_TAG, "data: %s", response.c_str());
 			curl_easy_getinfo(curlHandle, CURLINFO_RESPONSE_CODE, &returnObj.httpCode);
 
 			returnObj.responseObj = OnProcessResponseIntl(returnObj.httpCode, response, returnObj.errorCode,

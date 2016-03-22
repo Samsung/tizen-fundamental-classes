@@ -89,7 +89,7 @@ LIBAPI void SRIN::Components::Field::SetMultiline(const bool& val)
 	}
 }
 
-LIBAPI bool& SRIN::Components::Field::GetMultiline()
+LIBAPI bool SRIN::Components::Field::GetMultiline()
 {
 	return multiline;
 }
@@ -99,13 +99,12 @@ LIBAPI void SRIN::Components::Field::SetBottomBorderVisible(const bool& visible)
 	bottomBorder = visible;
 }
 
-LIBAPI bool& SRIN::Components::Field::GetBottomBorderVisible()
+LIBAPI bool SRIN::Components::Field::GetBottomBorderVisible()
 {
 	return bottomBorder;
 }
 
-LIBAPI SRIN::Components::Field::Field() :
-	Text(this), Multiline(this), BottomBorderVisible(this)
+LIBAPI SRIN::Components::Field::Field() : BottomBorderVisible(this), Multiline(this), Text(this)
 {
 	field = nullptr;
 	text = "";

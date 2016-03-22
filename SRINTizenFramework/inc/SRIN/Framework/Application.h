@@ -460,7 +460,7 @@ public:
  * of this class can be attached into an IAttachable instance to display it to designated window
  * or placeholder.
  */
-class LIBAPI ViewBase: virtual public EventClass
+class LIBAPI ViewBase: virtual public EventClass, public PropertyClass
 {
 private:
 	Evas_Object* viewRoot;
@@ -478,7 +478,7 @@ public:
 	Evas_Object* GetViewRoot();
 	virtual ~ViewBase();
 
-	Property<ViewBase, std::string, &ViewBase::GetViewTitle, &ViewBase::SetViewTitle> ViewTitle;
+	Property<ViewBase, std::string&>::GetSet<&ViewBase::GetViewTitle, &ViewBase::SetViewTitle> ViewTitle;
 };
 
 class LIBAPI INaviframeContent

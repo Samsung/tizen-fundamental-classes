@@ -45,8 +45,8 @@ LIBAPI SRIN::Components::DropDown::DropDown() :
 	dropdownComponent(nullptr),
 	dataSource(nullptr),
 	parentComponent(nullptr),
-	DataSource(this),
-	selectedItem(nullptr)
+	selectedItem(nullptr),
+	DataSource(this)
 {
 	dropdownButtonClick += { this, &DropDown::OnDropDownButtonClick };
 }
@@ -112,12 +112,12 @@ LIBAPI void SRIN::Components::DropDown::ItemClick(Adapter::AdapterItem* item)
 	ItemSelected(this, selectedItem);
 }
 
-LIBAPI void SRIN::Components::DropDown::SetDataSource(Adapter* const & adapter)
+LIBAPI void SRIN::Components::DropDown::SetDataSource(Adapter* adapter)
 {
 	this->dataSource = adapter;
 }
 
-LIBAPI Adapter*& SRIN::Components::DropDown::GetDataSource()
+LIBAPI Adapter* SRIN::Components::DropDown::GetDataSource()
 {
 	return this->dataSource;
 }

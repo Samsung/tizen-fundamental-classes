@@ -141,7 +141,7 @@ int SRIN::Components::GenericListAdapter::GetCount()
  * ================================================================================================================= */
 
 LIBAPI SRIN::Components::GenericList::GenericList() :
-	dataSource(nullptr), genlist(nullptr), DataSource(this), Overscroll(this), realBottom(nullptr)
+	dataSource(nullptr), genlist(nullptr), realBottom(nullptr), DataSource(this), Overscroll(this)
 {
 	onScrolledBottomInternal += { this, &GenericList::OnScrolledBottomInternal };
 	onScrolledTopInternal += { this, &GenericList::OnScrolledTopInternal };
@@ -163,7 +163,7 @@ LIBAPI SRIN::Components::GenericList::GenericList() :
 	};
 }
 
-LIBAPI void SRIN::Components::GenericList::SetDataSource(Adapter* const & newAdapter)
+LIBAPI void SRIN::Components::GenericList::SetDataSource(Adapter* newAdapter)
 {
 	// Unbind the old adapter
 	if(dataSource != nullptr)
@@ -260,7 +260,7 @@ LIBAPI Evas_Object* SRIN::Components::GenericList::CreateComponent(Evas_Object* 
 	return genlist;
 }
 
-LIBAPI SRIN::Components::Adapter*& SRIN::Components::GenericList::GetDataSource()
+LIBAPI SRIN::Components::Adapter* SRIN::Components::GenericList::GetDataSource()
 {
 	return dataSource;
 }
@@ -303,7 +303,7 @@ void SRIN::Components::GenericList::SetOverscroll(const bool& o)
 	}
 }
 
-bool& SRIN::Components::GenericList::GetOverscroll()
+bool SRIN::Components::GenericList::GetOverscroll()
 {
 	return this->overscroll;
 }

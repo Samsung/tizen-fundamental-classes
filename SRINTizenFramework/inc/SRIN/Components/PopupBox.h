@@ -35,8 +35,8 @@ namespace SRIN {
 
 		public:
 			PopupBox();
-			Property<PopupBox, std::string, &PopupBox::GetTitle, &PopupBox::SetTitle> Title;
-			Property<PopupBox, std::string, &PopupBox::GetMessageString, &PopupBox::SetMessage> Message;
+			Property<PopupBox, std::string&>::GetSet<&PopupBox::GetTitle, &PopupBox::SetTitle> Title;
+			Property<PopupBox, std::string&>::GetSet<&PopupBox::GetMessageString, &PopupBox::SetMessage> Message;
 
 			ElementaryEvent buttonOneClick, buttonTwoClick, buttonThreeClick;
 

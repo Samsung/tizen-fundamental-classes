@@ -77,11 +77,11 @@ namespace Components {
 		Adapter* dataSource;
 		bool overscroll;
 
-		void SetDataSource(Adapter* const & adapter);
-		Adapter*& GetDataSource();
+		void SetDataSource(Adapter* adapter);
+		Adapter* GetDataSource();
 
 		void SetOverscroll(bool const& o);
-		bool& GetOverscroll();
+		bool GetOverscroll();
 
 		void AppendItemToGenlist(Adapter::AdapterItem* data);
 		void OnItemAdd(Event<Adapter*, Adapter::AdapterItem*>* event, Adapter* adapter, Adapter::AdapterItem* data);
@@ -104,8 +104,8 @@ namespace Components {
 		virtual Evas_Object* CreateComponent(Evas_Object* root);
 	public:
 		GenericList();
-		Property<GenericList, Adapter*, &GenericList::GetDataSource, &GenericList::SetDataSource> DataSource;
-		Property<GenericList, bool, &GenericList::GetOverscroll, &GenericList::SetOverscroll> Overscroll;
+		Property<GenericList, Adapter*>::GetSet<&GenericList::GetDataSource, &GenericList::SetDataSource> DataSource;
+		Property<GenericList, bool>::GetSet<&GenericList::GetOverscroll, &GenericList::SetOverscroll> Overscroll;
 		Event<GenericList*, void*> ScrolledBottom;
 		Event<GenericList*, void*> ScrolledTop;
 		Event<GenericList*, void*> ReachingBottom;

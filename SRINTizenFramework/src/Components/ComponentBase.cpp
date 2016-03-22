@@ -10,7 +10,7 @@
 using namespace SRIN::Components;
 
 ComponentBase::ComponentBase() :
-	Enabled(this), Visible(this), Name(this)
+	Enabled(this), Name(this), Visible(this)
 {
 	weightX = EVAS_HINT_EXPAND;
 	alignY = EVAS_HINT_FILL;
@@ -64,7 +64,7 @@ void ComponentBase::SetEnabled(const bool& enabled)
 		elm_object_disabled_set(componentRoot, !enabled);
 }
 
-bool& ComponentBase::GetEnabled()
+bool ComponentBase::GetEnabled()
 {
 	return this->enabled;
 }
@@ -80,7 +80,7 @@ void ComponentBase::SetVisible(const bool& visible)
 			evas_object_hide(componentRoot);
 }
 
-bool& ComponentBase::GetVisible()
+bool ComponentBase::GetVisible()
 {
 	return this->visible;
 }

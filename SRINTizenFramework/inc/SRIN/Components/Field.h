@@ -25,9 +25,9 @@ protected:
 	void SetText(const std::string& text);
 	std::string& GetText();
 	void SetMultiline(const bool& val);
-	bool& GetMultiline();
+	bool GetMultiline();
 	void SetBottomBorderVisible(const bool& visible);
-	bool& GetBottomBorderVisible();
+	bool GetBottomBorderVisible();
 public:
 	Field();
 	void SetDisable(const bool& disable);
@@ -39,9 +39,9 @@ public:
 
 	ElementaryEvent onReturnKeyClick;
 
-	Property<Field, std::string, &Field::GetText, &Field::SetText> Text;
-	Property<Field, bool, &Field::GetMultiline, &Field::SetMultiline> Multiline;
-	Property<Field, bool, &Field::GetBottomBorderVisible, &Field::SetBottomBorderVisible> BottomBorderVisible;
+	Property<Field, std::string&>::GetSet<&Field::GetText, &Field::SetText> Text;
+	Property<Field, bool>::GetSet<&Field::GetMultiline, &Field::SetMultiline> Multiline;
+	Property<Field, bool>::GetSet<&Field::GetBottomBorderVisible, &Field::SetBottomBorderVisible> BottomBorderVisible;
 };
 }
 }

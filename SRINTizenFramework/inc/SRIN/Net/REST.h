@@ -63,7 +63,7 @@ public:
 };
 
 template<class T>
-class RESTResult: public RESTResultBase
+class RESTResult: public RESTResultBase, public PropertyClass
 {
 
 private:
@@ -74,14 +74,12 @@ private:
 	}
 
 public:
-	RESTResult() :
-		Response(this)
+	RESTResult()
 	{
 
 	}
 
-	RESTResult(RESTResultBase& p) :
-		Response(this)
+	RESTResult(RESTResultBase& p) : Response(this)
 	{
 		resultType = p.resultType;
 		responseObj = p.responseObj;
@@ -90,8 +88,7 @@ public:
 		errorMessage = std::move(p.errorMessage);
 	}
 
-	RESTResult(RESTResultBase p) :
-		Response(this)
+	RESTResult(RESTResultBase p) : Response(this)
 	{
 		resultType = p.resultType;
 		responseObj = p.responseObj;
@@ -100,8 +97,7 @@ public:
 		errorMessage = std::move(p.errorMessage);
 	}
 
-	RESTResult(RESTResult& p) :
-		Response(this)
+	RESTResult(RESTResult& p) : Response(this)
 	{
 		resultType = p.resultType;
 		responseObj = p.responseObj;
@@ -110,7 +106,7 @@ public:
 		errorMessage = std::move(p.errorMessage);
 	}
 
-	ReadOnlyProperty<RESTResult, T*, &RESTResult::GetResponse> Response;
+	typename Property<RESTResult, T*>::template Get<&RESTResult::GetResponse> Response;
 
 };
 

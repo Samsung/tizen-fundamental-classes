@@ -41,7 +41,7 @@ namespace SRIN {
 		public:
 			DatePickerPopup();
 
-			Property<DatePickerPopup, std::string, &DatePickerPopup::GetTitle, &DatePickerPopup::SetTitle> Title;
+			Property<DatePickerPopup, std::string&>::GetSet<&DatePickerPopup::GetTitle, &DatePickerPopup::SetTitle> Title;
 
 			std::tm& 		GetSelectedDateTM();
 			std::string& 	GetFormatedSelectedDate();
