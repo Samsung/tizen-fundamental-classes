@@ -44,7 +44,7 @@ private:
 	Evas_Object* genlist;
 	Elm_Genlist_Item_Class* itemClass;
 	Elm_Genlist_Item_Class* submenuItemClass;
-
+	Elm_Object_Item* currentlySelected;
 	std::vector<MenuItem*> rootMenu;
 
 	void GenerateRootMenu();
@@ -53,10 +53,12 @@ private:
 	typedef Event<Evas_Object*, Elm_Object_Item*> GenlistEvent;
 
 	void MenuSelectedInternal(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
+	void MenuUnselectedInternal(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
 	void MenuExpanded(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
 	void MenuContracted(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
 
 	GenlistEvent OnMenuSelectedInternal;
+	GenlistEvent OnMenuUnselectedInternal;
 	GenlistEvent OnMenuExpanded;
 	GenlistEvent OnMenuContracted;
 
