@@ -45,10 +45,10 @@ LIBAPI SRIN::Components::DropDown::DropDown() :
 	dropdownComponent(nullptr),
 	dataSource(nullptr),
 	parentComponent(nullptr),
-	selectedItem(nullptr),
 	DataSource(this)
 {
 	dropdownButtonClick += { this, &DropDown::OnDropDownButtonClick };
+	SelectedItem = nullptr;
 }
 
 LIBAPI void SRIN::Components::DropDown::ShowDropdown()
@@ -93,7 +93,7 @@ LIBAPI void SRIN::Components::DropDown::OnDropDownButtonClick(ElementaryEvent* v
 
 LIBAPI void SRIN::Components::DropDown::ItemClick(Adapter::AdapterItem* item)
 {
-	selectedItem = item->data;
+	SelectedItem = item->data;
 	text = item->itemClass->GetString(item->data, nullptr, "text");
 	elm_object_text_set(componentRoot, text.c_str());
 
@@ -109,7 +109,7 @@ LIBAPI void SRIN::Components::DropDown::ItemClick(Adapter::AdapterItem* item)
 		item.objectItem = nullptr;
 	}
 
-	ItemSelected(this, selectedItem);
+	ItemSelectionChanged(this, SelectedItem);
 }
 
 LIBAPI void SRIN::Components::DropDown::SetDataSource(Adapter* adapter)

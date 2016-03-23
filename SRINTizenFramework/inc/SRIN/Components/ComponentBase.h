@@ -115,7 +115,7 @@ public:
 	Property<ComponentBase, std::string&>::GetSet<&ComponentBase::GetName, &ComponentBase::SetName> Name;
 
 	virtual LIBAPI ~ComponentBase();
-	operator LIBAPI Evas_Object*() const;
+	LIBAPI operator Evas_Object*() const;
 };
 
 }

@@ -223,7 +223,7 @@ template<typename DefiningClass, typename ValueType>
 class PropertyClass::Property<DefiningClass, ValueType*>::Auto::ReadOnly : Auto
 {
 protected:
-	void operator=(const ValueType& val)
+	void operator=(ValueType* val)
 	{
 		this->data = val;
 	}
@@ -232,7 +232,11 @@ protected:
 public:
 	typedef std::false_type Mutable;
 	typedef ValueType Type;
-	operator ValueType()
+	operator ValueType*()
+	{
+		return this->data;
+	}
+	ValueType* operator->()
 	{
 		return this->data;
 	}
@@ -244,7 +248,7 @@ class PropertyClass::Property<DefiningClass, ValueType*>::Auto::ReadWrite : Read
 public:
 	typedef std::true_type Mutable;
 	typedef ValueType Type;
-	void operator=(const ValueType& val)
+	void operator=(ValueType* val)
 	{
 		ReadOnly::operator =(val);
 	}
