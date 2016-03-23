@@ -61,7 +61,7 @@ public:
 	template<class T>
 	void RemoveItem(T* data);
 
-	void Clear(bool preserve = false);
+	void Clear(bool deallocate = false);
 	std::list<AdapterItem>& GetAll();
 	int GetCount();
 

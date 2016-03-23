@@ -54,7 +54,7 @@ LIBAPI std::list<SRIN::Components::Adapter::AdapterItem>& SRIN::Components::Adap
 	return adapterItems;
 }
 
-LIBAPI void SRIN::Components::Adapter::Clear(bool preserve)
+LIBAPI void SRIN::Components::Adapter::Clear(bool erase)
 {
 	for(auto iter = adapterItems.begin(); iter != adapterItems.end();)
 	{
@@ -64,7 +64,7 @@ LIBAPI void SRIN::Components::Adapter::Clear(bool preserve)
 		OnItemRemove(this, &ref);
 
 		// Erase the object
-		if(!preserve)
+		if(deallocate)
 			ref.itemClass->Deallocator(ref.data);
 
 		// Erase the entry
