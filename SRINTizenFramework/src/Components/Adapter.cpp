@@ -54,7 +54,7 @@ LIBAPI std::list<SRIN::Components::Adapter::AdapterItem>& SRIN::Components::Adap
 	return adapterItems;
 }
 
-LIBAPI void SRIN::Components::Adapter::Clear(bool erase)
+LIBAPI void SRIN::Components::Adapter::Clear(bool deallocate)
 {
 	for(auto iter = adapterItems.begin(); iter != adapterItems.end();)
 	{
