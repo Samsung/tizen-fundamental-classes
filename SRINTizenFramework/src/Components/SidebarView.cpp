@@ -14,6 +14,7 @@ LIBAPI SidebarView::SidebarView() :
 {
 	layout = leftPanel = background = currentContent = nullptr;
 	drawerButtonClick += { this, &SidebarView::OnDrawerButtonClick };
+	drawerScroll += { this, &SidebarView::OnDrawerScrolling };
 }
 
 LIBAPI Evas_Object* SidebarView::CreateView(Evas_Object* root)
@@ -27,6 +28,12 @@ LIBAPI Evas_Object* SidebarView::CreateView(Evas_Object* root)
 	elm_panel_scrollable_set(leftPanel, EINA_TRUE);
 	elm_panel_orient_set(leftPanel, ELM_PANEL_ORIENT_LEFT);
 	elm_panel_hidden_set(leftPanel, EINA_TRUE);
+	evas_object_smart_callback_add(leftPanel, "scroll", SmartEventHandler, &drawerScroll);
+
+	bg = evas_object_rectangle_add(evas_object_evas_get(layout));
+	evas_object_color_set(bg, 0, 0, 0, 0);
+	evas_object_show(bg);
+	elm_object_part_content_set(layout, "elm.swallow.bg", bg);
 
 	// Create sidebar content from subclass
 	auto sidebarContent = CreateSidebar(leftPanel);
@@ -67,6 +74,15 @@ LIBAPI Evas_Object* SidebarView::GetTitleLeftButton(CString* buttonPart)
 LIBAPI void SidebarView::OnDrawerButtonClick(ElementaryEvent* eventSource, Evas_Object* objSource, void* eventData)
 {
 	ToggleSidebar();
+}
+
+LIBAPI void SidebarView::OnDrawerScrolling(ElementaryEvent* eventSource, Evas_Object* objSource, void* eventData)
+{
+	auto ev = reinterpret_cast<Elm_Panel_Scroll_Info*>(eventData);
+	int col = 127 * ev->rel_x;
+
+	/* Change color for background dim */
+	evas_object_color_set(bg, 0, 0, 0, col);
 }
 
 Evas_Object* SidebarView::GetTitleRightButton(CString* buttonPart)

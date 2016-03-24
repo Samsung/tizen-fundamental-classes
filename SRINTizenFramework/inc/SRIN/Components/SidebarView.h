@@ -21,10 +21,13 @@ private:
 	Evas_Object* leftPanel;
 	Evas_Object* background;
 	Evas_Object* currentContent;
+	Evas_Object* bg;
 
 	ElementaryEvent drawerButtonClick;
+	ElementaryEvent drawerScroll;
 
 	void OnDrawerButtonClick(ElementaryEvent* eventSource, Evas_Object* objSource, void* eventData);
+	void OnDrawerScrolling(ElementaryEvent* eventSource, Evas_Object* objSource, void* eventData);
 protected:
 	Evas_Object* layout;
 	virtual Evas_Object* CreateView(Evas_Object* root);

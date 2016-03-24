@@ -344,3 +344,19 @@ std::string SRIN::Framework::ApplicationBase::GetResourcePath(CString path)
 	ret += path;
 	return ret;
 }
+
+LIBAPI void SRIN::Framework::ApplicationBase::SetIndicatorColor(int r, int g, int b)
+{
+	Evas_Object* bg = elm_object_part_content_get(this->conform, "elm.swallow.indicator_bg");
+
+	if(bg == nullptr)
+	{
+		bg = evas_object_rectangle_add(evas_object_evas_get(this->win));
+		elm_object_part_content_set(this->conform, "elm.swallow.indicator_bg", bg);
+	}
+
+	evas_object_color_set(bg, r, g, b, 255);
+
+	elm_win_indicator_opacity_set(win, ELM_WIN_INDICATOR_OPAQUE);
+	elm_win_indicator_mode_set(win, ELM_WIN_INDICATOR_SHOW);
+}

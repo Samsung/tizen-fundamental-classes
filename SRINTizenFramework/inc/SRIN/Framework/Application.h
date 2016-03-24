@@ -225,6 +225,8 @@ public:
 
 	void SetIndicatorVisibility(bool value);
 
+	void SetIndicatorColor(int r, int g, int b);
+
 	Evas_Object* GetApplicationConformant();
 
 	/**
@@ -489,6 +491,7 @@ public:
 	virtual LIBAPI CString GetContentStyle() = 0;
 	virtual LIBAPI ~INaviframeContent();
 };
+
 }
 }
 
