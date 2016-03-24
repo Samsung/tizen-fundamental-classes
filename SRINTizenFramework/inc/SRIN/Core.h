@@ -205,6 +205,10 @@ public:
 	{
 		return this->data;
 	}
+	ValueType* operator->()
+	{
+		return &this->data;
+	}
 };
 
 template<typename DefiningClass, typename ValueType>

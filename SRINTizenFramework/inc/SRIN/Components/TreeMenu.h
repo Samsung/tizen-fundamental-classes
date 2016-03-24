@@ -15,11 +15,10 @@
 
 namespace SRIN {
 namespace Components {
-class LIBAPI MenuItem: public EventClass
+class LIBAPI MenuItem: public EventClass, public PropertyClass
 {
 private:
 	std::vector<MenuItem*> subMenus;
-	std::string menuIcon;
 	void* itemData;
 	Elm_Object_Item* genlistItem;
 	bool expanded;
@@ -29,7 +28,8 @@ public:
 	void RemoveSubMenu(int index);
 	const std::vector<MenuItem*>& GetSubMenus() const;
 
-	SimpleReadOnlyProperty<MenuItem, std::string> MenuText;
+	Property<MenuItem, std::string>::Auto::ReadOnly MenuText;
+	Property<MenuItem, std::string>::Auto::ReadOnly MenuIcon;
 
 	template<class T>
 	T* GetItemData();

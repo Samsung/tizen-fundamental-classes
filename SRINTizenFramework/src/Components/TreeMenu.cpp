@@ -40,11 +40,6 @@ const std::vector<MenuItem*>& MenuItem::GetSubMenus() const
 void TreeMenu::MenuSelectedInternal(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* genlistItem)
 {
 	auto item = reinterpret_cast<TreeMenuItemPackage*>(elm_object_item_data_get(genlistItem));
-	auto icon = elm_object_item_part_content_get(genlistItem, "menu_icon");
-	elm_object_signal_emit(icon, "elm,state,selected", "elm");
-
-	auto prevIcon = elm_object_item_part_content_get(currentlySelected, "menu_icon");
-	elm_object_signal_emit(prevIcon, "elm,state,unselected", "elm");
 
 	if(currentlySelected == genlistItem)
 		return;
@@ -102,6 +97,22 @@ Evas_Object* TreeMenu::CreateComponent(Evas_Object* root)
 		dlog_print(DLOG_DEBUG, LOG_TAG, "Reaching %s part", part);
 		if (!strcmp("button_expand", part))
 		{
+			auto item = reinterpret_cast<TreeMenuItemPackage*>(data);
+			auto menuItem = item->menuItemRef;
+
+
+			if(menuItem->MenuIcon->length() != 0)
+			{
+				auto layout = elm_bg_add(obj);
+				evas_object_size_hint_weight_set(layout, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+				evas_object_size_hint_align_set(layout, EVAS_HINT_FILL, EVAS_HINT_FILL);
+				;
+
+				dlog_print(DLOG_DEBUG, LOG_TAG, "Setting style: %s : %d", menuItem->MenuIcon->c_str(), elm_object_style_set(layout,  menuItem->MenuIcon->c_str()));
+
+				return layout;
+			}
+
 			auto button = elm_button_add(obj);
 			evas_object_smart_callback_add(button, "clicked", [] (void* data, Evas_Object* obj, void* eventData) {
 				auto item = reinterpret_cast<TreeMenuItemPackage*>(data);
@@ -131,19 +142,23 @@ Evas_Object* TreeMenu::CreateComponent(Evas_Object* root)
 		}
 		else if(!strcmp("menu_icon", part))
 		{
+
+
+
 			auto item = reinterpret_cast<TreeMenuItemPackage*>(data);
 			auto menuItem = item->menuItemRef;
 
 
 			if(menuItem->MenuIcon->length() != 0)
 			{
-				auto icon = elm_label_add(obj);
-				elm_object_style_set(icon,  menuItem->MenuIcon->c_str());
+				auto layout = elm_layout_add(obj);
+				evas_object_size_hint_weight_set(layout, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+				evas_object_size_hint_align_set(layout, EVAS_HINT_FILL, EVAS_HINT_FILL);
+				elm_object_style_set(layout, menuItem->MenuIcon->c_str());
 
-				if(item->menuItemRef->genlistItem == item->treeMenuRef->currentlySelected)
-					elm_object_signal_emit(icon, "elm,state,selected", "elm");
+				dlog_print(DLOG_DEBUG, LOG_TAG, "Setting style: %s", menuItem->MenuIcon->c_str());
 
-				return icon;
+				return layout;
 			}
 		}
 		return nullptr;

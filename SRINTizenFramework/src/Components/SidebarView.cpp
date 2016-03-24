@@ -50,6 +50,7 @@ LIBAPI void SidebarView::Attach(ViewBase* view)
 LIBAPI void SidebarView::Detach()
 {
 	elm_object_part_content_unset(layout, "elm.swallow.content");
+	evas_object_hide(currentContent);
 	currentContent = nullptr;
 }
 
