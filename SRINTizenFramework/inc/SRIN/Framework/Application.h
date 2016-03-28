@@ -225,7 +225,7 @@ public:
 
 	void SetIndicatorVisibility(bool value);
 
-	void SetIndicatorColor(int r, int g, int b);
+	void SetIndicatorColor(Color color);
 
 	Evas_Object* GetApplicationConformant();
 
@@ -400,6 +400,9 @@ public:
 	virtual bool NavigateBack() = 0;
 	virtual void NavigateTo(const char* controllerName, void* data) = 0;
 	virtual void NavigateTo(const char* controllerName, void* data, bool noTrail) = 0;
+
+	Event<ControllerManager*, ControllerBase*> NavigationProcessed;
+
 	/**
 	 * Method to register ControllerFactory to this manager so this manager can recognize
 	 * the controller and instantiate it when needed
@@ -491,6 +494,26 @@ public:
 	virtual LIBAPI CString GetContentStyle() = 0;
 	virtual LIBAPI ~INaviframeContent();
 };
+
+class LIBAPI IIndicatorColor : virtual PropertyClass
+{
+public:
+	Property<IIndicatorColor, Color>::Auto::ReadWrite IndicatorColor;
+};
+
+
+class LIBAPI IndicatorStyler : public EventClass
+{
+private:
+	void OnPostNavigation(Event<ControllerManager*, ControllerBase*>* event, ControllerManager* manager, ControllerBase* controller);
+	ApplicationBase* app;
+	ControllerManager* manager;
+	Color defaultColor;
+public:
+	IndicatorStyler(ApplicationBase* app, ControllerManager* manager, Color defaultColor);
+	~IndicatorStyler();
+};
+
 
 }
 }

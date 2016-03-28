@@ -61,6 +61,7 @@ LIBAPI void StackingControllerManager::NavigateTo(const char* controllerName, vo
 		PushController(newInstance);
 		app->Attach(newInstance->View);
 		newInstance->Load(data);
+		NavigationProcessed(this, newInstance);
 	}
 }
 
@@ -97,6 +98,7 @@ LIBAPI bool StackingControllerManager::NavigateBack()
 	if (popResult)
 	{
 		this->chain->instance->Reload(returnedData);
+		NavigationProcessed(this, this->chain->instance);
 	}
 
 	return popResult;

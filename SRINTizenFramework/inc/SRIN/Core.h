@@ -47,7 +47,12 @@ struct function_traits<ReturnType (ClassType::*)(Args...) const>
 	};
 };
 
+struct Color
+{
+	uint8_t r, g, b, a;
 
+	static inline Color FromRGBA(uint32_t val) { return *(reinterpret_cast<Color*>(&val)); }
+};
 
 class PropertyClass
 {
@@ -212,7 +217,7 @@ public:
 };
 
 template<typename DefiningClass, typename ValueType>
-class PropertyClass::Property<DefiningClass, ValueType>::Auto::ReadWrite : ReadOnly
+class PropertyClass::Property<DefiningClass, ValueType>::Auto::ReadWrite : public ReadOnly
 {
 public:
 	typedef std::true_type Mutable;
@@ -247,7 +252,7 @@ public:
 };
 
 template<typename DefiningClass, typename ValueType>
-class PropertyClass::Property<DefiningClass, ValueType*>::Auto::ReadWrite : ReadOnly
+class PropertyClass::Property<DefiningClass, ValueType*>::Auto::ReadWrite : public ReadOnly
 {
 public:
 	typedef std::true_type Mutable;

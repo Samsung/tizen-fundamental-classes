@@ -345,7 +345,7 @@ std::string SRIN::Framework::ApplicationBase::GetResourcePath(CString path)
 	return ret;
 }
 
-LIBAPI void SRIN::Framework::ApplicationBase::SetIndicatorColor(int r, int g, int b)
+LIBAPI void SRIN::Framework::ApplicationBase::SetIndicatorColor(Color color)
 {
 	Evas_Object* bg = elm_object_part_content_get(this->conform, "elm.swallow.indicator_bg");
 
@@ -355,8 +355,29 @@ LIBAPI void SRIN::Framework::ApplicationBase::SetIndicatorColor(int r, int g, in
 		elm_object_part_content_set(this->conform, "elm.swallow.indicator_bg", bg);
 	}
 
-	evas_object_color_set(bg, r, g, b, 255);
+	evas_object_color_set(bg, color.r, color.g, color.b, color.a);
 
 	elm_win_indicator_opacity_set(win, ELM_WIN_INDICATOR_OPAQUE);
 	elm_win_indicator_mode_set(win, ELM_WIN_INDICATOR_SHOW);
+}
+
+LIBAPI void SRIN::Framework::IndicatorStyler::OnPostNavigation(Event<ControllerManager*, ControllerBase*>* event,
+	ControllerManager* manager, ControllerBase* controller)
+{
+	auto colorable = dynamic_cast<IIndicatorColor*>(controller->View);
+	if(colorable)
+		app->SetIndicatorColor(colorable->IndicatorColor);
+	else
+		app->SetIndicatorColor(defaultColor);
+}
+
+LIBAPI SRIN::Framework::IndicatorStyler::IndicatorStyler(ApplicationBase* app, ControllerManager* manager, Color defaultColor) :
+	app(app), manager(manager), defaultColor(defaultColor)
+{
+	manager->NavigationProcessed += { this, &IndicatorStyler::OnPostNavigation };
+}
+
+LIBAPI SRIN::Framework::IndicatorStyler::~IndicatorStyler()
+{
+	manager->NavigationProcessed -= { this, &IndicatorStyler::OnPostNavigation };
 }
