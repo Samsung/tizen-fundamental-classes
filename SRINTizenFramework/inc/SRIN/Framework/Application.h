@@ -489,10 +489,11 @@ public:
 class LIBAPI INaviframeContent
 {
 public:
-	virtual LIBAPI Evas_Object* GetTitleLeftButton(CString* buttonPart) = 0;
-	virtual LIBAPI Evas_Object* GetTitleRightButton(CString* buttonPart) = 0;
-	virtual LIBAPI CString GetContentStyle() = 0;
-	virtual LIBAPI ~INaviframeContent();
+	virtual Evas_Object* GetTitleLeftButton(CString* buttonPart) = 0;
+	virtual Evas_Object* GetTitleRightButton(CString* buttonPart) = 0;
+	virtual CString GetContentStyle() = 0;
+	virtual void AfterNaviframePush(Elm_Object_Item* naviframeItem);
+	virtual ~INaviframeContent();
 };
 
 class LIBAPI IIndicatorColor : virtual PropertyClass

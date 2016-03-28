@@ -73,6 +73,8 @@ public:
 
 	typedef Event<TreeMenu*, MenuItem*> TreeMenuEvent;
 
+	Property<TreeMenu, std::string>::Auto::ReadWrite IconEdjeFile;
+
 	TreeMenuEvent OnMenuSelected;
 };
 

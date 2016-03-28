@@ -42,10 +42,10 @@ void TreeMenu::MenuSelectedInternal(GenlistEvent* eventSource, Evas_Object* objS
 	auto item = reinterpret_cast<TreeMenuItemPackage*>(elm_object_item_data_get(genlistItem));
 
 	auto prevIcon = elm_object_item_part_content_get(currentlySelected, "menu_icon");
-	elm_object_signal_emit(prevIcon, "elm,state,unselected", "elm");
+	edje_object_signal_emit(prevIcon, "elm,state,unselected", "elm");
 
 	auto icon = elm_object_item_part_content_get(genlistItem, "menu_icon");
-	elm_object_signal_emit(icon, "elm,state,selected", "elm");
+	edje_object_signal_emit(icon, "elm,state,selected", "elm");
 
 	if(currentlySelected == genlistItem)
 		return;
@@ -102,6 +102,7 @@ Evas_Object* TreeMenu::CreateComponent(Evas_Object* root)
 	{
 		auto item = reinterpret_cast<TreeMenuItemPackage*>(data);
 		auto menuItem = item->menuItemRef;
+		auto thisTreeMenu = item->treeMenuRef;
 
 		dlog_print(DLOG_DEBUG, LOG_TAG, "Reaching %s part", part);
 		if (!strcmp("button_expand", part))
@@ -145,16 +146,19 @@ Evas_Object* TreeMenu::CreateComponent(Evas_Object* root)
 		}
 		else if(!strcmp("menu_icon", part))
 		{
-
-			if(menuItem->MenuIcon->length() != 0)
+			if(thisTreeMenu->IconEdjeFile->length() != 0)
 			{
-				auto icon = elm_label_add(obj);
-				elm_object_style_set(icon,  menuItem->MenuIcon->c_str());
 
-				if(item->menuItemRef->genlistItem == item->treeMenuRef->currentlySelected)
-					elm_object_signal_emit(icon, "elm,state,selected", "elm");
+				if(menuItem->MenuIcon->length() != 0)
+				{
+					auto icon = edje_object_add(obj);
+					edje_object_file_set(icon, thisTreeMenu->IconEdjeFile->c_str(), menuItem->MenuIcon->c_str());
 
-				return icon;
+					if(item->menuItemRef->genlistItem == item->treeMenuRef->currentlySelected)
+						edje_object_signal_emit(icon, "elm,state,selected", "elm");
+
+					return icon;
+				}
 			}
 		}
 		return nullptr;

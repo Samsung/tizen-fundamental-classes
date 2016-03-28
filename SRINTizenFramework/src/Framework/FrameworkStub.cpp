@@ -17,3 +17,7 @@ LIBAPI IAttachable::~IAttachable()
 LIBAPI INaviframeContent::~INaviframeContent()
 {
 }
+
+LIBAPI void SRIN::Framework::INaviframeContent::AfterNaviframePush(Elm_Object_Item* naviframeItem)
+{
+}
