@@ -209,7 +209,7 @@ LIBAPI void ApplicationBase::Attach(ViewBase* view)
 		if (naviframeContent)
 			naviframeStyle = naviframeContent->GetContentStyle();
 
-		auto naviframeItem = elm_naviframe_item_push(this->rootFrame, view->ViewTitle->c_str(), NULL, NULL,
+		auto naviframeItem = elm_naviframe_item_push(this->rootFrame, view->Title->c_str(), NULL, NULL,
 			viewComponent, naviframeStyle);
 
 		auto backButton = elm_object_item_part_content_get(naviframeItem, "elm.swallow.prev_btn");
@@ -237,7 +237,7 @@ LIBAPI void ApplicationBase::Attach(ViewBase* view)
 				evas_object_show(right);
 			}
 
-			naviframeContent->AfterNaviframePush(naviframeItem);
+			naviframeContent->RaiseAfterNaviframePush(naviframeItem);
 		}
 
 
@@ -385,4 +385,30 @@ LIBAPI SRIN::Framework::IndicatorStyler::~IndicatorStyler()
 	manager->NavigationProcessed -= { this, &IndicatorStyler::OnPostNavigation };
 }
 
+LIBAPI SRIN::Framework::INaviframeContent::INaviframeContent() :
+	naviframeItem(nullptr)
+{
 
+}
+
+LIBAPI void SRIN::Framework::INaviframeContent::RaiseAfterNaviframePush(Elm_Object_Item* naviframeItem)
+{
+	this->naviframeItem = naviframeItem;
+	AfterNaviframePush(naviframeItem);
+}
+
+LIBAPI void SRIN::Framework::INaviframeContent::SetTitle(const std::string& value)
+{
+	ITitleProvider::SetTitle(value);
+	elm_object_item_part_text_set(naviframeItem, "elm.text.title", value.c_str());
+	dlog_print(DLOG_DEBUG, LOG_TAG, "Set title on INavCont %s", value.c_str());
+}
+
+SRIN::Framework::ITitleProvider::ITitleProvider() :
+	Title(this)
+{
+}
+
+SRIN::Framework::ITitleProvider::~ITitleProvider()
+{
+}

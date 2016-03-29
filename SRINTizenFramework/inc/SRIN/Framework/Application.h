@@ -457,6 +457,19 @@ public:
 	virtual ~MVCApplicationBase();
 };
 
+class LIBAPI ITitleProvider: virtual public PropertyClass
+{
+private:
+	std::string viewTitle;
+protected:
+	virtual void SetTitle(const std::string& value);
+	std::string& GetTitle();
+	ITitleProvider();
+public:
+	Property<ITitleProvider, std::string&>::GetSet<&ITitleProvider::GetTitle, &ITitleProvider::SetTitle> Title;
+	virtual ~ITitleProvider();
+};
+
 /**
  * Abstract base class for encapsulation of View definition and logic. Each view class represent
  * a user interface definition which will display data and interact directly with user.
@@ -465,17 +478,13 @@ public:
  * of this class can be attached into an IAttachable instance to display it to designated window
  * or placeholder.
  */
-class LIBAPI ViewBase: virtual public EventClass, public PropertyClass
+class LIBAPI ViewBase: virtual public EventClass, public PropertyClass, virtual public ITitleProvider
 {
 private:
 	Evas_Object* viewRoot;
-	std::string viewTitle;
+
 protected:
 	virtual Evas_Object* CreateView(Evas_Object* root) = 0;
-
-	void SetViewTitle(const std::string& value);
-	std::string& GetViewTitle();
-
 public:
 	ViewBase();
 	virtual Evas_Object* Create(Evas_Object* root);
@@ -483,16 +492,22 @@ public:
 	Evas_Object* GetViewRoot();
 	virtual ~ViewBase();
 
-	Property<ViewBase, std::string&>::GetSet<&ViewBase::GetViewTitle, &ViewBase::SetViewTitle> ViewTitle;
+
 };
 
-class LIBAPI INaviframeContent
+class LIBAPI INaviframeContent : virtual public ITitleProvider
 {
+private:
+	Elm_Object_Item* naviframeItem;
+protected:
+	virtual void AfterNaviframePush(Elm_Object_Item* naviframeItem);
+	virtual void SetTitle(const std::string& value);
 public:
+	INaviframeContent();
 	virtual Evas_Object* GetTitleLeftButton(CString* buttonPart) = 0;
 	virtual Evas_Object* GetTitleRightButton(CString* buttonPart) = 0;
 	virtual CString GetContentStyle() = 0;
-	virtual void AfterNaviframePush(Elm_Object_Item* naviframeItem);
+	void RaiseAfterNaviframePush(Elm_Object_Item* naviframeItem);
 	virtual ~INaviframeContent();
 };
 

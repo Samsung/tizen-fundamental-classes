@@ -9,8 +9,7 @@
 
 using namespace SRIN::Framework;
 
-LIBAPI ViewBase::ViewBase() :
-	ViewTitle(this)
+LIBAPI ViewBase::ViewBase()
 {
 	viewRoot = nullptr;
 }
@@ -42,12 +41,13 @@ LIBAPI ViewBase::~ViewBase()
 
 }
 
-void SRIN::Framework::ViewBase::SetViewTitle(const std::string& value)
+void SRIN::Framework::ITitleProvider::SetTitle(const std::string& value)
 {
 	this->viewTitle = value;
+	dlog_print(DLOG_DEBUG, LOG_TAG, "Set title on ViewBase %s", value.c_str());
 }
 
-std::string& SRIN::Framework::ViewBase::GetViewTitle()
+std::string& SRIN::Framework::ITitleProvider::GetTitle()
 {
 	return this->viewTitle;
 }
