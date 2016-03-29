@@ -12,8 +12,9 @@
 
 namespace SRIN { namespace Util {
 
-	void ShareString(std::string& str);
+	void ShareString(const std::string& str);
 
+	void OpenURL(const std::string& url);
 
 }
 }

@@ -12,7 +12,7 @@
 
 using namespace SRIN::Util;
 
-LIBAPI void SRIN::Util::ShareString(std::string& str)
+LIBAPI void SRIN::Util::ShareString(const std::string& str)
 {
 	app_control_h appControl;
 
@@ -26,4 +26,16 @@ LIBAPI void SRIN::Util::ShareString(std::string& str)
 
 	app_control_destroy(appControl);
 
+}
+
+LIBAPI void SRIN::Util::OpenURL(const std::string& url)
+{
+	app_control_h app_control;
+	app_control_create(&app_control);
+
+	app_control_set_operation(app_control, APP_CONTROL_OPERATION_VIEW);
+	app_control_set_uri(app_control, url.c_str());
+
+	app_control_send_launch_request(app_control, NULL, NULL);
+	app_control_destroy(app_control);
 }
