@@ -215,6 +215,10 @@ RESTResultBase SRIN::Net::RESTServiceTemplateBase::PerformCall()
 	{
 		dlog_print(DLOG_DEBUG, LOG_TAG, "Prepare Header");
 
+		// TODO make it an option so it can be configured
+		curl_easy_setopt(curlHandle, CURLOPT_SSL_VERIFYPEER, 0);
+		curl_easy_setopt(curlHandle, CURLOPT_SSL_VERIFYHOST, 0);
+
 		// Construct header list
 		struct curl_slist* headerList = PrepareHeader();
 		curl_easy_setopt(curlHandle, CURLOPT_HTTPHEADER, headerList);
