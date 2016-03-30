@@ -31,3 +31,9 @@ LIBAPI void ObjectEventHandler(void* data, Evas* evas, Evas_Object* obj, void* e
 	(*package)(obj, eventData);
 }
 
+LIBAPI void SignalEventHandler(void *data, Evas_Object *obj, const char *emission, const char *source)
+{
+	auto package = static_cast<EdjeSignalEvent*>(data);
+
+	(*package)(obj, { emission, source });
+}

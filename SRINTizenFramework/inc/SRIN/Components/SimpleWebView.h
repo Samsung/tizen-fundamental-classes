@@ -18,8 +18,9 @@ class LIBAPI SimpleWebView: public ComponentBase
 private:
 	std::string data;
 	Evas_Object* box;
+	Evas_Object* boxPage;
 
-	void AddParagraph(std::string& paragraph);
+	void AddParagraph(Evas_Object* boxPage, std::string& paragraph);
 	void AddImage(std::string& url);
 	void Render();
 protected:

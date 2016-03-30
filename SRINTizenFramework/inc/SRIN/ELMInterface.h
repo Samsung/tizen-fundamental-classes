@@ -14,7 +14,16 @@
 
 void SmartEventHandler(void* data, Evas_Object* obj, void* eventData);
 void ObjectEventHandler(void* data, Evas* evas, Evas_Object* obj, void* eventData);
+void SignalEventHandler(void *data, Evas_Object *obj, const char *emission, const char *source);
+struct EdjeSignalInfo
+{
+	const char* emission;
+	const char* source;
+};
 
 typedef Event<Evas_Object*, void*> ElementaryEvent;
+typedef Event<Evas_Object*, EdjeSignalInfo> EdjeSignalEvent;
+
+
 
 #endif /* ELMINTERFACE_H_ */

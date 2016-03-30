@@ -50,6 +50,7 @@ inline void Event<ObjectSourceType, EventDataType>::operator-=(const EventDelega
 	{
 		if(current->instance == other.instance && current->eventHandler == other.eventHandler)
 		{
+			//dlog_print(DLOG_DEBUG, "SRINFW-Event", "Deleting %d %d", current->instance, current->eventHandler);
 			if(current == this->first)
 				this->first = current->next;
 			
