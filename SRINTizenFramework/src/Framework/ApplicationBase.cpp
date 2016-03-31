@@ -94,6 +94,8 @@ int ApplicationBase::Main(ApplicationBase* app, int argc, char* argv[])
 	ApplicationBase::CurrentInstance = app;
 	ApplicationBase::ResourcePath = app_get_resource_path();
 
+	ecore_thread_max_set(16);
+
 	::ui_app_lifecycle_callback_s event_callback =
 	{ ApplicationBase_AppCreateHandler, ApplicationBase_AppTerminateHandler, ApplicationBase_AppPauseHandler,
 		ApplicationBase_AppResumeHandler, ApplicationBase_AppControlHandler };
