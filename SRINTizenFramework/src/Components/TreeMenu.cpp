@@ -79,6 +79,7 @@ Evas_Object* TreeMenu::CreateComponent(Evas_Object* root)
 {
 	genlist = elm_genlist_add(root);
 
+	elm_genlist_select_mode_set(genlist, ELM_OBJECT_SELECT_MODE_ALWAYS);
 	itemClass = elm_genlist_item_class_new();
 
 	itemClass->item_style = "group_index/expandable";
@@ -105,7 +106,7 @@ Evas_Object* TreeMenu::CreateComponent(Evas_Object* root)
 		auto thisTreeMenu = item->treeMenuRef;
 
 		dlog_print(DLOG_DEBUG, LOG_TAG, "Reaching %s part", part);
-		if (!strcmp("button_expand", part))
+		if (menuItem->GetSubMenus().size() && !strcmp("button_expand", part))
 		{
 			auto button = elm_button_add(obj);
 			evas_object_smart_callback_add(button, "clicked", [] (void* data, Evas_Object* obj, void* eventData) {
@@ -187,10 +188,6 @@ Evas_Object* TreeMenu::CreateComponent(Evas_Object* root)
 	elm_genlist_mode_set(genlist, ELM_LIST_COMPRESS);
 	elm_genlist_homogeneous_set(genlist, EINA_TRUE);
 
-	//evas_object_event_callback_add(genlist, EVAS_CALLBACK_MOUSE_DOWN, ObjectEventHandler, NULL);
-	//evas_object_smart_callback_add(genlist, "realized", gl_realized_cb, NULL);
-	//evas_object_smart_callback_add(genlist, "loaded", gl_loaded_cb, NULL);
-	//evas_object_smart_callback_add(genlist, "longpressed", gl_longpressed_cb, NULL);
 	evas_object_smart_callback_add(genlist, "selected", SmartEventHandler, &OnMenuSelectedInternal);
 	evas_object_smart_callback_add(genlist, "unselected", SmartEventHandler, &OnMenuUnselectedInternal);
 	evas_object_smart_callback_add(genlist, "expanded", SmartEventHandler, &OnMenuExpanded);
@@ -218,7 +215,7 @@ void TreeMenu::GenerateRootMenu()
 }
 
 TreeMenu::TreeMenu() :
-	genlist(nullptr), itemClass(nullptr), currentlySelected(nullptr)
+	genlist(nullptr), itemClass(nullptr), currentlySelected(nullptr), submenuItemClass(nullptr)
 
 {
 	OnMenuSelectedInternal +=  { this, &TreeMenu::MenuSelectedInternal };

@@ -10,6 +10,7 @@
 
 #include <dlog.h>
 #include <functional>
+#include <memory>
 
 #ifdef LIBBUILD
 #define LIBAPI __attribute__((__visibility__("default")))
@@ -408,6 +409,7 @@ public:
 	};
 
 	Event();
+	Event(bool logDelete);
 	~Event();
 	void operator+=(const EventDelegate& other);
 	void operator-=(const EventDelegate& other);
@@ -421,7 +423,43 @@ private:
 		EventNode* next;
 	};
 	EventNode* first;
+	bool logDelete;
 };
+
+template<class ObjectSourceType = void*, class EventDataType = void*>
+class SharedEvent : protected std::shared_ptr<Event<ObjectSourceType, EventDataType>>
+{
+public:
+	SharedEvent();
+	void operator+=(const typename Event<ObjectSourceType, EventDataType>::EventDelegate& other);
+	void operator-=(const typename Event<ObjectSourceType, EventDataType>::EventDelegate& other);
+	void operator()(ObjectSourceType objSource, EventDataType eventData) const;
+};
+
+template<class ObjectSourceType, class EventDataType>
+SharedEvent<ObjectSourceType, EventDataType>::SharedEvent() :
+	std::shared_ptr<Event<ObjectSourceType, EventDataType>>(new Event<ObjectSourceType, EventDataType>(true))
+{
+
+}
+
+template<class ObjectSourceType, class EventDataType>
+void SharedEvent<ObjectSourceType, EventDataType>::operator+=(const typename Event<ObjectSourceType, EventDataType>::EventDelegate& other)
+{
+	std::shared_ptr<Event<ObjectSourceType, EventDataType>>::operator->()->operator +=(other);
+}
+
+template<class ObjectSourceType, class EventDataType>
+void SharedEvent<ObjectSourceType, EventDataType>::operator-=(const typename Event<ObjectSourceType, EventDataType>::EventDelegate& other)
+{
+	std::shared_ptr<Event<ObjectSourceType, EventDataType>>::operator->()->operator -=(other);
+}
+
+template<class ObjectSourceType, class EventDataType>
+void SharedEvent<ObjectSourceType, EventDataType>:: operator()(ObjectSourceType objSource, EventDataType eventData) const
+{
+	std::shared_ptr<Event<ObjectSourceType, EventDataType>>::operator->()->operator ()(objSource, eventData);
+}
 
 #include "SRIN/Core.inc"
 

@@ -7,13 +7,23 @@
 
 template<class ObjectSourceType, class EventDataType>
 inline Event<ObjectSourceType, EventDataType>::Event() :
-	first(nullptr)
+	first(nullptr), logDelete(false)
 {
+}
+
+template<class ObjectSourceType, class EventDataType>
+inline Event<ObjectSourceType, EventDataType>::Event(bool logDelete) :
+	first(nullptr), logDelete(logDelete)
+{
+	if(logDelete)
+		dlog_print(DLOG_DEBUG, "SRINFW-Event", "Event created %d", this);
 }
 
 template<class ObjectSourceType, class EventDataType>
 inline Event<ObjectSourceType, EventDataType>::~Event()
 {
+	if(logDelete)
+		dlog_print(DLOG_DEBUG, "SRINFW-Event", "Event deleted %d", this);
 	/*
 	auto current = this->first;
 		
@@ -70,6 +80,9 @@ inline void Event<ObjectSourceType, EventDataType>::operator-=(const EventDelega
 template<class ObjectSourceType, class EventDataType>
 inline void Event<ObjectSourceType, EventDataType>::operator()(ObjectSourceType objSource, EventDataType eventData) const
 {
+	if(logDelete)
+		dlog_print(DLOG_DEBUG, "SRINFW-Event", "Event raise %d", this);
+	
 	auto current = this->first;
 	
 	while(current != nullptr)

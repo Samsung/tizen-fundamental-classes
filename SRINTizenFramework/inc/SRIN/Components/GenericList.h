@@ -93,13 +93,14 @@ namespace Components {
 		ElementaryEvent onItemClickedInternal;
 		ElementaryEvent onScrollingStart;
 		ElementaryEvent onScrollingEnd;
-
+		ObjectItemEdjeSignalEvent ItemSignalInternal;
 
 		void OnScrolledBottomInternal(ElementaryEvent* event, Evas_Object* obj, void* eventData);
 		void OnScrolledTopInternal(ElementaryEvent* event, Evas_Object* obj, void* eventData);
 		void OnDummyRealized(ElementaryEvent* event, Evas_Object* obj, void* eventData);
 		void OnScrollingStart(ElementaryEvent* event, Evas_Object* obj, void* eventData);
 		void OnScrollingEnd(ElementaryEvent* event, Evas_Object* obj, void* eventData);
+		void OnItemSignalEmit(ObjectItemEdjeSignalEvent* event, Elm_Object_Item* obj, EdjeSignalInfo eventData);
 	protected:
 		virtual Evas_Object* CreateComponent(Evas_Object* root);
 	public:
@@ -112,6 +113,8 @@ namespace Components {
 		Event<GenericList*, void*> ItemClicked;
 		Event<GenericList*, void*> ScrollingStart;
 		Event<GenericList*, void*> ScrollingEnd;
+		Event<Adapter::AdapterItem*, EdjeSignalInfo> ItemSignal;
+
 	};
 }
 }

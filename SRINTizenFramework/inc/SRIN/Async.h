@@ -68,7 +68,7 @@ struct DispatchAsyncBuilder
 {
 	typedef ReturnType R;
 	typedef AsyncTask<R> AsyncTaskType;
-	typedef Event<AsyncTaskType*, R> EventType;
+	typedef SharedEvent<AsyncTaskType*, R> EventType;
 	std::function<R(void)> lambda;
 	EventType* eventTarget;
 };
@@ -78,12 +78,10 @@ struct DispatchAsyncBuilder<void>
 {
 	typedef void R;
 	typedef AsyncTask<void> AsyncTaskType;
-	typedef Event<AsyncTaskType*> EventType;
+	typedef SharedEvent<AsyncTaskType*> EventType;
 	std::function<void(void)> lambda;
 	EventType* eventTarget;
 };
-
-
 
 template<>
 template<class R>
@@ -95,25 +93,27 @@ template<class ReturnValue>
 struct Async
 {
 	typedef AsyncTask<ReturnValue> Task;
-	typedef Event<Task*, ReturnValue> Event;
+	typedef SharedEvent<Task*, ReturnValue> Event;
+	typedef ::Event<Task*, ReturnValue> BaseEvent;
 };
 
 template<>
 struct Async<void>
 {
 	typedef AsyncTask<void> Task;
-	typedef Event<Task*> Event;
+	typedef SharedEvent<Task*> Event;
+	typedef ::Event<Task*> BaseEvent;
 };
 
-std::function<void(void*, void*)> GetDispatcher(Event<AsyncTask<void>*>* eventTarget);
+std::function<void(void*, void*)> GetDispatcher(SharedEvent<AsyncTask<void>*> eventTarget);
 
 template<class R>
-std::function<void(void*, void*)> GetDispatcher(Event<AsyncTask<R>*, R>* eventTarget)
+std::function<void(void*, void*)> GetDispatcher(SharedEvent<AsyncTask<R>*, R> eventTarget)
 {
 	return [eventTarget] (void* t, void* r)
 	{
 		std::unique_ptr<R> ret(reinterpret_cast<R*>(r));
-		(*eventTarget)(reinterpret_cast<AsyncTask<R>*>(t), *ret);
+		eventTarget(reinterpret_cast<AsyncTask<R>*>(t), *ret);
 	};
 }
 
@@ -131,8 +131,8 @@ struct AsyncBuilder
 	AsyncTask<typename DispatchAsyncBuilder<T>::R>* operator&(DispatchAsyncBuilder<T> builder)
 	{
 		typedef typename DispatchAsyncBuilder<T>::R R;
-		auto eventTarget = builder.eventTarget;
-		std::function<void(void*, void*)> dispatcher = GetDispatcher(builder.eventTarget);
+		//auto eventTarget = builder.eventTarget;
+		std::function<void(void*, void*)> dispatcher = GetDispatcher(*(builder.eventTarget));
 		return AsyncCall(builder.lambda, dispatcher);
 	}
 };
@@ -151,8 +151,8 @@ struct PriorityBuilder
 	AsyncTask<typename DispatchAsyncBuilder<T>::R>* operator&(DispatchAsyncBuilder<T> builder)
 	{
 		typedef typename DispatchAsyncBuilder<T>::R R;
-		auto eventTarget = builder.eventTarget;
-		std::function<void(void*, void*)> dispatcher = GetDispatcher(builder.eventTarget);
+		//auto eventTarget = builder.eventTarget;
+		std::function<void(void*, void*)> dispatcher = GetDispatcher(*(builder.eventTarget));
 		return AsyncCall(builder.lambda, dispatcher, true);
 	}
 };
@@ -206,7 +206,7 @@ DispatchAsyncBuilder<typename function_traits<Lambda>::result_type> operator>>(L
 	typename DispatchAsyncBuilder<typename function_traits<Lambda>::result_type>::EventType& eventTarget)
 {
 	return
-	{	lambda, &eventTarget};
+	{	lambda, &eventTarget };
 }
 
 bool IsAborting();

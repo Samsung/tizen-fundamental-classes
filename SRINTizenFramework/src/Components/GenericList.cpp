@@ -75,79 +75,18 @@ LIBAPI SRIN::Components::GenericListItemClassBase::~GenericListItemClassBase()
 }
 
 /* =================================================================================================================
- * IMPLEMENTATION: GenericListAdapter
- * ================================================================================================================= */
-/*
-LIBAPI SRIN::Components::GenericListAdapter::GenericListAdapter()
-{
-
-}
-
-LIBAPI SRIN::Components::GenericListAdapter::~GenericListAdapter()
-{
-	Clear();
-}
-
-LIBAPI void SRIN::Components::GenericListAdapter::AddItemInternal(void* data, GenericListItemClassBase* itemClass)
-{
-	adapterItems.push_back({data, itemClass, nullptr});
-	auto& lastItem = adapterItems.back();
-	OnItemAdd(this, &lastItem);
-}
-
-LIBAPI void SRIN::Components::GenericListAdapter::RemoveItemInternal(void* data)
-{
-	for(auto iter = adapterItems.begin(); iter != adapterItems.end();)
-	{
-		if(iter->data == data)
-		{
-			auto& ref = *iter;
-			OnItemRemove(this, &ref);
-			iter = adapterItems.erase(iter);
-		}
-	}
-}
-
-LIBAPI std::list<GenericListAdapter::GenlistItem>& SRIN::Components::GenericListAdapter::GetAll()
-{
-	return adapterItems;
-}
-
-void SRIN::Components::GenericListAdapter::Clear(bool preserve)
-{
-	for(auto iter = adapterItems.begin(); iter != adapterItems.end();)
-	{
-		auto& ref = *iter;
-
-		// Notify the user of this adapter
-		OnItemRemove(this, &ref);
-
-		// Erase the object
-		if(!preserve)
-			ref.itemClass->Deallocator(ref.data);
-
-		// Erase the entry
-		iter = adapterItems.erase(iter);
-	}
-}
-
-int SRIN::Components::GenericListAdapter::GetCount()
-{
-	return adapterItems.size();
-}
-*/
-/* =================================================================================================================
  * IMPLEMENTATION: GenericList
  * ================================================================================================================= */
 
 LIBAPI SRIN::Components::GenericList::GenericList() :
-	dataSource(nullptr), genlist(nullptr), realBottom(nullptr), DataSource(this), Overscroll(this)
+	dataSource(nullptr), genlist(nullptr), realBottom(nullptr), DataSource(this), Overscroll(this), overscroll(false)
 {
 	onScrolledBottomInternal += { this, &GenericList::OnScrolledBottomInternal };
 	onScrolledTopInternal += { this, &GenericList::OnScrolledTopInternal };
 	onDummyRealized += { this, &GenericList::OnDummyRealized };
 	onScrollingStart += { this, &GenericList::OnScrollingStart };
 	onScrollingEnd += { this, &GenericList::OnScrollingEnd };
+	ItemSignalInternal += { this, &GenericList::OnItemSignalEmit };
 
 	dummyBottom = nullptr;
 	dummyBottomItemClass = elm_genlist_item_class_new();
@@ -220,6 +159,14 @@ LIBAPI void SRIN::Components::GenericList::AppendItemToGenlist(Adapter::AdapterI
 		if(overscroll && !dummyBottom) // Create dummy item if overscroll enabled
 			dummyBottom = elm_genlist_item_append(genlist, dummyBottomItemClass, dummyBottomItemClass, nullptr, ELM_GENLIST_ITEM_NONE, nullptr, nullptr);
 	}
+	//elm_object_item_signal_callback_add(data->objectItem, "*", "*", ObjectItemSignalEventHandler, &ItemSignalInternal);
+	auto ret = elm_object_item_widget_get(realBottom);
+
+	dlog_print(DLOG_DEBUG, LOG_TAG, "Widget SRIN %d", ret);
+
+	elm_object_item_signal_callback_add(realBottom, "*", "*", [] (void *data, Evas_Object *obj, const char *emission, const char *source) {
+			dlog_print(DLOG_DEBUG, LOG_TAG, "Signal SRIN %s, source %s", emission, source);
+	}, nullptr);
 }
 
 LIBAPI void SRIN::Components::GenericList::OnItemAdd(Event<Adapter*, Adapter::AdapterItem*>* event, Adapter* adapter,
@@ -257,6 +204,8 @@ LIBAPI Evas_Object* SRIN::Components::GenericList::CreateComponent(Evas_Object* 
 	evas_object_smart_callback_add(genlist, "scroll,drag,start", SmartEventHandler, &onScrollingStart);
 	evas_object_smart_callback_add(genlist, "scroll,drag,stop", SmartEventHandler, &onScrollingEnd);
 	elm_genlist_highlight_mode_set(genlist, EINA_FALSE);
+
+
 	return genlist;
 }
 
@@ -281,6 +230,12 @@ void SRIN::Components::GenericList::OnDummyRealized(ElementaryEvent* event, Evas
 	{
 		// If the dummy bottom is realized, call the reaching bottom function
 		ReachingBottom(this, nullptr);
+	}
+	else
+	{
+		auto ret = elm_object_item_widget_get((Elm_Object_Item*)eventData);
+
+		dlog_print(DLOG_DEBUG, LOG_TAG, "Widget Realized SRIN %d", obj);
 	}
 }
 
@@ -316,4 +271,13 @@ void SRIN::Components::GenericList::OnScrollingStart(ElementaryEvent* event, Eva
 void SRIN::Components::GenericList::OnScrollingEnd(ElementaryEvent* event, Evas_Object* obj, void* eventData)
 {
 	ScrollingEnd(this, nullptr);
+}
+
+void SRIN::Components::GenericList::OnItemSignalEmit(ObjectItemEdjeSignalEvent* event, Elm_Object_Item* obj,
+	EdjeSignalInfo eventData)
+{
+	dlog_print(DLOG_DEBUG, LOG_TAG, "Signal %s", eventData.source);
+
+	auto data = reinterpret_cast<Adapter::AdapterItem*>(elm_object_item_data_get(obj));
+	ItemSignal(data, eventData);
 }

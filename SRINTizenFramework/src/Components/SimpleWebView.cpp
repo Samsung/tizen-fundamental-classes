@@ -263,7 +263,7 @@ void SRIN::Components::SimpleWebView::Render()
 }
 
 SRIN::Components::SimpleWebView::SimpleWebView() :
-	box(nullptr)
+	box(nullptr), boxPage(nullptr)
 {
 
 }
