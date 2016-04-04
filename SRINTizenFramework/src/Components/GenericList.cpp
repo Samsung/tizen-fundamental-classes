@@ -159,10 +159,6 @@ LIBAPI void SRIN::Components::GenericList::AppendItemToGenlist(Adapter::AdapterI
 		if(overscroll && !dummyBottom) // Create dummy item if overscroll enabled
 			dummyBottom = elm_genlist_item_append(genlist, dummyBottomItemClass, dummyBottomItemClass, nullptr, ELM_GENLIST_ITEM_NONE, nullptr, nullptr);
 	}
-	//elm_object_item_signal_callback_add(data->objectItem, "*", "*", ObjectItemSignalEventHandler, &ItemSignalInternal);
-	auto ret = elm_object_item_widget_get(realBottom);
-
-	dlog_print(DLOG_DEBUG, LOG_TAG, "Widget SRIN %d", ret);
 
 	elm_object_item_signal_callback_add(realBottom, "*", "*", [] (void *data, Evas_Object *obj, const char *emission, const char *source) {
 			dlog_print(DLOG_DEBUG, LOG_TAG, "Signal SRIN %s, source %s", emission, source);
@@ -187,11 +183,17 @@ LIBAPI void SRIN::Components::GenericList::OnItemRemove(Event<Adapter*, Adapter:
 	elm_object_item_del(data->objectItem);
 	data->objectItem = nullptr;
 
-	// If it is the final object on the adapter
-	if(adapter->GetCount() == 1 && dummyBottom)
+	// If this is last, then just remove the dummy bottom
+	if(adapter->GetCount() == 1)
 	{
-		elm_object_item_del(dummyBottom);
-		dummyBottom = nullptr;
+		realBottom = nullptr;
+
+		if(dummyBottom)
+		{
+			elm_object_item_del(dummyBottom);
+			dummyBottom = nullptr;
+		}
+
 	}
 }
 
@@ -245,7 +247,7 @@ void SRIN::Components::GenericList::SetOverscroll(const bool& o)
 
 	if(overscroll)
 	{
-		if(!dummyBottom)
+		if(!dummyBottom && dataSource && dataSource->GetCount() != 0)
 			dummyBottom = elm_genlist_item_append(genlist, dummyBottomItemClass, dummyBottomItemClass, nullptr, ELM_GENLIST_ITEM_NONE, nullptr, nullptr);
 	}
 	else

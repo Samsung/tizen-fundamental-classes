@@ -20,8 +20,10 @@ LIBAPI SRIN::Components::AdapterItemClassBase::~AdapterItemClassBase()
  * IMPLEMENTATION: BasicAdapter
  * ================================================================================================================= */
 
-LIBAPI SRIN::Components::Adapter::Adapter()
+LIBAPI SRIN::Components::Adapter::Adapter() :
+	adapterItems()
 {
+
 }
 
 LIBAPI SRIN::Components::Adapter::~Adapter()
@@ -49,7 +51,7 @@ LIBAPI void SRIN::Components::Adapter::RemoveItemInternal(void* data)
 	}
 }
 
-LIBAPI std::list<SRIN::Components::Adapter::AdapterItem>& SRIN::Components::Adapter::GetAll()
+LIBAPI std::vector<SRIN::Components::Adapter::AdapterItem>& SRIN::Components::Adapter::GetAll()
 {
 	return adapterItems;
 }
@@ -74,7 +76,7 @@ LIBAPI void SRIN::Components::Adapter::Clear(bool deallocate)
 
 LIBAPI int SRIN::Components::Adapter::GetCount()
 {
-	return adapterItems.size();
+	return adapterItems.empty() ? 0 : adapterItems.size();
 }
 
 /* =================================================================================================================

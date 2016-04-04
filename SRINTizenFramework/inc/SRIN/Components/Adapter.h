@@ -12,6 +12,7 @@
 #include "SRIN/ELMInterface.h"
 
 #include <list>
+#include <vector>
 #include <unordered_map>
 
 namespace SRIN {
@@ -62,7 +63,7 @@ public:
 	void RemoveItem(T* data);
 
 	void Clear(bool deallocate = false);
-	std::list<AdapterItem>& GetAll();
+	std::vector<AdapterItem>& GetAll();
 	int GetCount();
 
 	Event<Adapter*, AdapterItem*> OnItemAdd;
@@ -71,7 +72,7 @@ protected:
 	void AddItemInternal(void* data, AdapterItemClassBase* itemClass);
 	void RemoveItemInternal(void* data);
 private:
-	std::list<AdapterItem> adapterItems;
+	std::vector<AdapterItem> adapterItems;
 
 
 };
