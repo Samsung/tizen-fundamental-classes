@@ -7,6 +7,8 @@
  */
 
 #include "SRIN/Components/SimpleWebView.h"
+#include "SRIN/Net/ImageCache.h"
+#include "SRIN/Async.h"
 #include <regex>
 #include <stack>
 
@@ -159,8 +161,6 @@ void SRIN::Components::SimpleWebView::Render()
 					auto src = GetImageURL(match[HTML_REGEX_ATTRIBUTES]);
 					AddImage(src);
 				}
-
-
 			}
 			else if(!match[HTML_REGEX_SELFENCLOSE].matched)
 			{
@@ -265,7 +265,7 @@ void SRIN::Components::SimpleWebView::Render()
 SRIN::Components::SimpleWebView::SimpleWebView() :
 	box(nullptr), boxPage(nullptr)
 {
-
+	eventImageDownloadCompleted += { this, &SimpleWebView::OnImageDownloadCompleted };
 }
 
 void SRIN::Components::SimpleWebView::AddParagraph(Evas_Object* boxPage, std::string& paragraph)
@@ -288,10 +288,99 @@ void SRIN::Components::SimpleWebView::AddParagraph(Evas_Object* boxPage, std::st
 
 void SRIN::Components::SimpleWebView::AddImage(std::string& url)
 {
+	dlog_print(DLOG_DEBUG, LOG_TAG, "WebView: Add image %s", url.c_str());
+	std::string filePath;
+	// If the cache will require downloading
+	if(Net::ImageCache::RequireDownloading(url, filePath))
+	{
+		auto placeholder = elm_box_add(boxPage);
+		evas_object_size_hint_weight_set(placeholder, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+		evas_object_size_hint_align_set(placeholder, EVAS_HINT_FILL, 0);
+
+		// Add reference counter to ensure the box will not become invalid until the asynchronous method is completed
+		evas_object_ref(placeholder);
+		evas_object_show(placeholder);
+		elm_box_pack_end(boxPage, placeholder);
+
+		// Load image asynchrounously
+		dlog_print(DLOG_DEBUG, LOG_TAG, "WebView: Load image from URL");
+		s_async [placeholder, url] () -> ImageAsyncPackage { return { placeholder, Net::ImageCache::LoadImage(url) }; } >> eventImageDownloadCompleted;
+	}
+	else
+	{
+		// File exist, set image
+		dlog_print(DLOG_DEBUG, LOG_TAG, "WebView: File exist, setting image");
+		auto image = elm_image_add(boxPage);
+		elm_image_file_set(image, filePath.c_str(), NULL);
+		elm_image_aspect_fixed_set(image, EINA_TRUE);
+		elm_image_fill_outside_set(image, EINA_FALSE);
+
+
+
+		struct P {
+			Evas_Object* box;
+			Evas_Object* image;
+		}* p = new P({ boxPage, image });
+
+		ecore_idler_add([] (void* data) -> Eina_Bool {
+			auto p = reinterpret_cast<P*>(data);
+			Evas_Coord x, y, w, h;
+			evas_object_geometry_get(p->box, &x, &y, &w, &h);
+			int imgW, imgH;
+			elm_image_object_size_get(p->image, &imgW, &imgH);
+
+			double aspect = double(imgH) / double(imgW);
+			int finalH = w * aspect;
+			dlog_print(DLOG_DEBUG, LOG_TAG, "Image: w=%d h=%d Placeholder w=%d h=%d Aspect %f", imgW, imgH, w, finalH, aspect);
+			evas_object_size_hint_min_set (p->image, w, finalH);
+
+			if(w == 0)
+				return true;
+			else
+				return false;
+		}, p);
+
+
+		evas_object_size_hint_weight_set(image, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+		evas_object_size_hint_align_set(image, EVAS_HINT_FILL, EVAS_HINT_FILL);
+		evas_object_size_hint_display_mode_set(image, EVAS_DISPLAY_MODE_EXPAND);
+		evas_object_show(image);
+		elm_box_pack_end(boxPage, image);
+	}
 }
 
 void SRIN::Components::SimpleWebView::SetHTMLData(const std::string& data)
 {
 	this->data = data;
 	Render();
+}
+
+void SRIN::Components::SimpleWebView::OnImageDownloadCompleted(Async<ImageAsyncPackage>::BaseEvent* event,
+	Async<ImageAsyncPackage>::Task* asyncTask, ImageAsyncPackage result)
+{
+	auto img = elm_image_add(result.placeholder);
+	elm_image_aspect_fixed_set(img, EINA_TRUE);
+	elm_image_fill_outside_set(img, EINA_FALSE);
+	elm_image_file_set(img, result.filePath.c_str(), nullptr);
+
+	Evas_Coord x, y, w, h;
+	evas_object_geometry_get(boxPage, &x, &y, &w, &h);
+
+	evas_object_size_hint_min_set (img, w, 400);
+
+	evas_object_size_hint_weight_set(img, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+	evas_object_size_hint_align_set(img, EVAS_HINT_FILL, EVAS_HINT_FILL);
+
+	// Pack the created image to the box stored in ImageLoading structure
+	elm_box_pack_end(result.placeholder, img);
+
+	// Don't forget to show the image
+	evas_object_show(img);
+
+	evas_object_unref(result.placeholder);
+}
+
+SRIN::Components::SimpleWebView::~SimpleWebView()
+{
+	eventImageDownloadCompleted -= { this, &SimpleWebView::OnImageDownloadCompleted };
 }

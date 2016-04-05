@@ -9,6 +9,7 @@
 #define SRIN_COMP_SIMPLEWEBVIEW_H_
 
 #include "SRIN/Components/ComponentBase.h"
+#include "SRIN/Async.h"
 
 namespace SRIN {
 namespace Components {
@@ -23,12 +24,22 @@ private:
 	void AddParagraph(Evas_Object* boxPage, std::string& paragraph);
 	void AddImage(std::string& url);
 	void Render();
+
+	struct ImageAsyncPackage {
+		Evas_Object* placeholder;
+		std::string filePath;
+	};
+
+	Async<ImageAsyncPackage>::Event eventImageDownloadCompleted;
+
+	void OnImageDownloadCompleted(Async<ImageAsyncPackage>::BaseEvent* event, Async<ImageAsyncPackage>::Task* asyncTask, ImageAsyncPackage result);
 protected:
 	virtual Evas_Object* CreateComponent(Evas_Object* root);
 
 
 public:
 	SimpleWebView();
+	~SimpleWebView();
 	void SetHTMLData(const std::string& data);
 };
 
