@@ -98,7 +98,7 @@ struct TaskContext
 	AsyncTaskObj* task;
 	//Event<R> event;
 
-	TaskContext()
+	TaskContext() : task(nullptr)
 	{
 		dlog_print(DLOG_DEBUG, LOG_TAG, "Context created");
 	}

@@ -10,7 +10,8 @@
 using namespace SRIN::Components;
 
 LIBAPI SidebarView::SidebarView() :
-	Framework::ViewBase()
+	Framework::ViewBase(),
+	bg(nullptr)
 {
 	layout = leftPanel = background = currentContent = nullptr;
 	drawerButtonClick += { this, &SidebarView::OnDrawerButtonClick };
