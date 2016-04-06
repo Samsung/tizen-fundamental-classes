@@ -6,9 +6,13 @@
  */
 
 #include <curl/curl.h>
+#include <exception>
 
 #include "SRIN/Net/REST.h"
 #include "SRIN/Net/Util.h"
+
+#define REGEX_URLPARAM R"REGEX((\{([A-Za-z0-9_]+)\}))REGEX"
+#include <regex>
 
 #include <istream>
 #include <sstream>
@@ -25,6 +29,10 @@ void RESTServiceTemplateBase::RegisterParameter(ParameterType paramType, CString
 	else if (paramType == ParameterType::Query)
 	{
 		queryStringParam.push_back(std::make_pair(key, ref));
+	}
+	else if (paramType == ParameterType::URL)
+	{
+		urlParam.insert(std::make_pair(std::string(key), ref));
 	}
 }
 
@@ -146,7 +154,10 @@ struct curl_slist* SRIN::Net::RESTServiceTemplateBase::PrepareHeader()
 }
 
 SRIN::Net::RESTServiceTemplateBase::RESTServiceTemplateBase(std::string url, HTTPMode httpMode) :
-	Url(url), result(nullptr), UserAgent("srin-framework-tizen/1.0"), httpMode(httpMode), working(false)
+	UserAgent("srin-framework-tizen/1.0"),
+	Url(url),
+	working(false),
+	httpMode(httpMode)
 {
 }
 
@@ -154,7 +165,46 @@ std::string SRIN::Net::RESTServiceTemplateBase::PrepareUrl()
 {
 	// Construct query string
 	std::stringstream urlBuffer;
-	urlBuffer << this->Url;
+
+	// Resolve parameter on URL using regex
+	std::regex urlRegex(REGEX_URLPARAM);
+
+	std::string& text = this->Url;
+
+	std::sregex_iterator words_begin(text.begin(), text.end(), urlRegex);
+	auto words_end = std::sregex_iterator();
+
+	auto lastToken = text.cbegin();
+
+	for (std::sregex_iterator i = words_begin; i != words_end; ++i) {
+		std::smatch match = *i;
+
+		// Flush to buffer
+		auto tokenEnd = match[1].first;
+		auto strCurr = std::string(lastToken, tokenEnd);
+		lastToken = match[1].second;
+
+		urlBuffer << strCurr;
+
+		auto param = urlParam.find(match[2].str());
+		if(param == urlParam.end())
+		{
+			dlog_print(DLOG_ERROR, "Parameter not found: %s", match[2].str().c_str());
+			throw std::runtime_error("Parameter not found");
+		}
+
+		auto paramInstance = param->second;
+		if(!paramInstance->isSet)
+		{
+			dlog_print(DLOG_ERROR, "Parameter not set: %s", param->first.c_str());
+			throw std::runtime_error("Parameter not set");
+		}
+		urlBuffer << paramInstance->GetEncodedValue();
+	}
+
+	// Flush remaining url to buffer
+	urlBuffer << std::string(lastToken, text.cend());
+
 	if (queryStringParam.size())
 	{
 		urlBuffer << "?";
@@ -235,8 +285,6 @@ RESTResultBase SRIN::Net::RESTServiceTemplateBase::PerformCall()
 		std::string finalUrl = PrepareUrl();
 		curl_easy_setopt(curlHandle, CURLOPT_URL, finalUrl.c_str());
 
-		auto urlBuf = finalUrl.c_str();
-
 		dlog_print(DLOG_DEBUG, LOG_TAG, "Prepare Post Data");
 
 		// Prepare post data
@@ -299,7 +347,7 @@ RESTResultBase SRIN::Net::RESTServiceTemplateBase::PerformCall()
 	return returnObj;
 }
 
-std::string* SRIN::Net::SimpleRESTServiceBase::OnProcessResponse(const std::string& responseStr)
+std::string* SRIN::Net::SimpleRESTServiceBase::OnProcessResponse(int httpCode, const std::string& responseStr, int& errorCode, std::string& errorMessage)
 {
 	return nullptr;
 }
@@ -315,9 +363,13 @@ RESTResultBase SRIN::Net::RESTServiceTemplateBase::CallInternal()
 }
 
 SRIN::Net::RESTResultBase::RESTResultBase() :
+	resultType(ResultType::OK),
 	responseObj(nullptr),
 	httpCode(0),
-	errorCode(0),
-	resultType(ResultType::OK)
+	errorCode(0)
+{
+}
+
+SRIN::Net::IServiceParameter::~IServiceParameter()
 {
 }

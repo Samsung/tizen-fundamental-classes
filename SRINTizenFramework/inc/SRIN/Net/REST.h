@@ -12,6 +12,7 @@
 
 #include <tuple>
 #include <vector>
+#include <unordered_map>
 
 namespace SRIN {
 namespace Net {
@@ -23,7 +24,7 @@ enum class HTTPMode
 
 enum class ParameterType
 {
-	Unknown = 0, Query = 1, Header = 2,
+	Unknown = 0, Query = 1, Header = 2, URL = 3
 };
 
 enum class ResultType
@@ -38,6 +39,7 @@ protected:
 	virtual std::string GetRawValue() = 0;
 	virtual std::string GetEncodedValue() = 0;
 	friend class RESTServiceTemplateBase;
+	virtual ~IServiceParameter();
 };
 
 template<class Type>
@@ -152,13 +154,13 @@ private:
 
 	bool working;
 	HTTPMode httpMode;
-	void* result;
 
 	struct curl_slist* PrepareHeader();
 	std::string PrepareUrl();
 
 	std::vector<std::pair<CString, IServiceParameter*>> queryStringParam;
 	std::vector<std::pair<CString, IServiceParameter*>> headerParam;
+	std::unordered_map<std::string, IServiceParameter*> urlParam;
 };
 
 template<class ResponseType>
@@ -196,7 +198,7 @@ protected:
 		RESTServiceBase(url, HTTPMode::Get)
 	{
 	}
-	virtual std::string* OnProcessResponse(const std::string& responseStr);
+	virtual std::string* OnProcessResponse(int httpCode, const std::string& responseStr, int& errorCode, std::string& errorMessage);
 };
 
 struct BasicAuthAccount
