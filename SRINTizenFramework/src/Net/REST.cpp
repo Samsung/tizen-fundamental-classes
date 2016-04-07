@@ -34,11 +34,30 @@ void RESTServiceTemplateBase::RegisterParameter(ParameterType paramType, CString
 	{
 		urlParam.insert(std::make_pair(std::string(key), ref));
 	}
+	else if(paramType == ParameterType::PostData)
+	{
+		postDataParam.insert(std::make_pair(std::string(key), ref));
+	}
 }
 
-std::string RESTServiceTemplateBase::PreparePostData()
+std::string RESTServiceTemplateBase::PreparePostData(const std::unordered_map<std::string, IServiceParameter*>& postDataParam)
 {
-	return std::string();
+	std::stringstream ret;
+
+	bool first = true;
+	for(auto& val : postDataParam)
+	{
+		if(!val.second->isSet)
+			continue;
+
+		if(!first)
+			ret << "&";
+		first = false;
+
+		ret << val.first << "=" << val.second->GetEncodedValue();
+	}
+
+	return ret.str();
 }
 
 /*
@@ -299,7 +318,7 @@ RESTResultBase SRIN::Net::RESTServiceTemplateBase::PerformCall()
 		case HTTPMode::Put:
 			curl_easy_setopt(curlHandle, CURLOPT_CUSTOMREQUEST, "PUT");
 
-			HTTP_PreparePostData: postData = PreparePostData();
+			HTTP_PreparePostData: postData = PreparePostData(postDataParam);
 
 			curl_easy_setopt(curlHandle, CURLOPT_POSTFIELDSIZE, postData.size());
 			curl_easy_setopt(curlHandle, CURLOPT_POSTFIELDS, postData.c_str());

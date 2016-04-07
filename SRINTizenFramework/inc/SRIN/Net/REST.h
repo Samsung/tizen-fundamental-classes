@@ -24,7 +24,7 @@ enum class HTTPMode
 
 enum class ParameterType
 {
-	Unknown = 0, Query = 1, Header = 2, URL = 3
+	Unknown = 0, Query = 1, Header = 2, URL = 3, PostData = 4
 };
 
 enum class ResultType
@@ -143,7 +143,7 @@ public:
 protected:
 	RESTServiceTemplateBase(std::string url, HTTPMode httpMode);
 
-	virtual std::string PreparePostData();
+	virtual std::string PreparePostData(const std::unordered_map<std::string, IServiceParameter*>& postDataParam);
 	std::string UserAgent, Url;
 	RESTResultBase CallInternal();
 private:
@@ -161,6 +161,7 @@ private:
 	std::vector<std::pair<CString, IServiceParameter*>> queryStringParam;
 	std::vector<std::pair<CString, IServiceParameter*>> headerParam;
 	std::unordered_map<std::string, IServiceParameter*> urlParam;
+	std::unordered_map<std::string, IServiceParameter*> postDataParam;
 };
 
 template<class ResponseType>
