@@ -156,21 +156,18 @@ LIBAPI void ApplicationBase::LowBattery(app_event_info_h event_info)
 
 LIBAPI void ApplicationBase::LowMemory(app_event_info_h event_info)
 {
+
 }
-
-
 
 LIBAPI void ApplicationBase::Exit()
 {
+	ui_app_exit();
 }
-
-
 
 LIBAPI ApplicationBase::~ApplicationBase()
 {
+
 }
-
-
 
 std::string SRIN::Framework::ApplicationBase::GetResourcePath(CString path)
 {
@@ -178,9 +175,6 @@ std::string SRIN::Framework::ApplicationBase::GetResourcePath(CString path)
 	ret += path;
 	return ret;
 }
-
-
-
 
 LIBAPI void SRIN::Framework::INaviframeContent::RaiseAfterNaviframePush(Elm_Object_Item* naviframeItem)
 {
@@ -195,12 +189,27 @@ LIBAPI void SRIN::Framework::INaviframeContent::SetTitle(const std::string& valu
 	dlog_print(DLOG_DEBUG, LOG_TAG, "Set title on INavCont %s", value.c_str());
 }
 
-SRIN::Framework::ITitleProvider::ITitleProvider() :
+LIBAPI SRIN::Framework::ITitleProvider::ITitleProvider() :
 	Title(this)
 {
 }
 
-SRIN::Framework::ITitleProvider::~ITitleProvider()
+LIBAPI SRIN::Framework::ITitleProvider::~ITitleProvider()
 {
 }
 
+LIBAPI SRIN::Framework::HeadlessApplicationBase::HeadlessApplicationBase(CString packageName) :
+	ApplicationBase(packageName)
+{
+}
+
+LIBAPI bool SRIN::Framework::HeadlessApplicationBase::ApplicationCreate()
+{
+	return true;
+}
+
+LIBAPI void SRIN::Framework::HeadlessApplicationBase::ApplicationControl(app_control_h app_control)
+{
+	OnReceiveAppControlMessage(app_control);
+	Exit();
+}

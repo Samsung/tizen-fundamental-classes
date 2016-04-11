@@ -144,15 +144,10 @@ public:
 	 */
 	virtual void LowMemory(app_event_info_h event_info);
 
-
-
-
 	/**
 	 * Method to initiate exit the application
 	 */
 	void Exit();
-
-
 
 	/**
 	 * Method that will be called by Tizen system to create the application.
@@ -172,6 +167,16 @@ public:
 	static SimpleReadOnlyProperty<ApplicationBase, ApplicationBase*> CurrentInstance;
 	static SimpleReadOnlyProperty<ApplicationBase, CString> ResourcePath;
 	static std::string GetResourcePath(CString path);
+};
+
+class LIBAPI HeadlessApplicationBase : public ApplicationBase
+{
+public:
+	HeadlessApplicationBase(CString packageName);
+
+	virtual bool ApplicationCreate() final;
+	virtual void ApplicationControl(app_control_h app_control) final;
+	virtual void OnReceiveAppControlMessage(app_control_h app_control) = 0;
 };
 
 class LIBAPI UIApplicationBase : public ApplicationBase, public IAttachable
