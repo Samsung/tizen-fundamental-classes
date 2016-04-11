@@ -30,7 +30,7 @@ LIBAPI void SRIN::Components::Toast::OnDismiss(ElementaryEvent* event, Evas_Obje
 }
 
 LIBAPI void SRIN::Components::Toast::Show(const std::string& message, double timeout) {
-	auto popup = elm_popup_add(SRIN::Framework::ApplicationBase::CurrentInstance->GetApplicationConformant());
+	auto popup = elm_popup_add(SRIN::Framework::UIApplicationBase::CurrentInstance->GetApplicationConformant());
 	elm_object_style_set(popup, "toast");
 	evas_object_size_hint_weight_set(popup, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
 

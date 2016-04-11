@@ -81,7 +81,7 @@ void ui_app_low_memory(app_event_info_h event_info, void *data)
 
 void win_delete_request_cb(void *data, Evas_Object *obj, void *event_info)
 {
-	ApplicationBase* app = (ApplicationBase*) data;
+	UIApplicationBase* app = (UIApplicationBase*) data;
 	dlog_print(DLOG_DEBUG, LOG_TAG, "Back button pressed");
 	app->BackButtonPressed();
 }
@@ -124,10 +124,7 @@ int ApplicationBase::Main(ApplicationBase* app, int argc, char* argv[])
 LIBAPI ApplicationBase::ApplicationBase(CString packageName) :
 	packageName(packageName)
 {
-	this->rootFrame = this->win = this->conform = NULL;
-	this->backButtonCallback = nullptr;
-	this->backButtonInstance = nullptr;
-	this->haveEventBackPressed = false;
+
 
 }
 
@@ -167,37 +164,192 @@ LIBAPI void ApplicationBase::LowMemory(app_event_info_h event_info)
 {
 }
 
-LIBAPI bool ApplicationBase::OnBackButtonPressed()
+
+
+LIBAPI void ApplicationBase::Exit()
 {
+}
+
+
+
+LIBAPI ApplicationBase::~ApplicationBase()
+{
+}
+
+
+
+std::string SRIN::Framework::ApplicationBase::GetResourcePath(CString path)
+{
+	std::string ret = CString(ApplicationBase::ResourcePath);
+	ret += path;
+	return ret;
+}
+
+
+LIBAPI void SRIN::Framework::IndicatorStyler::OnPostNavigation(Event<ControllerManager*, ControllerBase*>* event,
+	ControllerManager* manager, ControllerBase* controller)
+{
+	auto colorable = dynamic_cast<IIndicatorColor*>(controller->View);
+	if(colorable)
+		app->SetIndicatorColor(colorable->IndicatorColor);
+	else
+		app->SetIndicatorColor(defaultColor);
+}
+
+LIBAPI SRIN::Framework::IndicatorStyler::IndicatorStyler(UIApplicationBase* app, ControllerManager* manager, Color defaultColor) :
+	app(app), manager(manager), defaultColor(defaultColor)
+{
+	manager->NavigationProcessed += { this, &IndicatorStyler::OnPostNavigation };
+}
+
+LIBAPI SRIN::Framework::IndicatorStyler::~IndicatorStyler()
+{
+	manager->NavigationProcessed -= { this, &IndicatorStyler::OnPostNavigation };
+}
+
+LIBAPI SRIN::Framework::INaviframeContent::INaviframeContent() :
+	naviframeItem(nullptr)
+{
+
+}
+
+LIBAPI void SRIN::Framework::INaviframeContent::RaiseAfterNaviframePush(Elm_Object_Item* naviframeItem)
+{
+	this->naviframeItem = naviframeItem;
+	AfterNaviframePush(naviframeItem);
+}
+
+LIBAPI void SRIN::Framework::INaviframeContent::SetTitle(const std::string& value)
+{
+	ITitleProvider::SetTitle(value);
+	elm_object_item_part_text_set(naviframeItem, "elm.text.title", value.c_str());
+	dlog_print(DLOG_DEBUG, LOG_TAG, "Set title on INavCont %s", value.c_str());
+}
+
+SRIN::Framework::ITitleProvider::ITitleProvider() :
+	Title(this)
+{
+}
+
+SRIN::Framework::ITitleProvider::~ITitleProvider()
+{
+}
+
+SimpleReadOnlyProperty<UIApplicationBase, UIApplicationBase*> UIApplicationBase::CurrentInstance;
+
+LIBAPI SRIN::Framework::UIApplicationBase::UIApplicationBase(CString packageName) :
+	ApplicationBase(packageName)
+{
+	this->rootFrame = this->win = this->conform = NULL;
+	this->backButtonCallback = nullptr;
+	this->backButtonInstance = nullptr;
+	this->haveEventBackPressed = false;
+}
+
+LIBAPI void SRIN::Framework::UIApplicationBase::SetIndicatorColor(Color color)
+{
+	Evas_Object* bg = elm_object_part_content_get(this->conform, "elm.swallow.indicator_bg");
+
+	if(bg == nullptr)
+	{
+		bg = evas_object_rectangle_add(evas_object_evas_get(this->win));
+		elm_object_part_content_set(this->conform, "elm.swallow.indicator_bg", bg);
+	}
+
+	evas_object_color_set(bg, color.r, color.g, color.b, color.a);
+
+	elm_win_indicator_opacity_set(win, ELM_WIN_INDICATOR_OPAQUE);
+}
+
+LIBAPI bool UIApplicationBase::ApplicationCreate()
+{
+	CurrentInstance = this;
+
+	elm_config_accel_preference_set("3d");
+
+	// Window
+	// Create and initialize elm_win.
+	// elm_win is mandatory to manipulate window.
+	this->win = elm_win_util_standard_add(packageName, packageName);
+
+	elm_win_autodel_set(this->win, EINA_TRUE);
+
+	if (elm_win_wm_rotation_supported_get(this->win))
+	{
+		int rots[1] =
+		{ 0 };
+		elm_win_wm_rotation_available_rotations_set(this->win, (const int *) (&rots), 1);
+	}
+
+	//eext_object_event_callback_add(this->win, EEXT_CALLBACK_BACK, win_delete_request_cb, (void*)this);
+
+	//evas_object_smart_callback_add(this->win, "delete,request", win_delete_request_cb, NULL);
+	//eext_object_event_callback_add(this->win, EEXT_CALLBACK_BACK, win_delete_request_cb, this);
+	EnableBackButtonCallback(true);
+	// Conformant
+	// Create and initialize elm_conformant.
+	// elm_conformant is mandatory for base gui to have proper size
+	// when indicator or virtual keypad is visible.
+	this->conform = elm_conformant_add(this->win);
+	elm_win_indicator_mode_set(this->win, ELM_WIN_INDICATOR_SHOW);
+	elm_win_indicator_opacity_set(this->win, ELM_WIN_INDICATOR_OPAQUE);
+	evas_object_size_hint_weight_set(this->conform, EVAS_HINT_EXPAND,
+	EVAS_HINT_EXPAND);
+	elm_win_resize_object_add(this->win, this->conform);
+	evas_object_show(this->conform);
+
+	// Naviframe
+	this->rootFrame = elm_naviframe_add(this->conform);
+
+	elm_naviframe_prev_btn_auto_pushed_set(this->rootFrame, EINA_TRUE);
+	elm_naviframe_content_preserve_on_pop_set(this->rootFrame, EINA_FALSE);
+	elm_object_content_set(this->conform, this->rootFrame);
+	evas_object_show(this->rootFrame);
+
+	evas_object_show(this->win);
+
+	this->OnApplicationCreated();
 	return true;
 }
 
-LIBAPI void ApplicationBase::EnableBackButtonCallback(bool enable)
+LIBAPI void SRIN::Framework::UIApplicationBase::SetIndicatorVisibility(bool value)
 {
-	if (enable)
+	if (value)
 	{
-		if (!this->haveEventBackPressed)
-		{
-			eext_object_event_callback_add(this->win, EEXT_CALLBACK_BACK, win_delete_request_cb, this);
-			this->haveEventBackPressed = true;
-		}
+		elm_win_indicator_mode_set(win, ELM_WIN_INDICATOR_SHOW);
 	}
 	else
 	{
-		eext_object_event_callback_del(this->win, EEXT_CALLBACK_BACK, win_delete_request_cb);
-		this->haveEventBackPressed = false;
+		elm_win_indicator_mode_set(win, ELM_WIN_INDICATOR_HIDE);
 	}
 }
 
-LIBAPI bool ApplicationBase::AcquireExclusiveBackButtonPressed(EventClass* instance, BackButtonCallback callback)
+LIBAPI void UIApplicationBase::BackButtonPressed()
+{
+	bool backResult = backButtonCallback ? (backButtonInstance->*backButtonCallback)() : OnBackButtonPressed();
+	if (backResult)
+		ui_app_exit();
+}
+
+LIBAPI Evas_Object* UIApplicationBase::GetApplicationConformant()
+{
+	return this->conform;
+}
+
+LIBAPI void UIApplicationBase::OnApplicationCreated()
+{
+
+}
+
+LIBAPI bool UIApplicationBase::AcquireExclusiveBackButtonPressed(EventClass* instance, BackButtonCallback callback)
 {
 }
 
-LIBAPI bool ApplicationBase::ReleaseExclusiveBackButtonPressed(EventClass* instance, BackButtonCallback callback)
+LIBAPI bool UIApplicationBase::ReleaseExclusiveBackButtonPressed(EventClass* instance, BackButtonCallback callback)
 {
 }
 
-LIBAPI void ApplicationBase::Attach(ViewBase* view)
+LIBAPI void UIApplicationBase::Attach(ViewBase* view)
 {
 	Evas_Object* viewComponent = view->Create(this->rootFrame);
 
@@ -247,170 +399,36 @@ LIBAPI void ApplicationBase::Attach(ViewBase* view)
 		dlog_print(DLOG_DEBUG, LOG_TAG, "Prev Button Style: %s", style);
 
 		evas_object_smart_callback_add(backButton, "clicked", [] (void* a, Evas_Object* b, void* c)
-		{	static_cast<ApplicationBase*>(a)->BackButtonPressed();}, this);
+		{	static_cast<UIApplicationBase*>(a)->BackButtonPressed();}, this);
 
 		evas_object_show(viewComponent);
 	}
 }
 
-LIBAPI void ApplicationBase::Detach()
+LIBAPI void UIApplicationBase::Detach()
 {
 	elm_naviframe_item_pop(this->rootFrame);
 }
 
-LIBAPI void ApplicationBase::Exit()
+
+LIBAPI bool UIApplicationBase::OnBackButtonPressed()
 {
-}
-
-LIBAPI void ApplicationBase::BackButtonPressed()
-{
-	bool backResult = backButtonCallback ? (backButtonInstance->*backButtonCallback)() : OnBackButtonPressed();
-	if (backResult)
-		ui_app_exit();
-}
-
-LIBAPI Evas_Object* ApplicationBase::GetApplicationConformant()
-{
-	return this->conform;
-}
-
-LIBAPI bool ApplicationBase::ApplicationCreate()
-{
-	elm_config_accel_preference_set("3d");
-
-	// Window
-	// Create and initialize elm_win.
-	// elm_win is mandatory to manipulate window.
-	this->win = elm_win_util_standard_add(packageName, packageName);
-
-	elm_win_autodel_set(this->win, EINA_TRUE);
-
-	if (elm_win_wm_rotation_supported_get(this->win))
-	{
-		int rots[1] =
-		{ 0 };
-		elm_win_wm_rotation_available_rotations_set(this->win, (const int *) (&rots), 1);
-	}
-
-	//eext_object_event_callback_add(this->win, EEXT_CALLBACK_BACK, win_delete_request_cb, (void*)this);
-
-	//evas_object_smart_callback_add(this->win, "delete,request", win_delete_request_cb, NULL);
-	//eext_object_event_callback_add(this->win, EEXT_CALLBACK_BACK, win_delete_request_cb, this);
-	EnableBackButtonCallback(true);
-	// Conformant
-	// Create and initialize elm_conformant.
-	// elm_conformant is mandatory for base gui to have proper size
-	// when indicator or virtual keypad is visible.
-	this->conform = elm_conformant_add(this->win);
-	elm_win_indicator_mode_set(this->win, ELM_WIN_INDICATOR_SHOW);
-	elm_win_indicator_opacity_set(this->win, ELM_WIN_INDICATOR_OPAQUE);
-	evas_object_size_hint_weight_set(this->conform, EVAS_HINT_EXPAND,
-	EVAS_HINT_EXPAND);
-	elm_win_resize_object_add(this->win, this->conform);
-	evas_object_show(this->conform);
-
-	// Naviframe
-	this->rootFrame = elm_naviframe_add(this->conform);
-
-	elm_naviframe_prev_btn_auto_pushed_set(this->rootFrame, EINA_TRUE);
-	elm_naviframe_content_preserve_on_pop_set(this->rootFrame, EINA_FALSE);
-	elm_object_content_set(this->conform, this->rootFrame);
-	evas_object_show(this->rootFrame);
-
-	evas_object_show(this->win);
-
-	this->OnApplicationCreated();
 	return true;
 }
 
-LIBAPI void ApplicationBase::OnApplicationCreated()
+LIBAPI void UIApplicationBase::EnableBackButtonCallback(bool enable)
 {
-
-}
-
-LIBAPI ApplicationBase::~ApplicationBase()
-{
-}
-
-void SRIN::Framework::ApplicationBase::SetIndicatorVisibility(bool value)
-{
-	if (value)
+	if (enable)
 	{
-		elm_win_indicator_mode_set(win, ELM_WIN_INDICATOR_SHOW);
+		if (!this->haveEventBackPressed)
+		{
+			eext_object_event_callback_add(this->win, EEXT_CALLBACK_BACK, win_delete_request_cb, this);
+			this->haveEventBackPressed = true;
+		}
 	}
 	else
 	{
-		elm_win_indicator_mode_set(win, ELM_WIN_INDICATOR_HIDE);
+		eext_object_event_callback_del(this->win, EEXT_CALLBACK_BACK, win_delete_request_cb);
+		this->haveEventBackPressed = false;
 	}
-}
-
-std::string SRIN::Framework::ApplicationBase::GetResourcePath(CString path)
-{
-	std::string ret = CString(ApplicationBase::ResourcePath);
-	ret += path;
-	return ret;
-}
-
-LIBAPI void SRIN::Framework::ApplicationBase::SetIndicatorColor(Color color)
-{
-	Evas_Object* bg = elm_object_part_content_get(this->conform, "elm.swallow.indicator_bg");
-
-	if(bg == nullptr)
-	{
-		bg = evas_object_rectangle_add(evas_object_evas_get(this->win));
-		elm_object_part_content_set(this->conform, "elm.swallow.indicator_bg", bg);
-	}
-
-	evas_object_color_set(bg, color.r, color.g, color.b, color.a);
-
-	elm_win_indicator_opacity_set(win, ELM_WIN_INDICATOR_OPAQUE);
-}
-
-LIBAPI void SRIN::Framework::IndicatorStyler::OnPostNavigation(Event<ControllerManager*, ControllerBase*>* event,
-	ControllerManager* manager, ControllerBase* controller)
-{
-	auto colorable = dynamic_cast<IIndicatorColor*>(controller->View);
-	if(colorable)
-		app->SetIndicatorColor(colorable->IndicatorColor);
-	else
-		app->SetIndicatorColor(defaultColor);
-}
-
-LIBAPI SRIN::Framework::IndicatorStyler::IndicatorStyler(ApplicationBase* app, ControllerManager* manager, Color defaultColor) :
-	app(app), manager(manager), defaultColor(defaultColor)
-{
-	manager->NavigationProcessed += { this, &IndicatorStyler::OnPostNavigation };
-}
-
-LIBAPI SRIN::Framework::IndicatorStyler::~IndicatorStyler()
-{
-	manager->NavigationProcessed -= { this, &IndicatorStyler::OnPostNavigation };
-}
-
-LIBAPI SRIN::Framework::INaviframeContent::INaviframeContent() :
-	naviframeItem(nullptr)
-{
-
-}
-
-LIBAPI void SRIN::Framework::INaviframeContent::RaiseAfterNaviframePush(Elm_Object_Item* naviframeItem)
-{
-	this->naviframeItem = naviframeItem;
-	AfterNaviframePush(naviframeItem);
-}
-
-LIBAPI void SRIN::Framework::INaviframeContent::SetTitle(const std::string& value)
-{
-	ITitleProvider::SetTitle(value);
-	elm_object_item_part_text_set(naviframeItem, "elm.text.title", value.c_str());
-	dlog_print(DLOG_DEBUG, LOG_TAG, "Set title on INavCont %s", value.c_str());
-}
-
-SRIN::Framework::ITitleProvider::ITitleProvider() :
-	Title(this)
-{
-}
-
-SRIN::Framework::ITitleProvider::~ITitleProvider()
-{
 }

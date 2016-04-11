@@ -80,48 +80,15 @@ public:
  * Any view class inheriting ViewBase can be attached to this application and will be displayed
  * on to screen.
  */
-class LIBAPI ApplicationBase: public IAttachable
+class LIBAPI ApplicationBase
 {
-private:
-
-	bool haveEventBackPressed;
-	EventClass* backButtonInstance;
-
-	BackButtonCallback backButtonCallback;
-
-
-
-protected:
-	/**
-	 * Root win object
-	 */
-	Evas_Object* win;
-
-	/**
-	 * Root conform object
-	 */
-	Evas_Object* conform;
-
-	/**
-	 * Root frame object. Should never be modified in any condition
-	 */
-	Evas_Object* rootFrame;
-
 public:
-
-
 	const CString packageName;
 
 	/**
 	 * Constructor of ApplicationBase class
 	 */
 	ApplicationBase(CString packageName);
-
-	/**
-	 * Method that will be called after the application creation process is finished. At this
-	 * point, the application is ready to receive Attach action from any component.
-	 */
-	virtual void OnApplicationCreated();
 
 	/**
 	 * Method that will be called by Tizen system for any Control event received. Override this
@@ -177,6 +144,81 @@ public:
 	 */
 	virtual void LowMemory(app_event_info_h event_info);
 
+
+
+
+	/**
+	 * Method to initiate exit the application
+	 */
+	void Exit();
+
+
+
+	/**
+	 * Method that will be called by Tizen system to create the application.
+	 */
+	virtual bool ApplicationCreate() = 0;
+
+	/**
+	 * Destructor of ApplicationBase
+	 */
+	virtual ~ApplicationBase();
+
+	/**
+	 * Main method to start the application loop using an ApplicationBase instance
+	 */
+	static int Main(ApplicationBase* app, int argc, char *argv[]);
+
+	static SimpleReadOnlyProperty<ApplicationBase, ApplicationBase*> CurrentInstance;
+	static SimpleReadOnlyProperty<ApplicationBase, CString> ResourcePath;
+	static std::string GetResourcePath(CString path);
+};
+
+class LIBAPI UIApplicationBase : public ApplicationBase, public IAttachable
+{
+private:
+
+	bool haveEventBackPressed;
+	EventClass* backButtonInstance;
+
+	BackButtonCallback backButtonCallback;
+
+protected:
+	/**
+	 * Root win object
+	 */
+	Evas_Object* win;
+
+	/**
+	 * Root conform object
+	 */
+	Evas_Object* conform;
+
+	/**
+	 * Root frame object. Should never be modified in any condition
+	 */
+	Evas_Object* rootFrame;
+
+public:
+	UIApplicationBase(CString packageName);
+
+	/**
+	 * Method that will be called after the application creation process is finished. At this
+	 * point, the application is ready to receive Attach action from any component.
+	 */
+	virtual void OnApplicationCreated();
+
+	/**
+	 * Method that will be called by Tizen system to create the application.
+	 */
+	virtual bool ApplicationCreate() final;
+
+	void SetIndicatorVisibility(bool value);
+
+	void SetIndicatorColor(Color color);
+
+	Evas_Object* GetApplicationConformant();
+
 	/**
 	 * Method that will be called when the user called back button. Override this method to
 	 * handle specific behavior when user clicks the back button.
@@ -192,6 +234,11 @@ public:
 	bool ReleaseExclusiveBackButtonPressed(EventClass* instance, BackButtonCallback callback);
 
 	/**
+	 * Method that will be called by Tizen system when the user clicks the back button
+	 */
+	void BackButtonPressed();
+
+	/**
 	 * Method to be called to attach a view inside this attachable object
 	 *
 	 * @param view A view to be attached
@@ -203,40 +250,7 @@ public:
 	 */
 	void Detach();
 
-	/**
-	 * Method to initiate exit the application
-	 */
-	void Exit();
-
-	/**
-	 * Method that will be called by Tizen system when the user clicks the back button
-	 */
-	void BackButtonPressed();
-
-	/**
-	 * Method that will be called by Tizen system to create the application.
-	 */
-	bool ApplicationCreate();
-
-	/**
-	 * Destructor of ApplicationBase
-	 */
-	virtual ~ApplicationBase();
-
-	void SetIndicatorVisibility(bool value);
-
-	void SetIndicatorColor(Color color);
-
-	Evas_Object* GetApplicationConformant();
-
-	/**
-	 * Main method to start the application loop using an ApplicationBase instance
-	 */
-	static int Main(ApplicationBase* app, int argc, char *argv[]);
-
-	static SimpleReadOnlyProperty<ApplicationBase, ApplicationBase*> CurrentInstance;
-	static SimpleReadOnlyProperty<ApplicationBase, CString> ResourcePath;
-	static std::string GetResourcePath(CString path);
+	static SimpleReadOnlyProperty<UIApplicationBase, UIApplicationBase*> CurrentInstance;
 };
 
 /**
@@ -446,7 +460,7 @@ public:
 	SimpleReadOnlyProperty<SwitchingControllerManager, ControllerBase*> CurrentController;
 };
 
-class LIBAPI MVCApplicationBase: public ApplicationBase, public StackingControllerManager
+class LIBAPI MVCApplicationBase: public UIApplicationBase, public StackingControllerManager
 {
 private:
 	CString mainController;
@@ -522,11 +536,11 @@ class LIBAPI IndicatorStyler : public EventClass
 {
 private:
 	void OnPostNavigation(Event<ControllerManager*, ControllerBase*>* event, ControllerManager* manager, ControllerBase* controller);
-	ApplicationBase* app;
+	UIApplicationBase* app;
 	ControllerManager* manager;
 	Color defaultColor;
 public:
-	IndicatorStyler(ApplicationBase* app, ControllerManager* manager, Color defaultColor);
+	IndicatorStyler(UIApplicationBase* app, ControllerManager* manager, Color defaultColor);
 	~IndicatorStyler();
 };
 
