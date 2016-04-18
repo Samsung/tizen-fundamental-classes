@@ -15,11 +15,12 @@ typedef struct
 	TreeMenu* treeMenuRef;
 } TreeMenuItemPackage;
 
-MenuItem::MenuItem(std::string menuText, std::string menuIcon, void* itemData) :
+MenuItem::MenuItem(std::string menuText, std::string menuIcon, void* itemData, CustomMenuStyle* customStyle) :
 	itemData(itemData), genlistItem(nullptr), expanded(false)
 {
 	Text = menuText;
 	MenuIcon = menuIcon;
+	CustomItemStyle = customStyle;
 }
 
 void MenuItem::AddSubMenu(MenuItem* subMenu)
@@ -230,13 +231,28 @@ void TreeMenu::AddMenu(MenuItem* menu)
 
 	if (genlist)
 	{
-		auto genlistItem = elm_genlist_item_append(genlist, // genlist object
-			itemClass, // item class
-			new TreeMenuItemPackage({ menu, this }), // item class user data
-			nullptr, // parent
-			ELM_GENLIST_ITEM_TREE, // type
-			nullptr, // callback
-			menu);
+		Elm_Object_Item* genlistItem = nullptr;
+
+		if(!menu->CustomItemStyle)
+		{
+			genlistItem = elm_genlist_item_append(genlist, // genlist object
+				itemClass, // item class
+				new TreeMenuItemPackage({ menu, this }), // item class user data
+				nullptr, // parent
+				ELM_GENLIST_ITEM_TREE, // type
+				nullptr, // callback
+				menu);
+		}
+		else
+		{
+			genlistItem = elm_genlist_item_append(genlist, // genlist object
+				*menu->CustomItemStyle, // item class
+				(*menu->CustomItemStyle)(menu), // item class user data
+				nullptr, // parent
+				ELM_GENLIST_ITEM_TREE, // type
+				nullptr, // callback
+				menu);
+		}
 
 		menu->genlistItem = genlistItem;
 	}
@@ -272,4 +288,43 @@ void SRIN::Components::TreeMenu::AddMenu(const std::vector<MenuItem*>& listOfMen
 		AddMenu(item);
 	}
 
+}
+
+SRIN::Components::CustomMenuStyle::CustomMenuStyle(CString style)
+{
+	this->customStyle = elm_genlist_item_class_new();
+	this->customStyle->item_style = style;
+	this->customStyle->func.content_get = [] (void *data, Evas_Object *obj, const char *part) -> Evas_Object*
+	{
+		auto pkg = reinterpret_cast<CustomMenuStylePackage*>(data);
+		return pkg->thisRef->GetContent(pkg->menuItemRef, obj, part);
+	};
+
+	this->customStyle->func.text_get = [] (void *data, Evas_Object *obj, const char *part) -> char*
+	{
+		auto pkg = reinterpret_cast<CustomMenuStylePackage*>(data);
+		return strdup(pkg->thisRef->GetString(pkg->menuItemRef, obj, part).c_str());
+	};
+
+	// Callback redirect for delete function
+	this->customStyle->func.del = [] (void *data, Evas_Object *obj)
+	{
+		auto pkg = reinterpret_cast<CustomMenuStylePackage*>(data);
+		delete pkg;
+	};
+}
+
+void* SRIN::Components::CustomMenuStyle::operator ()(MenuItem* menuItem)
+{
+	return new CustomMenuStylePackage({this, menuItem});
+}
+
+SRIN::Components::CustomMenuStyle::operator Elm_Genlist_Item_Class*()
+{
+	return this->customStyle;
+}
+
+SRIN::Components::CustomMenuStyle::~CustomMenuStyle()
+{
+	elm_genlist_item_class_free(this->customStyle);
 }

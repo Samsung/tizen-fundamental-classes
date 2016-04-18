@@ -15,6 +15,30 @@
 
 namespace SRIN {
 namespace Components {
+
+class MenuItem;
+
+class LIBAPI CustomMenuStyle
+{
+private:
+	Elm_Genlist_Item_Class* customStyle;
+	struct CustomMenuStylePackage
+	{
+		CustomMenuStyle* thisRef;
+		MenuItem* menuItemRef;
+	};
+
+	void* operator()(MenuItem* menuItem);
+	operator Elm_Genlist_Item_Class* ();
+public:
+	CustomMenuStyle(CString style);
+	~CustomMenuStyle();
+	virtual std::string GetString(MenuItem* data, Evas_Object *obj, const char *part) = 0;
+	virtual Evas_Object* GetContent(MenuItem* data, Evas_Object *obj, const char *part) = 0;
+
+	friend class TreeMenu;
+};
+
 class LIBAPI MenuItem: public EventClass, public PropertyClass
 {
 private:
@@ -23,13 +47,14 @@ private:
 	Elm_Object_Item* genlistItem;
 	bool expanded;
 public:
-	MenuItem(std::string menuText, std::string menuIcon, void* itemData = nullptr);
+	MenuItem(std::string menuText, std::string menuIcon, void* itemData = nullptr, CustomMenuStyle* customStyle = nullptr);
 	void AddSubMenu(MenuItem* subMenu);
 	void RemoveSubMenu(int index);
 	const std::vector<MenuItem*>& GetSubMenus() const;
 
 	Property<MenuItem, std::string>::Auto::ReadOnly Text;
 	Property<MenuItem, std::string>::Auto::ReadOnly MenuIcon;
+	Property<MenuItem, CustomMenuStyle*>::Auto::ReadOnly CustomItemStyle;
 
 	template<class T>
 	T* GetItemData();
