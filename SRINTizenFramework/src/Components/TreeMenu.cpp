@@ -18,7 +18,7 @@ typedef struct
 MenuItem::MenuItem(std::string menuText, std::string menuIcon, void* itemData) :
 	itemData(itemData), genlistItem(nullptr), expanded(false)
 {
-	MenuText = menuText;
+	Text = menuText;
 	MenuIcon = menuIcon;
 }
 
@@ -89,7 +89,7 @@ Evas_Object* TreeMenu::CreateComponent(Evas_Object* root)
 
 		if (!strcmp("elm.text", part))
 		{
-			auto text = item->menuItemRef->MenuText->c_str();
+			auto text = item->menuItemRef->Text->c_str();
 			return strdup(text);
 		}
 		return nullptr;
@@ -173,7 +173,7 @@ Evas_Object* TreeMenu::CreateComponent(Evas_Object* root)
 
 		if (!strcmp("elm.text", part))
 		{
-			auto text = item->menuItemRef->MenuText->c_str();
+			auto text = item->menuItemRef->Text->c_str();
 			return strdup(text);
 		}
 		return nullptr;

@@ -47,6 +47,7 @@ namespace Components {
 	private:
 		typedef std::string T::* PointerToMemberString;
 		typedef const std::string& (T::* PointerToGetterString)();
+		typedef const std::string& (T::* PointerToGetterStringConst)() const;
 
 		struct Pointer {
 			bool isFunction;
@@ -60,6 +61,7 @@ namespace Components {
 	protected:
 		void AddToMap(PointerToMemberString ptr, std::string mapTo);
 		void AddToMap(PointerToGetterString ptr, std::string mapTo);
+		void AddToMap(PointerToGetterStringConst ptr, std::string mapTo);
 		SimpleGenericListItemClass(CString styleName);
 	public:
 		virtual std::string GetString(T* data, Evas_Object *obj, const char *part) final;
@@ -165,6 +167,15 @@ void SRIN::Components::SimpleGenericListItemClass<T>::AddToMap(PointerToGetterSt
 	Pointer ptr;
 	ptr.isFunction = true;
 	ptr.ptrGetter = ptrGetter;
+	mappingMap[mapTo] = ptr;
+}
+
+template<class T>
+inline void SRIN::Components::SimpleGenericListItemClass<T>::AddToMap(PointerToGetterStringConst ptrGetter, std::string mapTo)
+{
+	Pointer ptr;
+	ptr.isFunction = true;
+	ptr.ptrGetter = reinterpret_cast<PointerToGetterString>(ptrGetter);
 	mappingMap[mapTo] = ptr;
 }
 

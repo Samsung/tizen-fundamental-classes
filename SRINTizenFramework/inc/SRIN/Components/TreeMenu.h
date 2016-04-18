@@ -28,7 +28,7 @@ public:
 	void RemoveSubMenu(int index);
 	const std::vector<MenuItem*>& GetSubMenus() const;
 
-	Property<MenuItem, std::string>::Auto::ReadOnly MenuText;
+	Property<MenuItem, std::string>::Auto::ReadOnly Text;
 	Property<MenuItem, std::string>::Auto::ReadOnly MenuIcon;
 
 	template<class T>
