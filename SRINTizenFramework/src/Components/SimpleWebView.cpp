@@ -6,11 +6,14 @@
  *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
+#include <EWebKit.h>
+#include "SRIN/Framework/Application.h"
 #include "SRIN/Components/SimpleWebView.h"
 #include "SRIN/Net/ImageCache.h"
 #include "SRIN/Async.h"
 #include <regex>
 #include <stack>
+#include <math.h>
 
 /* Regular Expression for tokenizing HTML tag
  * Group 1: Matches the closing tag
@@ -40,6 +43,9 @@
 #define HTML_TAG_SPAN				"span"
 #define HTML_TAG_EM					"em"
 #define HTML_TAG_P					"p"
+
+#define FILE_EDC_WEBVIEW "edc/SimpleWebView.edj"
+#define EWK_FONT_SIZE 48
 
 bool iequals(const std::string& a, const std::string& b)
 {
@@ -76,12 +82,33 @@ using namespace SRIN;
 
 Evas_Object* SRIN::Components::SimpleWebView::CreateComponent(Evas_Object* root)
 {
-	this->box = elm_box_add(root);
+	/*this->box = elm_box_add(root);
 	evas_object_size_hint_weight_set(this->box, EVAS_HINT_EXPAND, 0);
 	evas_object_size_hint_align_set(this->box, EVAS_HINT_FILL, EVAS_HINT_FILL);
 	Render();
 
-	return this->box;
+	return this->box;*/
+
+	// Experimental EWK
+	layout = elm_layout_add(root);
+	auto edj_path = Framework::ApplicationBase::GetResourcePath(FILE_EDC_WEBVIEW);
+	elm_layout_file_set(layout, edj_path.c_str(), "simple_web_view");
+	evas_object_show(layout);
+
+	bg = elm_bg_add(layout);
+	elm_object_part_content_set(layout, "web_view", bg);
+	evas_object_size_hint_align_set(bg, EVAS_HINT_FILL, EVAS_HINT_FILL);
+	evas_object_size_hint_min_set(bg, NULL, 1);
+	evas_object_show(bg);
+
+	ewk = ewk_view_add(evas_object_evas_get(bg));
+	evas_object_size_hint_weight_set(ewk, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+	evas_object_size_hint_align_set(ewk, EVAS_HINT_FILL, EVAS_HINT_FILL);
+	ewk_settings_default_font_size_set(ewk_view_settings_get(ewk), EWK_FONT_SIZE);
+	elm_object_part_content_set(bg, "overlay", ewk);
+	evas_object_show(ewk);
+
+	return layout;
 }
 
 void SRIN::Components::SimpleWebView::Render()
@@ -263,9 +290,14 @@ void SRIN::Components::SimpleWebView::Render()
 }
 
 SRIN::Components::SimpleWebView::SimpleWebView() :
+	bg(nullptr), ewk(nullptr),
 	box(nullptr), boxPage(nullptr)
 {
 	eventImageDownloadCompleted += { this, &SimpleWebView::OnImageDownloadCompleted };
+
+	// Experimental EWK
+	ewk_init();
+	eventEwkLoadFinished += { this, &SimpleWebView::OnEwkLoadFinished };
 }
 
 void SRIN::Components::SimpleWebView::AddParagraph(Evas_Object* boxPage, std::string& paragraph)
@@ -352,7 +384,24 @@ void SRIN::Components::SimpleWebView::AddImage(std::string& url)
 void SRIN::Components::SimpleWebView::SetHTMLData(const std::string& data)
 {
 	this->data = data;
-	Render();
+	// Render();
+
+	// Experimental EWK
+	ewk_view_contents_set(ewk, data.c_str(), data.size(), NULL, NULL, NULL);
+	evas_object_smart_callback_add(ewk, "load,finished", &SmartEventHandler, &eventEwkLoadFinished);
+}
+
+void SRIN::Components::SimpleWebView::OnEwkLoadFinished(ElementaryEvent* viewSource, Evas_Object* objSource, void* eventData)
+{
+	Evas_Coord ewkWidth, ewkHeight, bgWidth, bgHeight;
+	ewk_view_contents_size_get(ewk, &ewkWidth, &ewkHeight);
+	dlog_print(DLOG_DEBUG, "WEBVIEW", "ewk : %d, %d", ewkWidth, ewkHeight);
+
+	evas_object_geometry_get(bg, NULL, NULL, &bgWidth, &bgHeight);
+	dlog_print(DLOG_DEBUG, "WEBVIEW", "bg : %d, %d", bgWidth, bgHeight);
+	double optimumSize = ((double)bgWidth) / ewkWidth * ewkHeight;
+	dlog_print(DLOG_DEBUG, "WEBVIEW", "optimum size : %f", optimumSize);
+	evas_object_size_hint_min_set(bg, NULL, (int)(std::round(optimumSize)));
 }
 
 void SRIN::Components::SimpleWebView::OnImageDownloadCompleted(Async<ImageAsyncPackage>::BaseEvent* event,
@@ -383,4 +432,7 @@ void SRIN::Components::SimpleWebView::OnImageDownloadCompleted(Async<ImageAsyncP
 SRIN::Components::SimpleWebView::~SimpleWebView()
 {
 	eventImageDownloadCompleted -= { this, &SimpleWebView::OnImageDownloadCompleted };
+
+	// Experimental EWK
+	ewk_shutdown();
 }

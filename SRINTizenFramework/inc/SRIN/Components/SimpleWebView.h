@@ -21,6 +21,14 @@ private:
 	Evas_Object* box;
 	Evas_Object* boxPage;
 
+	// Experimental EWK
+	Evas_Object* layout;
+	Evas_Object* bg;
+	Evas_Object* ewk;
+
+	ElementaryEvent eventEwkLoadFinished;
+	void OnEwkLoadFinished(ElementaryEvent* viewSource, Evas_Object* objSource, void* eventData);
+
 	void AddParagraph(Evas_Object* boxPage, std::string& paragraph);
 	void AddImage(std::string& url);
 	void Render();
