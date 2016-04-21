@@ -46,6 +46,11 @@ const std::vector<MenuItem*>& MenuItem::GetSubMenus() const
 	return subMenus;
 }
 
+void TreeMenu::MenuScrollInternal(GenlistEvent* eventSource,
+		Evas_Object* objSource, Elm_Object_Item* genlistItem) {
+	isScrolled = true;
+}
+
 void TreeMenu::MenuPressedInternal(GenlistEvent* eventSource,
 		Evas_Object* objSource, Elm_Object_Item* genlistItem) {
 	if (!isClickPersist) {
@@ -63,7 +68,12 @@ void TreeMenu::MenuReleasedInternal(GenlistEvent* eventSource,
 
 		auto icon = elm_object_item_part_content_get(genlistItem, "menu_icon");
 		edje_object_signal_emit(icon, "elm,state,unselected", "elm");
-		OnMenuSelected(this, item->menuItemRef);
+
+		if (!isScrolled) {
+			OnMenuSelected(this, item->menuItemRef);
+		} else {
+			isScrolled = false;
+		}
 	}
 }
 
@@ -244,6 +254,8 @@ Evas_Object* TreeMenu::CreateComponent(Evas_Object* root)
 	elm_genlist_mode_set(genlist, ELM_LIST_COMPRESS);
 	elm_genlist_homogeneous_set(genlist, EINA_TRUE);
 
+	evas_object_smart_callback_add(genlist, "scroll", SmartEventHandler, &OnMenuScrollInternal);
+
 	evas_object_smart_callback_add(genlist, "pressed", SmartEventHandler, &OnMenuPressedInternal);
 	evas_object_smart_callback_add(genlist, "released", SmartEventHandler, &OnMenuReleasedInternal);
 
@@ -278,6 +290,8 @@ TreeMenu::TreeMenu() :
 	genlist(nullptr), itemClass(nullptr), currentlySelected(nullptr), submenuItemClass(nullptr), MenuItems(this)
 
 {
+	OnMenuScrollInternal +=  { this, &TreeMenu::MenuScrollInternal };
+
 	OnMenuPressedInternal +=  { this, &TreeMenu::MenuPressedInternal };
 	OnMenuReleasedInternal += { this, &TreeMenu::MenuReleasedInternal };
 
@@ -288,6 +302,7 @@ TreeMenu::TreeMenu() :
 	OnMenuContracted += { this, &TreeMenu::MenuContracted };
 
 	isClickPersist = true;
+	isScrolled = false;
 }
 
 void TreeMenu::AddMenu(MenuItem* menu)

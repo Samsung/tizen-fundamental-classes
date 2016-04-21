@@ -66,12 +66,15 @@ private:
 	Elm_Object_Item* currentlySelected;
 	std::vector<MenuItem*> rootMenu;
 
+	bool isScrolled;
+
 	void GenerateRootMenu();
 	void GenerateSubMenu(MenuItem* subMenu);
 	const std::vector<MenuItem*>& GetMenuItems();
 
 	typedef Event<Evas_Object*, Elm_Object_Item*> GenlistEvent;
 
+	void MenuScrollInternal(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
 	void MenuPressedInternal(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
 	void MenuReleasedInternal(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
 	void MenuSelectedInternal(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
@@ -79,6 +82,7 @@ private:
 	void MenuExpanded(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
 	void MenuContracted(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
 
+	GenlistEvent OnMenuScrollInternal;
 	GenlistEvent OnMenuPressedInternal;
 	GenlistEvent OnMenuReleasedInternal;
 	GenlistEvent OnMenuSelectedInternal;
