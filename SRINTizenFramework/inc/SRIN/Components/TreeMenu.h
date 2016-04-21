@@ -22,17 +22,11 @@ class LIBAPI CustomMenuStyle
 {
 private:
 	Elm_Genlist_Item_Class* customStyle;
-	struct CustomMenuStylePackage
-	{
-		CustomMenuStyle* thisRef;
-		MenuItem* menuItemRef;
-	};
 
-	void* operator()(MenuItem* menuItem);
 	operator Elm_Genlist_Item_Class* ();
 public:
 	CustomMenuStyle(CString style);
-	~CustomMenuStyle();
+	virtual ~CustomMenuStyle();
 	virtual std::string GetString(MenuItem* data, Evas_Object *obj, const char *part) = 0;
 	virtual Evas_Object* GetContent(MenuItem* data, Evas_Object *obj, const char *part) = 0;
 
@@ -74,14 +68,19 @@ private:
 
 	void GenerateRootMenu();
 	void GenerateSubMenu(MenuItem* subMenu);
+	const std::vector<MenuItem*>& GetMenuItems();
 
 	typedef Event<Evas_Object*, Elm_Object_Item*> GenlistEvent;
 
+	void MenuPressedInternal(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
+	void MenuReleasedInternal(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
 	void MenuSelectedInternal(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
 	void MenuUnselectedInternal(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
 	void MenuExpanded(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
 	void MenuContracted(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
 
+	GenlistEvent OnMenuPressedInternal;
+	GenlistEvent OnMenuReleasedInternal;
 	GenlistEvent OnMenuSelectedInternal;
 	GenlistEvent OnMenuUnselectedInternal;
 	GenlistEvent OnMenuExpanded;
@@ -93,12 +92,18 @@ protected:
 public:
 	TreeMenu();
 	void AddMenu(MenuItem* menu);
+	void AddMenuAt(int index, MenuItem* menu);
+	void RemoveMenu(MenuItem* menu);
+
 	void AddMenu(const std::vector<MenuItem*>& listOfMenus);
 	virtual ~TreeMenu();
+
+	bool isClickPersist;
 
 	typedef Event<TreeMenu*, MenuItem*> TreeMenuEvent;
 
 	Property<TreeMenu, std::string>::Auto::ReadWrite IconEdjeFile;
+	Property<TreeMenu, const std::vector<MenuItem*>&>::Get<&TreeMenu::GetMenuItems> MenuItems;
 
 	TreeMenuEvent OnMenuSelected;
 };

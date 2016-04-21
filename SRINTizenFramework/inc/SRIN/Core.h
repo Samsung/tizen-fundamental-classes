@@ -55,6 +55,19 @@ struct Color
 	static inline Color FromRGBA(uint32_t val) { return *(reinterpret_cast<Color*>(&val)); }
 };
 
+template<typename T>
+inline bool IsNull(T* ptr)
+{
+	return ptr == nullptr ? true : false;
+}
+
+template<typename T>
+inline T* Coalesce(T* ptr, T* valueIfNull)
+{
+	return IsNull(ptr) ? ptr : valueIfNull;
+}
+
+
 class PropertyClass
 {
 private:
@@ -262,6 +275,7 @@ public:
 	{
 		ReadOnly::operator =(val);
 	}
+
 };
 
 /*

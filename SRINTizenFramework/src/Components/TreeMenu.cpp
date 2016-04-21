@@ -7,13 +7,21 @@
 
 #include "SRIN/Components/TreeMenu.h"
 
+#include <algorithm>
+
 using namespace SRIN::Components;
 
-typedef struct
+struct TreeMenuItemPackage
 {
 	MenuItem* menuItemRef;
 	TreeMenu* treeMenuRef;
-} TreeMenuItemPackage;
+	CustomMenuStyle* customMenuStyleRef;
+
+	TreeMenuItemPackage(MenuItem* menuItem, TreeMenu* treeMenu, CustomMenuStyle* customMenuStyle = nullptr) : menuItemRef(menuItem), treeMenuRef(treeMenu), customMenuStyleRef(customMenuStyle)
+	{
+
+	}
+};
 
 MenuItem::MenuItem(std::string menuText, std::string menuIcon, void* itemData, CustomMenuStyle* customStyle) :
 	itemData(itemData), genlistItem(nullptr), expanded(false)
@@ -38,21 +46,44 @@ const std::vector<MenuItem*>& MenuItem::GetSubMenus() const
 	return subMenus;
 }
 
+void TreeMenu::MenuPressedInternal(GenlistEvent* eventSource,
+		Evas_Object* objSource, Elm_Object_Item* genlistItem) {
+	if (!isClickPersist) {
+		auto item = reinterpret_cast<TreeMenuItemPackage*>(elm_object_item_data_get(genlistItem));
+
+		auto icon = elm_object_item_part_content_get(genlistItem, "menu_icon");
+		edje_object_signal_emit(icon, "elm,state,selected", "elm");
+	}
+}
+
+void TreeMenu::MenuReleasedInternal(GenlistEvent* eventSource,
+		Evas_Object* objSource, Elm_Object_Item* genlistItem) {
+	if (!isClickPersist) {
+		auto item = reinterpret_cast<TreeMenuItemPackage*>(elm_object_item_data_get(genlistItem));
+
+		auto icon = elm_object_item_part_content_get(genlistItem, "menu_icon");
+		edje_object_signal_emit(icon, "elm,state,unselected", "elm");
+		OnMenuSelected(this, item->menuItemRef);
+	}
+}
+
 void TreeMenu::MenuSelectedInternal(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* genlistItem)
 {
-	auto item = reinterpret_cast<TreeMenuItemPackage*>(elm_object_item_data_get(genlistItem));
+	if (isClickPersist) {
+		auto item = reinterpret_cast<TreeMenuItemPackage*>(elm_object_item_data_get(genlistItem));
 
-	auto prevIcon = elm_object_item_part_content_get(currentlySelected, "menu_icon");
-	edje_object_signal_emit(prevIcon, "elm,state,unselected", "elm");
+		auto prevIcon = elm_object_item_part_content_get(currentlySelected, "menu_icon");
+		edje_object_signal_emit(prevIcon, "elm,state,unselected", "elm");
 
-	auto icon = elm_object_item_part_content_get(genlistItem, "menu_icon");
-	edje_object_signal_emit(icon, "elm,state,selected", "elm");
+		auto icon = elm_object_item_part_content_get(genlistItem, "menu_icon");
+		edje_object_signal_emit(icon, "elm,state,selected", "elm");
 
-	if(currentlySelected == genlistItem)
-		return;
+		if(currentlySelected == genlistItem)
+			return;
 
-	currentlySelected = genlistItem;
-	OnMenuSelected(this, item->menuItemRef);
+		currentlySelected = genlistItem;
+		OnMenuSelected(this, item->menuItemRef);
+	}
 }
 
 void TreeMenu::MenuUnselectedInternal(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* genlistItem)
@@ -179,6 +210,30 @@ Evas_Object* TreeMenu::CreateComponent(Evas_Object* root)
 		}
 		return nullptr;
 	};
+	submenuItemClass->func.content_get = [] (void *data, Evas_Object *obj, const char *part) -> Evas_Object*
+	{
+		auto item = reinterpret_cast<TreeMenuItemPackage*>(data);
+		auto menuItem = item->menuItemRef;
+		auto thisTreeMenu = item->treeMenuRef;
+
+		dlog_print(DLOG_DEBUG, LOG_TAG, "Reaching %s part", part);
+
+		if(!strcmp("menu_icon", part))
+		{
+			if(thisTreeMenu->IconEdjeFile->length() != 0)
+			{
+
+				if(menuItem->MenuIcon->length() != 0)
+				{
+					auto icon = edje_object_add(obj);
+					edje_object_file_set(icon, thisTreeMenu->IconEdjeFile->c_str(), menuItem->MenuIcon->c_str());
+
+					return icon;
+				}
+			}
+		}
+		return nullptr;
+	};
 	itemClass->func.del = [] (void* data, Evas_Object* evas)
 	{
 		auto item = reinterpret_cast<TreeMenuItemPackage*>(data);
@@ -189,8 +244,12 @@ Evas_Object* TreeMenu::CreateComponent(Evas_Object* root)
 	elm_genlist_mode_set(genlist, ELM_LIST_COMPRESS);
 	elm_genlist_homogeneous_set(genlist, EINA_TRUE);
 
+	evas_object_smart_callback_add(genlist, "pressed", SmartEventHandler, &OnMenuPressedInternal);
+	evas_object_smart_callback_add(genlist, "released", SmartEventHandler, &OnMenuReleasedInternal);
+
 	evas_object_smart_callback_add(genlist, "selected", SmartEventHandler, &OnMenuSelectedInternal);
 	evas_object_smart_callback_add(genlist, "unselected", SmartEventHandler, &OnMenuUnselectedInternal);
+
 	evas_object_smart_callback_add(genlist, "expanded", SmartEventHandler, &OnMenuExpanded);
 	evas_object_smart_callback_add(genlist, "contracted", SmartEventHandler, &OnMenuContracted);
 
@@ -216,13 +275,19 @@ void TreeMenu::GenerateRootMenu()
 }
 
 TreeMenu::TreeMenu() :
-	genlist(nullptr), itemClass(nullptr), currentlySelected(nullptr), submenuItemClass(nullptr)
+	genlist(nullptr), itemClass(nullptr), currentlySelected(nullptr), submenuItemClass(nullptr), MenuItems(this)
 
 {
+	OnMenuPressedInternal +=  { this, &TreeMenu::MenuPressedInternal };
+	OnMenuReleasedInternal += { this, &TreeMenu::MenuReleasedInternal };
+
 	OnMenuSelectedInternal +=  { this, &TreeMenu::MenuSelectedInternal };
 	OnMenuUnselectedInternal += { this, &TreeMenu::MenuUnselectedInternal };
+
 	OnMenuExpanded += { this, &TreeMenu::MenuExpanded };
 	OnMenuContracted += { this, &TreeMenu::MenuContracted };
+
+	isClickPersist = true;
 }
 
 void TreeMenu::AddMenu(MenuItem* menu)
@@ -233,7 +298,9 @@ void TreeMenu::AddMenu(MenuItem* menu)
 	{
 		Elm_Object_Item* genlistItem = nullptr;
 
-		if(!menu->CustomItemStyle)
+		CustomMenuStyle* customStyle = menu->CustomItemStyle;
+
+		if(!customStyle)
 		{
 			genlistItem = elm_genlist_item_append(genlist, // genlist object
 				itemClass, // item class
@@ -246,14 +313,15 @@ void TreeMenu::AddMenu(MenuItem* menu)
 		else
 		{
 			genlistItem = elm_genlist_item_append(genlist, // genlist object
-				*menu->CustomItemStyle, // item class
-				(*menu->CustomItemStyle)(menu), // item class user data
+				*customStyle, // item class
+				new TreeMenuItemPackage({ menu, this, customStyle }), // item class user data
 				nullptr, // parent
 				ELM_GENLIST_ITEM_TREE, // type
 				nullptr, // callback
 				menu);
 		}
 
+		elm_genlist_item_expanded_set(genlistItem, EINA_TRUE);
 		menu->genlistItem = genlistItem;
 	}
 }
@@ -296,27 +364,22 @@ SRIN::Components::CustomMenuStyle::CustomMenuStyle(CString style)
 	this->customStyle->item_style = style;
 	this->customStyle->func.content_get = [] (void *data, Evas_Object *obj, const char *part) -> Evas_Object*
 	{
-		auto pkg = reinterpret_cast<CustomMenuStylePackage*>(data);
-		return pkg->thisRef->GetContent(pkg->menuItemRef, obj, part);
+		auto pkg = reinterpret_cast<TreeMenuItemPackage*>(data);
+		return pkg->customMenuStyleRef->GetContent(pkg->menuItemRef, obj, part);
 	};
 
 	this->customStyle->func.text_get = [] (void *data, Evas_Object *obj, const char *part) -> char*
 	{
-		auto pkg = reinterpret_cast<CustomMenuStylePackage*>(data);
-		return strdup(pkg->thisRef->GetString(pkg->menuItemRef, obj, part).c_str());
+		auto pkg = reinterpret_cast<TreeMenuItemPackage*>(data);
+		return strdup(pkg->customMenuStyleRef->GetString(pkg->menuItemRef, obj, part).c_str());
 	};
 
 	// Callback redirect for delete function
 	this->customStyle->func.del = [] (void *data, Evas_Object *obj)
 	{
-		auto pkg = reinterpret_cast<CustomMenuStylePackage*>(data);
+		auto pkg = reinterpret_cast<TreeMenuItemPackage*>(data);
 		delete pkg;
 	};
-}
-
-void* SRIN::Components::CustomMenuStyle::operator ()(MenuItem* menuItem)
-{
-	return new CustomMenuStylePackage({this, menuItem});
 }
 
 SRIN::Components::CustomMenuStyle::operator Elm_Genlist_Item_Class*()
@@ -327,4 +390,36 @@ SRIN::Components::CustomMenuStyle::operator Elm_Genlist_Item_Class*()
 SRIN::Components::CustomMenuStyle::~CustomMenuStyle()
 {
 	elm_genlist_item_class_free(this->customStyle);
+}
+
+const std::vector<MenuItem*>& SRIN::Components::TreeMenu::GetMenuItems()
+{
+	return this->rootMenu;
+}
+
+void SRIN::Components::TreeMenu::AddMenuAt(int index, MenuItem* menu)
+{
+	if(index >= this->rootMenu.size())
+		AddMenu(menu);
+	else
+	{
+		auto pos = this->rootMenu.begin() + index;
+		elm_genlist_item_insert_after(
+			this->genlist,
+			Coalesce<Elm_Genlist_Item_Class>(*menu->CustomItemStyle, this->itemClass),
+			IsNull<CustomMenuStyle>(menu->CustomItemStyle) ? new TreeMenuItemPackage({ menu, this }) : new TreeMenuItemPackage({ menu, this, menu->CustomItemStyle }) ,
+			nullptr, // parent
+			(*pos)->genlistItem,
+			ELM_GENLIST_ITEM_TREE, // type
+			nullptr, // callback
+			menu);
+
+		this->rootMenu.insert(pos, menu);
+	}
+}
+
+void SRIN::Components::TreeMenu::RemoveMenu(MenuItem* menu)
+{
+	auto pos = std::find(rootMenu.begin(), rootMenu.end(), menu);
+
 }
