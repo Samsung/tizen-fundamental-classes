@@ -27,8 +27,6 @@ LIBAPI SRIN::Framework::UIApplicationBase::UIApplicationBase(CString packageName
 	ApplicationBase(packageName)
 {
 	this->rootFrame = this->win = this->conform = NULL;
-	this->backButtonCallback = nullptr;
-	this->backButtonInstance = nullptr;
 	this->haveEventBackPressed = false;
 }
 
@@ -112,7 +110,18 @@ LIBAPI void SRIN::Framework::UIApplicationBase::SetIndicatorVisibility(bool valu
 
 LIBAPI void UIApplicationBase::BackButtonPressed()
 {
-	bool backResult = backButtonCallback ? (backButtonInstance->*backButtonCallback)() : OnBackButtonPressed();
+	bool backResult = false;
+
+	if(backButtonStack.empty())
+	{
+		backResult = OnBackButtonPressed();
+	}
+	else
+	{
+		auto& delegate = backButtonStack.top();
+		backResult = (delegate.instance->*delegate.callback)();
+	}
+
 	if (backResult)
 		ui_app_exit();
 }
@@ -129,10 +138,13 @@ LIBAPI void UIApplicationBase::OnApplicationCreated()
 
 LIBAPI bool UIApplicationBase::AcquireExclusiveBackButtonPressed(EventClass* instance, BackButtonCallback callback)
 {
+	backButtonStack.push({instance, callback});
 }
 
 LIBAPI bool UIApplicationBase::ReleaseExclusiveBackButtonPressed(EventClass* instance, BackButtonCallback callback)
 {
+	if(backButtonStack.top().instance == instance && backButtonStack.top().callback == callback)
+		backButtonStack.pop();
 }
 
 LIBAPI void UIApplicationBase::Attach(ViewBase* view)

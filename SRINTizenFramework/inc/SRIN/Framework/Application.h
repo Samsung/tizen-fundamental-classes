@@ -18,7 +18,7 @@ extern "C" {
 
 #include <system_settings.h>
 #include <efl_extension.h>
-
+#include <stack>
 #include <string>
 #include <vector>
 
@@ -184,9 +184,14 @@ class LIBAPI UIApplicationBase : public ApplicationBase, public IAttachable
 private:
 
 	bool haveEventBackPressed;
-	EventClass* backButtonInstance;
 
-	BackButtonCallback backButtonCallback;
+	struct BackButtonCallbackDelegate
+	{
+		EventClass* instance;
+		BackButtonCallback callback;
+	};
+
+	std::stack<BackButtonCallbackDelegate> backButtonStack;
 
 protected:
 	/**
@@ -233,8 +238,9 @@ public:
 	 */
 	virtual bool OnBackButtonPressed();
 
-	void EnableBackButtonCallback(bool enable);bool AcquireExclusiveBackButtonPressed(EventClass* instance,
-		BackButtonCallback callback);
+	void EnableBackButtonCallback(bool enable);
+
+	bool AcquireExclusiveBackButtonPressed(EventClass* instance, BackButtonCallback callback);
 
 	bool ReleaseExclusiveBackButtonPressed(EventClass* instance, BackButtonCallback callback);
 
