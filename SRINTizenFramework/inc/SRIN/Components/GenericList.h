@@ -107,6 +107,7 @@ namespace Components {
 		virtual Evas_Object* CreateComponent(Evas_Object* root);
 	public:
 		GenericList();
+		void ResetScroll(bool animated);
 		Property<GenericList, Adapter*>::GetSet<&GenericList::GetDataSource, &GenericList::SetDataSource> DataSource;
 		Property<GenericList, bool>::GetSet<&GenericList::GetOverscroll, &GenericList::SetOverscroll> Overscroll;
 		Event<GenericList*, void*> ScrolledBottom;

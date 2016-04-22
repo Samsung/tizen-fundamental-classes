@@ -102,6 +102,16 @@ LIBAPI SRIN::Components::GenericList::GenericList() :
 	};
 }
 
+LIBAPI void SRIN::Components::GenericList::ResetScroll(bool animated)
+{
+	if (animated) {
+		elm_scroller_page_bring_in(genlist, 0, 0);
+	}
+	else {
+		elm_scroller_page_show(genlist, 0, 0);
+	}
+}
+
 LIBAPI void SRIN::Components::GenericList::SetDataSource(Adapter* newAdapter)
 {
 	// Unbind the old adapter
