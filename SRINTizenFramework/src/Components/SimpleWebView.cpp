@@ -82,15 +82,15 @@ using namespace SRIN;
 
 Evas_Object* SRIN::Components::SimpleWebView::CreateComponent(Evas_Object* root)
 {
-	/*this->box = elm_box_add(root);
+	this->box = elm_box_add(root);
 	evas_object_size_hint_weight_set(this->box, EVAS_HINT_EXPAND, 0);
 	evas_object_size_hint_align_set(this->box, EVAS_HINT_FILL, EVAS_HINT_FILL);
 	Render();
 
-	return this->box;*/
+	return this->box;
 
 	// Experimental EWK
-	layout = elm_layout_add(root);
+	/*layout = elm_layout_add(root);
 	auto edj_path = Framework::ApplicationBase::GetResourcePath(FILE_EDC_WEBVIEW);
 	elm_layout_file_set(layout, edj_path.c_str(), "simple_web_view");
 	evas_object_show(layout);
@@ -108,7 +108,7 @@ Evas_Object* SRIN::Components::SimpleWebView::CreateComponent(Evas_Object* root)
 	elm_object_part_content_set(bg, "overlay", ewk);
 	evas_object_show(ewk);
 
-	return layout;
+	return layout;*/
 }
 
 void SRIN::Components::SimpleWebView::Render()
@@ -296,8 +296,8 @@ SRIN::Components::SimpleWebView::SimpleWebView() :
 	eventImageDownloadCompleted += { this, &SimpleWebView::OnImageDownloadCompleted };
 
 	// Experimental EWK
-	ewk_init();
-	eventEwkLoadFinished += { this, &SimpleWebView::OnEwkLoadFinished };
+	/*ewk_init();
+	eventEwkLoadFinished += { this, &SimpleWebView::OnEwkLoadFinished };*/
 }
 
 void SRIN::Components::SimpleWebView::AddParagraph(Evas_Object* boxPage, std::string& paragraph)
@@ -384,11 +384,11 @@ void SRIN::Components::SimpleWebView::AddImage(std::string& url)
 void SRIN::Components::SimpleWebView::SetHTMLData(const std::string& data)
 {
 	this->data = data;
-	// Render();
+	Render();
 
 	// Experimental EWK
-	ewk_view_contents_set(ewk, data.c_str(), data.size(), NULL, NULL, NULL);
-	evas_object_smart_callback_add(ewk, "load,finished", &SmartEventHandler, &eventEwkLoadFinished);
+	/*ewk_view_contents_set(ewk, data.c_str(), data.size(), NULL, NULL, NULL);
+	evas_object_smart_callback_add(ewk, "load,finished", &SmartEventHandler, &eventEwkLoadFinished);*/
 }
 
 void SRIN::Components::SimpleWebView::OnEwkLoadFinished(ElementaryEvent* viewSource, Evas_Object* objSource, void* eventData)
@@ -434,5 +434,5 @@ SRIN::Components::SimpleWebView::~SimpleWebView()
 	eventImageDownloadCompleted -= { this, &SimpleWebView::OnImageDownloadCompleted };
 
 	// Experimental EWK
-	ewk_shutdown();
+	/*ewk_shutdown();*/
 }
