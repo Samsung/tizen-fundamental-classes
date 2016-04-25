@@ -122,7 +122,7 @@ void SRIN::Components::SimpleWebView::Render()
 	boxPage = elm_box_add(this->box);
 	evas_object_size_hint_weight_set(boxPage, EVAS_HINT_EXPAND, 0);
 	evas_object_size_hint_align_set(boxPage, EVAS_HINT_FILL, EVAS_HINT_FILL);
-	elm_box_padding_set(boxPage, 0, 12);
+	elm_box_padding_set(boxPage, 0, 20);
 	elm_box_pack_start(this->box, boxPage);
 	evas_object_show(boxPage);
 
