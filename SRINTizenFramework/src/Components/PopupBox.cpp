@@ -47,6 +47,7 @@ LIBAPI SRIN::Components::PopupBox::PopupBox() : Message(this), Title(this)
 	this->popup 		= nullptr;
 	this->popupLayout 	= nullptr;
 	this->root 			= nullptr;
+	this->orientation   = Elm_Popup_Orient::ELM_POPUP_ORIENT_BOTTOM;
 
 	this->Visible 		= false;
 	this->title 		= "";
@@ -64,6 +65,7 @@ LIBAPI SRIN::Components::PopupBox::PopupBox() : Message(this), Title(this)
 LIBAPI void SRIN::Components::PopupBox::Show() {
 	this->popup = elm_popup_add(root);
 	elm_object_part_text_set(this->popup, "title,text", this->title.c_str());
+	elm_popup_orient_set(this->popup, this->orientation);
 
 	this->popupLayout = CreateContent(this->root);
 
@@ -147,5 +149,10 @@ LIBAPI void SRIN::Components::PopupBox::Dismiss() {
 	this->popupLayout = nullptr;
 }
 
+void SRIN::Components::PopupBox::SetOrientation(Elm_Popup_Orient orientation) {
+	this->orientation   = orientation;
+}
 
-
+Elm_Popup_Orient SRIN::Components::PopupBox::GetOrientation() {
+	return this->orientation;
+}

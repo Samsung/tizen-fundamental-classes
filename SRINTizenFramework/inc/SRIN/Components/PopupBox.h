@@ -21,6 +21,7 @@ namespace SRIN {
 			Evas_Object* popup;
 			Evas_Object* popupLayout;
 			Evas_Object* root;
+			Elm_Popup_Orient orientation;
 
 		protected:
 			virtual Evas_Object* CreateComponent(Evas_Object* root) final;
@@ -30,6 +31,9 @@ namespace SRIN {
 			void SetTitle(const std::string& text);
 			std::string& GetTitle();
 
+			void SetOrientation(Elm_Popup_Orient orientation);
+			Elm_Popup_Orient GetOrientation();
+
 			void SetMessage(const std::string& text);
 			std::string& GetMessageString();
 
@@ -37,6 +41,7 @@ namespace SRIN {
 			PopupBox();
 			Property<PopupBox, std::string&>::GetSet<&PopupBox::GetTitle, &PopupBox::SetTitle> Title;
 			Property<PopupBox, std::string&>::GetSet<&PopupBox::GetMessageString, &PopupBox::SetMessage> Message;
+			Property<PopupBox, Elm_Popup_Orient>::GetSet<&PopupBox::GetOrientation, &PopupBox::SetOrientation> Orientation;
 
 			ElementaryEvent buttonOneClick, buttonTwoClick, buttonThreeClick;
 
