@@ -41,7 +41,7 @@ LIBAPI std::string& SRIN::Components::PopupBox::GetMessageString() {
 	return this->message;
 }
 
-LIBAPI SRIN::Components::PopupBox::PopupBox() : Message(this), Title(this)
+LIBAPI SRIN::Components::PopupBox::PopupBox() : Message(this), Title(this), Orientation(this)
 {
 
 	this->popup 		= nullptr;
@@ -149,10 +149,10 @@ LIBAPI void SRIN::Components::PopupBox::Dismiss() {
 	this->popupLayout = nullptr;
 }
 
-void SRIN::Components::PopupBox::SetOrientation(Elm_Popup_Orient orientation) {
+void SRIN::Components::PopupBox::SetOrientation(const Elm_Popup_Orient& orientation) {
 	this->orientation   = orientation;
 }
 
-Elm_Popup_Orient SRIN::Components::PopupBox::GetOrientation() {
+Elm_Popup_Orient& SRIN::Components::PopupBox::GetOrientation() {
 	return this->orientation;
 }
