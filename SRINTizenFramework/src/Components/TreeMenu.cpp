@@ -272,22 +272,15 @@ Evas_Object* TreeMenu::CreateComponent(Evas_Object* root)
 
 void TreeMenu::GenerateRootMenu()
 {
-	for (auto item : rootMenu)
+	for (auto menu : rootMenu)
 	{
-		auto genlistItem = elm_genlist_item_append(genlist, // genlist object
-			itemClass, // item class
-			item, // item class user data
-			nullptr, // parent
-			ELM_GENLIST_ITEM_TREE, // type
-			nullptr, // callback
-			item);
-
-		item->genlistItem = genlistItem;
+		AppendMenuToGenlist(menu);
 	}
 }
 
 TreeMenu::TreeMenu() :
-	genlist(nullptr), itemClass(nullptr), currentlySelected(nullptr), submenuItemClass(nullptr), MenuItems(this)
+	genlist(nullptr), itemClass(nullptr), currentlySelected(nullptr), submenuItemClass(nullptr), MenuItems(this),
+	AutoExpanded(this), autoExpand(false)
 
 {
 	OnMenuScrollInternal +=  { this, &TreeMenu::MenuScrollInternal };
@@ -305,39 +298,45 @@ TreeMenu::TreeMenu() :
 	isScrolled = false;
 }
 
+void TreeMenu::AppendMenuToGenlist(MenuItem* menu)
+{
+	Elm_Object_Item* genlistItem = nullptr;
+	CustomMenuStyle* customStyle = menu->CustomItemStyle;
+	if (!customStyle)
+	{
+		genlistItem = elm_genlist_item_append(genlist, // genlist object
+			itemClass, // item class
+			new TreeMenuItemPackage(
+			{ menu, this }), // item class user data
+			nullptr, // parent
+			ELM_GENLIST_ITEM_TREE, // type
+			nullptr, // callback
+			menu);
+	}
+	else
+	{
+		genlistItem = elm_genlist_item_append(genlist, // genlist object
+			*customStyle, // item class
+			new TreeMenuItemPackage(
+			{ menu, this, customStyle }), // item class user data
+			nullptr, // parent
+			ELM_GENLIST_ITEM_TREE, // type
+			nullptr, // callback
+			menu);
+	}
+	if (autoExpand)
+		elm_genlist_item_expanded_set(genlistItem, EINA_TRUE);
+
+	menu->genlistItem = genlistItem;
+}
+
 void TreeMenu::AddMenu(MenuItem* menu)
 {
 	rootMenu.push_back(menu);
 
 	if (genlist)
 	{
-		Elm_Object_Item* genlistItem = nullptr;
-
-		CustomMenuStyle* customStyle = menu->CustomItemStyle;
-
-		if(!customStyle)
-		{
-			genlistItem = elm_genlist_item_append(genlist, // genlist object
-				itemClass, // item class
-				new TreeMenuItemPackage({ menu, this }), // item class user data
-				nullptr, // parent
-				ELM_GENLIST_ITEM_TREE, // type
-				nullptr, // callback
-				menu);
-		}
-		else
-		{
-			genlistItem = elm_genlist_item_append(genlist, // genlist object
-				*customStyle, // item class
-				new TreeMenuItemPackage({ menu, this, customStyle }), // item class user data
-				nullptr, // parent
-				ELM_GENLIST_ITEM_TREE, // type
-				nullptr, // callback
-				menu);
-		}
-
-		elm_genlist_item_expanded_set(genlistItem, EINA_TRUE);
-		menu->genlistItem = genlistItem;
+		AppendMenuToGenlist(menu);
 	}
 }
 
@@ -431,6 +430,16 @@ void SRIN::Components::TreeMenu::AddMenuAt(int index, MenuItem* menu)
 
 		this->rootMenu.insert(pos, menu);
 	}
+}
+
+bool SRIN::Components::TreeMenu::GetAutoExpanded()
+{
+	return autoExpand;
+}
+
+void SRIN::Components::TreeMenu::SetAutoExpanded(const bool& val)
+{
+	autoExpand = val;
 }
 
 void SRIN::Components::TreeMenu::RemoveMenu(MenuItem* menu)

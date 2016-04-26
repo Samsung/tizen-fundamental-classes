@@ -67,10 +67,14 @@ private:
 	std::vector<MenuItem*> rootMenu;
 
 	bool isScrolled;
+	bool autoExpand;
 
 	void GenerateRootMenu();
 	void GenerateSubMenu(MenuItem* subMenu);
 	const std::vector<MenuItem*>& GetMenuItems();
+
+	bool GetAutoExpanded();
+	void SetAutoExpanded(const bool& val);
 
 	typedef Event<Evas_Object*, Elm_Object_Item*> GenlistEvent;
 
@@ -81,6 +85,7 @@ private:
 	void MenuUnselectedInternal(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
 	void MenuExpanded(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
 	void MenuContracted(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
+	void AppendMenuToGenlist(MenuItem* menu);
 
 	GenlistEvent OnMenuScrollInternal;
 	GenlistEvent OnMenuPressedInternal;
@@ -108,7 +113,7 @@ public:
 
 	Property<TreeMenu, std::string>::Auto::ReadWrite IconEdjeFile;
 	Property<TreeMenu, const std::vector<MenuItem*>&>::Get<&TreeMenu::GetMenuItems> MenuItems;
-
+	Property<TreeMenu, bool>::GetSet<&TreeMenu::GetAutoExpanded, &TreeMenu::SetAutoExpanded> AutoExpanded;
 	TreeMenuEvent OnMenuSelected;
 };
 
