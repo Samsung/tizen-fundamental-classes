@@ -6,6 +6,7 @@
  */
 
 #include "SRIN/Components/TreeMenu.h"
+#include "SRIN/Components/MenuItem.h"
 
 #include <algorithm>
 
@@ -17,34 +18,14 @@ struct TreeMenuItemPackage
 	TreeMenu* treeMenuRef;
 	CustomMenuStyle* customMenuStyleRef;
 
-	TreeMenuItemPackage(MenuItem* menuItem, TreeMenu* treeMenu, CustomMenuStyle* customMenuStyle = nullptr) : menuItemRef(menuItem), treeMenuRef(treeMenu), customMenuStyleRef(customMenuStyle)
+	TreeMenuItemPackage(MenuItem* menuItem, TreeMenu* treeMenu, CustomMenuStyle* customMenuStyle = nullptr) :
+		menuItemRef(menuItem), treeMenuRef(treeMenu), customMenuStyleRef(customMenuStyle)
 	{
 
 	}
 };
 
-MenuItem::MenuItem(std::string menuText, std::string menuIcon, void* itemData, CustomMenuStyle* customStyle) :
-	itemData(itemData), genlistItem(nullptr), expanded(false)
-{
-	Text = menuText;
-	MenuIcon = menuIcon;
-	CustomItemStyle = customStyle;
-}
 
-void MenuItem::AddSubMenu(MenuItem* subMenu)
-{
-	subMenus.push_back(subMenu);
-}
-
-void MenuItem::RemoveSubMenu(int index)
-{
-	subMenus.erase(subMenus.begin() + index);
-}
-
-const std::vector<MenuItem*>& MenuItem::GetSubMenus() const
-{
-	return subMenus;
-}
 
 void TreeMenu::MenuScrollInternal(GenlistEvent* eventSource,
 		Evas_Object* objSource, Elm_Object_Item* genlistItem) {
@@ -180,7 +161,8 @@ Evas_Object* TreeMenu::CreateComponent(Evas_Object* root)
 			else
 				elm_object_signal_emit(button, "collapseButton", "srin");
 
-			evas_object_event_callback_add(button, EVAS_CALLBACK_MOUSE_DOWN, [] (void* data, Evas* evas, Evas_Object* obj, void* eventData) { }, nullptr);
+			evas_object_event_callback_add(button, EVAS_CALLBACK_MOUSE_DOWN,
+				[] (void* data, Evas* evas, Evas_Object* obj, void* eventData) { }, nullptr);
 			evas_object_propagate_events_set(button, EINA_FALSE);
 			evas_object_repeat_events_set(button, EINA_FALSE);
 
@@ -418,15 +400,21 @@ void SRIN::Components::TreeMenu::AddMenuAt(int index, MenuItem* menu)
 	else
 	{
 		auto pos = this->rootMenu.begin() + index;
-		elm_genlist_item_insert_after(
-			this->genlist,
-			Coalesce<Elm_Genlist_Item_Class>(*menu->CustomItemStyle, this->itemClass),
-			IsNull<CustomMenuStyle>(menu->CustomItemStyle) ? new TreeMenuItemPackage({ menu, this }) : new TreeMenuItemPackage({ menu, this, menu->CustomItemStyle }) ,
-			nullptr, // parent
-			(*pos)->genlistItem,
-			ELM_GENLIST_ITEM_TREE, // type
-			nullptr, // callback
-			menu);
+
+		if(this->genlist)
+		{
+			elm_genlist_item_insert_after(
+				this->genlist,
+				Coalesce<Elm_Genlist_Item_Class>(*menu->CustomItemStyle, this->itemClass),
+				IsNull<CustomMenuStyle>(menu->CustomItemStyle) ?
+					new TreeMenuItemPackage({ menu, this }) :
+					new TreeMenuItemPackage({ menu, this, menu->CustomItemStyle }) ,
+				nullptr, // parent
+				(*pos)->genlistItem,
+				ELM_GENLIST_ITEM_TREE, // type
+				nullptr, // callback
+				menu);
+		}
 
 		this->rootMenu.insert(pos, menu);
 	}
@@ -445,5 +433,6 @@ void SRIN::Components::TreeMenu::SetAutoExpanded(const bool& val)
 void SRIN::Components::TreeMenu::RemoveMenu(MenuItem* menu)
 {
 	auto pos = std::find(rootMenu.begin(), rootMenu.end(), menu);
+	rootMenu.erase(pos);
 
 }

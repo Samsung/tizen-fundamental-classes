@@ -191,7 +191,7 @@ private:
 		BackButtonCallback callback;
 	};
 
-	std::stack<BackButtonCallbackDelegate> backButtonStack;
+	std::vector<BackButtonCallbackDelegate> backButtonStack;
 
 protected:
 	/**

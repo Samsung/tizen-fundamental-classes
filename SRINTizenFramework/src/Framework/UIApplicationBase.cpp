@@ -118,7 +118,7 @@ LIBAPI void UIApplicationBase::BackButtonPressed()
 	}
 	else
 	{
-		auto& delegate = backButtonStack.top();
+		auto& delegate = *(backButtonStack.end() - 1);
 		backResult = (delegate.instance->*delegate.callback)();
 	}
 
@@ -138,13 +138,38 @@ LIBAPI void UIApplicationBase::OnApplicationCreated()
 
 LIBAPI bool UIApplicationBase::AcquireExclusiveBackButtonPressed(EventClass* instance, BackButtonCallback callback)
 {
-	backButtonStack.push({instance, callback});
+	for(auto& cb : backButtonStack)
+	{
+		if(cb.instance == instance && cb.callback == callback)
+		{
+			return false;
+		}
+	}
+
+	backButtonStack.push_back({instance, callback});
+	return true;
 }
 
 LIBAPI bool UIApplicationBase::ReleaseExclusiveBackButtonPressed(EventClass* instance, BackButtonCallback callback)
 {
-	if(backButtonStack.top().instance == instance && backButtonStack.top().callback == callback)
-		backButtonStack.pop();
+	auto& lastCb = *(backButtonStack.end() - 1);
+	if(lastCb.instance == instance && lastCb.callback == callback)
+	{
+		backButtonStack.pop_back();
+		return true;
+	}
+
+	for(auto iter = backButtonStack.begin(); iter != backButtonStack.end(); iter++)
+	{
+		auto& val = *iter;
+		if(val.instance == instance && val.callback == callback)
+		{
+			backButtonStack.erase(iter);
+			return true;
+		}
+	}
+
+	return false;
 }
 
 LIBAPI void UIApplicationBase::Attach(ViewBase* view)
