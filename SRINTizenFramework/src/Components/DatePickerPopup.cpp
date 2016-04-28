@@ -59,6 +59,8 @@ LIBAPI void SRIN::Components::DatePickerPopup::ShowDatePickerPopup() {
 	this->popupWindow = elm_popup_add(this->layoutRoot);
 	elm_object_style_set(this->popupWindow, "popup");
 
+	elm_popup_orient_set(this->popupWindow, this->orientation);
+
 	std::string popup_title = "<align=center><b>";
 	popup_title.append(title);
 	popup_title.append("</b></align>");
@@ -113,7 +115,7 @@ LIBAPI void SRIN::Components::DatePickerPopup::ShowDatePickerPopup() {
 	//eext_object_event_callback_add(this->popupWindow, EEXT_CALLBACK_BACK, &SmartEventHandler, &popupCancelClick);
 	evas_object_smart_callback_add(buttonOK, "clicked", &SmartEventHandler, &popupOkClick);
 
-	elm_popup_align_set(this->popupWindow, ELM_NOTIFY_ALIGN_FILL, 1.0);
+	//elm_popup_align_set(this->popupWindow, ELM_NOTIFY_ALIGN_FILL, 1.0);
 	evas_object_show(this->popupWindow);
 }
 
@@ -139,12 +141,14 @@ LIBAPI std::string& SRIN::Components::DatePickerPopup::GetTitle() {
 	return title;
 }
 
-LIBAPI SRIN::Components::DatePickerPopup::DatePickerPopup() : Title(this) {
+LIBAPI SRIN::Components::DatePickerPopup::DatePickerPopup() : Title(this), Orientation(this), Hint(this) {
 	buttonText			= "Select";
 	title				= "Date Picker";
 	formatedDate		= "";
 	buttonOkText		= "OK";
 	buttonCancelText	= "Cancel";
+
+	orientation   		= Elm_Popup_Orient::ELM_POPUP_ORIENT_BOTTOM;
 
 	classicTheme		= false;
 
@@ -202,4 +206,21 @@ LIBAPI void SRIN::Components::DatePickerPopup::SetFormatedSelectedDate(const std
 
 LIBAPI void SRIN::Components::DatePickerPopup::UseClassicTheme(const bool& classic) {
 	classicTheme = classic;
+}
+
+void SRIN::Components::DatePickerPopup::SetOrientation(
+		const Elm_Popup_Orient& orientation) {
+	this->orientation   = orientation;
+}
+
+Elm_Popup_Orient& SRIN::Components::DatePickerPopup::GetOrientation() {
+	return this->orientation;
+}
+
+void SRIN::Components::DatePickerPopup::SetHint(const std::string& text) {
+	this->buttonText = text;
+}
+
+std::string& SRIN::Components::DatePickerPopup::GetHint() {
+	return buttonText;
 }

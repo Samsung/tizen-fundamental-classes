@@ -26,6 +26,8 @@ namespace SRIN {
 			std::string 		buttonText, title, formatedDate, buttonOkText, buttonCancelText;
 			ElementaryEvent 	buttonClick, popupOkClick, onDateChanged, popupCancelClick;
 
+			Elm_Popup_Orient orientation;
+
 			void DatePickerButtonClick(ElementaryEvent* viewSource, Evas_Object* objSource, void* eventData);
 			void DatePickerPopupOkButtonClick(ElementaryEvent* viewSource, Evas_Object* objSource, void* eventData);
 			void DatePickerPopupCancelButtonClick(ElementaryEvent* viewSource, Evas_Object* objSource, void* eventData);
@@ -38,10 +40,18 @@ namespace SRIN {
 
 			void SetTitle(const std::string& text);
 			std::string& GetTitle();
+
+			void SetHint(const std::string& text);
+			std::string& GetHint();
+
+			void SetOrientation(const Elm_Popup_Orient& orientation);
+			Elm_Popup_Orient& GetOrientation();
 		public:
 			DatePickerPopup();
 
 			Property<DatePickerPopup, std::string&>::GetSet<&DatePickerPopup::GetTitle, &DatePickerPopup::SetTitle> Title;
+			Property<DatePickerPopup, std::string&>::GetSet<&DatePickerPopup::GetHint, &DatePickerPopup::SetHint> Hint;
+			Property<DatePickerPopup, Elm_Popup_Orient&>::GetSet<&DatePickerPopup::GetOrientation, &DatePickerPopup::SetOrientation> Orientation;
 
 			std::tm& 		GetSelectedDateTM();
 			std::string& 	GetFormatedSelectedDate();
