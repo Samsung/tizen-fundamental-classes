@@ -8,12 +8,12 @@
 #ifndef POPUPBOX_H_
 #define POPUPBOX_H_
 
-#include "SRIN/Framework/Application.h"
 #include "SRIN/Components/ComponentBase.h"
+#include "SRIN/Components/BackButtonHandler.h"
 
 namespace SRIN {
 	namespace Components {
-		class LIBAPI PopupBox : public ComponentBase {
+		class LIBAPI PopupBox : public ComponentBase, public BackButtonHandler {
 		private:
 			std::string  title;
 			std::string  message;
@@ -35,7 +35,7 @@ namespace SRIN {
 
 			void SetMessage(const std::string& text);
 			std::string& GetMessageString();
-
+			virtual bool BackButtonClicked();
 		public:
 			PopupBox();
 			Property<PopupBox, std::string&>::GetSet<&PopupBox::GetTitle, &PopupBox::SetTitle> Title;

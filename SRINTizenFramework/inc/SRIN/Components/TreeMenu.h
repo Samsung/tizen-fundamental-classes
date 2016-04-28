@@ -12,11 +12,10 @@
 #include <string>
 
 #include "SRIN/Components/ComponentBase.h"
+#include "SRIN/Components/MenuItem.h"
 
 namespace SRIN {
 namespace Components {
-
-class MenuItem;
 
 class LIBAPI TreeMenu: virtual public ComponentBase
 {

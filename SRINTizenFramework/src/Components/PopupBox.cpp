@@ -64,6 +64,10 @@ LIBAPI SRIN::Components::PopupBox::PopupBox() : Message(this), Title(this), Orie
 
 LIBAPI void SRIN::Components::PopupBox::Show() {
 	this->popup = elm_popup_add(root);
+
+	dlog_print(DLOG_DEBUG, LOG_TAG, "this ptr @ popupbox %d", this);
+
+	BackButtonHandler::Acquire();
 	elm_object_part_text_set(this->popup, "title,text", this->title.c_str());
 	elm_popup_orient_set(this->popup, this->orientation);
 
@@ -147,6 +151,7 @@ LIBAPI void SRIN::Components::PopupBox::Dismiss() {
 	evas_object_del(this->popup);
 	this->popup = nullptr;
 	this->popupLayout = nullptr;
+	BackButtonHandler::Release();
 }
 
 void SRIN::Components::PopupBox::SetOrientation(const Elm_Popup_Orient& orientation) {
@@ -155,4 +160,11 @@ void SRIN::Components::PopupBox::SetOrientation(const Elm_Popup_Orient& orientat
 
 Elm_Popup_Orient& SRIN::Components::PopupBox::GetOrientation() {
 	return this->orientation;
+}
+
+LIBAPI bool SRIN::Components::PopupBox::BackButtonClicked()
+{
+	dlog_print(DLOG_DEBUG, LOG_TAG, "Dismiss via back button");
+	Dismiss();
+	return false;
 }

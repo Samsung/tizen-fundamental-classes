@@ -70,6 +70,7 @@ LIBAPI bool UIApplicationBase::ApplicationCreate()
 	//evas_object_smart_callback_add(this->win, "delete,request", win_delete_request_cb, NULL);
 	//eext_object_event_callback_add(this->win, EEXT_CALLBACK_BACK, win_delete_request_cb, this);
 	EnableBackButtonCallback(true);
+
 	// Conformant
 	// Create and initialize elm_conformant.
 	// elm_conformant is mandatory for base gui to have proper size
@@ -138,7 +139,7 @@ LIBAPI void UIApplicationBase::OnApplicationCreated()
 
 LIBAPI bool UIApplicationBase::AcquireExclusiveBackButtonPressed(EventClass* instance, BackButtonCallback callback)
 {
-	for(auto& cb : backButtonStack)
+	for(auto cb : backButtonStack)
 	{
 		if(cb.instance == instance && cb.callback == callback)
 		{
@@ -146,13 +147,14 @@ LIBAPI bool UIApplicationBase::AcquireExclusiveBackButtonPressed(EventClass* ins
 		}
 	}
 
+
 	backButtonStack.push_back({instance, callback});
 	return true;
 }
 
 LIBAPI bool UIApplicationBase::ReleaseExclusiveBackButtonPressed(EventClass* instance, BackButtonCallback callback)
 {
-	auto& lastCb = *(backButtonStack.end() - 1);
+	auto lastCb = *(backButtonStack.end() - 1);
 	if(lastCb.instance == instance && lastCb.callback == callback)
 	{
 		backButtonStack.pop_back();
@@ -161,7 +163,7 @@ LIBAPI bool UIApplicationBase::ReleaseExclusiveBackButtonPressed(EventClass* ins
 
 	for(auto iter = backButtonStack.begin(); iter != backButtonStack.end(); iter++)
 	{
-		auto& val = *iter;
+		auto val = *iter;
 		if(val.instance == instance && val.callback == callback)
 		{
 			backButtonStack.erase(iter);
