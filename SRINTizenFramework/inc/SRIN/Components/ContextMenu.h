@@ -21,17 +21,25 @@ namespace Components {
 class LIBAPI ContextMenu: public ComponentBase, BackButtonHandler
 {
 private:
+	struct ContextMenuPackage
+	{
+		ContextMenu* thisRef;
+		MenuItem* menuItemRef;
+	};
+
 	std::string text;
 	Evas_Object* naviframe;
 	Evas_Object* button;
 	Evas_Object* contextMenu;
 
 	ElementaryEvent eventContextMenuButtonClicked;
+	ElementaryEvent eventContextMenuDismissed;
 
 	bool menuShown;
 	std::vector<MenuItem*> rootMenu;
 
 	void OnContextMenuButtonClicked(ElementaryEvent* ev, Evas_Object* obj, void* eventData);
+	void OnContextMenuDismissed(ElementaryEvent* ev, Evas_Object* obj, void* eventData);
 	bool BackButtonClicked();
 	void ShowMenu();
 	void HideMenu();
@@ -40,6 +48,7 @@ protected:
 	virtual Evas_Object* CreateComponent(Evas_Object* root);
 	void SetText(const std::string& text);
 	std::string& GetText();
+
 public:
 	ContextMenu();
 	void AddMenu(MenuItem* menu);

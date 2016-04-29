@@ -37,7 +37,7 @@ LIBAPI Evas_Object* SidebarView::CreateView(Evas_Object* root)
 	elm_object_part_content_set(layout, "elm.swallow.bg", bg);
 
 	// Create sidebar content from subclass
-	auto sidebarContent = CreateSidebar(leftPanel);
+	auto sidebarContent = CreateSidebar(root);
 	elm_object_content_set(leftPanel, sidebarContent);
 
 	// Set the panel to base layout
