@@ -9,67 +9,67 @@
 #include <string>
 #include <cstdio>
 
-LIBAPI void SRIN::Components::DatePickerPopup::DatePickerButtonClick(
-		ElementaryEvent* viewSource, Evas_Object* objSource,
-		void* eventData) {
-	DatePickerPopup::ShowDatePickerPopup();
+SRIN::Components::DatePickerPopupMenu::DatePickerPopupMenu() : PopupBox() {
+	classicTheme 	= false;
+	dateTime		= nullptr;
 }
 
-LIBAPI void SRIN::Components::DatePickerPopup::DatePickerPopupOkButtonClick(
-		ElementaryEvent* viewSource, Evas_Object* objSource,
-		void* eventData) {
-
-	if(popupWindow) {
-		char 		buffer[20];
-
-		if (dateTime) {
-			if (classicTheme) {
-				elm_datetime_value_get(dateTime, &selectedDate);
-			} else {
-				elm_calendar_selected_time_get(dateTime, &selectedDate);
-			}
-		}
-
-		std::strftime(buffer, sizeof(buffer), "%F", &selectedDate);
-		formatedDate = buffer;
-
-		buttonText = formatedDate;
-		elm_object_text_set(buttonRoot, buttonText.c_str());
-
-		evas_object_del(popupWindow);
-		popupWindow = nullptr;
+std::tm& SRIN::Components::DatePickerPopupMenu::GetSelectedDate() {
+	if (classicTheme) {
+		elm_datetime_value_get(dateTime, &selectedDate);
+	} else {
+		elm_calendar_selected_time_get(dateTime, &selectedDate);
 	}
+
+	return selectedDate;
 }
 
-LIBAPI void SRIN::Components::DatePickerPopup::DatePickerPopupCancelButtonClick(
-		ElementaryEvent* viewSource, Evas_Object* objSource,
-		void* eventData) {
-	if(popupWindow) {
-		evas_object_del(popupWindow);
-		popupWindow = nullptr;
-	}
-}
-
-LIBAPI void SRIN::Components::DatePickerPopup::OnDateChangedCb(
-		ElementaryEvent* viewSource, Evas_Object* objSource, void* eventData) {
-
-}
-
-LIBAPI void SRIN::Components::DatePickerPopup::ShowDatePickerPopup() {
-	this->popupWindow = elm_popup_add(this->layoutRoot);
-	elm_object_style_set(this->popupWindow, "popup");
-
-	elm_popup_orient_set(this->popupWindow, this->orientation);
-
-	std::string popup_title = "<align=center><b>";
-	popup_title.append(title);
-	popup_title.append("</b></align>");
-
-	elm_object_part_text_set(this->popupWindow, "title,text", popup_title.c_str());
-	elm_popup_allow_events_set(this->popupWindow, EINA_FALSE); //set as modal
+std::string& SRIN::Components::DatePickerPopupMenu::GetFormatedSelectedDate() {
+	char buffer[20];
 
 	if (classicTheme) {
-		dateTime = elm_datetime_add(this->popupWindow);
+		elm_datetime_value_get(dateTime, &selectedDate);
+	} else {
+		elm_calendar_selected_time_get(dateTime, &selectedDate);
+	}
+
+	std::strftime(buffer, sizeof(buffer), "%F", &selectedDate);
+	strDate = buffer;
+	return strDate;
+}
+
+void SRIN::Components::DatePickerPopupMenu::UseClassicTheme(
+		const bool& classic) {
+	this->classicTheme = classic;
+}
+
+void SRIN::Components::DatePickerPopupMenu::SetSelectedDate(
+		const std::tm& date) {
+
+	selectedDate = date;
+}
+
+void SRIN::Components::DatePickerPopupMenu::SetFormatedSelectedDate(
+		const std::string& date) {
+
+	if (date.size() > 0) {
+		int yearValue;
+		int monthValue;
+		int dateValue;
+		std::sscanf(date.c_str(), "%4d-%2d-%2d", &yearValue, &monthValue, &dateValue);
+
+		selectedDate.tm_year 	= yearValue - 1900;
+		selectedDate.tm_mon 	= monthValue - 1;
+		selectedDate.tm_mday 	= dateValue;
+	}
+}
+
+
+Evas_Object* SRIN::Components::DatePickerPopupMenu::CreateContent(
+		Evas_Object* root) {
+
+	if (classicTheme) {
+		dateTime = elm_datetime_add(root);
 
 		elm_datetime_field_visible_set(dateTime, ELM_DATETIME_DATE, EINA_TRUE);
 		elm_datetime_field_visible_set(dateTime, ELM_DATETIME_MONTH, EINA_TRUE);
@@ -84,137 +84,114 @@ LIBAPI void SRIN::Components::DatePickerPopup::ShowDatePickerPopup() {
 		elm_datetime_value_set(dateTime, &selectedDate);
 
 		evas_object_smart_callback_add(dateTime, "changed", &SmartEventHandler, &onDateChanged);
-
-		elm_object_content_set(this->popupWindow, dateTime);
 		evas_object_show(dateTime);
 	} else {
-		dateTime = elm_calendar_add(this->popupWindow);
+		dateTime = elm_calendar_add(root);
 		elm_calendar_selected_time_set(dateTime, &selectedDate);
-
 		evas_object_smart_callback_add(dateTime, "changed", &SmartEventHandler, &onDateChanged);
-
-		elm_object_content_set(this->popupWindow, dateTime);
 		evas_object_show(dateTime);
 	}
 
-	Evas_Object* buttonCancel;
-	Evas_Object* buttonOK;
-
-	buttonCancel = elm_button_add(this->popupWindow);
-	elm_object_style_set(buttonCancel, "popup");
-	elm_object_text_set(buttonCancel, buttonCancelText.c_str());
-
-	buttonOK = elm_button_add(this->popupWindow);
-	elm_object_style_set(buttonOK, "popup");
-	elm_object_text_set(buttonOK, buttonOkText.c_str());
-
-	elm_object_part_content_set(this->popupWindow, "button1", buttonCancel);
-	elm_object_part_content_set(this->popupWindow, "button2", buttonOK);
-
-	evas_object_smart_callback_add(buttonCancel, "clicked", &SmartEventHandler, &popupCancelClick);
-	//eext_object_event_callback_add(this->popupWindow, EEXT_CALLBACK_BACK, &SmartEventHandler, &popupCancelClick);
-	evas_object_smart_callback_add(buttonOK, "clicked", &SmartEventHandler, &popupOkClick);
-
-	//elm_popup_align_set(this->popupWindow, ELM_NOTIFY_ALIGN_FILL, 1.0);
-	evas_object_show(this->popupWindow);
+	return dateTime;
 }
 
-LIBAPI Evas_Object* SRIN::Components::DatePickerPopup::CreateComponent(
+/** ============================================================================ **/
+
+void SRIN::Components::DatePickerPopup::DatePickerButtonClick(
+		ElementaryEvent* viewSource, Evas_Object* objSource,
+		void* eventData) {
+	datePopupMenu.Show();
+}
+
+void SRIN::Components::DatePickerPopup::DatePickerPopupOkButtonClick(
+		ElementaryEvent* viewSource, Evas_Object* objSource,
+		void* eventData) {
+	formatedDate = datePopupMenu.GetFormatedSelectedDate();
+	selectedDate = datePopupMenu.GetSelectedDate();
+	elm_object_text_set(buttonRoot, formatedDate.c_str());
+	datePopupMenu.Dismiss();
+}
+
+void SRIN::Components::DatePickerPopup::DatePickerPopupCancelButtonClick(
+		ElementaryEvent* viewSource, Evas_Object* objSource,
+		void* eventData) {
+	datePopupMenu.Dismiss();
+}
+
+void SRIN::Components::DatePickerPopup::OnDateChangedCb(
+		ElementaryEvent* viewSource, Evas_Object* objSource, void* eventData) {
+
+}
+
+Evas_Object* SRIN::Components::DatePickerPopup::CreateComponent(
 		Evas_Object* root) {
-	layoutRoot = root;
 	buttonRoot = elm_button_add(root);
 	elm_object_text_set(buttonRoot, buttonText.c_str());
 	evas_object_smart_callback_add(buttonRoot, "clicked", &SmartEventHandler, &buttonClick);
 	evas_object_show(this->buttonRoot);
 
+	datePopupMenu.Create(root);
+
 	return buttonRoot;
 }
 
-LIBAPI bool SRIN::Components::DatePickerPopup::BackButtonPressed() {
+void SRIN::Components::DatePickerPopup::SetTitle(const std::string& text) {
+	datePopupMenu.Title = text;
 }
 
-LIBAPI void SRIN::Components::DatePickerPopup::SetTitle(const std::string& text) {
-	title = text;
+std::string& SRIN::Components::DatePickerPopup::GetTitle() {
+	return datePopupMenu.Title;
 }
 
-LIBAPI std::string& SRIN::Components::DatePickerPopup::GetTitle() {
-	return title;
-}
-
-LIBAPI SRIN::Components::DatePickerPopup::DatePickerPopup() : Title(this), Orientation(this), Hint(this) {
-	buttonText			= "Select";
-	title				= "Date Picker";
-	formatedDate		= "";
-	buttonOkText		= "OK";
-	buttonCancelText	= "Cancel";
-
-	orientation   		= Elm_Popup_Orient::ELM_POPUP_ORIENT_BOTTOM;
-
-	classicTheme		= false;
+SRIN::Components::DatePickerPopup::DatePickerPopup() : Title(this), Orientation(this), Hint(this) {
+	buttonText			= "Select Date";
 
 	std::time_t time	= std::time(nullptr);
 	std::tm* time_tm	= std::localtime(&time);
-	selectedDate		= *time_tm;
 
-	buttonRoot			= nullptr;
-	popupWindow			= nullptr;
-	dateTime			= nullptr;
-	layoutRoot			= nullptr;
+	datePopupMenu.buttonOneText	= "OK";
+	datePopupMenu.buttonTwoText = "Cancel";
+	datePopupMenu.Orientation 	= Elm_Popup_Orient::ELM_POPUP_ORIENT_BOTTOM;
+	datePopupMenu.UseClassicTheme(false);
+	datePopupMenu.SetSelectedDate(*time_tm);
 
-	buttonClick 		+= { this, &DatePickerPopup::DatePickerButtonClick };
-	onDateChanged 		+= { this, &DatePickerPopup::OnDateChangedCb };
-	popupOkClick		+= { this, &DatePickerPopup::DatePickerPopupOkButtonClick };
-	popupCancelClick	+= { this, &DatePickerPopup::DatePickerPopupCancelButtonClick };
+	buttonRoot					= nullptr;
+
+	buttonClick 				 += { this, &DatePickerPopup::DatePickerButtonClick };
+	datePopupMenu.buttonOneClick += { this, &DatePickerPopup::DatePickerPopupOkButtonClick };
+	datePopupMenu.buttonTwoClick += { this, &DatePickerPopup::DatePickerPopupCancelButtonClick };
+	datePopupMenu.onDateChanged  += { this, &DatePickerPopup::OnDateChangedCb };
+
 }
 
-LIBAPI std::tm& SRIN::Components::DatePickerPopup::GetSelectedDateTM() {
+std::tm& SRIN::Components::DatePickerPopup::GetSelectedDate() {
 	return selectedDate;
 }
 
-LIBAPI std::string& SRIN::Components::DatePickerPopup::GetFormatedSelectedDate() {
+std::string& SRIN::Components::DatePickerPopup::GetFormatedSelectedDate() {
 	return formatedDate;
 }
 
-LIBAPI void SRIN::Components::DatePickerPopup::SetSelectedDateTM(const std::tm& date) {
-	this->selectedDate = date;
-
-	if (classicTheme) {
-		elm_datetime_value_set(dateTime, &selectedDate);
-	} else {
-		elm_calendar_selected_time_set(dateTime, &selectedDate);
-	}
+void SRIN::Components::DatePickerPopup::SetSelectedDate(const std::tm& date) {
+	datePopupMenu.SetSelectedDate(date);
 }
 
-LIBAPI void SRIN::Components::DatePickerPopup::SetFormatedSelectedDate(const std::string& date) {
-	if (date.size() > 0) {
-		int yearValue;
-		int monthValue;
-		int dateValue;
-		std::sscanf(date.c_str(), "%4d-%2d-%2d", &yearValue, &monthValue, &dateValue);
-
-		selectedDate.tm_year 	= yearValue - 1900;
-		selectedDate.tm_mon 	= monthValue-1;
-		selectedDate.tm_mday 	= dateValue;
-
-		if (classicTheme) {
-			elm_datetime_value_set(dateTime, &selectedDate);
-		} else {
-			elm_calendar_selected_time_set(dateTime, &selectedDate);
-		}
-	}
+void SRIN::Components::DatePickerPopup::SetFormatedSelectedDate(const std::string& date) {
+	datePopupMenu.SetFormatedSelectedDate(date);
+	//formatedDate = datePopupMenu.GetFormatedSelectedDate();
+	//selectedDate = datePopupMenu.GetSelectedDate();
 }
 
-LIBAPI void SRIN::Components::DatePickerPopup::UseClassicTheme(const bool& classic) {
-	classicTheme = classic;
+void SRIN::Components::DatePickerPopup::UseClassicTheme(const bool& classic) {
+	datePopupMenu.UseClassicTheme(classic);
 }
 
-void SRIN::Components::DatePickerPopup::SetOrientation(
-		const Elm_Popup_Orient& orientation) {
-	this->orientation   = orientation;
+void SRIN::Components::DatePickerPopup::SetOrientation(const Elm_Popup_Orient& orientation) {
+	datePopupMenu.Orientation = orientation;
 }
 
 Elm_Popup_Orient& SRIN::Components::DatePickerPopup::GetOrientation() {
-	return this->orientation;
+	return datePopupMenu.Orientation;
 }
 
 void SRIN::Components::DatePickerPopup::SetHint(const std::string& text) {

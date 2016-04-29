@@ -35,6 +35,7 @@ namespace SRIN {
 
 			void SetMessage(const std::string& text);
 			std::string& GetMessageString();
+
 			virtual bool BackButtonClicked();
 		public:
 			PopupBox();

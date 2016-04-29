@@ -9,34 +9,51 @@
 #define DATEPICKERPOPUP_H_
 
 #include "SRIN/Framework/Application.h"
+#include "SRIN/Components/PopupBox.h"
 #include "SRIN/Components/ComponentBase.h"
+#include "SRIN/Components/BackButtonHandler.h"
 #include <ctime>
 
 namespace SRIN {
 	namespace Components {
+
+		class LIBAPI DatePickerPopupMenu : public PopupBox {
+		private:
+			bool 			classicTheme;
+			Evas_Object* 	dateTime;
+			std::tm      	selectedDate;
+			std::string		strDate;
+		protected:
+			virtual Evas_Object* CreateContent(Evas_Object* root);
+		public:
+			DatePickerPopupMenu();
+
+			std::tm& 		GetSelectedDate();
+			std::string& 	GetFormatedSelectedDate();
+
+			void UseClassicTheme(const bool& classic);
+			void SetSelectedDate(const std::tm& date);
+			void SetFormatedSelectedDate(const std::string& date);
+
+			ElementaryEvent onDateChanged;
+		};
+
 		class LIBAPI DatePickerPopup : public ComponentBase {
 		private:
-			bool classicTheme;
-			std::tm      selectedDate;
-			Evas_Object* buttonRoot;
-			Evas_Object* popupWindow;
-			Evas_Object* dateTime;
-			Evas_Object* layoutRoot;
+			Evas_Object* 	buttonRoot;
 
-			std::string 		buttonText, title, formatedDate, buttonOkText, buttonCancelText;
-			ElementaryEvent 	buttonClick, popupOkClick, onDateChanged, popupCancelClick;
+			DatePickerPopupMenu datePopupMenu;
+			std::tm      		selectedDate;
 
-			Elm_Popup_Orient orientation;
+			std::string 	 buttonText, formatedDate;
+			ElementaryEvent  buttonClick;
 
 			void DatePickerButtonClick(ElementaryEvent* viewSource, Evas_Object* objSource, void* eventData);
 			void DatePickerPopupOkButtonClick(ElementaryEvent* viewSource, Evas_Object* objSource, void* eventData);
 			void DatePickerPopupCancelButtonClick(ElementaryEvent* viewSource, Evas_Object* objSource, void* eventData);
 			void OnDateChangedCb(ElementaryEvent* viewSource, Evas_Object* objSource, void* eventData);
-
-			void ShowDatePickerPopup();
 		protected:
 			virtual Evas_Object* CreateComponent(Evas_Object* root) override;
-			virtual bool BackButtonPressed();
 
 			void SetTitle(const std::string& text);
 			std::string& GetTitle();
@@ -53,11 +70,11 @@ namespace SRIN {
 			Property<DatePickerPopup, std::string&>::GetSet<&DatePickerPopup::GetHint, &DatePickerPopup::SetHint> Hint;
 			Property<DatePickerPopup, Elm_Popup_Orient&>::GetSet<&DatePickerPopup::GetOrientation, &DatePickerPopup::SetOrientation> Orientation;
 
-			std::tm& 		GetSelectedDateTM();
+			std::tm& 		GetSelectedDate();
 			std::string& 	GetFormatedSelectedDate();
 
 			void UseClassicTheme(const bool& classic);
-			void SetSelectedDateTM(const std::tm& date);
+			void SetSelectedDate(const std::tm& date);
 			void SetFormatedSelectedDate(const std::string& date);
 		};
 	}
