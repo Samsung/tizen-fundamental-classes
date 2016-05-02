@@ -6,10 +6,7 @@
  */
 
 #include "SRIN/Components/ContextMenu.h"
-
 #include <algorithm>
-
-
 
 Evas_Object* SRIN::Components::ContextMenu::CreateComponent(Evas_Object* root)
 {
@@ -19,12 +16,19 @@ Evas_Object* SRIN::Components::ContextMenu::CreateComponent(Evas_Object* root)
 	return button;
 }
 
+void ContextMenu_ItemClickHandler(void* data, Evas_Object* obj, void* eventData)
+{
+	auto pkg = reinterpret_cast<SRIN::Components::ContextMenu::ContextMenuPackage*>(data);
+	pkg->RaiseEvent();
+}
+
 void SRIN::Components::ContextMenu::SetText(const std::string& text)
 {
 }
 
 std::string& SRIN::Components::ContextMenu::GetText()
 {
+
 }
 
 SRIN::Components::ContextMenu::ContextMenu() :
@@ -92,9 +96,15 @@ void SRIN::Components::ContextMenu::ShowMenu()
 	this->menuShown = true;
 	for(auto item : rootMenu)
 	{
-		auto img = elm_image_add(contextMenu);
-		elm_image_file_set(img, Framework::ApplicationBase::GetResourcePath(item->MenuIcon->c_str()).c_str(), nullptr);
-		elm_ctxpopup_item_append(contextMenu, item->Text->c_str(), img, nullptr, nullptr);
+		Evas_Object* img = nullptr;
+		if(item->MenuIcon->length())
+		{
+			img = elm_image_add(contextMenu);
+			elm_image_file_set(img, Framework::ApplicationBase::GetResourcePath(item->MenuIcon->c_str()).c_str(), nullptr);
+		}
+		auto itemPackage = new ContextMenuPackage({this, item});
+		this->currentItemPackages.push_back(itemPackage);
+		elm_ctxpopup_item_append(contextMenu, item->Text->c_str(), img, ContextMenu_ItemClickHandler, itemPackage);
 	}
 
 	Evas_Coord x, y, w , h;
@@ -114,16 +124,21 @@ void SRIN::Components::ContextMenu::HideMenu()
 	{
 		evas_object_del(this->contextMenu);
 		this->contextMenu = nullptr;
+
+		for(auto pkg : this->currentItemPackages)
+		{
+			delete pkg;
+		}
+
+		this->currentItemPackages.clear();
 	}
 	this->menuShown = false;
 	BackButtonHandler::Release();
 }
 
-
 bool SRIN::Components::ContextMenu::BackButtonClicked()
 {
 	HideMenu();
-
 	return false;
 }
 
@@ -135,4 +150,13 @@ SRIN::Components::ContextMenu::~ContextMenu()
 void SRIN::Components::ContextMenu::OnContextMenuDismissed(ElementaryEvent* ev,
 		Evas_Object* obj, void* eventData) {
 	HideMenu();
+}
+
+void SRIN::Components::ContextMenu::ContextMenuPackage::RaiseEvent() {
+	this->thisRef->RaiseOnClickEvent(this->menuItemRef);
+}
+
+void SRIN::Components::ContextMenu::RaiseOnClickEvent(MenuItem* menuItemRef) {
+	HideMenu();
+	menuItemRef->OnMenuItemClick(menuItemRef, nullptr);
 }
