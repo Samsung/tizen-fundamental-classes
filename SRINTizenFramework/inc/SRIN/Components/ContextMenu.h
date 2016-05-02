@@ -56,6 +56,7 @@ public:
 	void RemoveMenu(MenuItem* menu);
 
 	void AddMenu(const std::vector<MenuItem*>& listOfMenus);
+	void SetMenu(const std::vector<MenuItem*>& listOfMenus);
 	virtual ~ContextMenu();
 	Property<ContextMenu, std::string&>::GetSet<&ContextMenu::GetText, &ContextMenu::SetText> Text;
 };

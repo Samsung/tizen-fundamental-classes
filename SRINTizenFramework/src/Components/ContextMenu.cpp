@@ -68,6 +68,11 @@ void SRIN::Components::ContextMenu::AddMenu(const std::vector<MenuItem*>& listOf
 	}
 }
 
+void SRIN::Components::ContextMenu::SetMenu(const std::vector<MenuItem*>& listOfMenus)
+{
+	rootMenu = listOfMenus;
+}
+
 void SRIN::Components::ContextMenu::OnContextMenuButtonClicked(ElementaryEvent* ev, Evas_Object* obj, void* eventData)
 {
 	if(not this->menuShown)
@@ -98,7 +103,7 @@ void SRIN::Components::ContextMenu::ShowMenu()
 	auto orient = elm_ctxpopup_direction_available_get(contextMenu, Elm_Ctxpopup_Direction::ELM_CTXPOPUP_DIRECTION_DOWN);
 
 
-	evas_object_move(contextMenu, 0, 0);
+	evas_object_move(contextMenu, x+w, y+h);
 
 	evas_object_show(contextMenu);
 }
