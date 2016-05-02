@@ -95,7 +95,7 @@ void SRIN::Components::ContextMenu::ShowMenu()
 	Evas_Coord x, y, w , h;
 	evas_object_geometry_get(button, &x, &y, &w, &h);
 
-	auto orient = elm_ctxpopup_direction_available_get(contextMenu);
+	auto orient = elm_ctxpopup_direction_available_get(contextMenu, Elm_Ctxpopup_Direction::ELM_CTXPOPUP_DIRECTION_DOWN);
 
 
 	evas_object_move(contextMenu, 0, 0);
