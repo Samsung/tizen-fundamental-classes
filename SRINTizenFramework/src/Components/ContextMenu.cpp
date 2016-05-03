@@ -13,6 +13,7 @@ Evas_Object* SRIN::Components::ContextMenu::CreateComponent(Evas_Object* root)
 	naviframe = root;
 	button = elm_button_add(root);
 	evas_object_smart_callback_add(button, "clicked", SmartEventHandler, &eventContextMenuButtonClicked);
+	elm_object_style_set(button, "naviframe/more/default");
 	return button;
 }
 
@@ -91,6 +92,8 @@ void SRIN::Components::ContextMenu::ShowMenu()
 
 	auto contextMenu = elm_ctxpopup_add(this->naviframe);
 	evas_object_smart_callback_add(contextMenu, "dismissed", SmartEventHandler, &eventContextMenuDismissed);
+	elm_object_style_set(contextMenu, "dropdown/label");
+
 	this->contextMenu = contextMenu;
 
 	this->menuShown = true;
@@ -108,12 +111,13 @@ void SRIN::Components::ContextMenu::ShowMenu()
 	}
 
 	Evas_Coord x, y, w , h;
-	evas_object_geometry_get(button, &x, &y, &w, &h);
+	evas_object_geometry_get(this->button, &x, &y, &w, &h);
+	elm_ctxpopup_direction_priority_set(contextMenu,
+			ELM_CTXPOPUP_DIRECTION_DOWN, ELM_CTXPOPUP_DIRECTION_UNKNOWN,
+			ELM_CTXPOPUP_DIRECTION_UNKNOWN, ELM_CTXPOPUP_DIRECTION_UNKNOWN);
 
-	auto orient = elm_ctxpopup_direction_available_get(contextMenu, Elm_Ctxpopup_Direction::ELM_CTXPOPUP_DIRECTION_DOWN);
 
-
-	evas_object_move(contextMenu, x+w, y+h);
+	evas_object_move(contextMenu, x, y + h);
 
 	evas_object_show(contextMenu);
 }
