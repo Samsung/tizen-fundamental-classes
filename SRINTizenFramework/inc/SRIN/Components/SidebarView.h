@@ -30,7 +30,7 @@ private:
 	void OnDrawerScrolling(ElementaryEvent* eventSource, Evas_Object* objSource, void* eventData);
 protected:
 	Evas_Object* layout;
-	virtual Evas_Object* CreateView(Evas_Object* root);
+	virtual Evas_Object* CreateView(Evas_Object* root) final;
 	virtual Evas_Object* CreateSidebar(Evas_Object* root) = 0;
 	virtual void DrawerButtonStyle(Evas_Object* button);
 public:

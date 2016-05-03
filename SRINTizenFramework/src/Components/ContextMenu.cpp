@@ -142,13 +142,13 @@ void SRIN::Components::ContextMenu::HideMenu()
 
 bool SRIN::Components::ContextMenu::BackButtonClicked()
 {
-	HideMenu();
+	elm_ctxpopup_dismiss(this->contextMenu);
 	return false;
 }
 
 SRIN::Components::ContextMenu::~ContextMenu()
 {
-
+	HideMenu();
 }
 
 void SRIN::Components::ContextMenu::OnContextMenuDismissed(ElementaryEvent* ev,
@@ -161,6 +161,6 @@ void SRIN::Components::ContextMenu::ContextMenuPackage::RaiseEvent() {
 }
 
 void SRIN::Components::ContextMenu::RaiseOnClickEvent(MenuItem* menuItemRef) {
-	HideMenu();
+	elm_ctxpopup_dismiss(this->contextMenu);
 	menuItemRef->OnMenuItemClick(menuItemRef, nullptr);
 }
