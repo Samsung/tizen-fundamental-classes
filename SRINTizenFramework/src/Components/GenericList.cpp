@@ -217,7 +217,6 @@ LIBAPI Evas_Object* SRIN::Components::GenericList::CreateComponent(Evas_Object* 
 	evas_object_smart_callback_add(genlist, "scroll,drag,stop", SmartEventHandler, &onScrollingEnd);
 	elm_genlist_highlight_mode_set(genlist, EINA_FALSE);
 	elm_genlist_select_mode_set(genlist, ELM_OBJECT_SELECT_MODE_ALWAYS);
-	elm_genlist_block_count_set(genlist, 14);
 
 	return genlist;
 }
