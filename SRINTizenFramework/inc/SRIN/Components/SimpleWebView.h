@@ -20,6 +20,7 @@ private:
 	std::string data;
 	Evas_Object* box;
 	Evas_Object* boxPage;
+	bool isRendering;
 
 	// Experimental EWK
 	Evas_Object* layout;
@@ -49,6 +50,8 @@ public:
 	SimpleWebView();
 	~SimpleWebView();
 	void SetHTMLData(const std::string& data);
+	void AddCustomComponent(Evas_Object* component);
+	Event<SimpleWebView*, std::string*> eventProcessingCustomTag;
 };
 
 

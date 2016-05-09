@@ -43,6 +43,7 @@
 #define HTML_TAG_SPAN				"span"
 #define HTML_TAG_EM					"em"
 #define HTML_TAG_P					"p"
+#define HTML_TAG_TABLE				"table"
 
 #define FILE_EDC_WEBVIEW "edc/SimpleWebView.edj"
 #define EWK_FONT_SIZE 48
@@ -116,6 +117,8 @@ void SRIN::Components::SimpleWebView::Render()
 	if(!this->box)
 		return;
 
+	isRendering = true;
+
 	// Clear the box
 	elm_box_unpack(box, boxPage);
 	evas_object_del(boxPage);
@@ -134,6 +137,10 @@ void SRIN::Components::SimpleWebView::Render()
 
 	std::string& text = this->data;
 
+	bool flushForCustomProcess = false;
+	std::stringstream customProcessBuffer;
+	std::string customProcessTag;
+
 	std::sregex_iterator words_begin(text.begin(), text.end(), htmlTag);
 	auto words_end = std::sregex_iterator();
 
@@ -144,66 +151,39 @@ void SRIN::Components::SimpleWebView::Render()
 
 		if(match[HTML_REGEX_OPENINGTAG].matched)
 		{
-			auto tokenEnd = match[HTML_REGEX_OPENINGTAG].first;
-			// Store string between tag to buffer
-			auto strCurr = std::string(lastToken, tokenEnd);
-			buffer << strCurr;
-
-			// Move to next token
-			lastToken = match[HTML_REGEX_OPENINGTAG].second;
-
-
-			std::string tag = match[HTML_REGEX_OPENINGTAGSTR];
-			dlog_print(DLOG_VERBOSE, "SRINFW-Parser", "%s OPEN %s",  strCurr.c_str(), tag.c_str());
-
-			if(iequals(tag, HTML_TAG_LINEBREAK) || iequals(tag, HTML_TAG_IMAGE) || iequals(tag, HTML_TAG_P))
+			if(!flushForCustomProcess)
 			{
-				// Close the dangling tags if any
-				while(!currentTag.empty())
+				auto tokenEnd = match[HTML_REGEX_OPENINGTAG].first;
+				// Store string between tag to buffer
+				auto strCurr = std::string(lastToken, tokenEnd);
+				buffer << strCurr;
+
+				// Move to next token
+				lastToken = match[HTML_REGEX_OPENINGTAG].second;
+
+				std::string tag = match[HTML_REGEX_OPENINGTAGSTR];
+				dlog_print(DLOG_VERBOSE, "SRINFW-Parser", "%s OPEN %s",  strCurr.c_str(), tag.c_str());
+
+				if(iequals(tag, HTML_TAG_LINEBREAK) || iequals(tag, HTML_TAG_IMAGE) || iequals(tag, HTML_TAG_P))
 				{
-					auto& top = currentTag.top();
-					if(iequals(top, HTML_TAG_STRONG))
+					// Close the dangling tags if any
+					while(!currentTag.empty())
 					{
-						buffer << "</b>";
+						auto& top = currentTag.top();
+						if(iequals(top, HTML_TAG_STRONG))
+						{
+							buffer << "</b>";
+						}
+						else if(iequals(top, HTML_TAG_SPAN) || iequals(top, HTML_TAG_EM))
+						{
+							buffer << "</em>";
+						}
+
+						currentTag.pop();
 					}
-					else if(iequals(top, HTML_TAG_SPAN) || iequals(top, HTML_TAG_EM))
-					{
-						buffer << "</em>";
-					}
 
-					currentTag.pop();
-				}
+					// Push buffer to box if it is not empty
 
-				// Push buffer to box if it is not empty
-
-				if(buffer.tellp() != 0)
-				{
-					auto str = buffer.str();
-					AddParagraph(boxPage, str);
-					buffer.str("");
-				}
-
-				if(iequals(tag, HTML_TAG_IMAGE))
-				{
-					auto src = GetImageURL(match[HTML_REGEX_ATTRIBUTES]);
-					AddImage(src);
-				}
-			}
-			else if(!match[HTML_REGEX_SELFENCLOSE].matched)
-			{
-				if(iequals(tag, HTML_TAG_STRONG))
-				{
-					buffer << "<b>";
-					currentTag.push(tag);
-				}
-				else if(iequals(tag, HTML_TAG_SPAN) || iequals(tag, HTML_TAG_EM))
-				{
-					buffer << "<em>";
-					currentTag.push(tag);
-				}
-				else if(iequals(tag, HTML_TAG_P))
-				{
-					// Push buffer to box as it is a paragraph
 					if(buffer.tellp() != 0)
 					{
 						auto str = buffer.str();
@@ -211,35 +191,25 @@ void SRIN::Components::SimpleWebView::Render()
 						buffer.str("");
 					}
 
-					currentTag.push(tag);
+					if(iequals(tag, HTML_TAG_IMAGE))
+					{
+						auto src = GetImageURL(match[HTML_REGEX_ATTRIBUTES]);
+						AddImage(src);
+					}
 				}
-			}
-
-
-		}
-		else if(match[HTML_REGEX_CLOSINGTAG].matched)
-		{
-			auto tokenEnd = match[HTML_REGEX_CLOSINGTAG].first;
-
-			// Store string between tag to buffer
-			std::string token(lastToken, tokenEnd);
-			buffer << token;
-			dlog_print(DLOG_VERBOSE, "SRINFW-Parser", "%s CLOSING %s", token.c_str(), match[HTML_REGEX_CLOSINGTAGSTR].str().c_str());
-			if(!currentTag.empty())
-			{
-				auto& top = currentTag.top();
-				if(iequals(match[HTML_REGEX_CLOSINGTAGSTR].str(), top))
+				else if(!match[HTML_REGEX_SELFENCLOSE].matched)
 				{
-					// If it is correct closing tag, pop the tag and put closing tag in buffer
-					if(iequals(top, HTML_TAG_STRONG))
+					if(iequals(tag, HTML_TAG_STRONG))
 					{
-						buffer << "</b>";
+						buffer << "<b>";
+						currentTag.push(tag);
 					}
-					else if(iequals(top, HTML_TAG_SPAN) || iequals(top, HTML_TAG_EM))
+					else if(iequals(tag, HTML_TAG_SPAN) || iequals(tag, HTML_TAG_EM))
 					{
-						buffer << "</em>";
+						buffer << "<em>";
+						currentTag.push(tag);
 					}
-					else if(iequals(top, HTML_TAG_P))
+					else if(iequals(tag, HTML_TAG_P))
 					{
 						// Push buffer to box as it is a paragraph
 						if(buffer.tellp() != 0)
@@ -248,13 +218,95 @@ void SRIN::Components::SimpleWebView::Render()
 							AddParagraph(boxPage, str);
 							buffer.str("");
 						}
-					}
 
-					currentTag.pop();
-					// Otherwise ignore
+						currentTag.push(tag);
+					}
+				}
+				else if(iequals(tag, HTML_TAG_TABLE))
+				{
+					flushForCustomProcess = true;
+					customProcessBuffer.clear();
+					customProcessBuffer << match[HTML_REGEX_OPENINGTAG];
+					customProcessTag = match[HTML_REGEX_OPENINGTAGSTR];
 				}
 			}
-			lastToken = match[HTML_REGEX_CLOSINGTAG].second;
+			else
+			{
+				// Flush everything to custom process
+
+				auto tokenEnd = match[HTML_REGEX_OPENINGTAG].first;
+				// Store string between tag to buffer
+				auto strCurr = std::string(lastToken, tokenEnd);
+				customProcessBuffer << strCurr;
+
+				// Move to next token
+				lastToken = match[HTML_REGEX_OPENINGTAG].second;
+
+				// Flush the tag
+				customProcessBuffer << match[HTML_REGEX_OPENINGTAG];
+			}
+		}
+		else if(match[HTML_REGEX_CLOSINGTAG].matched)
+		{
+			if(flushForCustomProcess)
+			{
+				auto tokenEnd = match[HTML_REGEX_CLOSINGTAG].first;
+
+				// Store string between tag to buffer
+				std::string token(lastToken, tokenEnd);
+				customProcessBuffer << token << match[HTML_REGEX_CLOSINGTAG];
+
+				if(customProcessTag == match[HTML_REGEX_CLOSINGTAGSTR])
+				{
+					// Call event for custom processing
+					std::string customProcessingHtml = customProcessBuffer.str();
+					this->eventProcessingCustomTag(this, &customProcessingHtml);
+					flushForCustomProcess = false;
+					customProcessTag = "";
+					customProcessBuffer.clear();
+				}
+
+				lastToken = match[HTML_REGEX_CLOSINGTAG].second;
+			}
+			else
+			{
+				auto tokenEnd = match[HTML_REGEX_CLOSINGTAG].first;
+
+				// Store string between tag to buffer
+				std::string token(lastToken, tokenEnd);
+				buffer << token;
+				dlog_print(DLOG_VERBOSE, "SRINFW-Parser", "%s CLOSING %s", token.c_str(), match[HTML_REGEX_CLOSINGTAGSTR].str().c_str());
+				if(!currentTag.empty())
+				{
+					auto& top = currentTag.top();
+					if(iequals(match[HTML_REGEX_CLOSINGTAGSTR].str(), top))
+					{
+						// If it is correct closing tag, pop the tag and put closing tag in buffer
+						if(iequals(top, HTML_TAG_STRONG))
+						{
+							buffer << "</b>";
+						}
+						else if(iequals(top, HTML_TAG_SPAN) || iequals(top, HTML_TAG_EM))
+						{
+							buffer << "</em>";
+						}
+						else if(iequals(top, HTML_TAG_P))
+						{
+							// Push buffer to box as it is a paragraph
+							if(buffer.tellp() != 0)
+							{
+								auto str = buffer.str();
+								AddParagraph(boxPage, str);
+								buffer.str("");
+							}
+						}
+
+						currentTag.pop();
+						// Otherwise ignore
+					}
+				}
+				lastToken = match[HTML_REGEX_CLOSINGTAG].second;
+			}
 		}
 	 }
 
@@ -287,10 +339,12 @@ void SRIN::Components::SimpleWebView::Render()
 		AddParagraph(boxPage, str);
 		buffer.str("");
 	}
+
+	isRendering = false;
 }
 
 SRIN::Components::SimpleWebView::SimpleWebView() :
-	bg(nullptr), ewk(nullptr),
+	bg(nullptr), ewk(nullptr), isRendering(false),
 	box(nullptr), boxPage(nullptr)
 {
 	eventImageDownloadCompleted += { this, &SimpleWebView::OnImageDownloadCompleted };
@@ -435,4 +489,13 @@ SRIN::Components::SimpleWebView::~SimpleWebView()
 
 	// Experimental EWK
 	/*ewk_shutdown();*/
+}
+
+void SRIN::Components::SimpleWebView::AddCustomComponent(
+		Evas_Object* component) {
+	if(this->isRendering)
+	{
+		elm_box_pack_end(this->boxPage, component);
+		dlog_print(DLOG_VERBOSE, "SRINFW-Parser", "Custom Component");
+	}
 }
