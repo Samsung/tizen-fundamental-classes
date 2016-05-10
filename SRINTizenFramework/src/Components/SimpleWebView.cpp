@@ -197,6 +197,13 @@ void SRIN::Components::SimpleWebView::Render()
 						AddImage(src);
 					}
 				}
+				else if(iequals(tag, HTML_TAG_TABLE))
+				{
+					flushForCustomProcess = true;
+					customProcessBuffer.clear();
+					customProcessBuffer << match[HTML_REGEX_OPENINGTAG];
+					customProcessTag = match[HTML_REGEX_OPENINGTAGSTR];
+				}
 				else if(!match[HTML_REGEX_SELFENCLOSE].matched)
 				{
 					if(iequals(tag, HTML_TAG_STRONG))
@@ -221,13 +228,6 @@ void SRIN::Components::SimpleWebView::Render()
 
 						currentTag.push(tag);
 					}
-				}
-				else if(iequals(tag, HTML_TAG_TABLE))
-				{
-					flushForCustomProcess = true;
-					customProcessBuffer.clear();
-					customProcessBuffer << match[HTML_REGEX_OPENINGTAG];
-					customProcessTag = match[HTML_REGEX_OPENINGTAGSTR];
 				}
 			}
 			else
