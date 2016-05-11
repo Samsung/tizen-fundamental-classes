@@ -20,7 +20,13 @@ typedef struct
 void Genlist_ClickedEventHandler(void* data, Evas_Object* obj, void* eventData)
 {
 	auto package = static_cast<GenlistItemClassPackage*>(data);
-	package->genlist->ItemClicked(package->genlist, package->data);
+
+	if (package->genlist->IsLongClicked) {
+		package->genlist->IsLongClicked = false;
+		package->genlist->ItemLongClicked(package->genlist, package->data);
+	} else {
+		package->genlist->ItemClicked(package->genlist, package->data);
+	}
 }
 
 /* =================================================================================================================
@@ -79,14 +85,18 @@ LIBAPI SRIN::Components::GenericListItemClassBase::~GenericListItemClassBase()
  * ================================================================================================================= */
 
 LIBAPI SRIN::Components::GenericList::GenericList() :
-	dataSource(nullptr), genlist(nullptr), realBottom(nullptr), DataSource(this), Overscroll(this), overscroll(false)
+	dataSource(nullptr), genlist(nullptr), realBottom(nullptr), DataSource(this), Overscroll(this), overscroll(false), IsLongClicked(this)
 {
 	onScrolledBottomInternal += { this, &GenericList::OnScrolledBottomInternal };
 	onScrolledTopInternal += { this, &GenericList::OnScrolledTopInternal };
+	onLongPressedInternal += { this, &GenericList::OnLongPressedInternal };
 	onDummyRealized += { this, &GenericList::OnDummyRealized };
 	onScrollingStart += { this, &GenericList::OnScrollingStart };
 	onScrollingEnd += { this, &GenericList::OnScrollingEnd };
 	ItemSignalInternal += { this, &GenericList::OnItemSignalEmit };
+
+	isScrolling = false;
+	longpressed = false;
 
 	dummyBottom = nullptr;
 	dummyBottomItemClass = elm_genlist_item_class_new();
@@ -215,6 +225,7 @@ LIBAPI Evas_Object* SRIN::Components::GenericList::CreateComponent(Evas_Object* 
 	evas_object_smart_callback_add(genlist, "realized", SmartEventHandler, &onDummyRealized);
 	evas_object_smart_callback_add(genlist, "scroll,drag,start", SmartEventHandler, &onScrollingStart);
 	evas_object_smart_callback_add(genlist, "scroll,drag,stop", SmartEventHandler, &onScrollingEnd);
+	evas_object_smart_callback_add(genlist, "longpressed", SmartEventHandler, &onLongPressedInternal);
 	elm_genlist_highlight_mode_set(genlist, EINA_FALSE);
 	elm_genlist_select_mode_set(genlist, ELM_OBJECT_SELECT_MODE_ALWAYS);
 
@@ -277,11 +288,14 @@ bool SRIN::Components::GenericList::GetOverscroll()
 
 void SRIN::Components::GenericList::OnScrollingStart(ElementaryEvent* event, Evas_Object* obj, void* eventData)
 {
+	isScrolling   = true;
+	IsLongClicked = false;
 	ScrollingStart(this, nullptr);
 }
 
 void SRIN::Components::GenericList::OnScrollingEnd(ElementaryEvent* event, Evas_Object* obj, void* eventData)
 {
+	isScrolling = false;
 	ScrollingEnd(this, nullptr);
 }
 
@@ -292,4 +306,21 @@ void SRIN::Components::GenericList::OnItemSignalEmit(ObjectItemEdjeSignalEvent* 
 
 	auto data = reinterpret_cast<Adapter::AdapterItem*>(elm_object_item_data_get(obj));
 	ItemSignal(data, eventData);
+}
+
+void SRIN::Components::GenericList::SetLongClicked(const bool& o) {
+	longpressed = o;
+}
+
+bool SRIN::Components::GenericList::GetLongClicked() {
+	return longpressed;
+}
+
+void SRIN::Components::GenericList::OnLongPressedInternal(
+		ElementaryEvent* event, Evas_Object* obj, void* eventData) {
+	if (isScrolling) {
+		IsLongClicked = false;
+	} else {
+		IsLongClicked = true;
+	}
 }

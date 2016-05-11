@@ -78,12 +78,17 @@ namespace Components {
 		Elm_Genlist_Item_Class* dummyBottomItemClass;
 		Adapter* dataSource;
 		bool overscroll;
+		bool longpressed;
+		bool isScrolling;
 
 		void SetDataSource(Adapter* adapter);
 		Adapter* GetDataSource();
 
 		void SetOverscroll(bool const& o);
 		bool GetOverscroll();
+
+		void SetLongClicked(bool const& o);
+		bool GetLongClicked();
 
 		void AppendItemToGenlist(Adapter::AdapterItem* data);
 		void OnItemAdd(Event<Adapter*, Adapter::AdapterItem*>* event, Adapter* adapter, Adapter::AdapterItem* data);
@@ -95,6 +100,7 @@ namespace Components {
 		ElementaryEvent onItemClickedInternal;
 		ElementaryEvent onScrollingStart;
 		ElementaryEvent onScrollingEnd;
+		ElementaryEvent onLongPressedInternal;
 		ObjectItemEdjeSignalEvent ItemSignalInternal;
 
 		void OnScrolledBottomInternal(ElementaryEvent* event, Evas_Object* obj, void* eventData);
@@ -102,6 +108,7 @@ namespace Components {
 		void OnDummyRealized(ElementaryEvent* event, Evas_Object* obj, void* eventData);
 		void OnScrollingStart(ElementaryEvent* event, Evas_Object* obj, void* eventData);
 		void OnScrollingEnd(ElementaryEvent* event, Evas_Object* obj, void* eventData);
+		void OnLongPressedInternal(ElementaryEvent* event, Evas_Object* obj, void* eventData);
 		void OnItemSignalEmit(ObjectItemEdjeSignalEvent* event, Elm_Object_Item* obj, EdjeSignalInfo eventData);
 	protected:
 		virtual Evas_Object* CreateComponent(Evas_Object* root);
@@ -110,10 +117,12 @@ namespace Components {
 		void ResetScroll(bool animated);
 		Property<GenericList, Adapter*>::GetSet<&GenericList::GetDataSource, &GenericList::SetDataSource> DataSource;
 		Property<GenericList, bool>::GetSet<&GenericList::GetOverscroll, &GenericList::SetOverscroll> Overscroll;
+		Property<GenericList, bool>::GetSet<&GenericList::GetLongClicked, &GenericList::SetLongClicked> IsLongClicked;
 		Event<GenericList*, void*> ScrolledBottom;
 		Event<GenericList*, void*> ScrolledTop;
 		Event<GenericList*, void*> ReachingBottom;
 		Event<GenericList*, void*> ItemClicked;
+		Event<GenericList*, void*> ItemLongClicked;
 		Event<GenericList*, void*> ScrollingStart;
 		Event<GenericList*, void*> ScrollingEnd;
 		Event<Adapter::AdapterItem*, EdjeSignalInfo> ItemSignal;
