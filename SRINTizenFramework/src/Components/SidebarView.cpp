@@ -6,6 +6,7 @@
  */
 
 #include "SRIN/Components/SidebarView.h"
+#include <limits>
 
 using namespace SRIN::Components;
 
@@ -88,6 +89,15 @@ LIBAPI void SidebarView::OnDrawerScrolling(ElementaryEvent* eventSource, Evas_Ob
 
 	/* Change color for background dim */
 	evas_object_color_set(bg, 0, 0, 0, col);
+
+	/* Trigger on open/closed event */
+	double epsilon = std::numeric_limits<double>::epsilon();
+	if (ev->rel_x >= 1.0 - epsilon) {
+		DrawerOpened(this, nullptr);
+	}
+	else if (ev->rel_x <= 0.0 + epsilon) {
+		DrawerClosed(this, nullptr);
+	}
 }
 
 Evas_Object* SidebarView::GetTitleRightButton(CString* buttonPart)
