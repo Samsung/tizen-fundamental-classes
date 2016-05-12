@@ -23,7 +23,7 @@ void Genlist_ClickedEventHandler(void* data, Evas_Object* obj, void* eventData)
 
 	if (package->genlist->IsLongClicked) {
 		package->genlist->IsLongClicked = false;
-		package->genlist->ItemLongClicked(package->genlist, package->data);
+		//package->genlist->ItemLongClicked(package->genlist, package->data);
 	} else {
 		package->genlist->ItemClicked(package->genlist, package->data);
 	}
@@ -322,5 +322,9 @@ void SRIN::Components::GenericList::OnLongPressedInternal(
 		IsLongClicked = false;
 	} else {
 		IsLongClicked = true;
+		Elm_Object_Item* temp1 = (Elm_Object_Item*) eventData;
+		auto data = static_cast<GenlistItemClassPackage*>(elm_object_item_data_get(temp1));
+
+		ItemLongClicked(data->genlist, data->data);
 	}
 }
