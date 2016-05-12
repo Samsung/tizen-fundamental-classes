@@ -43,7 +43,8 @@ public:
 	virtual CString GetContentStyle();
 
 	typedef void (*DrawerButtonStyleFunc)(Evas_Object* btn);
-
+	Event<SidebarView*, void*> DrawerOpened;
+	Event<SidebarView*, void*> DrawerClosed;
 };
 
 
