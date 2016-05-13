@@ -16,6 +16,10 @@ namespace SRIN { namespace Util {
 
 	void OpenURL(const std::string& url);
 
+	void LaunchViewer(const std::string& videoURL, const std::string& mimeType);
+
+	void ComposeMailForOne(const std::string& recipient, const std::string& subject, const std::string& text);
+
 }
 }
 
