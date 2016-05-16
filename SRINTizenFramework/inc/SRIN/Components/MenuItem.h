@@ -52,6 +52,7 @@ public:
 
 	template<class T>
 	T* GetItemData();
+	Elm_Object_Item* GetGenlistItem();
 
 	friend class TreeMenu;
 	Event<MenuItem*, Elm_Object_Item*> OnMenuItemClick;

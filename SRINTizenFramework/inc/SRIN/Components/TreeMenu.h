@@ -68,6 +68,7 @@ public:
 	virtual ~TreeMenu();
 
 	bool isClickPersist;
+	void ResetCurrentlySelectedItem();
 
 	typedef Event<TreeMenu*, MenuItem*> TreeMenuEvent;
 

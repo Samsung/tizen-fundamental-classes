@@ -436,3 +436,8 @@ void SRIN::Components::TreeMenu::RemoveMenu(MenuItem* menu)
 	rootMenu.erase(pos);
 
 }
+
+void SRIN::Components::TreeMenu::ResetCurrentlySelectedItem()
+{
+	currentlySelected = nullptr;
+}

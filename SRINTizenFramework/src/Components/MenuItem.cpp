@@ -31,3 +31,8 @@ const std::vector<MenuItem*>& MenuItem::GetSubMenus() const
 {
 	return subMenus;
 }
+
+Elm_Object_Item* MenuItem::GetGenlistItem()
+{
+	return genlistItem;
+}
