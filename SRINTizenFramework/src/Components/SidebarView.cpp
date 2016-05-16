@@ -17,6 +17,9 @@ LIBAPI SidebarView::SidebarView() :
 	layout = leftPanel = background = currentContent = nullptr;
 	drawerButtonClick += { this, &SidebarView::OnDrawerButtonClick };
 	drawerScroll += { this, &SidebarView::OnDrawerScrolling };
+
+	DrawerOpened += { this, &SidebarView::OnDrawerOpened };
+	DrawerClosed += { this, &SidebarView::OnDrawerClosed };
 }
 
 LIBAPI Evas_Object* SidebarView::CreateView(Evas_Object* root)
@@ -96,6 +99,16 @@ LIBAPI void SidebarView::OnDrawerScrolling(ElementaryEvent* eventSource, Evas_Ob
 	}
 }
 
+void SidebarView::OnDrawerOpened(Event<SidebarView*, void*>* event, SidebarView* sidebarView, void* unused)
+{
+	BackButtonHandler::Acquire();
+}
+
+void SidebarView::OnDrawerClosed(Event<SidebarView*, void*>* event, SidebarView* sidebarView, void* unused)
+{
+	BackButtonHandler::Release();
+}
+
 Evas_Object* SidebarView::GetTitleRightButton(CString* buttonPart)
 {
 	return nullptr;
@@ -120,4 +133,10 @@ void SRIN::Components::SidebarView::ToggleSidebar()
 LIBAPI Eina_Bool SRIN::Components::SidebarView::IsDrawerOpened()
 {
 	return !(elm_panel_hidden_get(leftPanel));
+}
+
+LIBAPI bool SRIN::Components::SidebarView::BackButtonClicked()
+{
+	ToggleSidebar();
+	return false;
 }
