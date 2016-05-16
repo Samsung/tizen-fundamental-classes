@@ -76,10 +76,6 @@ LIBAPI Evas_Object* SidebarView::GetTitleLeftButton(CString* buttonPart)
 LIBAPI void SidebarView::OnDrawerButtonClick(ElementaryEvent* eventSource, Evas_Object* objSource, void* eventData)
 {
 	ToggleSidebar();
-	/*if (elm_panel_hidden_get(leftPanel))
-		DrawerClosed(this, nullptr);
-	else
-		DrawerOpened(this, nullptr);*/
 }
 
 LIBAPI void SidebarView::OnDrawerScrolling(ElementaryEvent* eventSource, Evas_Object* objSource, void* eventData)
@@ -119,4 +115,9 @@ void SRIN::Components::SidebarView::ToggleSidebar()
 {
 	if (!elm_object_disabled_get(leftPanel))
 		elm_panel_toggle(leftPanel);
+}
+
+LIBAPI Eina_Bool SRIN::Components::SidebarView::IsDrawerOpened()
+{
+	return !(elm_panel_hidden_get(leftPanel));
 }
