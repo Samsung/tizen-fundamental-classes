@@ -25,7 +25,6 @@ private:
 
 	ElementaryEvent dropdownButtonClick;
 	ElementaryEvent dropdownDismiss;
-	std::string text;
 
 	void SetDataSource(Adapter* adapter);
 	Adapter* GetDataSource();
@@ -44,6 +43,7 @@ public:
 
 	Property<DropDown, Adapter*>::GetSet<&DropDown::GetDataSource, &DropDown::SetDataSource> DataSource;
 	Property<DropDown, void*>::Auto::ReadOnly SelectedItem;
+	std::string text;
 };
 
 template<typename T>
