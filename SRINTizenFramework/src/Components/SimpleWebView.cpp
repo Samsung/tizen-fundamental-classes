@@ -83,6 +83,14 @@ using namespace SRIN;
 
 Evas_Object* SRIN::Components::SimpleWebView::CreateComponent(Evas_Object* root)
 {
+	fontFormat = "<font=";
+	fontFormat.append(font);
+	fontFormat.append(" font_size=");
+	fontFormat.append(std::to_string(fontSize));
+	fontFormat.append(">");
+
+	dlog_print(DLOG_INFO, "SRINFW-Parser", fontFormat.c_str());
+
 	this->box = elm_box_add(root);
 	evas_object_size_hint_weight_set(this->box, EVAS_HINT_EXPAND, 0);
 	evas_object_size_hint_align_set(this->box, EVAS_HINT_FILL, EVAS_HINT_FILL);
@@ -344,14 +352,36 @@ void SRIN::Components::SimpleWebView::Render()
 }
 
 SRIN::Components::SimpleWebView::SimpleWebView() :
-	bg(nullptr), ewk(nullptr), isRendering(false),
-	box(nullptr), boxPage(nullptr)
+		Font(this), FontSize(this),
+		box(nullptr), boxPage(nullptr)
 {
 	eventImageDownloadCompleted += { this, &SimpleWebView::OnImageDownloadCompleted };
 
+	font = "Tizen";
+	fontSize = SIMPLE_WEB_VIEW_FONT_SIZE;
 	// Experimental EWK
 	/*ewk_init();
 	eventEwkLoadFinished += { this, &SimpleWebView::OnEwkLoadFinished };*/
+}
+
+void SRIN::Components::SimpleWebView::SetFont(const std::string& font)
+{
+	this->font = font;
+}
+
+std::string& SRIN::Components::SimpleWebView::GetFont()
+{
+	return font;
+}
+
+void SRIN::Components::SimpleWebView::SetFontSize(const int& fontSize)
+{
+	this->fontSize = fontSize;
+}
+
+int SRIN::Components::SimpleWebView::GetFontSize()
+{
+	return fontSize;
 }
 
 void SRIN::Components::SimpleWebView::AddParagraph(Evas_Object* boxPage, std::string& paragraph)
@@ -359,9 +389,11 @@ void SRIN::Components::SimpleWebView::AddParagraph(Evas_Object* boxPage, std::st
 	auto textField = elm_entry_add(boxPage);
 	evas_object_size_hint_weight_set(textField, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
 	evas_object_size_hint_align_set(textField, EVAS_HINT_FILL, EVAS_HINT_FILL);
-	std::string formatted = "<font=Tizen font_size=30>";
+
+	std::string formatted = fontFormat;
 	formatted.append(paragraph);
 	formatted.append("</font>");
+
 	elm_object_text_set(textField, formatted.c_str());
 	elm_entry_single_line_set(textField, EINA_FALSE);
 	elm_entry_scrollable_set(textField, EINA_FALSE);
@@ -369,7 +401,7 @@ void SRIN::Components::SimpleWebView::AddParagraph(Evas_Object* boxPage, std::st
 	elm_entry_editable_set(textField, EINA_FALSE);
 	evas_object_show(textField);
 	elm_box_pack_end(boxPage, textField);
-	dlog_print(DLOG_VERBOSE, "SRINFW-Parser", "DUMP PAR %s", paragraph.c_str());
+	dlog_print(DLOG_INFO, "SRINFW-Parser", "DUMP PAR %s", formatted.c_str());
 }
 
 void SRIN::Components::SimpleWebView::AddImage(std::string& url)
@@ -445,7 +477,7 @@ void SRIN::Components::SimpleWebView::SetHTMLData(const std::string& data)
 	evas_object_smart_callback_add(ewk, "load,finished", &SmartEventHandler, &eventEwkLoadFinished);*/
 }
 
-void SRIN::Components::SimpleWebView::OnEwkLoadFinished(ElementaryEvent* viewSource, Evas_Object* objSource, void* eventData)
+/*void SRIN::Components::SimpleWebView::OnEwkLoadFinished(ElementaryEvent* viewSource, Evas_Object* objSource, void* eventData)
 {
 	Evas_Coord ewkWidth, ewkHeight, bgWidth, bgHeight;
 	ewk_view_contents_size_get(ewk, &ewkWidth, &ewkHeight);
@@ -456,7 +488,7 @@ void SRIN::Components::SimpleWebView::OnEwkLoadFinished(ElementaryEvent* viewSou
 	double optimumSize = ((double)bgWidth) / ewkWidth * ewkHeight;
 	dlog_print(DLOG_DEBUG, "WEBVIEW", "optimum size : %f", optimumSize);
 	evas_object_size_hint_min_set(bg, NULL, (int)(std::round(optimumSize)));
-}
+}*/
 
 void SRIN::Components::SimpleWebView::OnImageDownloadCompleted(Async<ImageAsyncPackage>::BaseEvent* event,
 	Async<ImageAsyncPackage>::Task* asyncTask, ImageAsyncPackage result)

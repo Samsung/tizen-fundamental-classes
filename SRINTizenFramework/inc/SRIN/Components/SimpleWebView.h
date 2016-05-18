@@ -11,6 +11,8 @@
 #include "SRIN/Components/ComponentBase.h"
 #include "SRIN/Async.h"
 
+#define SIMPLE_WEB_VIEW_FONT_SIZE 32
+
 namespace SRIN {
 namespace Components {
 
@@ -22,13 +24,23 @@ private:
 	Evas_Object* boxPage;
 	bool isRendering;
 
-	// Experimental EWK
-	Evas_Object* layout;
-	Evas_Object* bg;
-	Evas_Object* ewk;
+	std::string fontFormat;
+	std::string font;
+	int fontSize;
 
-	ElementaryEvent eventEwkLoadFinished;
-	void OnEwkLoadFinished(ElementaryEvent* viewSource, Evas_Object* objSource, void* eventData);
+	void SetFont(const std::string& font);
+	std::string& GetFont();
+
+	void SetFontSize(const int& fontSize);
+	int GetFontSize();
+
+	// Experimental EWK
+	//	Evas_Object* layout;
+	//	Evas_Object* bg;
+	//	Evas_Object* ewk;
+
+	// ElementaryEvent eventEwkLoadFinished;
+	// void OnEwkLoadFinished(ElementaryEvent* viewSource, Evas_Object* objSource, void* eventData);
 
 	void AddParagraph(Evas_Object* boxPage, std::string& paragraph);
 	void AddImage(std::string& url);
@@ -52,6 +64,9 @@ public:
 	void SetHTMLData(const std::string& data);
 	void AddCustomComponent(Evas_Object* component);
 	Event<SimpleWebView*, std::string*> eventProcessingCustomTag;
+
+	Property<SimpleWebView, std::string&>::GetSet<&SimpleWebView::GetFont, &SimpleWebView::SetFont> Font;
+	Property<SimpleWebView, int>::GetSet<&SimpleWebView::GetFontSize, &SimpleWebView::SetFontSize> FontSize;
 };
 
 
