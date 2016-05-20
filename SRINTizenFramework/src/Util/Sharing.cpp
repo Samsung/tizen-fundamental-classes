@@ -9,7 +9,6 @@
 #include "SRIN/Core.h"
 #include <app_control.h>
 
-
 using namespace SRIN::Util;
 
 LIBAPI void SRIN::Util::ShareString(const std::string& str)
@@ -26,6 +25,12 @@ LIBAPI void SRIN::Util::ShareString(const std::string& str)
 
 	app_control_destroy(appControl);
 
+}
+
+LIBAPI bool SRIN::Util::CopyStringToClipboard(const std::string& str, Evas_Object* source)
+{
+	Eina_Bool ret = elm_cnp_selection_set(source, ELM_SEL_TYPE_CLIPBOARD, ELM_SEL_FORMAT_TEXT, str.c_str(), str.size());
+	return (ret == EINA_TRUE);
 }
 
 LIBAPI void SRIN::Util::OpenURL(const std::string& url)

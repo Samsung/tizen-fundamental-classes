@@ -9,10 +9,13 @@
 #define SRIN_SHARING_H_
 
 #include <string>
+#include <efl_extension.h>
 
 namespace SRIN { namespace Util {
 
 	void ShareString(const std::string& str);
+
+	bool CopyStringToClipboard(const std::string& str, Evas_Object* source);
 
 	void OpenURL(const std::string& url);
 
