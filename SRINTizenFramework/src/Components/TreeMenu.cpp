@@ -25,8 +25,6 @@ struct TreeMenuItemPackage
 	}
 };
 
-
-
 void TreeMenu::MenuScrollInternal(GenlistEvent* eventSource,
 		Evas_Object* objSource, Elm_Object_Item* genlistItem) {
 	isScrolled = true;
@@ -333,13 +331,26 @@ void TreeMenu::GenerateSubMenu(MenuItem* rootMenu)
 {
 	for (auto item : rootMenu->subMenus)
 	{
-		auto genlistItem = elm_genlist_item_append(genlist, // genlist object
-			submenuItemClass, // item class
-			new TreeMenuItemPackage({ item, this }), // item class user data
-			rootMenu->genlistItem, // parent
-			ELM_GENLIST_ITEM_NONE, // type
-			nullptr, // callback
-			item);
+		Elm_Object_Item* genlistItem = nullptr;
+		CustomMenuStyle* customStyle = item->CustomItemStyle;
+		if (!customStyle)
+		{
+			genlistItem = elm_genlist_item_append(genlist, // genlist object
+				submenuItemClass, // item class
+				new TreeMenuItemPackage({ item, this }), // item class user data
+				rootMenu->genlistItem, // parent
+				ELM_GENLIST_ITEM_NONE, // type
+				nullptr, // callback
+				item);
+		} else {
+			genlistItem = elm_genlist_item_append(genlist, // genlist object
+				*customStyle, // item class
+				new TreeMenuItemPackage({ item, this, customStyle }), // item class user data
+				rootMenu->genlistItem, // parent
+				ELM_GENLIST_ITEM_NONE, // type
+				nullptr, // callback
+				item);
+		}
 
 		item->genlistItem = genlistItem;
 	}
