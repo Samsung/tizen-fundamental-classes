@@ -271,7 +271,7 @@ void SRIN::Components::SimpleWebView::Render()
 					this->eventProcessingCustomTag(this, &customProcessingHtml);
 					flushForCustomProcess = false;
 					customProcessTag = "";
-					customProcessBuffer.clear();
+					customProcessBuffer.str("");
 				}
 
 				lastToken = match[HTML_REGEX_CLOSINGTAG].second;
