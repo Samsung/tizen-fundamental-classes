@@ -12,6 +12,7 @@
 
 #include <functional>
 #include <memory>
+#include <type_traits>
 #include "SRIN/Core.h"
 
 #if _DEBUG
@@ -200,6 +201,8 @@ DispatchAwaitBuilder<R> operator>>(AsyncTask<R>* task, Event<AsyncTask<R>*, R>& 
 	return
 	{	task, &eventTarget};
 }
+
+#include <type_traits>
 
 template<class Lambda>
 DispatchAsyncBuilder<typename function_traits<Lambda>::result_type> operator>>(Lambda lambda,

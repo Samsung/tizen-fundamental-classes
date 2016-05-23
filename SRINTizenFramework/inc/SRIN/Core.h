@@ -29,6 +29,13 @@ typedef const char* CString;
 template<typename T>
 struct function_traits: public function_traits<decltype(&T::operator())>
 {
+	static_assert(not std::is_fundamental<T>::value, "Invalid usage of function_traits");
+};
+
+template<>
+struct function_traits<int>
+{
+
 };
 
 template<typename ClassType, typename ReturnType, typename ... Args>
