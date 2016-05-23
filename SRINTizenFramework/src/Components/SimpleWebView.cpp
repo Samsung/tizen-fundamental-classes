@@ -28,7 +28,7 @@
  * Group 9: Matches if it is an self-enclosing tag
  */
 
-#define HTML_REGEX R"REGEX((<\/([a-z][a-z0-9]*)>)|(<([a-z][a-z0-9]*)((\s([a-z][a-z0-9]*)\=\"(.*?)\")*)(\s\/)?>))REGEX"
+#define HTML_REGEX R"REGEX((<\/([a-z][a-z0-9]*)>)|(<([a-z][a-z0-9]*)((\s([a-z][a-z0-9]*)\=\"(.*?)\")*)(\s?\/)?>))REGEX"
 #define ATTRIBUTE_REGEX R"REGEX(([a-z][a-z0-9]*)\=\"(.*?)\")REGEX"
 #define HTML_REGEX_CLOSINGTAG 		1
 #define HTML_REGEX_CLOSINGTAGSTR 	2
