@@ -38,6 +38,7 @@ public:
 	void SetKeyboardType(const Elm_Input_Panel_Layout& type);
 
 	ElementaryEvent onReturnKeyClick;
+	ElementaryEvent onTextChanged;
 
 	Property<Field, std::string&>::GetSet<&Field::GetText, &Field::SetText> Text;
 	Property<Field, bool>::GetSet<&Field::GetMultiline, &Field::SetMultiline> Multiline;

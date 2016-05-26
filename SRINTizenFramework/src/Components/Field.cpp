@@ -48,6 +48,7 @@ LIBAPI Evas_Object* SRIN::Components::Field::CreateComponent(Evas_Object* root)
 
 	elm_entry_editable_set(field, EINA_TRUE);
 	evas_object_smart_callback_add(field, "activated", SmartEventHandler, &onReturnKeyClick);
+	evas_object_smart_callback_add(field, "changed", SmartEventHandler, &onTextChanged);
 	return box;
 }
 
