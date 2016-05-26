@@ -44,6 +44,7 @@
 #define HTML_TAG_EM					"em"
 #define HTML_TAG_P					"p"
 #define HTML_TAG_TABLE				"table"
+#define HTML_TAG_IFRAME				"iframe"
 
 #define FILE_EDC_WEBVIEW "edc/SimpleWebView.edj"
 #define EWK_FONT_SIZE 48
@@ -205,7 +206,7 @@ void SRIN::Components::SimpleWebView::Render()
 						AddImage(src);
 					}
 				}
-				else if(iequals(tag, HTML_TAG_TABLE))
+				else if(iequals(tag, HTML_TAG_TABLE) || iequals(tag, HTML_TAG_IFRAME))
 				{
 					flushForCustomProcess = true;
 					customProcessBuffer.clear();
