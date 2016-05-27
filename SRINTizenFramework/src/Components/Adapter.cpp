@@ -40,8 +40,10 @@ LIBAPI void SRIN::Components::Adapter::AddItemInternal(void* data, AdapterItemCl
 
 LIBAPI void SRIN::Components::Adapter::RemoveItemInternal(void* data)
 {
-	for(auto iter = adapterItems.begin(); iter != adapterItems.end();)
+	int i = 0;
+	for(auto iter = adapterItems.begin(); iter != adapterItems.end(); iter++)
 	{
+		dlog_print(DLOG_DEBUG, "DELETE_", "[%d] %d %d", i, iter->data, data);
 		if(iter->data == data)
 		{
 			auto& ref = *iter;
@@ -58,7 +60,7 @@ LIBAPI std::vector<SRIN::Components::Adapter::AdapterItem>& SRIN::Components::Ad
 
 LIBAPI void SRIN::Components::Adapter::Clear(bool deallocate)
 {
-	for(auto iter = adapterItems.begin(); iter != adapterItems.end();)
+	for(auto iter = adapterItems.begin(); iter != adapterItems.end(); iter++)
 	{
 		auto& ref = *iter;
 
