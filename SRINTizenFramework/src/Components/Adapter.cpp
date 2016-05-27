@@ -43,7 +43,6 @@ LIBAPI void SRIN::Components::Adapter::RemoveItemInternal(void* data)
 	int i = 0;
 	for(auto iter = adapterItems.begin(); iter != adapterItems.end(); iter++)
 	{
-		dlog_print(DLOG_DEBUG, "DELETE_", "[%d] %d %d", i, iter->data, data);
 		if(iter->data == data)
 		{
 			auto& ref = *iter;
