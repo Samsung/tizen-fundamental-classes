@@ -18,7 +18,8 @@ LIBAPI FloatingButton::FloatingButton() :
 		buttonRight(nullptr),
 		buttonLeftImage(""),
 		buttonRightImage(""),
-		doubleButton(false)
+		doubleButton(false),
+		movementBlock(false)
 {
 
 }
@@ -52,6 +53,10 @@ LIBAPI Evas_Object* FloatingButton::CreateComponent(Evas_Object* root)
 			elm_image_file_set(image, path.c_str(), NULL);
 			elm_object_part_content_set(buttonRight, "icon", image);
 		}
+	}
+
+	if (movementBlock) {
+		eext_floatingbutton_movement_block_set(floatingButton, EINA_TRUE);
 	}
 
 	evas_object_show(floatingButton);

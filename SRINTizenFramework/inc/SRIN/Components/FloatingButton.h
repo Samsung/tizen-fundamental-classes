@@ -25,6 +25,7 @@ namespace SRIN {
 			std::string buttonLeftImage, buttonRightImage;
 			ElementaryEvent eventButtonLeftClick, eventButtonRightClick;
 			bool doubleButton;
+			bool movementBlock;
 		};
 	}
 }
