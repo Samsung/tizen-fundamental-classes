@@ -149,6 +149,10 @@ protected:
 private:
 	virtual void* OnProcessResponseIntl(int httpCode, const std::string& responseStr, int& errorCode,
 		std::string& errorMessage) = 0;
+	virtual void* OnProcessErrorIntl(int httpCode, int& errorCode, std::string& errorMessage)
+	{
+		return nullptr;
+	}
 	RESTResultBase PerformCall();
 	void RegisterParameter(ParameterType paramType, CString key, IServiceParameter* ref);
 
@@ -173,6 +177,10 @@ private:
 	{
 		return OnProcessResponse(httpCode, responseStr, errorCode, errorMessage);
 	}
+	virtual void* OnProcessErrorIntl(int httpCode, int& errorCode, std::string& errorMessage)
+	{
+		return OnProcessError(httpCode, errorCode, errorMessage);
+	}
 protected:
 	RESTServiceBase(std::string url, HTTPMode httpMode) :
 		RESTServiceTemplateBase(url, httpMode)
@@ -180,6 +188,10 @@ protected:
 	}
 	virtual ResponseType* OnProcessResponse(int httpCode, const std::string& responseStr, int& errorCode,
 		std::string& errorMessage) = 0;
+	virtual ResponseType* OnProcessError(int httpCode, int& errorCode, std::string& errorMessage)
+	{
+		return nullptr;
+	}
 public:
 	RESTResult<ResponseType> Call()
 	{

@@ -340,6 +340,7 @@ RESTResultBase SRIN::Net::RESTServiceTemplateBase::PerformCall()
 			auto err = curl_easy_strerror(res);
 			returnObj.resultType = ResultType::LocalError;
 			returnObj.errorMessage = err;
+			returnObj.responseObj = OnProcessErrorIntl(returnObj.httpCode, returnObj.errorCode, returnObj.errorMessage);
 		}
 		else
 		{
