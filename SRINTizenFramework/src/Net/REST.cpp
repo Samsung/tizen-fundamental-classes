@@ -180,7 +180,7 @@ SRIN::Net::RESTServiceTemplateBase::RESTServiceTemplateBase(std::string url, HTT
 {
 }
 
-std::string SRIN::Net::RESTServiceTemplateBase::PrepareUrl()
+void SRIN::Net::RESTServiceTemplateBase::PrepareUrl()
 {
 	// Construct query string
 	std::stringstream urlBuffer;
@@ -246,9 +246,8 @@ std::string SRIN::Net::RESTServiceTemplateBase::PrepareUrl()
 			urlBuffer << queryString.first << "=" << val;
 		}
 	}
-	std::string finalUrl = urlBuffer.str();
-	dlog_print(DLOG_DEBUG, LOG_TAG, "Final url: %s", finalUrl.c_str());
-	return finalUrl;
+	FinalUrl = urlBuffer.str();
+	dlog_print(DLOG_DEBUG, LOG_TAG, "Final url: %s", FinalUrl.c_str());
 }
 
 class VectorWrapper: public std::streambuf
@@ -301,8 +300,8 @@ RESTResultBase SRIN::Net::RESTServiceTemplateBase::PerformCall()
 		dlog_print(DLOG_DEBUG, LOG_TAG, "Prepare URL");
 
 		// Construct query string
-		std::string finalUrl = PrepareUrl();
-		curl_easy_setopt(curlHandle, CURLOPT_URL, finalUrl.c_str());
+		PrepareUrl();
+		curl_easy_setopt(curlHandle, CURLOPT_URL, FinalUrl.c_str());
 
 		dlog_print(DLOG_DEBUG, LOG_TAG, "Prepare Post Data");
 

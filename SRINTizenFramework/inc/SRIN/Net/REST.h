@@ -144,7 +144,7 @@ protected:
 	RESTServiceTemplateBase(std::string url, HTTPMode httpMode);
 
 	virtual std::string PreparePostData(const std::unordered_map<std::string, IServiceParameter*>& postDataParam);
-	std::string UserAgent, Url;
+	std::string UserAgent, Url, FinalUrl;
 	RESTResultBase CallInternal();
 private:
 	virtual void* OnProcessResponseIntl(int httpCode, const std::string& responseStr, int& errorCode,
@@ -156,7 +156,7 @@ private:
 	HTTPMode httpMode;
 
 	struct curl_slist* PrepareHeader();
-	std::string PrepareUrl();
+	void PrepareUrl();
 
 	std::vector<std::pair<CString, IServiceParameter*>> queryStringParam;
 	std::vector<std::pair<CString, IServiceParameter*>> headerParam;
