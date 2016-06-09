@@ -343,5 +343,5 @@ void SRIN::Components::GenericList::OnLongPressedInternal(
 }
 
 bool SRIN::Components::GenericListItemClassBase::IsItemClickEnabled() {
-	return this->IsItemClickEnabled();
+	return this->itemClickEnabled;
 }
