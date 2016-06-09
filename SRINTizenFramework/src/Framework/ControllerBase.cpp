@@ -47,3 +47,10 @@ LIBAPI ControllerBase::~ControllerBase()
 {
 }
 
+
+void SRIN::Framework::ControllerBase::OnLeaving() {
+}
+
+void SRIN::Framework::ControllerBase::Leave() {
+	this->OnLeaving();
+}

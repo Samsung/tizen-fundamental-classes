@@ -213,3 +213,4 @@ LIBAPI void SRIN::Framework::HeadlessApplicationBase::ApplicationControl(app_con
 	OnReceiveAppControlMessage(app_control);
 	Exit();
 }
+

@@ -57,7 +57,7 @@ LIBAPI void StackingControllerManager::NavigateTo(const char* controllerName, vo
 	if (factory != nullptr)
 	{
 		ControllerBase* newInstance = factory->factoryMethod(this);
-
+		this->chain->instance->Leave();
 		PushController(newInstance);
 		app->Attach(newInstance->View);
 		newInstance->Load(data);

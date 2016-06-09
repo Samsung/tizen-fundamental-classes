@@ -315,6 +315,9 @@ protected:
 	 * 		 passed onto this controller.
 	 */
 	virtual void OnReload(void* data);
+
+
+	virtual void OnLeaving();
 public:
 	/**
 	 * The standard constructor for ControllerBase class.
@@ -369,6 +372,10 @@ public:
 	 * @param data Parameter to pass to this controller
 	 */
 	void Reload(void* data);
+
+
+
+	void Leave();
 
 	/**
 	 * Destructor of ControllerBase instance
@@ -441,7 +448,8 @@ class StackingControllerManager: public ControllerManager
 private:
 	ControllerChain* chain;
 	IAttachable* const app;
-	void PushController(ControllerBase* controller);bool PopController();
+	void PushController(ControllerBase* controller);
+	bool PopController();
 public:
 	/**
 	 * Constructor of NAvigatingControllerManager
