@@ -25,11 +25,13 @@ namespace Components {
 	private:
 		Elm_Genlist_Item_Class* itemClass;
 	protected:
-		GenericListItemClassBase(CString styleName);
+		GenericListItemClassBase(CString styleName, bool defaultEventClick = true);
+		bool itemClickEnabled;
 	public:
 		void* operator()(GenericList* genlist, void* itemData);
 		operator Elm_Genlist_Item_Class*();
 		virtual ~GenericListItemClassBase();
+		bool IsItemClickEnabled();
 	};
 
 	template<class T>

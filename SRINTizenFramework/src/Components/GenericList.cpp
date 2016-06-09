@@ -33,10 +33,12 @@ void Genlist_ClickedEventHandler(void* data, Evas_Object* obj, void* eventData)
  * IMPLEMENTATION: GenericListItemClassBase
  * ================================================================================================================= */
 
-LIBAPI SRIN::Components::GenericListItemClassBase::GenericListItemClassBase(CString styleName)
+LIBAPI SRIN::Components::GenericListItemClassBase::GenericListItemClassBase(CString styleName, bool defaultEventClick)
 {
 	itemClass = elm_genlist_item_class_new();
 	itemClass->item_style = styleName;
+
+	this->itemClickEnabled = defaultEventClick;
 
 	// Callback redirect for get text function
 	itemClass->func.text_get = [] (void *data, Evas_Object *obj, const char *part) ->  char*
@@ -162,17 +164,27 @@ LIBAPI void SRIN::Components::GenericList::AppendItemToGenlist(Adapter::AdapterI
 		throw std::runtime_error("Invalid item class specified for generic list. Use GenericListItemClass type");
 
 	auto package = (*(itemClass))(this, data->data);
+
+	decltype(Genlist_ClickedEventHandler)* handlerPtr = nullptr;
+	void* eventPackage = nullptr;
+
+	if(itemClass->IsItemClickEnabled())
+	{
+		handlerPtr = &Genlist_ClickedEventHandler;
+		eventPackage = package;
+	}
+
 	if(realBottom != nullptr)
 	{
 		// BUG ON EFL: insert before dummy bottom will create UI render error if at some point dummy bottom is disabled
 		// so the workaround is to store the realbottom of the list, which is an item before dummy bottom, and insert
 		// after that item
-		realBottom = elm_genlist_item_insert_after(genlist, *(itemClass), (*(itemClass))(this, data->data), nullptr, realBottom, ELM_GENLIST_ITEM_NONE, Genlist_ClickedEventHandler, package);
+		realBottom = elm_genlist_item_insert_after(genlist, *(itemClass), (*(itemClass))(this, data->data), nullptr, realBottom, ELM_GENLIST_ITEM_NONE, handlerPtr, eventPackage);
 		data->objectItem = realBottom;
 	}
 	else
 	{
-		realBottom = elm_genlist_item_append(genlist, *(itemClass), package, nullptr, ELM_GENLIST_ITEM_NONE, Genlist_ClickedEventHandler, package);
+		realBottom = elm_genlist_item_append(genlist, *(itemClass), package, nullptr, ELM_GENLIST_ITEM_NONE, handlerPtr, eventPackage);
 		data->objectItem = realBottom;
 
 
@@ -180,8 +192,9 @@ LIBAPI void SRIN::Components::GenericList::AppendItemToGenlist(Adapter::AdapterI
 			dummyBottom = elm_genlist_item_append(genlist, dummyBottomItemClass, dummyBottomItemClass, nullptr, ELM_GENLIST_ITEM_NONE, nullptr, nullptr);
 	}
 
+
 	elm_object_item_signal_callback_add(realBottom, "*", "*", [] (void *data, Evas_Object *obj, const char *emission, const char *source) {
-			dlog_print(DLOG_DEBUG, LOG_TAG, "Signal SRIN %s, source %s", emission, source);
+			dlog_print(DLOG_DEBUG, "SRINFW-Signal", "Signal SRIN %s, source %s", emission, source);
 	}, nullptr);
 }
 
@@ -327,4 +340,8 @@ void SRIN::Components::GenericList::OnLongPressedInternal(
 
 		ItemLongClicked(data->genlist, data->data);
 	}
+}
+
+bool SRIN::Components::GenericListItemClassBase::IsItemClickEnabled() {
+	return this->IsItemClickEnabled();
 }
