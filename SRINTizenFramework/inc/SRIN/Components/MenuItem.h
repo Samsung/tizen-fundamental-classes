@@ -37,6 +37,7 @@ class LIBAPI MenuItem: public EventClass, public PropertyClass
 {
 private:
 	std::vector<MenuItem*> subMenus;
+	MenuItem* parentMenu;
 	void* itemData;
 	Elm_Object_Item* genlistItem;
 	bool expanded;
@@ -45,6 +46,9 @@ public:
 	void AddSubMenu(MenuItem* subMenu);
 	void RemoveSubMenu(int index);
 	const std::vector<MenuItem*>& GetSubMenus() const;
+
+	MenuItem* GetParentMenu() const;
+	void SetParentMenu(MenuItem* parentMenu);
 
 	Property<MenuItem, std::string>::Auto::ReadOnly Text;
 	Property<MenuItem, std::string>::Auto::ReadOnly MenuIcon;

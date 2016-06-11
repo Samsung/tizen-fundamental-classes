@@ -10,7 +10,7 @@
 using namespace SRIN::Components;
 
 MenuItem::MenuItem(std::string menuText, std::string menuIcon, void* itemData, CustomMenuStyle* customStyle) :
-	itemData(itemData), genlistItem(nullptr), expanded(false)
+	parentMenu(nullptr), itemData(itemData), genlistItem(nullptr), expanded(false)
 {
 	Text = menuText;
 	MenuIcon = menuIcon;
@@ -19,6 +19,7 @@ MenuItem::MenuItem(std::string menuText, std::string menuIcon, void* itemData, C
 
 void MenuItem::AddSubMenu(MenuItem* subMenu)
 {
+	subMenu->SetParentMenu(this);
 	subMenus.push_back(subMenu);
 }
 
@@ -35,4 +36,12 @@ const std::vector<MenuItem*>& MenuItem::GetSubMenus() const
 Elm_Object_Item* MenuItem::GetGenlistItem()
 {
 	return genlistItem;
+}
+
+MenuItem* MenuItem::GetParentMenu() const {
+	return parentMenu;
+}
+
+void MenuItem::SetParentMenu(MenuItem* parentMenu) {
+	this->parentMenu = parentMenu;
 }
