@@ -42,6 +42,7 @@ public:
 	virtual void Attach(ViewBase* view);
 	virtual void Detach();
 	void ToggleSidebar();
+	void ToggleSidebar(bool show);
 	virtual Evas_Object* GetTitleLeftButton(CString* buttonPart);
 	virtual Evas_Object* GetTitleRightButton(CString* buttonPart);
 	virtual CString GetContentStyle();

@@ -130,6 +130,11 @@ void SRIN::Components::SidebarView::ToggleSidebar()
 		elm_panel_toggle(leftPanel);
 }
 
+void SRIN::Components::SidebarView::ToggleSidebar(bool show)
+{
+	elm_panel_hidden_set(leftPanel, (show ? EINA_FALSE : EINA_TRUE));
+}
+
 LIBAPI Eina_Bool SRIN::Components::SidebarView::IsDrawerOpened()
 {
 	return !(elm_panel_hidden_get(leftPanel));
