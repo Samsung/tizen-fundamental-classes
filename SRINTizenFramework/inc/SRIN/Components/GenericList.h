@@ -96,6 +96,9 @@ namespace Components {
 		void OnItemAdd(Event<Adapter*, Adapter::AdapterItem*>* event, Adapter* adapter, Adapter::AdapterItem* data);
 		void OnItemRemove(Event<Adapter*, Adapter::AdapterItem*>* event, Adapter* adapter, Adapter::AdapterItem* data);
 
+		ElementaryEvent onScrolledInternal;
+		ElementaryEvent onScrolledDownInternal;
+		ElementaryEvent onScrolledUpInternal;
 		ElementaryEvent onScrolledBottomInternal;
 		ElementaryEvent onScrolledTopInternal;
 		ElementaryEvent onDummyRealized;
@@ -105,6 +108,9 @@ namespace Components {
 		ElementaryEvent onLongPressedInternal;
 		ObjectItemEdjeSignalEvent ItemSignalInternal;
 
+		void OnScrolledInternal(ElementaryEvent* event, Evas_Object* obj, void* eventData);
+		void OnScrolledDownInternal(ElementaryEvent* event, Evas_Object* obj, void* eventData);
+		void OnScrolledUpInternal(ElementaryEvent* event, Evas_Object* obj, void* eventData);
 		void OnScrolledBottomInternal(ElementaryEvent* event, Evas_Object* obj, void* eventData);
 		void OnScrolledTopInternal(ElementaryEvent* event, Evas_Object* obj, void* eventData);
 		void OnDummyRealized(ElementaryEvent* event, Evas_Object* obj, void* eventData);
@@ -120,6 +126,9 @@ namespace Components {
 		Property<GenericList, Adapter*>::GetSet<&GenericList::GetDataSource, &GenericList::SetDataSource> DataSource;
 		Property<GenericList, bool>::GetSet<&GenericList::GetOverscroll, &GenericList::SetOverscroll> Overscroll;
 		Property<GenericList, bool>::GetSet<&GenericList::GetLongClicked, &GenericList::SetLongClicked> IsLongClicked;
+		Event<GenericList*, void*> Scrolled;
+		Event<GenericList*, void*> ScrolledDown;
+		Event<GenericList*, void*> ScrolledUp;
 		Event<GenericList*, void*> ScrolledBottom;
 		Event<GenericList*, void*> ScrolledTop;
 		Event<GenericList*, void*> ReachingBottom;

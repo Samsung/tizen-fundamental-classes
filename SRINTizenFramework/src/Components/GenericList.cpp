@@ -89,6 +89,9 @@ LIBAPI SRIN::Components::GenericListItemClassBase::~GenericListItemClassBase()
 LIBAPI SRIN::Components::GenericList::GenericList() :
 	dataSource(nullptr), genlist(nullptr), realBottom(nullptr), DataSource(this), Overscroll(this), overscroll(false), IsLongClicked(this)
 {
+	onScrolledInternal += { this, &GenericList::OnScrolledInternal };
+	onScrolledDownInternal += { this, &GenericList::OnScrolledDownInternal };
+	onScrolledUpInternal += { this, &GenericList::OnScrolledUpInternal };
 	onScrolledBottomInternal += { this, &GenericList::OnScrolledBottomInternal };
 	onScrolledTopInternal += { this, &GenericList::OnScrolledTopInternal };
 	onLongPressedInternal += { this, &GenericList::OnLongPressedInternal };
@@ -233,6 +236,9 @@ LIBAPI void SRIN::Components::GenericList::OnItemRemove(Event<Adapter*, Adapter:
 LIBAPI Evas_Object* SRIN::Components::GenericList::CreateComponent(Evas_Object* root)
 {
 	genlist = elm_genlist_add(root);
+	evas_object_smart_callback_add(genlist, "scroll", SmartEventHandler, &onScrolledInternal);
+	evas_object_smart_callback_add(genlist, "scroll,down", SmartEventHandler, &onScrolledDownInternal);
+	evas_object_smart_callback_add(genlist, "scroll,up", SmartEventHandler, &onScrolledUpInternal);
 	evas_object_smart_callback_add(genlist, "edge,top", SmartEventHandler, &onScrolledTopInternal);
 	evas_object_smart_callback_add(genlist, "edge,bottom", SmartEventHandler, &onScrolledBottomInternal);
 	evas_object_smart_callback_add(genlist, "realized", SmartEventHandler, &onDummyRealized);
@@ -248,6 +254,21 @@ LIBAPI Evas_Object* SRIN::Components::GenericList::CreateComponent(Evas_Object* 
 LIBAPI SRIN::Components::Adapter* SRIN::Components::GenericList::GetDataSource()
 {
 	return dataSource;
+}
+
+void SRIN::Components::GenericList::OnScrolledInternal(ElementaryEvent* event, Evas_Object* obj, void* eventData)
+{
+	Scrolled(this, eventData);
+}
+
+void SRIN::Components::GenericList::OnScrolledDownInternal(ElementaryEvent* event, Evas_Object* obj, void* eventData)
+{
+	ScrolledDown(this, eventData);
+}
+
+void SRIN::Components::GenericList::OnScrolledUpInternal(ElementaryEvent* event, Evas_Object* obj, void* eventData)
+{
+	ScrolledUp(this, eventData);
 }
 
 void SRIN::Components::GenericList::OnScrolledBottomInternal(ElementaryEvent* event, Evas_Object* obj, void* eventData)
