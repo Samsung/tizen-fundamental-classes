@@ -87,7 +87,7 @@ LIBAPI SRIN::Components::GenericListItemClassBase::~GenericListItemClassBase()
  * ================================================================================================================= */
 
 LIBAPI SRIN::Components::GenericList::GenericList() :
-	dataSource(nullptr), genlist(nullptr), realBottom(nullptr), DataSource(this), Overscroll(this), overscroll(false), IsLongClicked(this)
+	dataSource(nullptr), genlist(nullptr), realBottom(nullptr), DataSource(this), Overscroll(this), overscroll(false), IsLongClicked(this), BackToTopThreshold(this)
 {
 	onScrolledInternal += { this, &GenericList::OnScrolledInternal };
 	onScrolledDownInternal += { this, &GenericList::OnScrolledDownInternal };
@@ -102,6 +102,8 @@ LIBAPI SRIN::Components::GenericList::GenericList() :
 
 	isScrolling = false;
 	longpressed = false;
+	backToTopThreshold = -1;
+	backToTopShown = false;
 
 	dummyBottom = nullptr;
 	dummyBottomItemClass = elm_genlist_item_class_new();
@@ -258,6 +260,17 @@ LIBAPI SRIN::Components::Adapter* SRIN::Components::GenericList::GetDataSource()
 
 void SRIN::Components::GenericList::OnScrolledInternal(ElementaryEvent* event, Evas_Object* obj, void* eventData)
 {
+	int x, y, w, h;
+	elm_scroller_region_get(genlist, &x, &y, &w, &h);
+	if (backToTopThreshold < 0) {
+		evas_object_geometry_get(genlist, nullptr, nullptr, nullptr, &backToTopThreshold);
+	}
+
+	bool show = (y > backToTopThreshold);
+	if (backToTopShown != show) {
+		backToTopShown = show;
+		ShowBackToTop(this, &backToTopShown);
+	}
 	Scrolled(this, eventData);
 }
 

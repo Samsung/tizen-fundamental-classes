@@ -82,6 +82,8 @@ namespace Components {
 		bool overscroll;
 		bool longpressed;
 		bool isScrolling;
+		int backToTopThreshold;
+		bool backToTopShown;
 
 		void SetDataSource(Adapter* adapter);
 		Adapter* GetDataSource();
@@ -91,6 +93,9 @@ namespace Components {
 
 		void SetLongClicked(bool const& o);
 		bool GetLongClicked();
+
+		void SetBackToTopThreshold(int const& o);
+		int GetBackToTopThreshold();
 
 		void AppendItemToGenlist(Adapter::AdapterItem* data);
 		void OnItemAdd(Event<Adapter*, Adapter::AdapterItem*>* event, Adapter* adapter, Adapter::AdapterItem* data);
@@ -126,6 +131,7 @@ namespace Components {
 		Property<GenericList, Adapter*>::GetSet<&GenericList::GetDataSource, &GenericList::SetDataSource> DataSource;
 		Property<GenericList, bool>::GetSet<&GenericList::GetOverscroll, &GenericList::SetOverscroll> Overscroll;
 		Property<GenericList, bool>::GetSet<&GenericList::GetLongClicked, &GenericList::SetLongClicked> IsLongClicked;
+		Property<GenericList, int>::GetSet<&GenericList::GetBackToTopThreshold, &GenericList::SetBackToTopThreshold> BackToTopThreshold;
 		Event<GenericList*, void*> Scrolled;
 		Event<GenericList*, void*> ScrolledDown;
 		Event<GenericList*, void*> ScrolledUp;
@@ -136,6 +142,7 @@ namespace Components {
 		Event<GenericList*, void*> ItemLongClicked;
 		Event<GenericList*, void*> ScrollingStart;
 		Event<GenericList*, void*> ScrollingEnd;
+		Event<GenericList*, bool*> ShowBackToTop;
 		Event<Adapter::AdapterItem*, EdjeSignalInfo> ItemSignal;
 
 	};
