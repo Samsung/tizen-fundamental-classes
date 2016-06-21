@@ -421,19 +421,22 @@ public:
 /**
  * Class that manages Controller and provides navigation mechanism between loaded controllers
  */
-class LIBAPI ControllerManager
+class LIBAPI ControllerManager : public PropertyClass
 {
 private:
 	Eina_Hash* controllerTable;
 protected:
 	ControllerFactory* GetControllerFactoryEntry(const char* controllerName);
+	virtual ControllerBase* GetCurrentController() = 0;
 public:
+
 	ControllerManager();
 	virtual bool NavigateBack() = 0;
 	virtual void NavigateTo(const char* controllerName, void* data) = 0;
 	virtual void NavigateTo(const char* controllerName, void* data, bool noTrail) = 0;
 
 	Event<ControllerManager*, ControllerBase*> NavigationProcessed;
+	Property<ControllerManager, ControllerBase*>::Get<&ControllerManager::GetCurrentController> CurrentController;
 
 	/**
 	 * Method to register ControllerFactory to this manager so this manager can recognize
@@ -450,6 +453,8 @@ private:
 	IAttachable* const app;
 	void PushController(ControllerBase* controller);
 	bool PopController();
+protected:
+	virtual ControllerBase* GetCurrentController();
 public:
 	/**
 	 * Constructor of NAvigatingControllerManager
@@ -468,6 +473,9 @@ class SwitchingControllerManager: public ControllerManager
 private:
 	IAttachable* const iattachable;
 	ControllerBase* GetController(CString controllerName);
+	ControllerBase* currentController;
+protected:
+	virtual ControllerBase* GetCurrentController();
 public:
 	SwitchingControllerManager(IAttachable* iattachable);
 	//void SwitchTo(CString controllerName);
@@ -475,8 +483,6 @@ public:
 	virtual void NavigateTo(const char* controllerName, void* data);
 	virtual void NavigateTo(const char* controllerName, void* data, bool noTrail);
 	virtual bool NavigateBack();
-
-	SimpleReadOnlyProperty<SwitchingControllerManager, ControllerBase*> CurrentController;
 };
 
 class LIBAPI MVCApplicationBase: public UIApplicationBase, public StackingControllerManager

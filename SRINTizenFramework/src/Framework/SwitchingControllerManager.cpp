@@ -38,10 +38,15 @@ void SwitchingControllerManager::NavigateTo(const char* controllerName, void* da
 	iattachable->Attach(controllerToSwitch->View);
 	controllerToSwitch->Load(data);
 
-	CurrentController = controllerToSwitch;
+	currentController = controllerToSwitch;
 }
 
 bool SwitchingControllerManager::NavigateBack()
 {
 	return true;
+}
+
+
+LIBAPI ControllerBase* SRIN::Framework::SwitchingControllerManager::GetCurrentController() {
+	return this->currentController;
 }

@@ -15,7 +15,8 @@ void ControllerManager_FreeFactory(void* data)
 	delete factory;
 }
 
-SRIN::Framework::ControllerManager::ControllerManager()
+SRIN::Framework::ControllerManager::ControllerManager() :
+	CurrentController(this)
 {
 	this->controllerTable = eina_hash_string_superfast_new(ControllerManager_FreeFactory);
 }
@@ -123,5 +124,9 @@ LIBAPI ControllerFactory::ControllerFactory(CString controllerName, ControllerFa
 	controllerName(controllerName), factoryMethod(factory)
 {
 	attachedData = nullptr;
+}
+
+LIBAPI ControllerBase* SRIN::Framework::StackingControllerManager::GetCurrentController() {
+	return this->chain->instance;
 }
 
