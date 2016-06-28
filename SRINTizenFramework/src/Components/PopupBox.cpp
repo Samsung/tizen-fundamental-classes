@@ -64,14 +64,8 @@ LIBAPI SRIN::Components::PopupBox::PopupBox() : Message(this), Title(this), Orie
 
 LIBAPI void SRIN::Components::PopupBox::Show() {
 	this->popup = elm_popup_add(root);
-<<<<<<< Upstream, based on devel/core/v0.2
-
-	dlog_print(DLOG_DEBUG, LOG_TAG, "this ptr @ popupbox %d", this);
-
 	BackButtonHandler::Acquire();
-	elm_object_part_text_set(this->popup, "title,text", this->title.c_str());
-=======
->>>>>>> f20c158 change title handling in popupbox.
+
 	elm_popup_orient_set(this->popup, this->orientation);
 	this->popupLayout = CreateContent(this->root);
 
@@ -149,6 +143,7 @@ LIBAPI void SRIN::Components::PopupBox::Show() {
 	}
 
 	evas_object_show(this->popup);
+	eventPopupShown(this, nullptr);
 
 }
 
@@ -157,6 +152,8 @@ LIBAPI void SRIN::Components::PopupBox::Dismiss() {
 	this->popup = nullptr;
 	this->popupLayout = nullptr;
 	BackButtonHandler::Release();
+	eventPopupDismissed(this, nullptr);
+
 }
 
 void SRIN::Components::PopupBox::SetOrientation(const Elm_Popup_Orient& orientation) {

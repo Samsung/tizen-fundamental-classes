@@ -44,6 +44,8 @@ namespace SRIN {
 			Property<PopupBox, Elm_Popup_Orient&>::GetSet<&PopupBox::GetOrientation, &PopupBox::SetOrientation> Orientation;
 
 			ElementaryEvent buttonOneClick, buttonTwoClick, buttonThreeClick;
+			Event<PopupBox*, void*> eventPopupShown, eventPopupDismissed;
+
 
 			std::string buttonOneText, buttonTwoText, buttonThreeText;
 			std::string buttonOneImage, buttonTwoImage, buttonThreeImage;
