@@ -159,3 +159,8 @@ void SRIN::Components::Field::SetKeyboardType(
 		const Elm_Input_Panel_Layout& type) {
 	elm_entry_input_panel_layout_set(field, type);
 }
+
+LIBAPI void SRIN::Components::Field::SetAsPasswordField()
+{
+	elm_entry_password_set(field, EINA_TRUE);
+}

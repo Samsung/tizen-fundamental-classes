@@ -36,6 +36,7 @@ public:
 	void SetFontStyle(const CString& style);
 	void SetReturnKeyType(const Elm_Input_Panel_Return_Key_Type& type);
 	void SetKeyboardType(const Elm_Input_Panel_Layout& type);
+	void SetAsPasswordField();
 
 	ElementaryEvent onReturnKeyClick;
 	ElementaryEvent onTextChanged;
