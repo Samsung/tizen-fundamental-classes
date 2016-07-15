@@ -214,12 +214,12 @@ DispatchAsyncBuilder<typename function_traits<Lambda>::result_type> operator>>(L
 
 bool IsAborting();
 
-#define s_async AsyncBuilder() &
-#define s_async_priority PriorityBuilder() &
-#define s_await AwaitBuilder() &
-#define s_abort_return if(IsAborting()) return
-#define s_abort_async AbortBuilderNoBlock() &
-#define s_abort_await AbortBuilder() &
+#define s_async SRIN::AsyncBuilder() &
+#define s_async_priority SRIN::PriorityBuilder() &
+#define s_await SRIN::AwaitBuilder() &
+#define s_abort_return if(SRIN::IsAborting()) return
+#define s_abort_async SRIN::AbortBuilderNoBlock() &
+#define s_abort_await SRIN::AbortBuilder() &
 
 
 
