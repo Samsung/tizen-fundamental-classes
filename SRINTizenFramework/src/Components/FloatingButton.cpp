@@ -63,3 +63,14 @@ LIBAPI Evas_Object* FloatingButton::CreateComponent(Evas_Object* root)
 
 	return floatingButton;
 }
+
+LIBAPI void FloatingButton::SetWhiteBackground()
+{
+	elm_object_style_set(floatingButton, "white_bg");
+}
+
+LIBAPI void FloatingButton::SetButtonStyle(bool left, const std::string& style)
+{
+	auto button = (left) ? buttonLeft : buttonRight;
+	elm_object_style_set(button, style.c_str());
+}

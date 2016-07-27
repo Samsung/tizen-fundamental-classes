@@ -16,8 +16,8 @@ namespace SRIN {
 		private:
 			Evas_Object* naviframe;
 			Evas_Object* floatingButton;
-			Evas_Object* buttonLeft;
 			Evas_Object* buttonRight;
+			Evas_Object* buttonLeft;
 		protected:
 			virtual Evas_Object* CreateComponent(Evas_Object* root) final;
 		public:
@@ -26,6 +26,8 @@ namespace SRIN {
 			ElementaryEvent eventButtonLeftClick, eventButtonRightClick;
 			bool doubleButton;
 			bool movementBlock;
+			void SetWhiteBackground();
+			void SetButtonStyle(bool left, const std::string& style);
 		};
 	}
 }
