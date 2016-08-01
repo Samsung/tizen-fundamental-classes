@@ -110,11 +110,21 @@ LIBAPI SRIN::Components::GenericList::GenericList() :
 	dummyBottomItemClass->item_style = "full";
 	dummyBottomItemClass->func.content_get = [] (void *data, Evas_Object *obj, const char *part) -> Evas_Object*
 	{
+		GenericList* genlist = (GenericList*)data;
+		Evas_Object* content = nullptr;
+
+		genlist->DummyBottomContent(genlist, &content);
+
+		if(content != nullptr)
+			return content;
+
 		auto dummyBox = elm_bg_add(obj);
 		evas_object_color_set(dummyBox, 0, 0, 0, 0);
 		evas_object_size_hint_weight_set(dummyBox, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
 		evas_object_size_hint_align_set(dummyBox, EVAS_HINT_FILL, EVAS_HINT_FILL);
 		evas_object_size_hint_min_set(dummyBox, 0, 50);
+
+
 		return dummyBox;
 	};
 }
@@ -156,7 +166,6 @@ LIBAPI void SRIN::Components::GenericList::SetDataSource(Adapter* newAdapter)
 	{
 		AppendItemToGenlist(&item);
 	}
-
 	// Attach to event
 	dataSource->OnItemAdd += { this, &GenericList::OnItemAdd };
 	dataSource->OnItemRemove += { this, &GenericList::OnItemRemove };
@@ -194,7 +203,7 @@ LIBAPI void SRIN::Components::GenericList::AppendItemToGenlist(Adapter::AdapterI
 
 
 		if(overscroll && !dummyBottom) // Create dummy item if overscroll enabled
-			dummyBottom = elm_genlist_item_append(genlist, dummyBottomItemClass, dummyBottomItemClass, nullptr, ELM_GENLIST_ITEM_NONE, nullptr, nullptr);
+			dummyBottom = elm_genlist_item_append(genlist, dummyBottomItemClass, this, nullptr, ELM_GENLIST_ITEM_NONE, nullptr, nullptr);
 	}
 
 

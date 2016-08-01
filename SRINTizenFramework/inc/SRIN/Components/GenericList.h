@@ -143,6 +143,7 @@ namespace Components {
 		Event<GenericList*, void*> ScrollingStart;
 		Event<GenericList*, void*> ScrollingEnd;
 		Event<GenericList*, bool*> ShowBackToTop;
+		Event<GenericList*, Evas_Object**> DummyBottomContent;
 		Event<Adapter::AdapterItem*, EdjeSignalInfo> ItemSignal;
 
 	};

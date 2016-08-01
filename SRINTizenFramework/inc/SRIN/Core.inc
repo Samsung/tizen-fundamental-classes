@@ -24,7 +24,7 @@ inline Event<ObjectSourceType, EventDataType>::~Event()
 {
 	if(logDelete)
 		dlog_print(DLOG_DEBUG, "SRINFW-Event", "Event deleted %d", this);
-	/*
+	
 	auto current = this->first;
 		
 	while(current != nullptr)
@@ -33,7 +33,7 @@ inline Event<ObjectSourceType, EventDataType>::~Event()
 		current = current->next;
 		delete deleted;
 	}
-	*/
+	
 }
 
 
