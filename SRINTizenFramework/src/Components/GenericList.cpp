@@ -325,7 +325,7 @@ void SRIN::Components::GenericList::SetOverscroll(const bool& o)
 	if(overscroll)
 	{
 		if(!dummyBottom && dataSource && dataSource->GetCount() != 0)
-			dummyBottom = elm_genlist_item_append(genlist, dummyBottomItemClass, dummyBottomItemClass, nullptr, ELM_GENLIST_ITEM_NONE, nullptr, nullptr);
+			dummyBottom = elm_genlist_item_append(genlist, dummyBottomItemClass, this, nullptr, ELM_GENLIST_ITEM_NONE, nullptr, nullptr);
 	}
 	else
 	{
