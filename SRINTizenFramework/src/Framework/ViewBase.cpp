@@ -21,10 +21,6 @@ LIBAPI Evas_Object* ViewBase::Create(Evas_Object* root)
 	return viewRoot;
 }
 
-LIBAPI CString ViewBase::GetStyle()
-{
-	return nullptr;
-}
 
 LIBAPI bool ViewBase::IsCreated()
 {

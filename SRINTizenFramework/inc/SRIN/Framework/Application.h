@@ -527,7 +527,7 @@ protected:
 public:
 	ViewBase();
 	virtual Evas_Object* Create(Evas_Object* root);
-	virtual CString GetStyle();bool IsCreated();
+	bool IsCreated();
 	Evas_Object* GetViewRoot();
 	virtual ~ViewBase();
 
