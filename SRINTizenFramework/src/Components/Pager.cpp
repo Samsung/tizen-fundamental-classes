@@ -19,8 +19,8 @@ LIBAPI Evas_Object* SRIN::Components::Pager::CreateComponent(Evas_Object* root)
 
 	evas_object_size_hint_weight_set(this->pagerTop, EVAS_HINT_EXPAND, 0);
 	evas_object_size_hint_align_set(this->pagerTop, EVAS_HINT_FILL, EVAS_HINT_FILL);
-	elm_object_signal_callback_add(this->pagerTop, "elm,action,click,next", "", SignalEventHandler, &clickSignalEvent);
-	elm_object_signal_callback_add(this->pagerTop, "elm,action,click,prev", "", SignalEventHandler, &clickSignalEvent);
+	elm_object_signal_callback_add(this->pagerTop, "elm,action,click,next", "", EFL::EdjeSignalEventHandler, &eventClickSignal);
+	elm_object_signal_callback_add(this->pagerTop, "elm,action,click,prev", "", EFL::EdjeSignalEventHandler, &eventClickSignal);
 	evas_object_show(this->pagerTop);
 
 	elm_box_pack_start(this->pagerBox, this->pagerTop);
@@ -32,8 +32,8 @@ LIBAPI Evas_Object* SRIN::Components::Pager::CreateComponent(Evas_Object* root)
 
 	evas_object_size_hint_weight_set(this->pagerBottom, EVAS_HINT_EXPAND, 0);
 	evas_object_size_hint_align_set(this->pagerBottom, EVAS_HINT_FILL, EVAS_HINT_FILL);
-	elm_object_signal_callback_add(this->pagerBottom, "elm,action,click,next", "", SignalEventHandler, &clickSignalEvent);
-	elm_object_signal_callback_add(this->pagerBottom, "elm,action,click,prev", "", SignalEventHandler, &clickSignalEvent);
+	elm_object_signal_callback_add(this->pagerBottom, "elm,action,click,next", "", EFL::EdjeSignalEventHandler, &eventClickSignal);
+	elm_object_signal_callback_add(this->pagerBottom, "elm,action,click,prev", "", EFL::EdjeSignalEventHandler, &eventClickSignal);
 	evas_object_show(this->pagerBottom);
 
 	elm_box_pack_end(this->pagerBox, this->pagerBottom);
@@ -86,7 +86,7 @@ LIBAPI Evas_Object* SRIN::Components::Pager::CreateComponent(Evas_Object* root)
 		elm_object_signal_emit(this->pagerTop, "disable_prev_noalign", "srin");
 		elm_object_signal_emit(this->pagerBottom, "disable_prev_noalign", "srin");
 
-		Navigate(this, 1);
+		eventNavigate(this, 1);
 	}
 	else
 	{
@@ -95,7 +95,7 @@ LIBAPI Evas_Object* SRIN::Components::Pager::CreateComponent(Evas_Object* root)
 		elm_object_part_text_set(this->pagerTop, "page_info", this->UnderflowString->c_str());
 		elm_object_part_text_set(this->pagerBottom, "page_info", this->UnderflowString->c_str());
 		this->CurrentIndex = 0;
-		Underflow(this, nullptr);
+		eventUnderflow(this, nullptr);
 	}
 
 	return this->pagerBox;
@@ -113,10 +113,10 @@ LIBAPI SRIN::Components::Pager::Pager()
 	this->UnderflowEnable = true;
 	this->OverflowEnable = true;
 
-	this->clickSignalEvent += { this, &Pager::OnClickSignal };
+	this->eventClickSignal += AddEventHandler(Pager::OnClickSignal);
 }
 
-void SRIN::Components::Pager::OnClickSignal(EdjeSignalEvent* event, Evas_Object* source, EdjeSignalInfo signalInfo)
+void SRIN::Components::Pager::OnClickSignal(EFL::EdjeSignalEvent* event, Evas_Object* source, EFL::EdjeSignalInfo signalInfo)
 {
 	dlog_print(DLOG_DEBUG, LOG_TAG, "Pager event! %s", signalInfo.emission);
 
@@ -154,17 +154,17 @@ void SRIN::Components::Pager::NextPage()
 			elm_object_signal_emit(this->pagerBottom, "disable_next", "srin");
 			elm_object_part_text_set(this->pagerTop, "page_info", this->OverflowString->c_str());
 			elm_object_part_text_set(this->pagerBottom, "page_info", this->OverflowString->c_str());
-			Overflow(this, nullptr);
+			eventOverflow(this, nullptr);
 		}
 		else if(currentIndex == maxIndex - 1 && !this->OverflowEnable)
 		{
 			// This is entering end of page
 			elm_object_signal_emit(this->pagerTop, "disable_next_noalign", "srin");
 			elm_object_signal_emit(this->pagerBottom, "disable_next_noalign", "srin");
-			Navigate(this, currentIndex + 1);
+			eventNavigate(this, currentIndex + 1);
 		}
 		else
-			Navigate(this, currentIndex + 1);
+			eventNavigate(this, currentIndex + 1);
 		this->CurrentIndex = currentIndex + 1;
 	}
 }
@@ -193,17 +193,17 @@ void SRIN::Components::Pager::PrevPage()
 			elm_object_signal_emit(this->pagerBottom, "disable_prev", "srin");
 			elm_object_part_text_set(this->pagerTop, "page_info", this->UnderflowString->c_str());
 			elm_object_part_text_set(this->pagerBottom, "page_info", this->UnderflowString->c_str());
-			Underflow(this, nullptr);
+			eventUnderflow(this, nullptr);
 		}
 		else if(currentIndex == 2 && !this->UnderflowEnable)
 		{
 			// This is entering end of page
 			elm_object_signal_emit(this->pagerTop, "disable_prev_noalign", "srin");
 			elm_object_signal_emit(this->pagerBottom, "disable_prev_noalign", "srin");
-			Navigate(this, currentIndex - 1);
+			eventNavigate(this, currentIndex - 1);
 		}
 		else
-			Navigate(this, currentIndex - 1);
+			eventNavigate(this, currentIndex - 1);
 
 
 		this->CurrentIndex = currentIndex - 1;

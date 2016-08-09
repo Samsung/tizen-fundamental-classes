@@ -234,16 +234,16 @@ Evas_Object* TreeMenu::CreateComponent(Evas_Object* root)
 	elm_genlist_mode_set(genlist, ELM_LIST_COMPRESS);
 	elm_genlist_homogeneous_set(genlist, EINA_TRUE);
 
-	evas_object_smart_callback_add(genlist, "scroll", SmartEventHandler, &OnMenuScrollInternal);
+	evas_object_smart_callback_add(genlist, "scroll", EFL::EvasSmartEventHandler, &eventMenuScrollInternal);
 
-	evas_object_smart_callback_add(genlist, "pressed", SmartEventHandler, &OnMenuPressedInternal);
-	evas_object_smart_callback_add(genlist, "released", SmartEventHandler, &OnMenuReleasedInternal);
+	evas_object_smart_callback_add(genlist, "pressed", EFL::EvasSmartEventHandler, &eventMenuPressedInternal);
+	evas_object_smart_callback_add(genlist, "released", EFL::EvasSmartEventHandler, &eventMenuReleasedInternal);
 
-	evas_object_smart_callback_add(genlist, "selected", SmartEventHandler, &OnMenuSelectedInternal);
-	evas_object_smart_callback_add(genlist, "unselected", SmartEventHandler, &OnMenuUnselectedInternal);
+	evas_object_smart_callback_add(genlist, "selected", EFL::EvasSmartEventHandler, &eventMenuSelectedInternal);
+	evas_object_smart_callback_add(genlist, "unselected", EFL::EvasSmartEventHandler, &eventMenuUnselectedInternal);
 
-	evas_object_smart_callback_add(genlist, "expanded", SmartEventHandler, &OnMenuExpanded);
-	evas_object_smart_callback_add(genlist, "contracted", SmartEventHandler, &OnMenuContracted);
+	evas_object_smart_callback_add(genlist, "expanded", EFL::EvasSmartEventHandler, &eventMenuExpanded);
+	evas_object_smart_callback_add(genlist, "contracted", EFL::EvasSmartEventHandler, &eventMenuContracted);
 
 	GenerateRootMenu();
 
@@ -263,16 +263,16 @@ TreeMenu::TreeMenu() :
 	AutoExpanded(this), autoExpand(false)
 
 {
-	OnMenuScrollInternal +=  { this, &TreeMenu::MenuScrollInternal };
+	eventMenuScrollInternal +=  AddEventHandler(TreeMenu::MenuScrollInternal);
 
-	OnMenuPressedInternal +=  { this, &TreeMenu::MenuPressedInternal };
-	OnMenuReleasedInternal += { this, &TreeMenu::MenuReleasedInternal };
+	eventMenuPressedInternal +=  AddEventHandler(TreeMenu::MenuPressedInternal);
+	eventMenuReleasedInternal += AddEventHandler(TreeMenu::MenuReleasedInternal);
 
-	OnMenuSelectedInternal +=  { this, &TreeMenu::MenuSelectedInternal };
-	OnMenuUnselectedInternal += { this, &TreeMenu::MenuUnselectedInternal };
+	eventMenuSelectedInternal +=  AddEventHandler(TreeMenu::MenuSelectedInternal);
+	eventMenuUnselectedInternal += AddEventHandler(TreeMenu::MenuUnselectedInternal);
 
-	OnMenuExpanded += { this, &TreeMenu::MenuExpanded };
-	OnMenuContracted += { this, &TreeMenu::MenuContracted };
+	eventMenuExpanded += AddEventHandler(TreeMenu::MenuExpanded);
+	eventMenuContracted += AddEventHandler(TreeMenu::MenuContracted);
 
 	isClickPersist = true;
 	isScrolled = false;

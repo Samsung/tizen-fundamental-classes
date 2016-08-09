@@ -33,7 +33,7 @@ LIBAPI Evas_Object* FloatingButton::CreateComponent(Evas_Object* root)
 
 	buttonLeft = elm_button_add(floatingButton);
 	elm_object_part_content_set(floatingButton, "button1", buttonLeft);
-	evas_object_smart_callback_add(buttonLeft, "clicked", &SmartEventHandler, &eventButtonLeftClick);
+	evas_object_smart_callback_add(buttonLeft, "clicked", &EFL::EvasSmartEventHandler, &eventButtonLeftClick);
 
 	if (buttonLeftImage.size() > 0) {
 		auto image = elm_image_add(floatingButton);
@@ -45,7 +45,7 @@ LIBAPI Evas_Object* FloatingButton::CreateComponent(Evas_Object* root)
 	if (doubleButton) {
 		buttonRight = elm_button_add(floatingButton);
 		elm_object_part_content_set(floatingButton, "button2", buttonRight);
-		evas_object_smart_callback_add(buttonRight, "clicked", &SmartEventHandler, &eventButtonRightClick);
+		evas_object_smart_callback_add(buttonRight, "clicked", &EFL::EvasSmartEventHandler, &eventButtonRightClick);
 
 		if (buttonRightImage.size() > 0) {
 			auto image = elm_image_add(floatingButton);

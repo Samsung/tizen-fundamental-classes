@@ -14,6 +14,7 @@
 #warning "SRIN/ELMInterface.h header file is deprecated. Consider using SRIN/EFL.h with its new structures"
 
 #include "SRIN/Core.h"
+#include "SRIN/EFL.h"
 
 #include <Elementary.h>
 
@@ -28,7 +29,7 @@ struct EdjeSignalInfo
 	const char* source;
 };
 
-typedef Event<Evas_Object*, void*> ElementaryEvent;
+typedef SRIN::EFL::EvasSmartEvent ElementaryEvent;
 typedef Event<Evas_Object*, EdjeSignalInfo> EdjeSignalEvent;
 typedef Event<Elm_Object_Item*, EdjeSignalInfo> ObjectItemEdjeSignalEvent;
 

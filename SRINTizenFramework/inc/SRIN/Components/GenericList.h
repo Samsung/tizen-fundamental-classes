@@ -13,8 +13,6 @@
 
 #include <list>
 #include <unordered_map>
-#include "SRIN/Core.h"
-#include "SRIN/ELMInterface.h"
 
 namespace SRIN {
 namespace Components {
@@ -101,28 +99,28 @@ namespace Components {
 		void OnItemAdd(Event<Adapter*, Adapter::AdapterItem*>* event, Adapter* adapter, Adapter::AdapterItem* data);
 		void OnItemRemove(Event<Adapter*, Adapter::AdapterItem*>* event, Adapter* adapter, Adapter::AdapterItem* data);
 
-		ElementaryEvent onScrolledInternal;
-		ElementaryEvent onScrolledDownInternal;
-		ElementaryEvent onScrolledUpInternal;
-		ElementaryEvent onScrolledBottomInternal;
-		ElementaryEvent onScrolledTopInternal;
-		ElementaryEvent onDummyRealized;
-		ElementaryEvent onItemClickedInternal;
-		ElementaryEvent onScrollingStart;
-		ElementaryEvent onScrollingEnd;
-		ElementaryEvent onLongPressedInternal;
-		ObjectItemEdjeSignalEvent ItemSignalInternal;
+		EFL::EvasSmartEvent eventScrolledInternal;
+		EFL::EvasSmartEvent eventScrolledDownInternal;
+		EFL::EvasSmartEvent eventScrolledUpInternal;
+		EFL::EvasSmartEvent eventScrolledBottomInternal;
+		EFL::EvasSmartEvent eventScrolledTopInternal;
+		EFL::EvasSmartEvent eventDummyRealized;
+		EFL::EvasSmartEvent eventItemClickedInternal;
+		EFL::EvasSmartEvent eventScrollingStartInternal;
+		EFL::EvasSmartEvent eventScrollingEndInternal;
+		EFL::EvasSmartEvent eventLongPressedInternal;
+		EFL::ObjectItemEdjeSignalEvent eventItemSignalInternal;
 
-		void OnScrolledInternal(ElementaryEvent* event, Evas_Object* obj, void* eventData);
-		void OnScrolledDownInternal(ElementaryEvent* event, Evas_Object* obj, void* eventData);
-		void OnScrolledUpInternal(ElementaryEvent* event, Evas_Object* obj, void* eventData);
-		void OnScrolledBottomInternal(ElementaryEvent* event, Evas_Object* obj, void* eventData);
-		void OnScrolledTopInternal(ElementaryEvent* event, Evas_Object* obj, void* eventData);
-		void OnDummyRealized(ElementaryEvent* event, Evas_Object* obj, void* eventData);
-		void OnScrollingStart(ElementaryEvent* event, Evas_Object* obj, void* eventData);
-		void OnScrollingEnd(ElementaryEvent* event, Evas_Object* obj, void* eventData);
-		void OnLongPressedInternal(ElementaryEvent* event, Evas_Object* obj, void* eventData);
-		void OnItemSignalEmit(ObjectItemEdjeSignalEvent* event, Elm_Object_Item* obj, EdjeSignalInfo eventData);
+		void OnScrolledInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData);
+		void OnScrolledDownInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData);
+		void OnScrolledUpInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData);
+		void OnScrolledBottomInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData);
+		void OnScrolledTopInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData);
+		void OnDummyRealized(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData);
+		void OnScrollingStart(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData);
+		void OnScrollingEnd(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData);
+		void OnLongPressedInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData);
+		void OnItemSignalEmit(EFL::ObjectItemEdjeSignalEvent* event, Elm_Object_Item* obj, EFL::EdjeSignalInfo eventData);
 	protected:
 		virtual Evas_Object* CreateComponent(Evas_Object* root);
 	public:
@@ -132,19 +130,19 @@ namespace Components {
 		Property<GenericList, bool>::GetSet<&GenericList::GetOverscroll, &GenericList::SetOverscroll> Overscroll;
 		Property<GenericList, bool>::GetSet<&GenericList::GetLongClicked, &GenericList::SetLongClicked> IsLongClicked;
 		Property<GenericList, int>::GetSet<&GenericList::GetBackToTopThreshold, &GenericList::SetBackToTopThreshold> BackToTopThreshold;
-		Event<GenericList*, void*> Scrolled;
-		Event<GenericList*, void*> ScrolledDown;
-		Event<GenericList*, void*> ScrolledUp;
-		Event<GenericList*, void*> ScrolledBottom;
-		Event<GenericList*, void*> ScrolledTop;
-		Event<GenericList*, void*> ReachingBottom;
-		Event<GenericList*, void*> ItemClicked;
-		Event<GenericList*, void*> ItemLongClicked;
-		Event<GenericList*, void*> ScrollingStart;
-		Event<GenericList*, void*> ScrollingEnd;
-		Event<GenericList*, bool*> ShowBackToTop;
-		Event<GenericList*, Evas_Object**> DummyBottomContent;
-		Event<Adapter::AdapterItem*, EdjeSignalInfo> ItemSignal;
+		Event<GenericList*, void*> eventScrolled;
+		Event<GenericList*, void*> eventScrolledDown;
+		Event<GenericList*, void*> eventScrolledUp;
+		Event<GenericList*, void*> eventScrolledBottom;
+		Event<GenericList*, void*> eventScrolledTop;
+		Event<GenericList*, void*> eventReachingBottom;
+		Event<GenericList*, void*> eventItemClicked;
+		Event<GenericList*, void*> eventItemLongClicked;
+		Event<GenericList*, void*> eventScrollingStart;
+		Event<GenericList*, void*> eventScrollingEnd;
+		Event<GenericList*, bool*> eventShowBackToTop;
+		Event<GenericList*, Evas_Object**> eventDummyBottomContent;
+		Event<Adapter::AdapterItem*, EFL::EdjeSignalInfo> eventItemSignal;
 
 	};
 }

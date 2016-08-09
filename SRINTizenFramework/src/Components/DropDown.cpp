@@ -12,14 +12,14 @@
 using namespace SRIN::Components;
 
 typedef struct {
-	DropDown* adapter;
+	DropDown* dropdownRef;
 	Adapter::AdapterItem* item;
 } DropdownCallbackPackage;
 
 void DropdownAdapter_ClickCallback(void* data, Evas_Object* obj, void* eventInfo)
 {
 	DropdownCallbackPackage* package = static_cast<DropdownCallbackPackage*>(data);
-	package->adapter->ItemClick(package->item);
+	package->dropdownRef->ItemClick(package->item);
 }
 
 void DropdownAdapter_DeleteCallback(void* data, Evas_Object* obj, void* eventInfo)

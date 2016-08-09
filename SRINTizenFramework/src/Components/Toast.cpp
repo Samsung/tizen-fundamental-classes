@@ -10,13 +10,13 @@
 
 SRIN::Components::Toast toastObj;
 
-LIBAPI bool SRIN::Components::Toast::BackButtonPressed(ElementaryEvent* event, Evas_Object* objSource, void* eventData) {
+LIBAPI bool SRIN::Components::Toast::BackButtonPressed(EFL::EvasSmartEvent* event, Evas_Object* objSource, void* eventData) {
 	OnDismiss(event, objSource, eventData);
 	return false;
 }
 
 LIBAPI SRIN::Components::Toast::Toast() {
-	this->onDismiss += { this, &Toast::OnDismiss };
+	this->eventDismiss += AddEventHandler(Toast::OnDismiss);
 }
 
 
@@ -24,7 +24,7 @@ LIBAPI void SRIN::Components::Toast::Show(const std::string& message) {
 	Show(message, 2.0);
 }
 
-LIBAPI void SRIN::Components::Toast::OnDismiss(ElementaryEvent* event, Evas_Object* objSource, void* eventData)
+LIBAPI void SRIN::Components::Toast::OnDismiss(EFL::EvasSmartEvent* event, Evas_Object* objSource, void* eventData)
 {
 	evas_object_del(objSource);
 }
@@ -37,10 +37,10 @@ LIBAPI void SRIN::Components::Toast::Show(const std::string& message, double tim
 	if(message.size() > 0)
 		elm_object_text_set(popup, message.c_str());
 
-	evas_object_smart_callback_add(popup, "block,clicked", SmartEventHandler, &toastObj.onDismiss);
+	evas_object_smart_callback_add(popup, "block,clicked", EFL::EvasSmartEventHandler, &toastObj.eventDismiss);
 
 	elm_popup_timeout_set(popup, timeout);
-	evas_object_smart_callback_add(popup, "timeout", SmartEventHandler, &toastObj.onDismiss);
+	evas_object_smart_callback_add(popup, "timeout", EFL::EvasSmartEventHandler, &toastObj.eventDismiss);
 	evas_object_show(popup);
 }
 

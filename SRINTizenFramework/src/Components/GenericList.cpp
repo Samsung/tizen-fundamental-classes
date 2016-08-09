@@ -25,7 +25,7 @@ void Genlist_ClickedEventHandler(void* data, Evas_Object* obj, void* eventData)
 		package->genlist->IsLongClicked = false;
 		//package->genlist->ItemLongClicked(package->genlist, package->data);
 	} else {
-		package->genlist->ItemClicked(package->genlist, package->data);
+		package->genlist->eventItemClicked(package->genlist, package->data);
 	}
 }
 
@@ -89,16 +89,16 @@ LIBAPI SRIN::Components::GenericListItemClassBase::~GenericListItemClassBase()
 LIBAPI SRIN::Components::GenericList::GenericList() :
 	dataSource(nullptr), genlist(nullptr), realBottom(nullptr), DataSource(this), Overscroll(this), overscroll(false), IsLongClicked(this), BackToTopThreshold(this)
 {
-	onScrolledInternal += { this, &GenericList::OnScrolledInternal };
-	onScrolledDownInternal += { this, &GenericList::OnScrolledDownInternal };
-	onScrolledUpInternal += { this, &GenericList::OnScrolledUpInternal };
-	onScrolledBottomInternal += { this, &GenericList::OnScrolledBottomInternal };
-	onScrolledTopInternal += { this, &GenericList::OnScrolledTopInternal };
-	onLongPressedInternal += { this, &GenericList::OnLongPressedInternal };
-	onDummyRealized += { this, &GenericList::OnDummyRealized };
-	onScrollingStart += { this, &GenericList::OnScrollingStart };
-	onScrollingEnd += { this, &GenericList::OnScrollingEnd };
-	ItemSignalInternal += { this, &GenericList::OnItemSignalEmit };
+	eventScrolledInternal += AddEventHandler(GenericList::OnScrolledInternal);
+	eventScrolledDownInternal += AddEventHandler(GenericList::OnScrolledDownInternal);
+	eventScrolledUpInternal += AddEventHandler(GenericList::OnScrolledUpInternal);
+	eventScrolledBottomInternal += AddEventHandler(GenericList::OnScrolledBottomInternal);
+	eventScrolledTopInternal += AddEventHandler(GenericList::OnScrolledTopInternal);
+	eventLongPressedInternal += AddEventHandler(GenericList::OnLongPressedInternal);
+	eventDummyRealized += AddEventHandler(GenericList::OnDummyRealized);
+	eventScrollingStartInternal += AddEventHandler(GenericList::OnScrollingStart);
+	eventScrollingEndInternal += AddEventHandler(GenericList::OnScrollingEnd);
+	eventItemSignalInternal += AddEventHandler(GenericList::OnItemSignalEmit);
 
 	isScrolling = false;
 	longpressed = false;
@@ -113,7 +113,7 @@ LIBAPI SRIN::Components::GenericList::GenericList() :
 		GenericList* genlist = (GenericList*)data;
 		Evas_Object* content = nullptr;
 
-		genlist->DummyBottomContent(genlist, &content);
+		genlist->eventDummyBottomContent(genlist, &content);
 
 		if(content != nullptr)
 			return content;
@@ -247,15 +247,15 @@ LIBAPI void SRIN::Components::GenericList::OnItemRemove(Event<Adapter*, Adapter:
 LIBAPI Evas_Object* SRIN::Components::GenericList::CreateComponent(Evas_Object* root)
 {
 	genlist = elm_genlist_add(root);
-	evas_object_smart_callback_add(genlist, "scroll", SmartEventHandler, &onScrolledInternal);
-	evas_object_smart_callback_add(genlist, "scroll,down", SmartEventHandler, &onScrolledDownInternal);
-	evas_object_smart_callback_add(genlist, "scroll,up", SmartEventHandler, &onScrolledUpInternal);
-	evas_object_smart_callback_add(genlist, "edge,top", SmartEventHandler, &onScrolledTopInternal);
-	evas_object_smart_callback_add(genlist, "edge,bottom", SmartEventHandler, &onScrolledBottomInternal);
-	evas_object_smart_callback_add(genlist, "realized", SmartEventHandler, &onDummyRealized);
-	evas_object_smart_callback_add(genlist, "scroll,drag,start", SmartEventHandler, &onScrollingStart);
-	evas_object_smart_callback_add(genlist, "scroll,drag,stop", SmartEventHandler, &onScrollingEnd);
-	evas_object_smart_callback_add(genlist, "longpressed", SmartEventHandler, &onLongPressedInternal);
+	evas_object_smart_callback_add(genlist, "scroll", EFL::EvasSmartEventHandler, &eventScrolledInternal);
+	evas_object_smart_callback_add(genlist, "scroll,down", EFL::EvasSmartEventHandler, &eventScrolledDownInternal);
+	evas_object_smart_callback_add(genlist, "scroll,up", EFL::EvasSmartEventHandler, &eventScrolledUpInternal);
+	evas_object_smart_callback_add(genlist, "edge,top", EFL::EvasSmartEventHandler, &eventScrolledTopInternal);
+	evas_object_smart_callback_add(genlist, "edge,bottom", EFL::EvasSmartEventHandler, &eventScrolledBottomInternal);
+	evas_object_smart_callback_add(genlist, "realized", EFL::EvasSmartEventHandler, &eventDummyRealized);
+	evas_object_smart_callback_add(genlist, "scroll,drag,start", EFL::EvasSmartEventHandler, &eventScrollingStartInternal);
+	evas_object_smart_callback_add(genlist, "scroll,drag,stop", EFL::EvasSmartEventHandler, &eventScrollingEndInternal);
+	evas_object_smart_callback_add(genlist, "longpressed", EFL::EvasSmartEventHandler, &eventLongPressedInternal);
 	elm_genlist_highlight_mode_set(genlist, EINA_FALSE);
 	elm_genlist_select_mode_set(genlist, ELM_OBJECT_SELECT_MODE_ALWAYS);
 
@@ -267,7 +267,7 @@ LIBAPI SRIN::Components::Adapter* SRIN::Components::GenericList::GetDataSource()
 	return dataSource;
 }
 
-void SRIN::Components::GenericList::OnScrolledInternal(ElementaryEvent* event, Evas_Object* obj, void* eventData)
+void SRIN::Components::GenericList::OnScrolledInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
 {
 	int x, y, w, h;
 	elm_scroller_region_get(genlist, &x, &y, &w, &h);
@@ -278,37 +278,37 @@ void SRIN::Components::GenericList::OnScrolledInternal(ElementaryEvent* event, E
 	bool show = (y > backToTopThreshold);
 	if (backToTopShown != show) {
 		backToTopShown = show;
-		ShowBackToTop(this, &backToTopShown);
+		eventShowBackToTop(this, &backToTopShown);
 	}
-	Scrolled(this, eventData);
+	eventScrolled(this, eventData);
 }
 
-void SRIN::Components::GenericList::OnScrolledDownInternal(ElementaryEvent* event, Evas_Object* obj, void* eventData)
+void SRIN::Components::GenericList::OnScrolledDownInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
 {
-	ScrolledDown(this, eventData);
+	eventScrolledDown(this, eventData);
 }
 
-void SRIN::Components::GenericList::OnScrolledUpInternal(ElementaryEvent* event, Evas_Object* obj, void* eventData)
+void SRIN::Components::GenericList::OnScrolledUpInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
 {
-	ScrolledUp(this, eventData);
+	eventScrolledUp(this, eventData);
 }
 
-void SRIN::Components::GenericList::OnScrolledBottomInternal(ElementaryEvent* event, Evas_Object* obj, void* eventData)
+void SRIN::Components::GenericList::OnScrolledBottomInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
 {
-	ScrolledBottom(this, eventData);
+	eventScrolledBottom(this, eventData);
 }
 
-void SRIN::Components::GenericList::OnScrolledTopInternal(ElementaryEvent* event, Evas_Object* obj, void* eventData)
+void SRIN::Components::GenericList::OnScrolledTopInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
 {
-	ScrolledTop(this, eventData);
+	eventScrolledTop(this, eventData);
 }
 
-void SRIN::Components::GenericList::OnDummyRealized(ElementaryEvent* event, Evas_Object* obj, void* eventData)
+void SRIN::Components::GenericList::OnDummyRealized(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
 {
 	if(eventData == dummyBottom)
 	{
 		// If the dummy bottom is realized, call the reaching bottom function
-		ReachingBottom(this, nullptr);
+		eventReachingBottom(this, nullptr);
 	}
 	else
 	{
@@ -342,26 +342,26 @@ bool SRIN::Components::GenericList::GetOverscroll()
 	return this->overscroll;
 }
 
-void SRIN::Components::GenericList::OnScrollingStart(ElementaryEvent* event, Evas_Object* obj, void* eventData)
+void SRIN::Components::GenericList::OnScrollingStart(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
 {
 	isScrolling   = true;
 	IsLongClicked = false;
-	ScrollingStart(this, nullptr);
+	eventScrollingStart(this, nullptr);
 }
 
-void SRIN::Components::GenericList::OnScrollingEnd(ElementaryEvent* event, Evas_Object* obj, void* eventData)
+void SRIN::Components::GenericList::OnScrollingEnd(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
 {
 	isScrolling = false;
-	ScrollingEnd(this, nullptr);
+	eventScrollingEnd(this, nullptr);
 }
 
-void SRIN::Components::GenericList::OnItemSignalEmit(ObjectItemEdjeSignalEvent* event, Elm_Object_Item* obj,
-	EdjeSignalInfo eventData)
+void SRIN::Components::GenericList::OnItemSignalEmit(EFL::ObjectItemEdjeSignalEvent* event, Elm_Object_Item* obj,
+	EFL::EdjeSignalInfo eventData)
 {
 	dlog_print(DLOG_DEBUG, LOG_TAG, "Signal %s", eventData.source);
 
 	auto data = reinterpret_cast<Adapter::AdapterItem*>(elm_object_item_data_get(obj));
-	ItemSignal(data, eventData);
+	eventItemSignal(data, eventData);
 }
 
 void SRIN::Components::GenericList::SetLongClicked(const bool& o) {
@@ -373,7 +373,7 @@ bool SRIN::Components::GenericList::GetLongClicked() {
 }
 
 void SRIN::Components::GenericList::OnLongPressedInternal(
-		ElementaryEvent* event, Evas_Object* obj, void* eventData) {
+		EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData) {
 	if (isScrolling) {
 		IsLongClicked = false;
 	} else {
@@ -381,7 +381,7 @@ void SRIN::Components::GenericList::OnLongPressedInternal(
 		Elm_Object_Item* temp1 = (Elm_Object_Item*) eventData;
 		auto data = reinterpret_cast<GenlistItemClassPackage*>(elm_object_item_data_get(temp1));
 
-		ItemLongClicked(data->genlist, data->data);
+		eventItemLongClicked(data->genlist, data->data);
 	}
 }
 

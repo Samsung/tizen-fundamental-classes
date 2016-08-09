@@ -16,9 +16,9 @@ namespace SRIN {
 		class LIBAPI Toast : public EventClass {
 		private:
 			Evas_Object* popup;
-			void OnDismiss(ElementaryEvent* event, Evas_Object* objSource, void* eventData);
-			bool BackButtonPressed(ElementaryEvent* event, Evas_Object* objSource, void* eventData);
-			ElementaryEvent onDismiss;
+			void OnDismiss(EFL::EvasSmartEvent* event, Evas_Object* objSource, void* eventData);
+			bool BackButtonPressed(EFL::EvasSmartEvent* event, Evas_Object* objSource, void* eventData);
+			EFL::EvasSmartEvent eventDismiss;
 		public:
 			Toast();
 

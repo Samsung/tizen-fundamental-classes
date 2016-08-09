@@ -22,9 +22,9 @@ private:
 	Evas_Object* pagerTop;
 	Evas_Object* pagerBottom;
 
-	EdjeSignalEvent clickSignalEvent;
+	EFL::EdjeSignalEvent eventClickSignal;
 
-	void OnClickSignal(EdjeSignalEvent* event, Evas_Object* source, EdjeSignalInfo signalInfo);
+	void OnClickSignal(EFL::EdjeSignalEvent* event, Evas_Object* source, EFL::EdjeSignalInfo signalInfo);
 	void NextPage();
 	void PrevPage();
 protected:
@@ -34,9 +34,9 @@ public:
 	Pager();
 
 
-	Event<Pager*, int> Navigate;
-	Event<Pager*> Underflow;
-	Event<Pager*> Overflow;
+	Event<Pager*, int> eventNavigate;
+	Event<Pager*> eventUnderflow;
+	Event<Pager*> eventOverflow;
 
 	Property<Pager, Evas_Object*>::Auto::ReadWrite PagerContent;
 	Property<Pager, int>::Auto::ReadOnly CurrentIndex;

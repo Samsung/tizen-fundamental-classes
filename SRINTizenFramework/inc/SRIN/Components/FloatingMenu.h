@@ -30,8 +30,8 @@ namespace SRIN {
 			Evas_Object* button;
 			Evas_Object* contextMenu;
 
-			ElementaryEvent eventButtonClicked;
-			ElementaryEvent eventContextMenuDismissed;
+			EFL::EvasSmartEvent eventButtonClicked;
+			EFL::EvasSmartEvent eventContextMenuDismissed;
 
 			friend struct ContextMenuPackage;
 			std::vector<ContextMenuPackage*> currentItemPackages;
@@ -39,8 +39,8 @@ namespace SRIN {
 			bool menuShown;
 			std::vector<MenuItem*> rootMenu;
 
-			void OnButtonClicked(ElementaryEvent* ev, Evas_Object* obj, void* eventData);
-			void OnContextMenuDismissed(ElementaryEvent* ev, Evas_Object* obj, void* eventData);
+			void OnButtonClicked(EFL::EvasSmartEvent* ev, Evas_Object* obj, void* eventData);
+			void OnContextMenuDismissed(EFL::EvasSmartEvent* ev, Evas_Object* obj, void* eventData);
 			bool BackButtonClicked();
 			void ShowMenu();
 			void HideMenu();

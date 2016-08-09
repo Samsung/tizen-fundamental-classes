@@ -47,13 +47,13 @@ private:
 	void MenuContracted(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
 	void AppendMenuToGenlist(MenuItem* menu);
 
-	GenlistEvent OnMenuScrollInternal;
-	GenlistEvent OnMenuPressedInternal;
-	GenlistEvent OnMenuReleasedInternal;
-	GenlistEvent OnMenuSelectedInternal;
-	GenlistEvent OnMenuUnselectedInternal;
-	GenlistEvent OnMenuExpanded;
-	GenlistEvent OnMenuContracted;
+	GenlistEvent eventMenuScrollInternal;
+	GenlistEvent eventMenuPressedInternal;
+	GenlistEvent eventMenuReleasedInternal;
+	GenlistEvent eventMenuSelectedInternal;
+	GenlistEvent eventMenuUnselectedInternal;
+	GenlistEvent eventMenuExpanded;
+	GenlistEvent eventMenuContracted;
 
 protected:
 	virtual LIBAPI Evas_Object* CreateComponent(Evas_Object* root);

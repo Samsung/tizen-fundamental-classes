@@ -30,7 +30,7 @@ Evas_Object* SRIN::Components::FloatingMenu::CreateComponent(Evas_Object* root)
 
 	button = elm_button_add(floatingLayout);
 	elm_object_part_content_set(floatingLayout, "button1", button);
-	evas_object_smart_callback_add(button, "clicked", &SmartEventHandler, &eventButtonClicked);
+	evas_object_smart_callback_add(button, "clicked", &EFL::EvasSmartEventHandler, &eventButtonClicked);
 
 	if (buttonImage.size() > 0) {
 		auto image = elm_image_add(floatingLayout);
@@ -89,7 +89,7 @@ bool SRIN::Components::FloatingMenu::BackButtonClicked()
 	return false;
 }
 
-void SRIN::Components::FloatingMenu::OnButtonClicked(ElementaryEvent* ev, Evas_Object* obj, void* eventData)
+void SRIN::Components::FloatingMenu::OnButtonClicked(EFL::EvasSmartEvent* ev, Evas_Object* obj, void* eventData)
 {
 	if(not this->menuShown)
 		this->ShowMenu();
@@ -97,7 +97,7 @@ void SRIN::Components::FloatingMenu::OnButtonClicked(ElementaryEvent* ev, Evas_O
 		this->HideMenu();
 }
 
-void SRIN::Components::FloatingMenu::OnContextMenuDismissed(ElementaryEvent* ev, Evas_Object* obj, void* eventData)
+void SRIN::Components::FloatingMenu::OnContextMenuDismissed(EFL::EvasSmartEvent* ev, Evas_Object* obj, void* eventData)
 {
 	HideMenu();
 }
@@ -107,7 +107,7 @@ void SRIN::Components::FloatingMenu::ShowMenu()
 	BackButtonHandler::Acquire();
 
 	auto contextMenu = elm_ctxpopup_add(this->naviframe);
-	evas_object_smart_callback_add(contextMenu, "dismissed", SmartEventHandler, &eventContextMenuDismissed);
+	evas_object_smart_callback_add(contextMenu, "dismissed", EFL::EvasSmartEventHandler, &eventContextMenuDismissed);
 	elm_object_style_set(contextMenu, "dropdown/label");
 
 	this->contextMenu = contextMenu;

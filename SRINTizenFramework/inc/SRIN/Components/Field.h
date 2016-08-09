@@ -38,8 +38,8 @@ public:
 	void SetKeyboardType(const Elm_Input_Panel_Layout& type);
 	void SetAsPasswordField();
 
-	ElementaryEvent onReturnKeyClick;
-	ElementaryEvent onTextChanged;
+	EFL::EvasSmartEvent eventReturnKeyClick;
+	EFL::EvasSmartEvent eventTextChanged;
 
 	Property<Field, std::string&>::GetSet<&Field::GetText, &Field::SetText> Text;
 	Property<Field, bool>::GetSet<&Field::GetMultiline, &Field::SetMultiline> Multiline;

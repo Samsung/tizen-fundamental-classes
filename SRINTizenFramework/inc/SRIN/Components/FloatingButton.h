@@ -23,7 +23,7 @@ namespace SRIN {
 		public:
 			FloatingButton();
 			std::string buttonLeftImage, buttonRightImage;
-			ElementaryEvent eventButtonLeftClick, eventButtonRightClick;
+			EFL::EvasSmartEvent eventButtonLeftClick, eventButtonRightClick;
 			bool doubleButton;
 			bool movementBlock;
 			void SetWhiteBackground();
