@@ -8,8 +8,7 @@
 #ifndef SRINFW_COMPONENTBASE_H_
 #define SRINFW_COMPONENTBASE_H_
 
-#include "SRIN/Core.h"
-#include "SRIN/ELMInterface.h"
+#include "SRIN/EFL.h"
 
 #include <string>
 

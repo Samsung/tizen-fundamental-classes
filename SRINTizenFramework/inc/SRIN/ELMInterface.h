@@ -8,8 +8,10 @@
 #ifndef SRINFW_ELMINTERFACE_H_
 #define SRINFW_ELMINTERFACE_H_
 
+#ifndef USE_LEGACY_EFL_INTERFACE
 #error "SRIN/ELMInterface.h header file is deprecated. Consider using SRIN/EFL.h with its new structures."
-
+#else
+#warning "SRIN/ELMInterface.h header file is deprecated. Consider using SRIN/EFL.h with its new structures"
 
 #include "SRIN/Core.h"
 
@@ -30,6 +32,6 @@ typedef Event<Evas_Object*, void*> ElementaryEvent;
 typedef Event<Evas_Object*, EdjeSignalInfo> EdjeSignalEvent;
 typedef Event<Elm_Object_Item*, EdjeSignalInfo> ObjectItemEdjeSignalEvent;
 
-
+#endif
 
 #endif /* ELMINTERFACE_H_ */

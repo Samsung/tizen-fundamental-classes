@@ -83,12 +83,12 @@ Evas_Object* SRIN::Components::DatePickerPopupMenu::CreateContent(
 		elm_datetime_format_set(dateTime, "%F");
 		elm_datetime_value_set(dateTime, &selectedDate);
 
-		evas_object_smart_callback_add(dateTime, "changed", &SmartEventHandler, &onDateChanged);
+		evas_object_smart_callback_add(dateTime, "changed", &EFL::EvasSmartEventHandler, &eventDateChanged);
 		evas_object_show(dateTime);
 	} else {
 		dateTime = elm_calendar_add(root);
 		elm_calendar_selected_time_set(dateTime, &selectedDate);
-		evas_object_smart_callback_add(dateTime, "changed", &SmartEventHandler, &onDateChanged);
+		evas_object_smart_callback_add(dateTime, "changed", &EFL::EvasSmartEventHandler, &eventDateChanged);
 		evas_object_show(dateTime);
 	}
 
@@ -98,13 +98,13 @@ Evas_Object* SRIN::Components::DatePickerPopupMenu::CreateContent(
 /** ============================================================================ **/
 
 void SRIN::Components::DatePickerPopup::DatePickerButtonClick(
-		ElementaryEvent* viewSource, Evas_Object* objSource,
+		EFL::EvasSmartEvent* viewSource, Evas_Object* objSource,
 		void* eventData) {
 	datePopupMenu.Show();
 }
 
 void SRIN::Components::DatePickerPopup::DatePickerPopupOkButtonClick(
-		ElementaryEvent* viewSource, Evas_Object* objSource,
+		EFL::EvasSmartEvent* viewSource, Evas_Object* objSource,
 		void* eventData) {
 	formatedDate = datePopupMenu.GetFormatedSelectedDate();
 	selectedDate = datePopupMenu.GetSelectedDate();
@@ -113,13 +113,13 @@ void SRIN::Components::DatePickerPopup::DatePickerPopupOkButtonClick(
 }
 
 void SRIN::Components::DatePickerPopup::DatePickerPopupCancelButtonClick(
-		ElementaryEvent* viewSource, Evas_Object* objSource,
+		EFL::EvasSmartEvent* viewSource, Evas_Object* objSource,
 		void* eventData) {
 	datePopupMenu.Dismiss();
 }
 
 void SRIN::Components::DatePickerPopup::OnDateChangedCb(
-		ElementaryEvent* viewSource, Evas_Object* objSource, void* eventData) {
+	EFL::EvasSmartEvent* viewSource, Evas_Object* objSource, void* eventData) {
 
 }
 
@@ -127,7 +127,7 @@ Evas_Object* SRIN::Components::DatePickerPopup::CreateComponent(
 		Evas_Object* root) {
 	buttonRoot = elm_button_add(root);
 	elm_object_text_set(buttonRoot, buttonText.c_str());
-	evas_object_smart_callback_add(buttonRoot, "clicked", &SmartEventHandler, &buttonClick);
+	evas_object_smart_callback_add(buttonRoot, "clicked", &EFL::EvasSmartEventHandler, &eventButtonClick);
 	evas_object_show(this->buttonRoot);
 
 	datePopupMenu.Create(root);
@@ -157,10 +157,10 @@ SRIN::Components::DatePickerPopup::DatePickerPopup() : Title(this), Orientation(
 
 	buttonRoot					= nullptr;
 
-	buttonClick 				 += { this, &DatePickerPopup::DatePickerButtonClick };
-	datePopupMenu.buttonOneClick += { this, &DatePickerPopup::DatePickerPopupOkButtonClick };
-	datePopupMenu.buttonTwoClick += { this, &DatePickerPopup::DatePickerPopupCancelButtonClick };
-	datePopupMenu.onDateChanged  += { this, &DatePickerPopup::OnDateChangedCb };
+	eventButtonClick 				 += AddEventHandler(DatePickerPopup::DatePickerButtonClick);
+	datePopupMenu.eventButtonOneClick += AddEventHandler(DatePickerPopup::DatePickerPopupOkButtonClick);
+	datePopupMenu.eventButtonTwoClick += AddEventHandler(DatePickerPopup::DatePickerPopupCancelButtonClick);
+	datePopupMenu.eventDateChanged  += AddEventHandler(DatePickerPopup::OnDateChangedCb);
 
 }
 

@@ -38,14 +38,14 @@ private:
 	Evas_Object* button;
 	Evas_Object* contextMenu;
 
-	ElementaryEvent eventContextMenuButtonClicked;
-	ElementaryEvent eventContextMenuDismissed;
+	EFL::EvasSmartEvent eventContextMenuButtonClicked;
+	EFL::EvasSmartEvent eventContextMenuDismissed;
 
 	bool menuShown;
 	std::vector<MenuItem*> rootMenu;
 
-	void OnContextMenuButtonClicked(ElementaryEvent* ev, Evas_Object* obj, void* eventData);
-	void OnContextMenuDismissed(ElementaryEvent* ev, Evas_Object* obj, void* eventData);
+	void OnContextMenuButtonClicked(EFL::EvasSmartEvent* ev, Evas_Object* obj, void* eventData);
+	void OnContextMenuDismissed(EFL::EvasSmartEvent* ev, Evas_Object* obj, void* eventData);
 	bool BackButtonClicked();
 	void ShowMenu();
 	void HideMenu();

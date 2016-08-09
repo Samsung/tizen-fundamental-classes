@@ -35,7 +35,7 @@ namespace SRIN {
 			void SetSelectedDate(const std::tm& date);
 			void SetFormatedSelectedDate(const std::string& date);
 
-			ElementaryEvent onDateChanged;
+			EFL::EvasSmartEvent eventDateChanged;
 		};
 
 		class LIBAPI DatePickerPopup : public ComponentBase {
@@ -46,12 +46,13 @@ namespace SRIN {
 			std::tm      		selectedDate;
 
 			std::string 	 buttonText, formatedDate;
-			ElementaryEvent  buttonClick;
 
-			void DatePickerButtonClick(ElementaryEvent* viewSource, Evas_Object* objSource, void* eventData);
-			void DatePickerPopupOkButtonClick(ElementaryEvent* viewSource, Evas_Object* objSource, void* eventData);
-			void DatePickerPopupCancelButtonClick(ElementaryEvent* viewSource, Evas_Object* objSource, void* eventData);
-			void OnDateChangedCb(ElementaryEvent* viewSource, Evas_Object* objSource, void* eventData);
+			EFL::EvasSmartEvent  eventButtonClick;
+
+			void DatePickerButtonClick(EFL::EvasSmartEvent* viewSource, Evas_Object* objSource, void* eventData);
+			void DatePickerPopupOkButtonClick(EFL::EvasSmartEvent* viewSource, Evas_Object* objSource, void* eventData);
+			void DatePickerPopupCancelButtonClick(EFL::EvasSmartEvent* viewSource, Evas_Object* objSource, void* eventData);
+			void OnDateChangedCb(EFL::EvasSmartEvent* viewSource, Evas_Object* objSource, void* eventData);
 		protected:
 			virtual Evas_Object* CreateComponent(Evas_Object* root) override;
 

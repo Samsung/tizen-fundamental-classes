@@ -12,7 +12,7 @@ Evas_Object* SRIN::Components::ContextMenu::CreateComponent(Evas_Object* root)
 {
 	naviframe = root;
 	button = elm_button_add(root);
-	evas_object_smart_callback_add(button, "clicked", SmartEventHandler, &eventContextMenuButtonClicked);
+	evas_object_smart_callback_add(button, "clicked", EFL::EvasSmartEventHandler, &eventContextMenuButtonClicked);
 	elm_object_style_set(button, "naviframe/more/default");
 	return button;
 }
@@ -78,7 +78,7 @@ void SRIN::Components::ContextMenu::SetMenu(const std::vector<MenuItem*>& listOf
 	rootMenu = listOfMenus;
 }
 
-void SRIN::Components::ContextMenu::OnContextMenuButtonClicked(ElementaryEvent* ev, Evas_Object* obj, void* eventData)
+void SRIN::Components::ContextMenu::OnContextMenuButtonClicked(EFL::EvasSmartEvent* ev, Evas_Object* obj, void* eventData)
 {
 	if(not this->menuShown)
 		this->ShowMenu();
@@ -91,7 +91,7 @@ void SRIN::Components::ContextMenu::ShowMenu()
 	BackButtonHandler::Acquire();
 
 	auto contextMenu = elm_ctxpopup_add(this->naviframe);
-	evas_object_smart_callback_add(contextMenu, "dismissed", SmartEventHandler, &eventContextMenuDismissed);
+	evas_object_smart_callback_add(contextMenu, "dismissed", EFL::EvasSmartEventHandler, &eventContextMenuDismissed);
 	elm_object_style_set(contextMenu, "dropdown/label");
 
 	this->contextMenu = contextMenu;
@@ -151,7 +151,7 @@ SRIN::Components::ContextMenu::~ContextMenu()
 	HideMenu();
 }
 
-void SRIN::Components::ContextMenu::OnContextMenuDismissed(ElementaryEvent* ev,
+void SRIN::Components::ContextMenu::OnContextMenuDismissed(EFL::EvasSmartEvent* ev,
 		Evas_Object* obj, void* eventData) {
 	HideMenu();
 }

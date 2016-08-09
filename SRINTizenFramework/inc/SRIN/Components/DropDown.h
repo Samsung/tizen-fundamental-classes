@@ -23,14 +23,14 @@ private:
 	Evas_Object* dropdownComponent;
 	Adapter* dataSource;
 
-	ElementaryEvent dropdownButtonClick;
-	ElementaryEvent dropdownDismiss;
+	EFL::EvasSmartEvent eventDropdownButtonClick;
+	EFL::EvasSmartEvent eventDropdownDismiss;
 
 	void SetDataSource(Adapter* adapter);
 	Adapter* GetDataSource();
 
 	void ShowDropdown();
-	void OnDropDownButtonClick(ElementaryEvent* viewSource, Evas_Object* objSource, void* eventData);
+	void OnDropDownButtonClick(EFL::EvasSmartEvent* viewSource, Evas_Object* objSource, void* eventData);
 protected:
 	virtual Evas_Object* CreateComponent(Evas_Object* root);
 

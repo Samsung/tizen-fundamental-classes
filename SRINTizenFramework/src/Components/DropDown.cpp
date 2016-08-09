@@ -36,7 +36,7 @@ LIBAPI Evas_Object* SRIN::Components::DropDown::CreateComponent(Evas_Object* roo
 	if(text.length())
 		elm_object_text_set(dropDown, text.c_str());
 
-	evas_object_smart_callback_add(dropDown, "clicked", SmartEventHandler, &dropdownButtonClick);
+	evas_object_smart_callback_add(dropDown, "clicked", EFL::EvasSmartEventHandler, &eventDropdownButtonClick);
 	this->parentComponent = root;
 	return dropDown;
 }
@@ -47,7 +47,7 @@ LIBAPI SRIN::Components::DropDown::DropDown() :
 	parentComponent(nullptr),
 	DataSource(this)
 {
-	dropdownButtonClick += { this, &DropDown::OnDropDownButtonClick };
+	eventDropdownButtonClick += AddEventHandler(DropDown::OnDropDownButtonClick);
 	SelectedItem = nullptr;
 }
 
@@ -75,8 +75,8 @@ LIBAPI void SRIN::Components::DropDown::ShowDropdown()
 	//disable back pressed listener on app
 	//so back pressed listener on component can run
 	// Framework::AppInstance->EnableBackButtonCallback(false);
-	eext_object_event_callback_add(dropdownComponent, EEXT_CALLBACK_BACK, SmartEventHandler, &dropdownDismiss);
-	evas_object_smart_callback_add(dropdownComponent, "dismissed", SmartEventHandler, &dropdownDismiss);
+	eext_object_event_callback_add(dropdownComponent, EEXT_CALLBACK_BACK, EFL::EvasSmartEventHandler, &eventDropdownDismiss);
+	evas_object_smart_callback_add(dropdownComponent, "dismissed", EFL::EvasSmartEventHandler, &eventDropdownDismiss);
 
 	//change position of the popup base on button
 	Evas_Coord x, y;
@@ -85,7 +85,7 @@ LIBAPI void SRIN::Components::DropDown::ShowDropdown()
 	evas_object_show(dropdownComponent);
 }
 
-LIBAPI void SRIN::Components::DropDown::OnDropDownButtonClick(ElementaryEvent* viewSource, Evas_Object* objSource,
+LIBAPI void SRIN::Components::DropDown::OnDropDownButtonClick(EFL::EvasSmartEvent* viewSource, Evas_Object* objSource,
 	void* eventData)
 {
 	ShowDropdown();

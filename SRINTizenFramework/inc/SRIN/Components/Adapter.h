@@ -9,7 +9,7 @@
 #define SRIN_COMP_ADAPTER_H_
 
 #include "SRIN/Core.h"
-#include "SRIN/ELMInterface.h"
+#include "SRIN/EFL.h"
 
 #include <list>
 #include <vector>
