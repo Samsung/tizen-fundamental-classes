@@ -33,7 +33,7 @@ LIBAPI Evas_Object* SidebarView::CreateView(Evas_Object* root)
 	elm_panel_scrollable_set(leftPanel, EINA_TRUE);
 	elm_panel_orient_set(leftPanel, ELM_PANEL_ORIENT_LEFT);
 	elm_panel_hidden_set(leftPanel, EINA_TRUE);
-	evas_object_smart_callback_add(leftPanel, "scroll", SmartEventHandler, &drawerScroll);
+	evas_object_smart_callback_add(leftPanel, "scroll", EFL::EvasSmartEventHandler, &drawerScroll);
 
 	bg = evas_object_rectangle_add(evas_object_evas_get(layout));
 	evas_object_color_set(bg, 0, 0, 0, 0);
@@ -69,19 +69,19 @@ LIBAPI void SidebarView::Detach()
 LIBAPI Evas_Object* SidebarView::GetTitleLeftButton(CString* buttonPart)
 {
 	auto btn = elm_button_add(layout);
-	evas_object_smart_callback_add(btn, "clicked", SmartEventHandler, &drawerButtonClick);
+	evas_object_smart_callback_add(btn, "clicked", EFL::EvasSmartEventHandler, &drawerButtonClick);
 
 	DrawerButtonStyle(btn);
 	//*buttonPart = "drawers";
 	return btn;
 }
 
-LIBAPI void SidebarView::OnDrawerButtonClick(ElementaryEvent* eventSource, Evas_Object* objSource, void* eventData)
+LIBAPI void SidebarView::OnDrawerButtonClick(EFL::EvasSmartEvent* eventSource, Evas_Object* objSource, void* eventData)
 {
 	ToggleSidebar();
 }
 
-LIBAPI void SidebarView::OnDrawerScrolling(ElementaryEvent* eventSource, Evas_Object* objSource, void* eventData)
+LIBAPI void SidebarView::OnDrawerScrolling(EFL::EvasSmartEvent* eventSource, Evas_Object* objSource, void* eventData)
 {
 	auto ev = reinterpret_cast<Elm_Panel_Scroll_Info*>(eventData);
 	int col = 127 * ev->rel_x;

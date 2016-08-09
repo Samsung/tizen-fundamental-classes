@@ -23,7 +23,7 @@ extern "C" {
 #include <vector>
 
 #include "SRIN/Core.h"
-#include "SRIN/ELMInterface.h"
+//#include "SRIN/ELMInterface.h"
 
 /**
  * Macro to register a controller to a ControllerManager by providing a controller name and controller type

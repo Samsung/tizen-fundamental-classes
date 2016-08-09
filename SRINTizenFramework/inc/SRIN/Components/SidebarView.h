@@ -9,7 +9,9 @@
 #define SRINFW_SIDEBARVIEW_H_
 
 #include "SRIN/Framework/Application.h"
+#include "SRIN/EFL.h"
 #include "SRIN/Components/BackButtonHandler.h"
+
 
 namespace SRIN {
 namespace Components {
@@ -24,11 +26,11 @@ private:
 	Evas_Object* currentContent;
 	Evas_Object* bg;
 
-	ElementaryEvent drawerButtonClick;
-	ElementaryEvent drawerScroll;
+	EFL::EvasSmartEvent drawerButtonClick;
+	EFL::EvasSmartEvent drawerScroll;
 
-	void OnDrawerButtonClick(ElementaryEvent* eventSource, Evas_Object* objSource, void* eventData);
-	void OnDrawerScrolling(ElementaryEvent* eventSource, Evas_Object* objSource, void* eventData);
+	void OnDrawerButtonClick(EFL::EvasSmartEvent* eventSource, Evas_Object* objSource, void* eventData);
+	void OnDrawerScrolling(EFL::EvasSmartEvent* eventSource, Evas_Object* objSource, void* eventData);
 	void OnDrawerOpened(Event<SidebarView*, void*>* event, SidebarView* sidebarView, void* unused);
 	void OnDrawerClosed(Event<SidebarView*, void*>* event, SidebarView* sidebarView, void* unused);
 protected:
