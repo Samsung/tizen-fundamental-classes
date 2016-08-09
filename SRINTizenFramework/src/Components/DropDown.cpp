@@ -64,7 +64,9 @@ LIBAPI void SRIN::Components::DropDown::ShowDropdown()
 			auto text = item.itemClass->GetString(item.data, dropdownComponent, "text");
 			auto icon = item.itemClass->GetContent(item.data, dropdownComponent, "icon");
 			auto package = new DropdownCallbackPackage({ this, &item });
+
 			item.objectItem = elm_ctxpopup_item_append(dropdownComponent, text.c_str(), icon, DropdownAdapter_ClickCallback, package);
+			elm_object_item_del_cb_set(item.objectItem, DropdownAdapter_DeleteCallback);
 		}
 	}
 
