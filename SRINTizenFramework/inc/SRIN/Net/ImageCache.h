@@ -15,7 +15,26 @@ namespace SRIN {
 namespace Net {
 namespace ImageCache {
 
+/**
+ * Method to download an image. It returns full path to the image if download is successful,
+ * and returns the URL otherwise as a fallback.
+ *
+ * @param url URL that contains an image file.
+ *
+ * @note To ensure that no duplicate image is downloaded, we can call {RequireDownloading} before
+ * this method.
+ */
 std::string LoadImage(const std::string& url);
+
+/**
+ * Method to check whether a particular image URL has been downloaded before.
+ * If not, this method will generate an unique filename and database entry, then return true.
+ * This way, when the method is called again with URL parameter that already exist in database,
+ * then it will update filePath parameter with the filename from the database and return false.
+ *
+ * @param url URL that contains an image file.
+ * @param filePath String reference that will be updated with the generated filename.
+ */
 bool RequireDownloading(const std::string& url, std::string& filePath);
 
 }
