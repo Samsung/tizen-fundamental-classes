@@ -39,8 +39,8 @@ SRIN::Components::ContextMenu::ContextMenu() :
 	Text(this),
 	contextMenu(nullptr)
 {
-	eventContextMenuButtonClicked += AddEventHandler(ContextMenu::OnContextMenuButtonClicked);
-	eventContextMenuDismissed += AddEventHandler(ContextMenu::OnContextMenuDismissed);
+	eventContextMenuButtonClicked += EventHandler(ContextMenu::OnContextMenuButtonClicked);
+	eventContextMenuDismissed += EventHandler(ContextMenu::OnContextMenuDismissed);
 }
 
 void SRIN::Components::ContextMenu::AddMenu(MenuItem* menu)

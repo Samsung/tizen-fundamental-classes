@@ -157,10 +157,10 @@ SRIN::Components::DatePickerPopup::DatePickerPopup() : Title(this), Orientation(
 
 	buttonRoot					= nullptr;
 
-	eventButtonClick 				 += AddEventHandler(DatePickerPopup::DatePickerButtonClick);
-	datePopupMenu.eventButtonOneClick += AddEventHandler(DatePickerPopup::DatePickerPopupOkButtonClick);
-	datePopupMenu.eventButtonTwoClick += AddEventHandler(DatePickerPopup::DatePickerPopupCancelButtonClick);
-	datePopupMenu.eventDateChanged  += AddEventHandler(DatePickerPopup::OnDateChangedCb);
+	eventButtonClick 				 += EventHandler(DatePickerPopup::DatePickerButtonClick);
+	datePopupMenu.eventButtonOneClick += EventHandler(DatePickerPopup::DatePickerPopupOkButtonClick);
+	datePopupMenu.eventButtonTwoClick += EventHandler(DatePickerPopup::DatePickerPopupCancelButtonClick);
+	datePopupMenu.eventDateChanged  += EventHandler(DatePickerPopup::OnDateChangedCb);
 
 }
 

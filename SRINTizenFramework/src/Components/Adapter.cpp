@@ -35,7 +35,7 @@ LIBAPI void SRIN::Components::Adapter::AddItemInternal(void* data, AdapterItemCl
 {
 	adapterItems.push_back({data, itemClass, nullptr});
 	auto& lastItem = adapterItems.back();
-	OnItemAdd(this, &lastItem);
+	eventItemAdd(this, &lastItem);
 }
 
 LIBAPI void SRIN::Components::Adapter::RemoveItemInternal(void* data)
@@ -46,7 +46,7 @@ LIBAPI void SRIN::Components::Adapter::RemoveItemInternal(void* data)
 		if(iter->data == data)
 		{
 			auto& ref = *iter;
-			OnItemRemove(this, &ref);
+			eventItemRemove(this, &ref);
 			iter = adapterItems.erase(iter);
 		} else {
 			iter++;
@@ -66,7 +66,7 @@ LIBAPI void SRIN::Components::Adapter::Clear(bool deallocate)
 		auto& ref = *iter;
 
 		// Notify the user of this adapter
-		OnItemRemove(this, &ref);
+		eventItemRemove(this, &ref);
 
 		// Erase the object
 		if(deallocate)

@@ -263,16 +263,16 @@ TreeMenu::TreeMenu() :
 	AutoExpanded(this), autoExpand(false)
 
 {
-	eventMenuScrollInternal +=  AddEventHandler(TreeMenu::MenuScrollInternal);
+	eventMenuScrollInternal +=  EventHandler(TreeMenu::MenuScrollInternal);
 
-	eventMenuPressedInternal +=  AddEventHandler(TreeMenu::MenuPressedInternal);
-	eventMenuReleasedInternal += AddEventHandler(TreeMenu::MenuReleasedInternal);
+	eventMenuPressedInternal +=  EventHandler(TreeMenu::MenuPressedInternal);
+	eventMenuReleasedInternal += EventHandler(TreeMenu::MenuReleasedInternal);
 
-	eventMenuSelectedInternal +=  AddEventHandler(TreeMenu::MenuSelectedInternal);
-	eventMenuUnselectedInternal += AddEventHandler(TreeMenu::MenuUnselectedInternal);
+	eventMenuSelectedInternal +=  EventHandler(TreeMenu::MenuSelectedInternal);
+	eventMenuUnselectedInternal += EventHandler(TreeMenu::MenuUnselectedInternal);
 
-	eventMenuExpanded += AddEventHandler(TreeMenu::MenuExpanded);
-	eventMenuContracted += AddEventHandler(TreeMenu::MenuContracted);
+	eventMenuExpanded += EventHandler(TreeMenu::MenuExpanded);
+	eventMenuContracted += EventHandler(TreeMenu::MenuContracted);
 
 	isClickPersist = true;
 	isScrolled = false;

@@ -17,8 +17,8 @@ SRIN::Components::FloatingMenu::FloatingMenu() :
 	menuShown(false),
 	buttonImage("")
 {
-	eventButtonClicked += AddEventHandler(FloatingMenu::OnButtonClicked);
-	eventContextMenuDismissed += AddEventHandler(FloatingMenu::OnContextMenuDismissed);
+	eventButtonClicked += EventHandler(FloatingMenu::OnButtonClicked);
+	eventContextMenuDismissed += EventHandler(FloatingMenu::OnContextMenuDismissed);
 }
 
 Evas_Object* SRIN::Components::FloatingMenu::CreateComponent(Evas_Object* root)

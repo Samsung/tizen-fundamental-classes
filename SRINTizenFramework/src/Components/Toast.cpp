@@ -16,7 +16,7 @@ LIBAPI bool SRIN::Components::Toast::BackButtonPressed(EFL::EvasSmartEvent* even
 }
 
 LIBAPI SRIN::Components::Toast::Toast() {
-	this->eventDismiss += AddEventHandler(Toast::OnDismiss);
+	this->eventDismiss += EventHandler(Toast::OnDismiss);
 }
 
 

@@ -47,7 +47,7 @@ LIBAPI SRIN::Components::DropDown::DropDown() :
 	parentComponent(nullptr),
 	DataSource(this)
 {
-	eventDropdownButtonClick += AddEventHandler(DropDown::OnDropDownButtonClick);
+	eventDropdownButtonClick += EventHandler(DropDown::OnDropDownButtonClick);
 	SelectedItem = nullptr;
 }
 

@@ -113,7 +113,7 @@ LIBAPI SRIN::Components::Pager::Pager()
 	this->UnderflowEnable = true;
 	this->OverflowEnable = true;
 
-	this->eventClickSignal += AddEventHandler(Pager::OnClickSignal);
+	this->eventClickSignal += EventHandler(Pager::OnClickSignal);
 }
 
 void SRIN::Components::Pager::OnClickSignal(EFL::EdjeSignalEvent* event, Evas_Object* source, EFL::EdjeSignalInfo signalInfo)

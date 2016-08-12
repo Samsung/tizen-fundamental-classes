@@ -89,16 +89,16 @@ LIBAPI SRIN::Components::GenericListItemClassBase::~GenericListItemClassBase()
 LIBAPI SRIN::Components::GenericList::GenericList() :
 	dataSource(nullptr), genlist(nullptr), realBottom(nullptr), DataSource(this), Overscroll(this), overscroll(false), IsLongClicked(this), BackToTopThreshold(this)
 {
-	eventScrolledInternal += AddEventHandler(GenericList::OnScrolledInternal);
-	eventScrolledDownInternal += AddEventHandler(GenericList::OnScrolledDownInternal);
-	eventScrolledUpInternal += AddEventHandler(GenericList::OnScrolledUpInternal);
-	eventScrolledBottomInternal += AddEventHandler(GenericList::OnScrolledBottomInternal);
-	eventScrolledTopInternal += AddEventHandler(GenericList::OnScrolledTopInternal);
-	eventLongPressedInternal += AddEventHandler(GenericList::OnLongPressedInternal);
-	eventDummyRealized += AddEventHandler(GenericList::OnDummyRealized);
-	eventScrollingStartInternal += AddEventHandler(GenericList::OnScrollingStart);
-	eventScrollingEndInternal += AddEventHandler(GenericList::OnScrollingEnd);
-	eventItemSignalInternal += AddEventHandler(GenericList::OnItemSignalEmit);
+	eventScrolledInternal += EventHandler(GenericList::OnScrolledInternal);
+	eventScrolledDownInternal += EventHandler(GenericList::OnScrolledDownInternal);
+	eventScrolledUpInternal += EventHandler(GenericList::OnScrolledUpInternal);
+	eventScrolledBottomInternal += EventHandler(GenericList::OnScrolledBottomInternal);
+	eventScrolledTopInternal += EventHandler(GenericList::OnScrolledTopInternal);
+	eventLongPressedInternal += EventHandler(GenericList::OnLongPressedInternal);
+	eventDummyRealized += EventHandler(GenericList::OnDummyRealized);
+	eventScrollingStartInternal += EventHandler(GenericList::OnScrollingStart);
+	eventScrollingEndInternal += EventHandler(GenericList::OnScrollingEnd);
+	eventItemSignalInternal += EventHandler(GenericList::OnItemSignalEmit);
 
 	isScrolling = false;
 	longpressed = false;
@@ -153,8 +153,8 @@ LIBAPI void SRIN::Components::GenericList::SetDataSource(Adapter* newAdapter)
 		}
 
 		// Remove event
-		dataSource->OnItemAdd -= { this, &GenericList::OnItemAdd };
-		dataSource->OnItemRemove -= { this, &GenericList::OnItemRemove };
+		dataSource->eventItemAdd -= EventHandler(GenericList::OnItemAdd);
+		dataSource->eventItemRemove -= EventHandler(GenericList::OnItemRemove);
 	}
 
 	// Assign new adapter
@@ -167,8 +167,8 @@ LIBAPI void SRIN::Components::GenericList::SetDataSource(Adapter* newAdapter)
 		AppendItemToGenlist(&item);
 	}
 	// Attach to event
-	dataSource->OnItemAdd += { this, &GenericList::OnItemAdd };
-	dataSource->OnItemRemove += { this, &GenericList::OnItemRemove };
+	dataSource->eventItemAdd += EventHandler(GenericList::OnItemAdd);
+	dataSource->eventItemRemove += EventHandler(GenericList::OnItemRemove);
 }
 
 LIBAPI void SRIN::Components::GenericList::AppendItemToGenlist(Adapter::AdapterItem* data)

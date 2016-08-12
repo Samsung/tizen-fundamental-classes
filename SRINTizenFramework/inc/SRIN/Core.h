@@ -484,6 +484,9 @@ void SharedEvent<ObjectSourceType, EventDataType>:: operator()(ObjectSourceType 
 
 #include "SRIN/Core.inc"
 
+#define EventHandler(EVENT_METHOD) { this, & EVENT_METHOD }
+
+// For compatibility
 #define AddEventHandler(EVENT_METHOD) { this, & EVENT_METHOD }
 
 #endif /* CORE_H_ */

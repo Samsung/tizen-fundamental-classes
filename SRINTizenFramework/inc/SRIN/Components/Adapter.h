@@ -66,8 +66,8 @@ public:
 	std::vector<AdapterItem>& GetAll();
 	int GetCount();
 
-	Event<Adapter*, AdapterItem*> OnItemAdd;
-	Event<Adapter*, AdapterItem*> OnItemRemove;
+	Event<Adapter*, AdapterItem*> eventItemAdd;
+	Event<Adapter*, AdapterItem*> eventItemRemove;
 protected:
 	void AddItemInternal(void* data, AdapterItemClassBase* itemClass);
 	void RemoveItemInternal(void* data);
