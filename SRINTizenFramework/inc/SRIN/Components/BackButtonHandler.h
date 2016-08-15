@@ -48,12 +48,18 @@ protected:
 	/**
 	 * Method to release handler of back button.
 	 * It calls ReleaseExclusiveBackButtonPressed() method from UIApplicationBase which pops the handler to the stack.
+	 *
+	 * @note It will be automatically called when the back button is pressed, so if you want to continue
+	 * 		 handle back button you need to re-acquire it on BackButtonClicked().
 	 */
 	void Release();
 
 	/**
 	 * Abstract method that will be called when the handler is acquired and back button is pressed.
 	 * Has to be implemented.
+	 *
+	 * @return true if the application should be closed after clicking back
+	 * 		   false to cancel closing the application
 	 */
 	virtual bool BackButtonClicked() = 0;
 public:
