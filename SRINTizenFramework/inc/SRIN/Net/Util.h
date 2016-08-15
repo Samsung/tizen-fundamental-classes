@@ -12,6 +12,10 @@
 
 namespace SRIN {
 namespace Net {
+/**
+ * Static method do base64 encoding of a string.
+ * It uses OpenSSL's BIO_f_base64() filter method.
+ */
 std::string Base64Encode(const uint8_t* buffer, size_t length);
 }
 }
