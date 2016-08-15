@@ -57,12 +57,16 @@ protected:
 	/**
 	 * Method to get unmodified string value of the parameter object. Typically used for header parameters.
 	 * Has to be overriden by the implementing parameter class.
+	 *
+	 * @return String that contains the raw value.
 	 */
 	virtual std::string GetRawValue() = 0;
 
 	/**
 	 * Method to get unmodified string value of the parameter object. Typically used for GET/POST parameters.
 	 * Has to be overriden by the implementing parameter class.
+	 *
+	 * @return String that contains the encoded value.
 	 */
 	virtual std::string GetEncodedValue() = 0;
 
@@ -150,6 +154,8 @@ public:
 
 	/**
 	 * Constructor of RESTResult that copy from RESTResultBase reference.
+	 *
+	 * @param p Reference to a RESTResultBase object.
 	 */
 	RESTResult(RESTResultBase& p) : Response(this)
 	{
@@ -162,6 +168,8 @@ public:
 
 	/**
 	 * Constructor of RESTResult that copy from RESTResultBase object.
+	 *
+	 * @param p Copy of a RESTResultBase object.
 	 */
 	RESTResult(RESTResultBase p) : Response(this)
 	{
@@ -174,6 +182,8 @@ public:
 
 	/**
 	 * Copy constructor of RESTResult class.
+	 *
+	 * @param p Reference to a RESTResult object.
 	 */
 	RESTResult(RESTResult& p) : Response(this)
 	{
@@ -292,18 +302,36 @@ protected:
 	/**
 	 * Constructor for RESTServiceBase.
 	 * You have to define HTTP Mode and URL here.
+	 *
+	 * @param url The base URL of the request.
+	 * @param httpMode HTTP Mode of the request.
 	 */
 	RESTServiceBase(std::string url, HTTPMode httpMode) :
 		RESTServiceTemplateBase(url, httpMode)
 	{
 	}
+
 	/**
 	 * Method that you have to implement to handle response from the server. Non-optional.
+	 *
+	 * @param httpCode HTTP code of the response.
+	 * @param responseStr String reference of the response body.
+	 * @param errorCode Error code of the response.
+	 * @param errorMessage Error message of the response.
+	 *
+	 * @return Pointer to the resulting object with the corresponding type provided from template argument.
 	 */
+
 	virtual ResponseType* OnProcessResponse(int httpCode, const std::string& responseStr, int& errorCode,
 		std::string& errorMessage) = 0;
 	/**
 	 * Method that you have to implement to handle failure. Optional.
+	 *
+	 * @param httpCode HTTP code of the response.
+	 * @param errorCode Error code of the response.
+	 * @param errorMessage Error message of the response.
+	 *
+	 * @return Pointer to the resulting object with the corresponding type provided from template argument.
 	 */
 	virtual ResponseType* OnProcessError(int httpCode, int& errorCode, std::string& errorMessage)
 	{
@@ -335,13 +363,23 @@ class SimpleRESTServiceBase: public RESTServiceBase<std::string>
 protected:
 	/**
 	 * Constructor of SimpleRESTServiceBase, use HTTPMode Get.
+	 *
+	 * @param url The base URL of the request.
 	 */
 	SimpleRESTServiceBase(std::string url) :
 		RESTServiceBase(url, HTTPMode::Get)
 	{
 	}
+
 	/**
 	 * Implement OnProcessResponse that returns string.
+	 *
+	 * @param httpCode HTTP code of the response.
+	 * @param responseStr String reference of the response body.
+	 * @param errorCode Error code of the response.
+	 * @param errorMessage Error message of the response.
+	 *
+	 * @return Pointer to the resulting string.
 	 */
 	virtual std::string* OnProcessResponse(int httpCode, const std::string& responseStr, int& errorCode, std::string& errorMessage);
 };
@@ -364,6 +402,8 @@ class BasicAuthParameter: public RESTServiceTemplateBase::Parameter<ParamType, B
 public:
 	/**
 	 * Implement Parameter constructor with "Authorization" field name as key.
+	 *
+	 * @param instance REST Service object pointer that owns the parameter.
 	 */
 	BasicAuthParameter(RESTServiceTemplateBase* instance) :
 		RESTServiceTemplateBase::Parameter<ParamType, BasicAuthAccount>(instance, "Authorization")
@@ -371,6 +411,8 @@ public:
 	}
 	/**
 	 * Implement operator= to copy BasicAuthAccount struct.
+	 *
+	 * @param val BasicAuthAccount reference that will be copied as parameter value.
 	 */
 	void operator=(const BasicAuthAccount& val)
 	{
