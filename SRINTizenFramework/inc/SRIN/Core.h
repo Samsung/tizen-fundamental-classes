@@ -411,7 +411,7 @@ class EventClass
 {
 };
 
-class ObjectClass : public EventClass
+class LIBAPI ObjectClass : public EventClass
 {
 public:
 	virtual ~ObjectClass();
