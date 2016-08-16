@@ -14,3 +14,8 @@ LIBAPI PropertyClass::PropertyBase::PropertyBase(void* instance)
 	// Get current instance from thread specific storage
 	this->instance = instance;
 }
+
+LIBAPI ObjectClass::~ObjectClass()
+{
+
+}

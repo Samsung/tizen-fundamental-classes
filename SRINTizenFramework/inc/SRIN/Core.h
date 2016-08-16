@@ -405,8 +405,16 @@ ValueType* SimpleReadOnlyProperty<DefiningClass, ValueType*>::operator->() const
 	return this->value;
 }
 
+
+
 class EventClass
 {
+};
+
+class ObjectClass : public EventClass
+{
+public:
+	virtual ~ObjectClass();
 };
 
 template<class ObjectSourceType = void*, class EventDataType = void*>

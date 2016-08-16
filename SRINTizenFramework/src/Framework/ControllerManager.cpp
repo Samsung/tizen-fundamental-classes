@@ -52,7 +52,7 @@ LIBAPI StackingControllerManager::StackingControllerManager(IAttachable* app) :
 	this->chain = nullptr;
 }
 
-LIBAPI void StackingControllerManager::NavigateTo(const char* controllerName, void* data)
+LIBAPI void StackingControllerManager::NavigateTo(const char* controllerName, ObjectClass* data)
 {
 	ControllerFactory* factory = GetControllerFactoryEntry(controllerName);
 	if (factory != nullptr)
@@ -95,7 +95,7 @@ bool StackingControllerManager::PopController()
 
 LIBAPI bool StackingControllerManager::NavigateBack()
 {
-	void* returnedData = this->chain->instance->Unload();
+	ObjectClass* returnedData = this->chain->instance->Unload();
 	app->Detach();
 	bool popResult = PopController();
 
@@ -108,7 +108,7 @@ LIBAPI bool StackingControllerManager::NavigateBack()
 	return popResult;
 }
 
-LIBAPI void StackingControllerManager::NavigateTo(const char* controllerName, void* data, bool noTrail)
+LIBAPI void StackingControllerManager::NavigateTo(const char* controllerName, ObjectClass* data, bool noTrail)
 {
 	if (noTrail)
 	{

@@ -290,7 +290,7 @@ protected:
 	 * @note The data parameter must be freed by this controller as the owner of the object is
 	 * 		 passed onto this controller.
 	 */
-	virtual void OnLoad(void* data);
+	virtual void OnLoad(ObjectClass* data);
 
 	/**
 	 * Method that will be called during the unloading of this controller. This method will be
@@ -301,7 +301,7 @@ protected:
 	 * @note The data to be returned must be allocated in the heap, and the responsible party
 	 * 		 to clean up the data is the receiver controller.
 	 */
-	virtual void* OnUnload();
+	virtual ObjectClass* OnUnload();
 
 	/**
 	 * Method that will be called during the reloading of this controller after returning from
@@ -314,7 +314,7 @@ protected:
 	 * @note The data parameter must be freed by this controller as the owner of the object is
 	 * 		 passed onto this controller.
 	 */
-	virtual void OnReload(void* data);
+	virtual void OnReload(ObjectClass* data);
 
 
 	virtual void OnLeaving();
@@ -357,21 +357,21 @@ public:
 	 *
 	 * @param data Parameter to pass to this controller
 	 */
-	void Load(void* data);
+	void Load(ObjectClass* data);
 
 	/**
 	 * Method that will be called by ControllerManager to unload the controller
 	 *
 	 * @return The returned data from this controller
 	 */
-	void* Unload();
+	ObjectClass* Unload();
 
 	/**
 	 * Method that will be called by ControllerManager to reload the controller
 	 *
 	 * @param data Parameter to pass to this controller
 	 */
-	void Reload(void* data);
+	void Reload(ObjectClass* data);
 
 
 
@@ -432,8 +432,8 @@ public:
 
 	ControllerManager();
 	virtual bool NavigateBack() = 0;
-	virtual void NavigateTo(const char* controllerName, void* data) = 0;
-	virtual void NavigateTo(const char* controllerName, void* data, bool noTrail) = 0;
+	virtual void NavigateTo(const char* controllerName, ObjectClass* data) = 0;
+	virtual void NavigateTo(const char* controllerName, ObjectClass* data, bool noTrail) = 0;
 
 	Event<ControllerManager*, ControllerBase*> NavigationProcessed;
 	Property<ControllerManager, ControllerBase*>::Get<&ControllerManager::GetCurrentController> CurrentController;
@@ -463,8 +463,8 @@ public:
 	 */
 	StackingControllerManager(IAttachable* app);
 
-	virtual void NavigateTo(const char* controllerName, void* data);
-	virtual void NavigateTo(const char* controllerName, void* data, bool noTrail);
+	virtual void NavigateTo(const char* controllerName, ObjectClass* data);
+	virtual void NavigateTo(const char* controllerName, ObjectClass* data, bool noTrail);
 	virtual bool NavigateBack();
 };
 
@@ -480,8 +480,8 @@ public:
 	SwitchingControllerManager(IAttachable* iattachable);
 	//void SwitchTo(CString controllerName);
 
-	virtual void NavigateTo(const char* controllerName, void* data);
-	virtual void NavigateTo(const char* controllerName, void* data, bool noTrail);
+	virtual void NavigateTo(const char* controllerName, ObjectClass* data);
+	virtual void NavigateTo(const char* controllerName, ObjectClass* data, bool noTrail);
 	virtual bool NavigateBack();
 };
 

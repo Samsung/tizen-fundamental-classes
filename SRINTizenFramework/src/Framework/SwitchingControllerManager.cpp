@@ -24,12 +24,12 @@ LIBAPI ControllerBase* SwitchingControllerManager::GetController(CString control
 	return static_cast<ControllerBase*>(entry->attachedData);
 }
 
-void SwitchingControllerManager::NavigateTo(const char* controllerName, void* data)
+void SwitchingControllerManager::NavigateTo(const char* controllerName, ObjectClass* data)
 {
 	NavigateTo(controllerName, data, false);
 }
 
-void SwitchingControllerManager::NavigateTo(const char* controllerName, void* data, bool noTrail)
+void SwitchingControllerManager::NavigateTo(const char* controllerName, ObjectClass* data, bool noTrail)
 {
 	auto controllerToSwitch = GetController(controllerName);
 

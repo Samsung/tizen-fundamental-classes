@@ -15,30 +15,30 @@ LIBAPI ControllerBase::ControllerBase(ControllerManager* m, ViewBase* v, CString
 	Title = "";
 }
 
-LIBAPI void ControllerBase::OnLoad(void* data)
+LIBAPI void ControllerBase::OnLoad(ObjectClass* data)
 {
 }
 
-LIBAPI void* ControllerBase::OnUnload()
+LIBAPI ObjectClass* ControllerBase::OnUnload()
 {
 	return NULL;
 }
 
-LIBAPI void ControllerBase::Load(void* data)
+LIBAPI void ControllerBase::Load(ObjectClass* data)
 {
 	OnLoad(data);
 }
 
-LIBAPI void* ControllerBase::Unload()
+LIBAPI ObjectClass* ControllerBase::Unload()
 {
 	return OnUnload();
 }
 
-LIBAPI void ControllerBase::OnReload(void* data)
+LIBAPI void ControllerBase::OnReload(ObjectClass* data)
 {
 }
 
-LIBAPI void ControllerBase::Reload(void* data)
+LIBAPI void ControllerBase::Reload(ObjectClass* data)
 {
 	OnReload(data);
 }
