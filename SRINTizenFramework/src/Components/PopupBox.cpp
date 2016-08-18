@@ -19,11 +19,6 @@ LIBAPI Evas_Object* SRIN::Components::PopupBox::CreateContent(Evas_Object* root)
 	return nullptr;
 }
 
-LIBAPI bool SRIN::Components::PopupBox::BackButtonPressed() {
-	Dismiss();
-	return false;
-}
-
 LIBAPI void SRIN::Components::PopupBox::SetTitle(const std::string& text) {
 	this->title = text;
 	elm_object_part_text_set(this->popup, "title,text", this->title.c_str());
