@@ -20,6 +20,12 @@ void win_delete_request_cb(void *data, Evas_Object *obj, void *event_info)
 	app->BackButtonPressed();
 }
 
+void win_more_request_cb(void *data, Evas_Object *obj, void *event_info)
+{
+	UIApplicationBase* app = (UIApplicationBase*) data;
+	dlog_print(DLOG_DEBUG, LOG_TAG, "More button pressed");
+	app->OnMoreButtonPressed();
+}
 
 SimpleReadOnlyProperty<UIApplicationBase, UIApplicationBase*> UIApplicationBase::CurrentInstance;
 
@@ -28,6 +34,7 @@ LIBAPI SRIN::Framework::UIApplicationBase::UIApplicationBase(CString packageName
 {
 	this->rootFrame = this->win = this->conform = NULL;
 	this->haveEventBackPressed = false;
+	this->haveEventMorePressed = false;
 }
 
 LIBAPI void SRIN::Framework::UIApplicationBase::SetIndicatorColor(Color color)
@@ -70,6 +77,7 @@ LIBAPI bool UIApplicationBase::ApplicationCreate()
 	//evas_object_smart_callback_add(this->win, "delete,request", win_delete_request_cb, NULL);
 	//eext_object_event_callback_add(this->win, EEXT_CALLBACK_BACK, win_delete_request_cb, this);
 	EnableBackButtonCallback(true);
+	EnableMoreButtonCallback(true);
 
 	// Conformant
 	// Create and initialize elm_conformant.
@@ -243,6 +251,11 @@ LIBAPI bool UIApplicationBase::OnBackButtonPressed()
 	return true;
 }
 
+LIBAPI void UIApplicationBase::OnMoreButtonPressed()
+{
+
+}
+
 LIBAPI void UIApplicationBase::EnableBackButtonCallback(bool enable)
 {
 	if (enable)
@@ -257,6 +270,23 @@ LIBAPI void UIApplicationBase::EnableBackButtonCallback(bool enable)
 	{
 		eext_object_event_callback_del(this->win, EEXT_CALLBACK_BACK, win_delete_request_cb);
 		this->haveEventBackPressed = false;
+	}
+}
+
+LIBAPI void UIApplicationBase::EnableMoreButtonCallback(bool enable)
+{
+	if (enable)
+	{
+		if (!this->haveEventMorePressed)
+		{
+			eext_object_event_callback_add(this->win, EEXT_CALLBACK_MORE, win_more_request_cb, this);
+			this->haveEventMorePressed = true;
+		}
+	}
+	else
+	{
+		eext_object_event_callback_del(this->win, EEXT_CALLBACK_MORE, win_more_request_cb);
+		this->haveEventMorePressed = false;
 	}
 }
 

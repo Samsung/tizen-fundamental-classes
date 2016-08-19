@@ -184,6 +184,7 @@ class LIBAPI UIApplicationBase : public ApplicationBase, public IAttachable
 private:
 
 	bool haveEventBackPressed;
+	bool haveEventMorePressed;
 
 	struct BackButtonCallbackDelegate
 	{
@@ -238,7 +239,11 @@ public:
 	 */
 	virtual bool OnBackButtonPressed();
 
+	virtual void OnMoreButtonPressed();
+
 	void EnableBackButtonCallback(bool enable);
+
+	void EnableMoreButtonCallback(bool enable);
 
 	bool AcquireExclusiveBackButtonPressed(EventClass* instance, BackButtonCallback callback);
 
