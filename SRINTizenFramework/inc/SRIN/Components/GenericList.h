@@ -74,20 +74,27 @@ namespace Components {
 	private:
 		Evas_Object* genlist;
 		Elm_Object_Item* dummyBottom;
+		Elm_Object_Item* dummyTop;
 		Elm_Object_Item* realBottom;
 		Elm_Genlist_Item_Class* dummyBottomItemClass;
+		Elm_Genlist_Item_Class* dummyTopItemClass;
 		Adapter* dataSource;
 		bool overscroll;
+		bool underscroll;
 		bool longpressed;
 		bool isScrolling;
 		int backToTopThreshold;
 		bool backToTopShown;
+		bool firstRealize;
 
 		void SetDataSource(Adapter* adapter);
 		Adapter* GetDataSource();
 
 		void SetOverscroll(bool const& o);
 		bool GetOverscroll();
+
+		void SetUnderscroll(bool const& o);
+		bool GetUnderscroll();
 
 		void SetLongClicked(bool const& o);
 		bool GetLongClicked();
@@ -128,8 +135,10 @@ namespace Components {
 		void ResetScroll(bool animated);
 		Property<GenericList, Adapter*>::GetSet<&GenericList::GetDataSource, &GenericList::SetDataSource> DataSource;
 		Property<GenericList, bool>::GetSet<&GenericList::GetOverscroll, &GenericList::SetOverscroll> Overscroll;
+		Property<GenericList, bool>::GetSet<&GenericList::GetUnderscroll, &GenericList::SetUnderscroll> Underscroll;
 		Property<GenericList, bool>::GetSet<&GenericList::GetLongClicked, &GenericList::SetLongClicked> IsLongClicked;
 		Property<GenericList, int>::GetSet<&GenericList::GetBackToTopThreshold, &GenericList::SetBackToTopThreshold> BackToTopThreshold;
+
 		Event<GenericList*, void*> eventScrolled;
 		Event<GenericList*, void*> eventScrolledDown;
 		Event<GenericList*, void*> eventScrolledUp;

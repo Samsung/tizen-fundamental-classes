@@ -87,7 +87,9 @@ LIBAPI SRIN::Components::GenericListItemClassBase::~GenericListItemClassBase()
  * ================================================================================================================= */
 
 LIBAPI SRIN::Components::GenericList::GenericList() :
-	dataSource(nullptr), genlist(nullptr), realBottom(nullptr), DataSource(this), Overscroll(this), overscroll(false), IsLongClicked(this), BackToTopThreshold(this)
+	dataSource(nullptr), genlist(nullptr), realBottom(nullptr), DataSource(this),
+	Overscroll(this), overscroll(false), Underscroll(this), underscroll(false),
+	IsLongClicked(this), BackToTopThreshold(this)
 {
 	eventScrolledInternal += EventHandler(GenericList::OnScrolledInternal);
 	eventScrolledDownInternal += EventHandler(GenericList::OnScrolledDownInternal);
@@ -104,6 +106,7 @@ LIBAPI SRIN::Components::GenericList::GenericList() :
 	longpressed = false;
 	backToTopThreshold = -1;
 	backToTopShown = false;
+	firstRealize = true;
 
 	dummyBottom = nullptr;
 	dummyBottomItemClass = elm_genlist_item_class_new();
@@ -123,6 +126,29 @@ LIBAPI SRIN::Components::GenericList::GenericList() :
 		evas_object_size_hint_weight_set(dummyBox, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
 		evas_object_size_hint_align_set(dummyBox, EVAS_HINT_FILL, EVAS_HINT_FILL);
 		evas_object_size_hint_min_set(dummyBox, 0, 50);
+
+
+		return dummyBox;
+	};
+
+	dummyTop = nullptr;
+	dummyTopItemClass = elm_genlist_item_class_new();
+	dummyTopItemClass->item_style = "full";
+	dummyTopItemClass->func.content_get = [] (void *data, Evas_Object *obj, const char *part) -> Evas_Object*
+	{
+		GenericList* genlist = (GenericList*)data;
+		Evas_Object* content = nullptr;
+
+		genlist->DummyTopContent(genlist, &content);
+
+		if(content != nullptr)
+			return content;
+
+		auto dummyBox = elm_bg_add(obj);
+		evas_object_color_set(dummyBox, 0, 0, 0, 0);
+		evas_object_size_hint_weight_set(dummyBox, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+		evas_object_size_hint_align_set(dummyBox, EVAS_HINT_FILL, EVAS_HINT_FILL);
+		evas_object_size_hint_min_set(dummyBox, 0, 100);
 
 
 		return dummyBox;
@@ -186,6 +212,12 @@ LIBAPI void SRIN::Components::GenericList::AppendItemToGenlist(Adapter::AdapterI
 	{
 		handlerPtr = &Genlist_ClickedEventHandler;
 		eventPackage = package;
+	}
+
+	if (elm_genlist_items_count(genlist) == 0)
+	{
+		if (underscroll)
+			dummyTop = elm_genlist_item_prepend(genlist, dummyTopItemClass, this, nullptr, ELM_GENLIST_ITEM_NONE, nullptr, nullptr);
 	}
 
 	if(realBottom != nullptr)
@@ -300,11 +332,21 @@ void SRIN::Components::GenericList::OnScrolledBottomInternal(EFL::EvasSmartEvent
 
 void SRIN::Components::GenericList::OnScrolledTopInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
 {
-	eventScrolledTop(this, eventData);
+
+	if (underscroll)
+		eventUnderscrolled(this, eventData);
+
 }
 
 void SRIN::Components::GenericList::OnDummyRealized(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
 {
+	if (firstRealize)
+	{
+		firstRealize = false;
+		if (underscroll)
+			elm_genlist_item_show(elm_genlist_item_next_get(dummyTop), ELM_GENLIST_ITEM_SCROLLTO_TOP);
+	}
+
 	if(eventData == dummyBottom)
 	{
 		// If the dummy bottom is realized, call the reaching bottom function
@@ -342,6 +384,17 @@ bool SRIN::Components::GenericList::GetOverscroll()
 	return this->overscroll;
 }
 
+void SRIN::Components::GenericList::SetUnderscroll(const bool& o)
+{
+	this->underscroll = o;
+}
+
+bool SRIN::Components::GenericList::GetUnderscroll()
+{
+	return this->underscroll;
+}
+
+
 void SRIN::Components::GenericList::OnScrollingStart(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
 {
 	isScrolling   = true;
@@ -351,6 +404,14 @@ void SRIN::Components::GenericList::OnScrollingStart(EFL::EvasSmartEvent* event,
 
 void SRIN::Components::GenericList::OnScrollingEnd(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
 {
+	if (underscroll)
+	{
+		int x, y;
+		evas_object_geometry_get(genlist, &x, &y, nullptr, nullptr);
+		if (elm_genlist_at_xy_item_get(genlist, x, y, nullptr) == dummyTop) {
+			elm_genlist_item_show(elm_genlist_item_next_get(dummyTop), ELM_GENLIST_ITEM_SCROLLTO_TOP);
+		}
+	}
 	isScrolling = false;
 	eventScrollingEnd(this, nullptr);
 }
