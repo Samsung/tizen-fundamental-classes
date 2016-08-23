@@ -116,8 +116,10 @@ namespace Components {
 		EFL::EvasSmartEvent eventScrollingStartInternal;
 		EFL::EvasSmartEvent eventScrollingEndInternal;
 		EFL::EvasSmartEvent eventLongPressedInternal;
+		EFL::EvasSmartEvent eventItemUnrealized;
 		EFL::ObjectItemEdjeSignalEvent eventItemSignalInternal;
 
+		
 		void OnScrolledInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData);
 		void OnScrolledDownInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData);
 		void OnScrolledUpInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData);
@@ -128,6 +130,8 @@ namespace Components {
 		void OnScrollingEnd(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData);
 		void OnLongPressedInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData);
 		void OnItemSignalEmit(EFL::ObjectItemEdjeSignalEvent* event, Elm_Object_Item* obj, EFL::EdjeSignalInfo eventData);
+		void OnItemUnrealized(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData);
+		
 	protected:
 		virtual Evas_Object* CreateComponent(Evas_Object* root);
 	public:

@@ -101,6 +101,7 @@ LIBAPI SRIN::Components::GenericList::GenericList() :
 	eventScrollingStartInternal += EventHandler(GenericList::OnScrollingStart);
 	eventScrollingEndInternal += EventHandler(GenericList::OnScrollingEnd);
 	eventItemSignalInternal += EventHandler(GenericList::OnItemSignalEmit);
+	eventItemUnrealized += EventHandler(GenericList::OnItemUnrealized);
 
 	isScrolling = false;
 	longpressed = false;
@@ -148,7 +149,7 @@ LIBAPI SRIN::Components::GenericList::GenericList() :
 		evas_object_color_set(dummyBox, 0, 0, 0, 0);
 		evas_object_size_hint_weight_set(dummyBox, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
 		evas_object_size_hint_align_set(dummyBox, EVAS_HINT_FILL, EVAS_HINT_FILL);
-		evas_object_size_hint_min_set(dummyBox, 0, 100);
+		evas_object_size_hint_min_set(dummyBox, 0, 150);
 
 
 		return dummyBox;
@@ -185,6 +186,7 @@ LIBAPI void SRIN::Components::GenericList::SetDataSource(Adapter* newAdapter)
 
 	// Assign new adapter
 	this->dataSource = newAdapter;
+	firstRealize = true;
 
 	// Append all existing item in adapter
 	auto all = dataSource->GetAll();
@@ -288,6 +290,8 @@ LIBAPI Evas_Object* SRIN::Components::GenericList::CreateComponent(Evas_Object* 
 	evas_object_smart_callback_add(genlist, "scroll,drag,start", EFL::EvasSmartEventHandler, &eventScrollingStartInternal);
 	evas_object_smart_callback_add(genlist, "scroll,drag,stop", EFL::EvasSmartEventHandler, &eventScrollingEndInternal);
 	evas_object_smart_callback_add(genlist, "longpressed", EFL::EvasSmartEventHandler, &eventLongPressedInternal);
+	evas_object_smart_callback_add(genlist, "unrealized", EFL::EvasSmartEventHandler, &eventItemUnrealized);
+	
 	elm_genlist_highlight_mode_set(genlist, EINA_FALSE);
 	elm_genlist_select_mode_set(genlist, ELM_OBJECT_SELECT_MODE_ALWAYS);
 
@@ -333,7 +337,7 @@ void SRIN::Components::GenericList::OnScrolledBottomInternal(EFL::EvasSmartEvent
 void SRIN::Components::GenericList::OnScrolledTopInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
 {
 
-	if (underscroll)
+	if (underscroll && dummyTop)
 		eventUnderscrolled(this, eventData);
 
 }
@@ -352,11 +356,35 @@ void SRIN::Components::GenericList::OnDummyRealized(EFL::EvasSmartEvent* event, 
 		// If the dummy bottom is realized, call the reaching bottom function
 		eventReachingBottom(this, nullptr);
 	}
+	else if (dummyTop == nullptr && eventData == elm_genlist_first_item_get(genlist))
+	{
+		ecore_timer_add(1.0, [] (void* data) -> Eina_Bool {
+			GenericList* gl = (GenericList*)data;
+			dlog_print(DLOG_VERBOSE, LOG_TAG, "Prepend dummy top");
+			gl->dummyTop = elm_genlist_item_prepend(gl->genlist, gl->dummyTopItemClass, gl, nullptr, ELM_GENLIST_ITEM_NONE, nullptr, nullptr);
+			return ECORE_CALLBACK_CANCEL;
+		}, this);
+	}
+	else if (eventData == dummyTop)
+	{
+		dlog_print(DLOG_VERBOSE, LOG_TAG, "Dummy top realize");
+		elm_genlist_item_show(elm_genlist_item_next_get(dummyTop), ELM_GENLIST_ITEM_SCROLLTO_TOP);
+	}
 	else
 	{
 		auto ret = elm_object_item_widget_get((Elm_Object_Item*)eventData);
 
 		dlog_print(DLOG_DEBUG, LOG_TAG, "Widget Realized SRIN %d", obj);
+	}
+}
+
+void SRIN::Components::GenericList::OnItemUnrealized(ElementaryEvent* event, Evas_Object* obj, void* eventData)
+{
+	if(dummyTop && eventData == elm_genlist_item_next_get(dummyTop))
+	{
+		dlog_print(DLOG_VERBOSE, LOG_TAG, "Delete dummy top");
+		elm_object_item_del(dummyTop);
+		dummyTop = nullptr;
 	}
 }
 
@@ -404,7 +432,7 @@ void SRIN::Components::GenericList::OnScrollingStart(EFL::EvasSmartEvent* event,
 
 void SRIN::Components::GenericList::OnScrollingEnd(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
 {
-	if (underscroll)
+	if (underscroll && dummyTop)
 	{
 		int x, y;
 		evas_object_geometry_get(genlist, &x, &y, nullptr, nullptr);
