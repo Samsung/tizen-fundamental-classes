@@ -337,9 +337,6 @@ void SRIN::Components::GenericList::OnScrolledBottomInternal(EFL::EvasSmartEvent
 void SRIN::Components::GenericList::OnScrolledTopInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
 {
 
-	if (underscroll && dummyTop)
-		eventUnderscrolled(this, eventData);
-
 }
 
 void SRIN::Components::GenericList::OnDummyRealized(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
@@ -434,10 +431,17 @@ void SRIN::Components::GenericList::OnScrollingEnd(EFL::EvasSmartEvent* event, E
 {
 	if (underscroll && dummyTop)
 	{
-		int x, y;
-		evas_object_geometry_get(genlist, &x, &y, nullptr, nullptr);
-		if (elm_genlist_at_xy_item_get(genlist, x, y, nullptr) == dummyTop) {
-			elm_genlist_item_show(elm_genlist_item_next_get(dummyTop), ELM_GENLIST_ITEM_SCROLLTO_TOP);
+		int y;
+		elm_scroller_region_get(genlist, nullptr, &y, nullptr, nullptr);
+		if (y == 0) {
+			UnderScrolled(this, nullptr);
+		}
+		else {
+			int x, y;
+			evas_object_geometry_get(genlist, &x, &y, nullptr, nullptr);
+			if (elm_genlist_at_xy_item_get(genlist, x, y, nullptr) == dummyTop) {
+				elm_genlist_item_show(elm_genlist_item_next_get(dummyTop), ELM_GENLIST_ITEM_SCROLLTO_TOP);
+			}
 		}
 	}
 	isScrolling = false;
