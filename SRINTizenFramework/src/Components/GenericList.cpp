@@ -358,7 +358,8 @@ void SRIN::Components::GenericList::OnDummyRealized(EFL::EvasSmartEvent* event, 
 		ecore_timer_add(1.0, [] (void* data) -> Eina_Bool {
 			GenericList* gl = (GenericList*)data;
 			dlog_print(DLOG_VERBOSE, LOG_TAG, "Prepend dummy top");
-			gl->dummyTop = elm_genlist_item_prepend(gl->genlist, gl->dummyTopItemClass, gl, nullptr, ELM_GENLIST_ITEM_NONE, nullptr, nullptr);
+			if (gl->underscroll)
+				gl->dummyTop = elm_genlist_item_prepend(gl->genlist, gl->dummyTopItemClass, gl, nullptr, ELM_GENLIST_ITEM_NONE, nullptr, nullptr);
 			return ECORE_CALLBACK_CANCEL;
 		}, this);
 	}
