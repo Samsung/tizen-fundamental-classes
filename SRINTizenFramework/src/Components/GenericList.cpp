@@ -164,6 +164,11 @@ LIBAPI void SRIN::Components::GenericList::ResetScroll(bool animated)
 	else {
 		elm_scroller_page_show(genlist, 0, 0);
 	}
+	if (underscroll) {
+		if (dummyTop == nullptr)
+			dummyTop = elm_genlist_item_prepend(genlist, dummyTopItemClass, this, nullptr, ELM_GENLIST_ITEM_NONE, nullptr, nullptr);
+		elm_genlist_item_show(elm_genlist_item_next_get(dummyTop), ELM_GENLIST_ITEM_SCROLLTO_TOP);
+	}
 }
 
 LIBAPI void SRIN::Components::GenericList::SetDataSource(Adapter* newAdapter)
@@ -368,6 +373,10 @@ void SRIN::Components::GenericList::OnDummyRealized(EFL::EvasSmartEvent* event, 
 		dlog_print(DLOG_VERBOSE, LOG_TAG, "Dummy top realize");
 		elm_genlist_item_show(elm_genlist_item_next_get(dummyTop), ELM_GENLIST_ITEM_SCROLLTO_TOP);
 	}
+	else if (dummyTop != nullptr && eventData == elm_genlist_item_next_get(dummyTop))
+	{
+		elm_genlist_item_show(elm_genlist_item_next_get(dummyTop), ELM_GENLIST_ITEM_SCROLLTO_TOP);
+	}
 	else
 	{
 		auto ret = elm_object_item_widget_get((Elm_Object_Item*)eventData);
@@ -435,6 +444,8 @@ void SRIN::Components::GenericList::OnScrollingEnd(EFL::EvasSmartEvent* event, E
 		int y;
 		elm_scroller_region_get(genlist, nullptr, &y, nullptr, nullptr);
 		if (y == 0) {
+			elm_object_item_del(dummyTop);
+			dummyTop = nullptr;
 			UnderScrolled(this, nullptr);
 		}
 		else {
