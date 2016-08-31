@@ -22,6 +22,8 @@ namespace EFL
 		const char* source;
 	};
 
+	typedef Event<> EcoreJobEvent;
+
 	struct EvasEventSourceInfo
 	{
 		Evas* evas;
@@ -37,6 +39,9 @@ namespace EFL
 	void EvasObjectEventHandler(void* data, Evas* evas, Evas_Object* obj, void* eventData);
 	void EdjeSignalEventHandler(void* data, Evas_Object* obj, const char* emission, const char* source);
 	void EdjeObjectItemSignalEventHandler(void* data, Elm_Object_Item* it, const char* emission, const char* source);
+d
+	void EcoreJobEventHandler(void* d);
+
 }
 }
 

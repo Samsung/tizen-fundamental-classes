@@ -58,4 +58,11 @@ void SRIN::EFL::EdjeObjectItemSignalEventHandler(void* data,
 #endif
 
 	(*package)(it, { emission, source });
+
+}
+
+void SRIN::EFL::EcoreJobEventHandler(void* d)
+{
+	auto ev = reinterpret_cast<EcoreJobEvent*>(d);
+	ev(nullptr, nullptr);
 }
