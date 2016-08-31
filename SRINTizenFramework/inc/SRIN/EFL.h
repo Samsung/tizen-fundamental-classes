@@ -42,6 +42,7 @@ namespace EFL
 d
 	void EcoreJobEventHandler(void* d);
 
+	Ecore_Job* QueueJob(EcoreJobEvent& event);
 }
 }
 

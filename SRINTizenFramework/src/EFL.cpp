@@ -7,6 +7,7 @@
 
 #include "SRIN/EFL.h"
 
+
 void SRIN::EFL::EvasSmartEventHandler(void* data, Evas_Object* obj,
 		void* eventData)
 {
@@ -62,7 +63,15 @@ void SRIN::EFL::EdjeObjectItemSignalEventHandler(void* data,
 }
 
 void SRIN::EFL::EcoreJobEventHandler(void* d)
+
+LIBAPI void SRIN::EFL::EcoreJobEventHandler(void* d)
 {
 	auto ev = reinterpret_cast<EcoreJobEvent*>(d);
-	ev(nullptr, nullptr);
+	(*ev)(nullptr, nullptr);
+}
+
+LIBAPI Ecore_Job* SRIN::EFL::QueueJob(EcoreJobEvent& event)
+{
+	auto ptr = &event;
+	return ecore_job_add(EcoreJobEventHandler, ptr);
 }
