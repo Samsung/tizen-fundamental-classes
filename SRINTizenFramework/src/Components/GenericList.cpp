@@ -156,6 +156,17 @@ LIBAPI SRIN::Components::GenericList::GenericList() :
 	};
 }
 
+LIBAPI SRIN::Components::GenericList::~GenericList()
+{
+	evas_object_smart_callback_del(genlist, "scroll", SmartEventHandler);
+	evas_object_smart_callback_del(genlist, "scroll,down", SmartEventHandler);
+	evas_object_smart_callback_del(genlist, "scroll,up", SmartEventHandler);
+	evas_object_smart_callback_del(genlist, "edge,top", SmartEventHandler);
+	evas_object_smart_callback_del(genlist, "edge,bottom", SmartEventHandler);
+	evas_object_smart_callback_del(genlist, "scroll,drag,start", SmartEventHandler);
+	evas_object_smart_callback_del(genlist, "scroll,drag,stop", SmartEventHandler);
+}
+
 LIBAPI void SRIN::Components::GenericList::ResetScroll(bool animated)
 {
 	if (animated) {
