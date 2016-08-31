@@ -6,13 +6,13 @@
  */
 
 template<class ObjectSourceType, class EventDataType>
-inline Event<ObjectSourceType, EventDataType>::Event() :
+Event<ObjectSourceType, EventDataType>::Event() :
 	first(nullptr), logDelete(false)
 {
 }
 
 template<class ObjectSourceType, class EventDataType>
-inline Event<ObjectSourceType, EventDataType>::Event(bool logDelete) :
+Event<ObjectSourceType, EventDataType>::Event(bool logDelete) :
 	first(nullptr), logDelete(logDelete)
 {
 	if(logDelete)
@@ -20,7 +20,7 @@ inline Event<ObjectSourceType, EventDataType>::Event(bool logDelete) :
 }
 
 template<class ObjectSourceType, class EventDataType>
-inline Event<ObjectSourceType, EventDataType>::~Event()
+Event<ObjectSourceType, EventDataType>::~Event()
 {
 	if(logDelete)
 		dlog_print(DLOG_DEBUG, "SRINFW-Event", "Event deleted %d", this);
@@ -39,20 +39,20 @@ inline Event<ObjectSourceType, EventDataType>::~Event()
 
 template<class ObjectSourceType, class EventDataType>
 template<class EventClassType>
-inline Event<ObjectSourceType, EventDataType>::EventDelegate::EventDelegate(EventClassType* instance, void (EventClassType::* eventHandler)(Event<ObjectSourceType, EventDataType>* eventSource, ObjectSourceType objSource, EventDataType eventData)) :
+Event<ObjectSourceType, EventDataType>::EventDelegate::EventDelegate(EventClassType* instance, void (EventClassType::* eventHandler)(Event<ObjectSourceType, EventDataType>* eventSource, ObjectSourceType objSource, EventDataType eventData)) :
 	instance(instance), eventHandler(reinterpret_cast<Event::EventHandler>(eventHandler))
 	{ }
 
 
 template<class ObjectSourceType, class EventDataType>
-inline void Event<ObjectSourceType, EventDataType>::operator+=(const EventDelegate& other)
+void Event<ObjectSourceType, EventDataType>::operator+=(const EventDelegate& other)
 {
 	auto newNode = new EventNode({ other.instance, other.eventHandler, this->first });
 	this->first = newNode;
 }
 
 template<class ObjectSourceType, class EventDataType>
-inline void Event<ObjectSourceType, EventDataType>::operator-=(const EventDelegate& other)
+void Event<ObjectSourceType, EventDataType>::operator-=(const EventDelegate& other)
 {
 	auto current = this->first;
 		
@@ -78,7 +78,7 @@ inline void Event<ObjectSourceType, EventDataType>::operator-=(const EventDelega
 
 
 template<class ObjectSourceType, class EventDataType>
-inline void Event<ObjectSourceType, EventDataType>::operator()(ObjectSourceType objSource, EventDataType eventData) const
+void Event<ObjectSourceType, EventDataType>::operator()(ObjectSourceType objSource, EventDataType eventData) const
 {
 	if(logDelete)
 		dlog_print(DLOG_DEBUG, "SRINFW-Event", "Event raise %d", this);
