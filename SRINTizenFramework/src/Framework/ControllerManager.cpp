@@ -48,25 +48,23 @@ SRIN::Framework::ControllerManager::~ControllerManager()
 LIBAPI StackingControllerManager::StackingControllerManager(IAttachable* app) :
 	app(app)
 {
-
+	this->eventPerformNavigation += AddEventHandler(StackingControllerManager::OnPerformNavigation);
 	this->chain = nullptr;
 }
 
 LIBAPI void StackingControllerManager::NavigateTo(const char* controllerName, ObjectClass* data)
 {
-	ControllerFactory* factory = GetControllerFactoryEntry(controllerName);
-	if (factory != nullptr)
-	{
-		ControllerBase* newInstance = factory->factoryMethod(this);
+	if(this->pendingNavigation)
+		return; // TODO change this to exception
 
-		if(this->chain != nullptr)
-			this->chain->instance->Leave();
+	this->pendingNavigation = true;
+	this->navigateForward = true;
+	this->nextControllerName = controllerName;
+	this->data = data;
+	this->noTrail = false;
+	EFL::QueueJob(this->eventPerformNavigation);
 
-		PushController(newInstance);
-		app->Attach(newInstance->View);
-		newInstance->Load(data);
-		NavigationProcessed(this, newInstance);
-	}
+
 }
 
 void StackingControllerManager::PushController(ControllerBase* controller)
@@ -95,29 +93,83 @@ bool StackingControllerManager::PopController()
 
 LIBAPI bool StackingControllerManager::NavigateBack()
 {
-	ObjectClass* returnedData = this->chain->instance->Unload();
-	app->Detach();
-	bool popResult = PopController();
+	this->pendingNavigation = true;
+	this->navigateForward = false;
+	EFL::QueueJob(this->eventPerformNavigation);
 
-	if (popResult)
-	{
-		this->chain->instance->Reload(returnedData);
-		NavigationProcessed(this, this->chain->instance);
-	}
-
-	return popResult;
+	// The new implementation should always return true
+	// as the codes might interpret False to exit the application
+	return true;
 }
 
 LIBAPI void StackingControllerManager::NavigateTo(const char* controllerName, ObjectClass* data, bool noTrail)
 {
-	if (noTrail)
-	{
-		this->chain->instance->Unload();
-		app->Detach();
-		PopController();
-	}
+	if(this->pendingNavigation)
+		return; // TODO change this to exception
 
-	NavigateTo(controllerName, data);
+	this->pendingNavigation = true;
+	this->navigateForward = true;
+	this->nextControllerName = controllerName;
+	this->data = data;
+	this->noTrail = true;
+	EFL::QueueJob(this->eventPerformNavigation);
+}
+
+void StackingControllerManager::OnPerformNavigation(EFL::EcoreJobEvent* ev, void* u1, void* u2)
+{
+	if(this->pendingNavigation)
+	{
+		if(this->navigateForward)
+		{
+			// Navigate forward
+			ControllerFactory* factory = GetControllerFactoryEntry(this->nextControllerName);
+			if(factory == nullptr)
+				return;
+
+			if(this->noTrail)
+			{
+				this->chain->instance->Unload();
+				app->Detach();
+				PopController();
+			}
+
+
+			// Instantiate controller
+			ControllerBase* newInstance = factory->factoryMethod(this);
+
+			// Perform OnLeave on previous controller
+			if(this->chain != nullptr)
+				this->chain->instance->Leave();
+
+			PushController(newInstance);
+			app->Attach(newInstance->View);
+
+			// Instantiated State, move to Running state
+			newInstance->Load(this->data);
+			NavigationProcessed(this, newInstance);
+		}
+		else
+		{
+			// Navigate back
+			void* returnedData = this->chain->instance->Unload();
+			app->Detach();
+			bool popResult = PopController();
+
+			if (popResult)
+			{
+				this->chain->instance->Reload(returnedData);
+				NavigationProcessed(this, this->chain->instance);
+			}
+
+			// If pop result is false, it is the end of the controller
+			// It should end the application
+			// TODO: Add this as event instead
+			if(!popResult)
+				ui_app_exit();
+		}
+
+		this->pendingNavigation = false;
+	}
 }
 
 LIBAPI ControllerFactory::ControllerFactory(CString controllerName, ControllerFactoryMethod factory) :

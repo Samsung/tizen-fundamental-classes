@@ -24,6 +24,7 @@ extern "C" {
 
 #include "SRIN/Core.h"
 //#include "SRIN/ELMInterface.h"
+#include "SRIN/EFL.h"
 
 /**
  * Macro to register a controller to a ControllerManager by providing a controller name and controller type
@@ -426,7 +427,7 @@ public:
 /**
  * Class that manages Controller and provides navigation mechanism between loaded controllers
  */
-class LIBAPI ControllerManager : public PropertyClass
+class LIBAPI ControllerManager : public PropertyClass, public EventClass
 {
 private:
 	Eina_Hash* controllerTable;
@@ -458,6 +459,14 @@ private:
 	IAttachable* const app;
 	void PushController(ControllerBase* controller);
 	bool PopController();
+
+	EFL::EcoreJobEvent eventPerformNavigation;
+	bool pendingNavigation;
+	bool navigateForward;
+	CString nextControllerName;
+	void* data;
+	bool noTrail;
+	void OnPerformNavigation(EFL::EcoreJobEvent* ev, void* u1, void* u2);
 protected:
 	virtual ControllerBase* GetCurrentController();
 public:
@@ -535,8 +544,6 @@ public:
 	bool IsCreated();
 	Evas_Object* GetViewRoot();
 	virtual ~ViewBase();
-
-
 };
 
 class LIBAPI INaviframeContent : virtual public ITitleProvider
