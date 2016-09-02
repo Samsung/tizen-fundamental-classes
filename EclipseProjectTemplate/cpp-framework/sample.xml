@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<template>
+	<slp-property>
+		<property-group>
+			<sample-name>Native App with SRIN C++ Framework</sample-name>
+			<category>Platform Template</category>
+			<sdk-version>1.00</sdk-version>
+			<project-type>org.tizen.nativecore.buildArtefactType.app</project-type>
+			<sample-description>description.xml</sample-description>
+		</property-group>
+	</slp-property>
+	<process type="org.tizen.nativeappcommon.TizenCopyFolder">
+		<simple name="projectName" value="$(projectName)"/>
+		<simple name="folderPath" value="project"/>
+		<complex-array name="replaceableFiles">
+			<element>
+				<simple name="sourcePath" value="src/Main.cpp"/>
+				<simple name="targetPath" value="src/$(appName).cpp"/>
+				<simple name="replaceable" value="true"/>
+			</element>
+			<element>
+				<simple name="sourcePath" value="src/Controller/SplashScreenController.cpp"/>
+				<simple name="targetPath" value="src/Controller/SplashScreenController.cpp"/>
+				<simple name="replaceable" value="true"/>
+			</element>
+			
+			<element>
+				<simple name="sourcePath" value="src/View/SplashScreenView.cpp"/>
+				<simple name="targetPath" value="src/View/SplashScreenView.cpp"/>
+				<simple name="replaceable" value="true"/>
+			</element>
+			<element>
+				<simple name="sourcePath" value="inc/Main.h"/>
+				<simple name="targetPath" value="inc/$(appName).h"/>
+				<simple name="replaceable" value="true"/>
+			</element>
+			<element>
+				<simple name="sourcePath" value="inc/Controller/SplashScreenController.h"/>
+				<simple name="targetPath" value="inc/Controller/SplashScreenController.h"/>
+				<simple name="replaceable" value="true"/>
+			</element>
+			
+			<element>
+				<simple name="sourcePath" value="inc/View/SplashScreenView.h"/>
+				<simple name="targetPath" value="inc/View/SplashScreenView.h"/>
+				<simple name="replaceable" value="true"/>
+			</element>
+			<element>
+				<simple name="sourcePath" value="tizen-manifest.xml"/>
+				<simple name="targetPath" value="tizen-manifest.xml"/>
+				<simple name="replaceable" value="true"/>
+			</element>
+			<element>
+				<simple name="sourcePath" value="shared/res/mainmenu.png"/>
+				<simple name="targetPath" value="shared/res/$(appName).png"/>
+				<simple name="replaceable" value="false"/>
+			</element>
+			<element>
+				<simple name="sourcePath" value="project_def.prop"/>
+				<simple name="targetPath" value="project_def.prop"/>
+				<simple name="replaceable" value="true"/>
+			</element>
+		</complex-array>
+	</process>
+	<process type="org.tizen.nativecore.SetDefaultCoreFrameworks">
+		<simple name="projectName" value="$(projectName)"/>
+		<complex-array name="frameworkList">
+			<element>
+				<simple name="framework" value="Native_API"/>
+			</element>
+		</complex-array>
+	</process>
+	<process
+	  type="org.eclipse.cdt.managedbuilder.core.AppendToMBSStringListOptionValues">
+		  <simple name="projectName" value="$(projectName)" />
+		  <complex-array name="resourcePaths">
+			  <element>
+				  <simple name="id"
+					value="gnu.cpp.compiler.option.include.paths" />
+				  <simple-array name="values">
+					  <element value="&quot;${workspace_loc:/SRINTizenFramework/inc}&quot;" />
+				  </simple-array>
+				  <simple name="path" value="" />
+			  </element>
+		  </complex-array>
+	</process>
+	<process
+	  type="org.eclipse.cdt.managedbuilder.core.AppendToMBSStringListOptionValues">
+		  <simple name="projectName" value="$(projectName)" />
+		  <complex-array name="resourcePaths">
+			  <element>
+				  <simple name="id"
+					value="gnu.cpp.link.option.paths" />
+				  <simple-array name="values">
+					  <element value="&quot;${workspace_loc:/SRINTizenFramework/Release}&quot;" />
+				  </simple-array>
+				  <simple name="path" value="" />
+			  </element>
+		  </complex-array>
+	</process>
+	<process type="org.eclipse.cdt.managedbuilder.core.AppendToMBSStringListOptionValues">
+        <simple name="projectName" value= "$(projectName)"/>      
+        <complex-array name="resourcePaths">
+            <element>
+                <simple name="id" value="gnu.cpp.link.option.libs" />
+                <simple-array name="values">
+                    <element value="srintizenfw" />
+                </simple-array>
+                <simple name="path" value="" />
+            </element>
+        </complex-array>
+    </process>
+	<process
+		type="org.eclipse.cdt.managedbuilder.core.SetMBSStringOptionValue">
+		<simple name="projectName" value="$(projectName)" />
+		<complex-array name="resourcePaths">
+			<element>
+				<simple name="id" value=".*cpp\.compiler\.option\.dialect\.std.*" />
+				<simple name="value" value="ISO C++11 (-std=c++0x)" />
+				<simple name="path" value="" />
+			</element>
+		</complex-array>
+	</process>
+</template>
