@@ -16,13 +16,13 @@ $(appName)::Controller::SplashScreenController::SplashScreenController(SRIN::Fra
 {
 }
 
-void $(appName)::Controller::SplashScreenController::OnLoad(void* param)
+void $(appName)::Controller::SplashScreenController::OnLoad(ObjectClass* param)
 {
 	// The view can expose property of its internal component and we can assign it like we assign a variable
 	splashScreenView.FieldText = "Hello, I am accessed through the controller!";
 }
 
-void* $(appName)::Controller::SplashScreenController::OnUnload()
+ObjectClass* $(appName)::Controller::SplashScreenController::OnUnload()
 {
 	// Return anything to previous controller who load this controller
 	return nullptr;

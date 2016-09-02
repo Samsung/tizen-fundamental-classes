@@ -24,10 +24,10 @@ namespace $(appName) {
 			SplashScreenController(SRIN::Framework::ControllerManager* m);
 
 			// This method will be called when the controller is loaded by the application
-			virtual void OnLoad(void* param);
+			virtual void OnLoad(ObjectClass* param);
 
 			// This method will be called before leaving the controller
-			virtual void* OnUnload();
+			virtual ObjectClass* OnUnload();
 		};
 	}
 }
