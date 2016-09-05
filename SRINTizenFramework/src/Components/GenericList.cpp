@@ -165,6 +165,8 @@ LIBAPI SRIN::Components::GenericList::~GenericList()
 	evas_object_smart_callback_del(genlist, "edge,bottom", SmartEventHandler);
 	evas_object_smart_callback_del(genlist, "scroll,drag,start", SmartEventHandler);
 	evas_object_smart_callback_del(genlist, "scroll,drag,stop", SmartEventHandler);
+	evas_object_smart_callback_del(genlist, "realized", SmartEventHandler);
+	evas_object_smart_callback_del(genlist, "unrealized", SmartEventHandler);
 }
 
 LIBAPI void SRIN::Components::GenericList::ResetScroll(bool animated)
