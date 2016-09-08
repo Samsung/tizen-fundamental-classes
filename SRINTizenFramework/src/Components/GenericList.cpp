@@ -158,15 +158,16 @@ LIBAPI SRIN::Components::GenericList::GenericList() :
 
 LIBAPI SRIN::Components::GenericList::~GenericList()
 {
-	evas_object_smart_callback_del(genlist, "scroll", SmartEventHandler);
-	evas_object_smart_callback_del(genlist, "scroll,down", SmartEventHandler);
-	evas_object_smart_callback_del(genlist, "scroll,up", SmartEventHandler);
-	evas_object_smart_callback_del(genlist, "edge,top", SmartEventHandler);
-	evas_object_smart_callback_del(genlist, "edge,bottom", SmartEventHandler);
-	evas_object_smart_callback_del(genlist, "scroll,drag,start", SmartEventHandler);
-	evas_object_smart_callback_del(genlist, "scroll,drag,stop", SmartEventHandler);
-	evas_object_smart_callback_del(genlist, "realized", SmartEventHandler);
-	evas_object_smart_callback_del(genlist, "unrealized", SmartEventHandler);
+
+	evas_object_smart_callback_del(genlist, "scroll", EFL::EvasSmartEventHandler);
+	evas_object_smart_callback_del(genlist, "scroll,down", EFL::EvasSmartEventHandler);
+	evas_object_smart_callback_del(genlist, "scroll,up", EFL::EvasSmartEventHandler);
+	evas_object_smart_callback_del(genlist, "edge,top", EFL::EvasSmartEventHandler);
+	evas_object_smart_callback_del(genlist, "edge,bottom", EFL::EvasSmartEventHandler);
+	evas_object_smart_callback_del(genlist, "scroll,drag,start", EFL::EvasSmartEventHandler);
+	evas_object_smart_callback_del(genlist, "scroll,drag,stop", EFL::EvasSmartEventHandler);
+	evas_object_smart_callback_del(genlist, "realized", EFL::EvasSmartEventHandler);
+	evas_object_smart_callback_del(genlist, "unrealized", EFL::EvasSmartEventHandler);
 }
 
 LIBAPI void SRIN::Components::GenericList::ResetScroll(bool animated)
