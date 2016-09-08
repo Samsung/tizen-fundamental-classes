@@ -24,6 +24,7 @@ LIBAPI Evas_Object* SRIN::Components::TabbarViewController::CreateView(
 
 	auto tabbar = edje_object_part_swallow_get(edjeLayout, "elm.external.toolbar");
 	elm_toolbar_shrink_mode_set(tabbar, ELM_TOOLBAR_SHRINK_EXPAND);
+	elm_toolbar_select_mode_set(tabbar, ELM_OBJECT_SELECT_MODE_ALWAYS);
 	elm_toolbar_transverse_expanded_set(tabbar, EINA_TRUE);
 
 	/*
@@ -58,6 +59,7 @@ LIBAPI Evas_Object* SRIN::Components::TabbarViewController::CreateView(
 	evas_object_size_hint_weight_set(this->scroller, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
 	evas_object_size_hint_align_set(this->scroller, EVAS_HINT_FILL, EVAS_HINT_FILL);
 	evas_object_show(this->scroller);
+	evas_object_smart_callback_add(this->scroller, "scroll,page,changed", EFL::EvasSmartEventHandler, &this->eventTabContentScrolled);
 
 	elm_object_text_set(layout, "Test");
 
@@ -81,7 +83,7 @@ LIBAPI Evas_Object* SRIN::Components::TabbarViewController::CreateView(
 		auto viewRoot = tab.controller->View->Create(this->box);
 		elm_box_pack_end(this->box, viewRoot);
 
-		tab.objectItem = elm_toolbar_item_append(tabbar, nullptr, tab.tabText.c_str(), EFL::EvasSmartEventHandler, &this->eventTabbarButtonClick);
+		tab.objectItem = elm_toolbar_item_append(tabbar, "clock", tab.tabText.length() ? tab.tabText.c_str() : nullptr, EFL::EvasSmartEventHandler, &this->eventTabbarButtonClicked);
 		tab.tabNumber = num;
 		num++;
 	}
@@ -97,8 +99,11 @@ LIBAPI SRIN::Components::TabbarViewController::TabbarViewController(SRIN::Framew
 		SRIN::Framework::ControllerBase(m, this, controllerName),
 		box(nullptr), scroller(nullptr)
 {
+	this->disableChangeTabByScroll = false;
+	this->currentTab = 0;
 	this->eventLayoutResize += EventHandler(TabbarViewController::OnLayoutResize);
-	this->eventTabbarButtonClick += EventHandler(TabbarViewController::OnTabbarButtonClick);
+	this->eventTabbarButtonClicked += EventHandler(TabbarViewController::OnTabbarButtonClicked);
+	this->eventTabContentScrolled += EventHandler(TabbarViewController::OnTabContentScrolled);
 }
 
 void SRIN::Components::TabbarViewController::OnLayoutResize(
@@ -131,17 +136,64 @@ LIBAPI void SRIN::Components::TabbarViewController::AddTab(
 	this->tabs.push_back(entry);
 }
 
-void SRIN::Components::TabbarViewController::OnTabbarButtonClick(
+void SRIN::Components::TabbarViewController::OnTabbarButtonClicked(
 		EFL::EvasSmartEvent* event, Evas_Object* source, void* event_data) {
 	auto item = reinterpret_cast<Elm_Object_Item*>(event_data);
 
+	this->LookupAndBringContent(item);
 
-
-	elm_scroller_page_show(this->scroller, tabItem->tabNumber, 0);
+	//elm_scroller_page_show(this->scroller, tabItem->tabNumber, 0);
 
 	dlog_print(DLOG_DEBUG, LOG_TAG, "Tabbar button click %d %d", source, event_data);
 }
 
 void SRIN::Components::TabbarViewController::LookupAndBringContent(
 		Elm_Object_Item* tabItem) {
+	int tabCount = 0;
+	for(TabEntry& tab : this->tabs)
+	{
+		if(tab.objectItem == tabItem)
+		{
+			if(this->currentTab == tabCount)
+				break;
+
+			this->currentTab = tabCount;
+			this->disableChangeTabByScroll = true;
+			elm_scroller_page_bring_in(this->scroller, tabCount, 0);
+			break;
+		}
+		tabCount++;
+	}
+}
+
+void SRIN::Components::TabbarViewController::OnTabContentScrolled(
+		EFL::EvasSmartEvent* event, Evas_Object* source, void* event_data) {
+
+	int pageH, pageV;
+	elm_scroller_current_page_get(source, &pageH, &pageV);
+
+	if(this->currentTab == pageH)
+		return;
+
+	this->currentTab = pageH;
+
+#if _DEBUG
+	static int count = 0;
+	dlog_print(DLOG_DEBUG, LOG_TAG, "Tab content scrolled: %d", count);
+	count++;
+#endif
+
+	if(this->disableChangeTabByScroll)
+	{
+#if _DEBUG
+		dlog_print(DLOG_DEBUG, LOG_TAG, "Tab content scrolled event DISCARDED");
+#endif
+		this->disableChangeTabByScroll = false;
+		return;
+	}
+
+	auto objectItem = this->tabs[pageH].objectItem;
+
+	if(elm_toolbar_item_selected_get(objectItem) != EINA_TRUE)
+		elm_toolbar_item_selected_set(objectItem, EINA_TRUE);
 }

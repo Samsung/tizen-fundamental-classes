@@ -29,15 +29,19 @@ class LIBAPI TabbarViewController:
 {
 private:
 	std::vector<TabEntry> tabs;
+	bool disableChangeTabByScroll;
+	int currentTab;
 
 	Evas_Object* scroller;
 	Evas_Object* box;
 
 	EFL::EvasObjectEvent eventLayoutResize;
-	EFL::EvasSmartEvent eventTabbarButtonClick;
+	EFL::EvasSmartEvent eventTabbarButtonClicked;
+	EFL::EvasSmartEvent eventTabContentScrolled;
 
 	void OnLayoutResize(EFL::EvasObjectEvent* event, EFL::EvasEventSourceInfo* objSource, void* event_data);
-	void OnTabbarButtonClick(EFL::EvasSmartEvent* event, Evas_Object* source, void* event_data);
+	void OnTabbarButtonClicked(EFL::EvasSmartEvent* event, Evas_Object* source, void* event_data);
+	void OnTabContentScrolled(EFL::EvasSmartEvent* event, Evas_Object* source, void* event_data);
 	void LookupAndBringContent(Elm_Object_Item* tabItem);
 protected:
 	void AddTab(std::string text, Framework::ControllerBase& controller);

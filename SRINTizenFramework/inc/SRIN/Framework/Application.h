@@ -354,11 +354,6 @@ public:
 	CString const ControllerName;
 
 	/**
-	 * The title of this controller
-	 */
-	CString Title;
-
-	/**
 	 * Method that will be called by ControllerManager to load the controller
 	 *
 	 * @param data Parameter to pass to this controller
