@@ -111,7 +111,7 @@ LIBAPI void StackingControllerManager::NavigateTo(const char* controllerName, Ob
 	this->navigateForward = true;
 	this->nextControllerName = controllerName;
 	this->data = data;
-	this->noTrail = true;
+	this->noTrail = noTrail;
 	EFL::QueueJob(this->eventPerformNavigation);
 }
 
