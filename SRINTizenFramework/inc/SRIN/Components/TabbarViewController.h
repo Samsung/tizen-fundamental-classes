@@ -20,6 +20,7 @@ struct TabEntry
 	Framework::ControllerBase* controller;
 	std::string tabText;
 	Elm_Object_Item* objectItem;
+	int tabNumber;
 };
 
 class LIBAPI TabbarViewController:
@@ -33,8 +34,11 @@ private:
 	Evas_Object* box;
 
 	EFL::EvasObjectEvent eventLayoutResize;
+	EFL::EvasSmartEvent eventTabbarButtonClick;
 
 	void OnLayoutResize(EFL::EvasObjectEvent* event, EFL::EvasEventSourceInfo* objSource, void* event_data);
+	void OnTabbarButtonClick(EFL::EvasSmartEvent* event, Evas_Object* source, void* event_data);
+	void LookupAndBringContent(Elm_Object_Item* tabItem);
 protected:
 	void AddTab(std::string text, Framework::ControllerBase& controller);
 	virtual Evas_Object* CreateView(Evas_Object* root) final;

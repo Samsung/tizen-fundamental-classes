@@ -7,7 +7,6 @@
 
 #include "SRIN/Components/TabbarViewController.h"
 
-
 LIBAPI Evas_Object* SRIN::Components::TabbarViewController::CreateView(
 		Evas_Object* root) {
 
@@ -40,9 +39,10 @@ LIBAPI Evas_Object* SRIN::Components::TabbarViewController::CreateView(
 	}
 	*/
 
+	/*
 	elm_toolbar_item_append(tabbar, nullptr, "Tab 1", nullptr, nullptr);
 	elm_toolbar_item_append(tabbar, nullptr, "Tab 2", nullptr, nullptr);
-
+	 */
 	evas_object_show(tabbar);
 	//elm_object_content_set(layout, tabbar);
 
@@ -59,22 +59,33 @@ LIBAPI Evas_Object* SRIN::Components::TabbarViewController::CreateView(
 	evas_object_size_hint_align_set(this->scroller, EVAS_HINT_FILL, EVAS_HINT_FILL);
 	evas_object_show(this->scroller);
 
-	elm_object_content_set(layout, this->scroller);
+	elm_object_text_set(layout, "Test");
+
+
+
+	elm_object_part_content_set(layout, "elm.swallow.content", this->scroller);
 
 	// Box inside scroller
 	this->box = elm_box_add(this->scroller);
 	elm_box_horizontal_set(this->box, EINA_TRUE);
 	elm_object_content_set(this->scroller, this->box);
+	evas_object_size_hint_weight_set(this->box, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+	evas_object_size_hint_align_set(this->box, EVAS_HINT_FILL, EVAS_HINT_FILL);
 	evas_object_show(this->box);
 
-	/*
+
+	int num = 0;
+
 	for(TabEntry& tab : this->tabs)
 	{
 		auto viewRoot = tab.controller->View->Create(this->box);
 		elm_box_pack_end(this->box, viewRoot);
-		tab.objectItem = elm_toolbar_item_append(tabbar, nullptr, tab.tabText.c_str(), nullptr, nullptr);
+
+		tab.objectItem = elm_toolbar_item_append(tabbar, nullptr, tab.tabText.c_str(), EFL::EvasSmartEventHandler, &this->eventTabbarButtonClick);
+		tab.tabNumber = num;
+		num++;
 	}
-	 */
+
 	evas_object_size_hint_weight_set(layout, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
 	evas_object_size_hint_align_set(layout, EVAS_HINT_FILL, EVAS_HINT_FILL);
 	evas_object_show(layout);
@@ -87,20 +98,23 @@ LIBAPI SRIN::Components::TabbarViewController::TabbarViewController(SRIN::Framew
 		box(nullptr), scroller(nullptr)
 {
 	this->eventLayoutResize += EventHandler(TabbarViewController::OnLayoutResize);
+	this->eventTabbarButtonClick += EventHandler(TabbarViewController::OnTabbarButtonClick);
 }
 
 void SRIN::Components::TabbarViewController::OnLayoutResize(
 		EFL::EvasObjectEvent* event, EFL::EvasEventSourceInfo* objSource, void* event_data) {
 	Evas_Coord w, h;
 
+	dlog_print(DLOG_DEBUG, LOG_TAG, "Tabbar Layout Resize");
+
 	evas_object_geometry_get(objSource->obj, NULL, NULL, &w, &h);
-	/*
+
 	for(TabEntry& tab : this->tabs)
 	{
 		auto viewRoot = tab.controller->View->GetViewRoot();
 		evas_object_size_hint_min_set(viewRoot, w, h);
 		evas_object_size_hint_max_set(viewRoot, w, h);
-	}*/
+	}
 
 	elm_scroller_page_size_set(this->scroller, w, h);
 
@@ -114,5 +128,20 @@ LIBAPI void SRIN::Components::TabbarViewController::AddTab(
 	entry.controller = &controller;
 	entry.tabText = text;
 	entry.objectItem = nullptr;
-	//this->tabs.push_back(entry);
+	this->tabs.push_back(entry);
+}
+
+void SRIN::Components::TabbarViewController::OnTabbarButtonClick(
+		EFL::EvasSmartEvent* event, Evas_Object* source, void* event_data) {
+	auto item = reinterpret_cast<Elm_Object_Item*>(event_data);
+
+
+
+	elm_scroller_page_show(this->scroller, tabItem->tabNumber, 0);
+
+	dlog_print(DLOG_DEBUG, LOG_TAG, "Tabbar button click %d %d", source, event_data);
+}
+
+void SRIN::Components::TabbarViewController::LookupAndBringContent(
+		Elm_Object_Item* tabItem) {
 }
