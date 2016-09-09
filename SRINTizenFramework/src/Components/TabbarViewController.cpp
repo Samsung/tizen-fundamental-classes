@@ -22,7 +22,7 @@ LIBAPI Evas_Object* SRIN::Components::TabbarViewController::CreateView(
 
 	auto edjeLayout = elm_layout_edje_get(layout);
 
-	auto tabbar = edje_object_part_swallow_get(edjeLayout, "elm.external.toolbar");
+	tabbar = edje_object_part_swallow_get(edjeLayout, "elm.external.toolbar");
 	elm_toolbar_shrink_mode_set(tabbar, ELM_TOOLBAR_SHRINK_EXPAND);
 	elm_toolbar_select_mode_set(tabbar, ELM_OBJECT_SELECT_MODE_ALWAYS);
 	elm_toolbar_transverse_expanded_set(tabbar, EINA_TRUE);
@@ -74,6 +74,7 @@ LIBAPI Evas_Object* SRIN::Components::TabbarViewController::CreateView(
 	evas_object_size_hint_weight_set(this->box, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
 	evas_object_size_hint_align_set(this->box, EVAS_HINT_FILL, EVAS_HINT_FILL);
 	evas_object_show(this->box);
+	elm_box_homogeneous_set(this->box, EINA_TRUE);
 
 
 	int num = 0;
@@ -83,7 +84,7 @@ LIBAPI Evas_Object* SRIN::Components::TabbarViewController::CreateView(
 		auto viewRoot = tab.controller->View->Create(this->box);
 		elm_box_pack_end(this->box, viewRoot);
 
-		tab.objectItem = elm_toolbar_item_append(tabbar, "clock", tab.tabText.length() ? tab.tabText.c_str() : nullptr, EFL::EvasSmartEventHandler, &this->eventTabbarButtonClicked);
+		tab.objectItem = elm_toolbar_item_append(tabbar, nullptr, tab.tabText.length() ? tab.tabText.c_str() : nullptr, EFL::EvasSmartEventHandler, &this->eventTabbarButtonClicked);
 		tab.tabNumber = num;
 		num++;
 	}
@@ -114,11 +115,14 @@ void SRIN::Components::TabbarViewController::OnLayoutResize(
 
 	evas_object_geometry_get(objSource->obj, NULL, NULL, &w, &h);
 
+	Evas_Coord tabW, tabH;
+	evas_object_geometry_get(this->tabbar, NULL, NULL, &tabW, &tabH);
+
 	for(TabEntry& tab : this->tabs)
 	{
 		auto viewRoot = tab.controller->View->GetViewRoot();
-		evas_object_size_hint_min_set(viewRoot, w, h);
-		evas_object_size_hint_max_set(viewRoot, w, h);
+		evas_object_size_hint_min_set(viewRoot, w, h - tabH);
+		evas_object_size_hint_max_set(viewRoot, w, h - tabH);
 	}
 
 	elm_scroller_page_size_set(this->scroller, w, h);

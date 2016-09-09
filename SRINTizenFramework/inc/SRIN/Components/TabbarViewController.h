@@ -34,6 +34,7 @@ private:
 
 	Evas_Object* scroller;
 	Evas_Object* box;
+	Evas_Object* tabbar;
 
 	EFL::EvasObjectEvent eventLayoutResize;
 	EFL::EvasSmartEvent eventTabbarButtonClicked;
@@ -46,6 +47,7 @@ private:
 protected:
 	void AddTab(std::string text, Framework::ControllerBase& controller);
 	virtual Evas_Object* CreateView(Evas_Object* root) final;
+
 public:
 	TabbarViewController(SRIN::Framework::ControllerManager* m, CString controllerName);
 };
