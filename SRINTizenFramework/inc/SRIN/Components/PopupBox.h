@@ -21,6 +21,7 @@ namespace SRIN {
 		private:
 			std::string  title;
 			std::string  message;
+			bool shown;
 
 			Evas_Object* popup;
 			Evas_Object* popupLayout;
@@ -144,7 +145,10 @@ namespace SRIN {
 			 * Method that initialize the popup's content and show it.
 			 * When the popup is being shown, it will also acquire back button handler.
 			 */
+			
 			void Show();
+
+			const bool& IsShown;
 
 			/**
 			 * Method that will dismiss the popup, destroy its content and release back button handler.

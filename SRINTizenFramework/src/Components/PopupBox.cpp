@@ -36,7 +36,9 @@ LIBAPI std::string& SRIN::Components::PopupBox::GetMessageString() {
 	return this->message;
 }
 
-LIBAPI SRIN::Components::PopupBox::PopupBox() : Message(this), Title(this), Orientation(this)
+LIBAPI SRIN::Components::PopupBox::PopupBox() :
+		Message(this), Title(this), Orientation(this),
+		shown(false), IsShown(shown)
 {
 
 	this->popup 		= nullptr;
@@ -138,6 +140,7 @@ LIBAPI void SRIN::Components::PopupBox::Show() {
 	}
 
 	evas_object_show(this->popup);
+	shown = true;
 	eventPopupShown(this, nullptr);
 
 }
@@ -147,6 +150,7 @@ LIBAPI void SRIN::Components::PopupBox::Dismiss() {
 	this->popup = nullptr;
 	this->popupLayout = nullptr;
 	BackButtonHandler::Release();
+	shown = false;
 	eventPopupDismissed(this, nullptr);
 
 }
