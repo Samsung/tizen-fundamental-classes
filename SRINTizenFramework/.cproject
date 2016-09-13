@@ -127,8 +127,6 @@
 								<option id="gnu.cpp.compiler.option.dialect.std.563738541" name="Language standard" superClass="gnu.cpp.compiler.option.dialect.std" value="gnu.cpp.compiler.dialect.c++11" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.1838051576" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="LIBBUILD"/>
-									<listOptionValue builtIn="false" value="__GXX_EXPERIMENTAL_CXX0X__"/>
-									<listOptionValue builtIn="false" value="__cplusplus"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.other.other.1338890558" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" value="-c -fmessage-length=0 -frtti" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.184163901" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
