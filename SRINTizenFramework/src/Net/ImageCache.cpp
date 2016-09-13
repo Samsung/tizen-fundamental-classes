@@ -15,6 +15,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <chrono>
 
 #define DBNAME "ImageCache.db"
 
@@ -144,7 +145,11 @@ std::string LIBAPI SRIN::Net::ImageCache::LoadImage(const std::string& url)
 	auto curlHandle = curl_easy_init();
 
 	if (curlHandle) {
+		// Include timestamp in the filename to prevent duplicates
+		auto tp = std::chrono::system_clock::now();
 		std::string fileName = ImageCache_ExtractFilename(url);
+		fileName += std::to_string(tp.time_since_epoch().count());
+
 		std::string filePath = storagePath + fileName;
 
 		dlog_print(DLOG_DEBUG, LOG_TAG, "Try fopen file : %s", filePath.c_str());
