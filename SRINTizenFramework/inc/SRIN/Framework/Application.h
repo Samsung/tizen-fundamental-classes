@@ -565,7 +565,10 @@ public:
 class LIBAPI IIndicatorColor : virtual PropertyClass
 {
 public:
+	IIndicatorColor();
+
 	Property<IIndicatorColor, Color>::Auto::ReadWrite IndicatorColor;
+	Property<IIndicatorColor, bool>::Auto::ReadWrite IndicatorVisible;
 };
 
 

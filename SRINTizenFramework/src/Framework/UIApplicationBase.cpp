@@ -295,9 +295,15 @@ LIBAPI void SRIN::Framework::IndicatorStyler::OnPostNavigation(Event<ControllerM
 {
 	auto colorable = dynamic_cast<IIndicatorColor*>(controller->View);
 	if(colorable)
+	{
 		app->SetIndicatorColor(colorable->IndicatorColor);
+		app->SetIndicatorVisibility(colorable->IndicatorVisible);
+	}
 	else
+	{
 		app->SetIndicatorColor(defaultColor);
+		app->SetIndicatorVisibility(true);
+	}
 }
 
 /*====================================================================================================================*
@@ -319,4 +325,8 @@ LIBAPI SRIN::Framework::INaviframeContent::INaviframeContent() :
 	naviframeItem(nullptr)
 {
 
+}
+
+LIBAPI SRIN::Framework::IIndicatorColor::IIndicatorColor() {
+	this->IndicatorVisible = true;
 }
