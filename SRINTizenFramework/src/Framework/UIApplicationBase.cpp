@@ -293,7 +293,7 @@ LIBAPI void UIApplicationBase::EnableMoreButtonCallback(bool enable)
 LIBAPI void SRIN::Framework::IndicatorStyler::OnPostNavigation(Event<ControllerManager*, ControllerBase*>* event,
 	ControllerManager* manager, ControllerBase* controller)
 {
-	auto colorable = dynamic_cast<IIndicatorColor*>(controller->View);
+	auto colorable = dynamic_cast<IIndicatorStyle*>(controller->View);
 	if(colorable)
 	{
 		app->SetIndicatorColor(colorable->IndicatorColor);
@@ -327,6 +327,6 @@ LIBAPI SRIN::Framework::INaviframeContent::INaviframeContent() :
 
 }
 
-LIBAPI SRIN::Framework::IIndicatorColor::IIndicatorColor() {
+LIBAPI SRIN::Framework::IIndicatorStyle::IIndicatorStyle() {
 	this->IndicatorVisible = true;
 }

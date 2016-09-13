@@ -562,13 +562,13 @@ public:
 	virtual ~INaviframeContent();
 };
 
-class LIBAPI IIndicatorColor : virtual PropertyClass
+class LIBAPI IIndicatorStyle : virtual PropertyClass
 {
 public:
-	IIndicatorColor();
+	IIndicatorStyle();
 
-	Property<IIndicatorColor, Color>::Auto::ReadWrite IndicatorColor;
-	Property<IIndicatorColor, bool>::Auto::ReadWrite IndicatorVisible;
+	Property<IIndicatorStyle, Color>::Auto::ReadWrite IndicatorColor;
+	Property<IIndicatorStyle, bool>::Auto::ReadWrite IndicatorVisible;
 };
 
 
