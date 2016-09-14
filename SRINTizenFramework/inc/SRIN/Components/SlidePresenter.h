@@ -26,10 +26,13 @@ private:
 
 	EFL::EvasObjectEvent eventLayoutResize;
 	EFL::EvasSmartEvent eventPageScrolled;
+	EFL::EvasSmartEvent eventIndexSelected;
 
 
 	void OnLayoutResize(EFL::EvasObjectEvent* event, EFL::EvasEventSourceInfo* objSource, void* event_data);
 	void OnPageScrolled(EFL::EvasSmartEvent* event, Evas_Object* source, void* event_data);
+	void OnIndexSelected(EFL::EvasSmartEvent* event, Evas_Object* source, void* event_data);
+
 protected:
 	virtual Evas_Object* CreateComponent(Evas_Object* root);
 public:
