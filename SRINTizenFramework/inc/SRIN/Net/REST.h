@@ -257,6 +257,8 @@ protected:
 	RESTServiceTemplateBase(std::string url, HTTPMode httpMode);
 
 	virtual std::string PreparePostData(const std::unordered_map<std::string, IServiceParameter*>& postDataParam);
+	virtual void PreprocessPostData(std::string& postData) {}
+
 	std::string UserAgent, Url, FinalUrl;
 	RESTResultBase CallInternal();
 private:

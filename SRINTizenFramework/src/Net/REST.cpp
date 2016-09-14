@@ -42,7 +42,7 @@ void RESTServiceTemplateBase::RegisterParameter(ParameterType paramType, CString
 
 std::string RESTServiceTemplateBase::PreparePostData(const std::unordered_map<std::string, IServiceParameter*>& postDataParam)
 {
-	std::stringstream ret;
+	std::stringstream postDataStream;
 
 	bool first = true;
 	for(auto& val : postDataParam)
@@ -51,13 +51,16 @@ std::string RESTServiceTemplateBase::PreparePostData(const std::unordered_map<st
 			continue;
 
 		if(!first)
-			ret << "&";
+			postDataStream << "&";
 		first = false;
 
-		ret << val.first << "=" << val.second->GetEncodedValue();
+		postDataStream << val.first << "=" << val.second->GetEncodedValue();
 	}
 
-	return ret.str();
+	std::string postData = postDataStream.str();
+	PreprocessPostData(postData);
+
+	return postData;
 }
 
 /*
