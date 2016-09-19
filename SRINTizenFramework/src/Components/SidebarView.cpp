@@ -12,7 +12,8 @@ using namespace SRIN::Components;
 
 LIBAPI SidebarView::SidebarView() :
 	Framework::ViewBase(),
-	bg(nullptr)
+	bg(nullptr),
+	contentWrapper(nullptr)
 {
 	layout = leftPanel = background = currentContent = nullptr;
 	drawerButtonClick += { this, &SidebarView::OnDrawerButtonClick };
@@ -43,6 +44,11 @@ LIBAPI Evas_Object* SidebarView::CreateView(Evas_Object* root)
 	// Create sidebar content from subclass
 	auto sidebarContent = CreateSidebar(root);
 	elm_object_content_set(leftPanel, sidebarContent);
+
+	// Create content wrapper if any
+	//this->contentWrapper = CreateContentWrapper(layout);
+	//if(this->contentWrapper != nullptr)
+		//elm_object_part_content_set(layout, "elm.swallow.content", contentWrapper);
 
 	// Set the panel to base layout
 	elm_object_part_content_set(layout, "elm.swallow.left", leftPanel);
@@ -122,6 +128,11 @@ LIBAPI CString SRIN::Components::SidebarView::GetContentStyle()
 void SRIN::Components::SidebarView::DrawerButtonStyle(Evas_Object* button)
 {
 	elm_object_style_set(button, "naviframe/drawers");
+}
+
+Evas_Object* SRIN::Components::SidebarView::CreateContentWrapper(Evas_Object* root)
+{
+	return nullptr;
 }
 
 void SRIN::Components::SidebarView::ToggleSidebar()

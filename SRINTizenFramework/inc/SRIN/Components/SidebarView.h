@@ -31,6 +31,7 @@ private:
 	Evas_Object* background;
 	Evas_Object* currentContent;
 	Evas_Object* bg;
+	Evas_Object* contentWrapper;
 
 	EFL::EvasSmartEvent drawerButtonClick;
 	EFL::EvasSmartEvent drawerScroll;
@@ -61,6 +62,9 @@ protected:
 	 * @param button Drawer button.
 	 */
 	virtual void DrawerButtonStyle(Evas_Object* button);
+
+
+	virtual Evas_Object* CreateContentWrapper(Evas_Object* root);
 
 	/**
 	 * Method from BackButtonHandler that will be called when the back button is pressed.
