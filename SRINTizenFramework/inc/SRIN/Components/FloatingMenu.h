@@ -14,6 +14,10 @@
 
 #include <vector>
 
+/**
+ * Component that provides a floating context menu.
+ * Similar to FloatingButton, it uses Eext_FloatingButton.
+ */
 namespace SRIN {
 	namespace Components {
 		class LIBAPI FloatingMenu : public ComponentBase, BackButtonHandler {
@@ -49,15 +53,58 @@ namespace SRIN {
 		protected:
 			virtual Evas_Object* CreateComponent(Evas_Object* root) final;
 		public:
+			/**
+			 * Constructor of FloatingMenu.
+			 *
+			 * @note This component requires a swallow named "elm.swallow.floatingbutton"
+			 * 		 that must be present in the layout of views that use it.
+			 */
 			FloatingMenu();
+
+			/**
+			 * Destructor of FloatingMenu.
+			 */
 			virtual ~FloatingMenu();
+
+			/**
+			 * String that will be used as path of the floating button's image.
+			 */
 			std::string buttonImage;
 
+			/**
+			 * Method to add MenuItem to the floating menu.
+			 *
+			 * @param menu MenuItem that will be added.
+			 */
 			void AddMenu(MenuItem* menu);
+
+			/**
+			 * Method to add MenuItem at a specific position to the floating menu.
+			 *
+			 * @param index Index that indicates where the item will be placed.
+			 * @param menu MenuItem that will be added.
+			 */
 			void AddMenuAt(int index, MenuItem* menu);
+
+			/**
+			 * Method to remove a particular MenuItem from the floating menu.
+			 *
+			 * @param menu MenuItem that will be removed.
+			 */
 			void RemoveMenu(MenuItem* menu);
 
+			/**
+			 * Method to bulk-add MenuItems to the floating menu.
+			 *
+			 * @param listOfMenus Vector that contains MenuItems that will be added.
+			 */
 			void AddMenu(const std::vector<MenuItem*>& listOfMenus);
+
+			/**
+			 * Method to set list of MenuItems as menus.
+			 *
+			 * @param listOfMenus Vector that contains MenuItems that will be set.
+			 */
 			void SetMenu(const std::vector<MenuItem*>& listOfMenus);
 		};
 	}
