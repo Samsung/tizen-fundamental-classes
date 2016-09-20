@@ -44,7 +44,7 @@ public:
 	 * Abstract method for providing string representation from a part of a menu item.
 	 *
 	 * @param data Menu item's data.
-	 * @param obj Evas_Object that represents the item.
+	 * @param obj Parent Evas_Object.
 	 * @param part Corresponding part's name.
 	 *
 	 * @return The string representation.
@@ -55,7 +55,7 @@ public:
 	 * Abstract method for providing Evas_Object representation from a part of a menu item.
 	 *
 	 * @param data Menu item's data.
-	 * @param obj Evas_Object that represents the item.
+	 * @param obj Parent Evas_Object.
 	 * @param part Corresponding part's name.
 	 *
 	 * @return The Evas_Object representation.

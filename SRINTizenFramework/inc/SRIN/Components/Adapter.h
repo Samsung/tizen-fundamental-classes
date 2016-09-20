@@ -33,7 +33,7 @@ public:
 	 * Abstract method for providing string representation from a part of an adapter item.
 	 *
 	 * @param data Adapter item's data.
-	 * @param obj Evas_Object that represents the item.
+	 * @param obj Parent Evas_Object.
 	 * @param part Corresponding part's name.
 	 *
 	 * @return The string representation.
@@ -44,7 +44,7 @@ public:
 	 * Abstract method for providing Evas_Object representation from a part of an adapter item.
 	 *
 	 * @param data Adapter item's data.
-	 * @param obj Evas_Object that represents the item.
+	 * @param obj Parent Evas_Object.
 	 * @param part Corresponding part's name.
 	 *
 	 * @return The Evas_Object representation.
@@ -71,26 +71,7 @@ protected:
 	 */
 	AdapterItemClass();
 public:
-	/**
-	 * Abstract method for providing string representation from a part of an adapter item.
-	 *
-	 * @param data Adapter item's data.
-	 * @param obj Evas_Object that represents the item.
-	 * @param part Corresponding part's name.
-	 *
-	 * @return The string representation.
-	 */
 	virtual std::string GetString(void* data, Evas_Object *obj, const char *part) final;
-
-	/**
-	 * Abstract method for providing Evas_Object representation from a part of an adapter item.
-	 *
-	 * @param data Adapter item's data.
-	 * @param obj Evas_Object that represents the item.
-	 * @param part Corresponding part's name.
-	 *
-	 * @return The Evas_Object representation.
-	 */
 	virtual Evas_Object* GetContent(void* data, Evas_Object *obj, const char *part) final;
 
 	/**
@@ -104,7 +85,7 @@ public:
 	 * Abstract method that implement AdapterItemClassBase's GetString so it use template argument type instead.
 	 *
 	 * @param data Adapter item's data.
-	 * @param obj Evas_Object that represents the item.
+	 * @param obj Parent Evas_Object.
 	 * @param part Corresponding part's name.
 	 *
 	 * @return The string representation.
@@ -115,7 +96,7 @@ public:
 	 * Abstract method that implement AdapterItemClassBase's GetContent so it use template argument type instead.
 	 *
 	 * @param data Adapter item's data.
-	 * @param obj Evas_Object that represents the item.
+	 * @param obj Parent Evas_Object.
 	 * @param part Corresponding part's name.
 	 *
 	 * @return The Evas_Object representation.
