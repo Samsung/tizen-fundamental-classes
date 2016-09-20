@@ -51,6 +51,13 @@ namespace SRIN {
 
 			void RaiseOnClickEvent(MenuItem* menuItemRef);
 		protected:
+			/**
+			 * Method overriden from ComponentBase, creates the UI elements of the component.
+			 *
+			 * @param root The root/parent given for this component.
+			 *
+			 * @return An Eext_FloatingButton widget.
+			 */
 			virtual Evas_Object* CreateComponent(Evas_Object* root) final;
 		public:
 			/**

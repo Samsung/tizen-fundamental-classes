@@ -18,7 +18,8 @@ namespace Components {
 
 /**
  * Component that provides dropdown menu.
- * It uses adapter pattern to map texts, contents and data of an item in the dropdown.
+ * It uses adapter pattern for appending and removing items,
+ * and its class can map texts, contents and data of an item in the dropdown.
  */
 class LIBAPI DropDown : public ComponentBase
 {
@@ -36,6 +37,13 @@ private:
 	void ShowDropdown();
 	void OnDropDownButtonClick(EFL::EvasSmartEvent* viewSource, Evas_Object* objSource, void* eventData);
 protected:
+	/**
+	 * Method overriden from ComponentBase, creates the UI elements of the component.
+	 *
+	 * @param root The root/parent given for this component.
+	 *
+	 * @return The dropdown's button.
+	 */
 	virtual Evas_Object* CreateComponent(Evas_Object* root);
 
 public:

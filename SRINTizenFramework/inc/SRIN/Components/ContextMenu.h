@@ -56,6 +56,13 @@ private:
 	void RaiseOnClickEvent(MenuItem* menuItemRef);
 
 protected:
+	/**
+	 * Method overriden from ComponentBase, creates the UI elements of the component.
+	 *
+	 * @param root The root/parent given for this component.
+	 *
+	 * @return The context menu button on the naviframe.
+	 */
 	virtual Evas_Object* CreateComponent(Evas_Object* root);
 	void SetText(const std::string& text);
 	std::string& GetText();

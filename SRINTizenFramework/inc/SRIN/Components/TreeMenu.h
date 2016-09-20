@@ -61,6 +61,13 @@ private:
 	GenlistEvent eventMenuContracted;
 
 protected:
+	/**
+	 * Method overriden from ComponentBase, creates the UI elements of the component.
+	 *
+	 * @param root The root/parent given for this component.
+	 *
+	 * @return An Elm_Genlist widget.
+	 */
 	virtual LIBAPI Evas_Object* CreateComponent(Evas_Object* root);
 
 public:
