@@ -18,6 +18,11 @@ namespace SRIN {
 namespace Components {
 	class GenericList;
 
+	/**
+	 * Specialized AdapterItemClassBase that wraps genlist's Elm_Genlist_Item_Class.
+	 * Enables use of adapter pattern in GenericList, and simplify item callbacks with GetContent and GetString.
+	 * @see Elm_Gen_Item_Class
+	 */
 	class LIBAPI GenericListItemClassBase : public virtual AdapterItemClassBase
 	{
 	private:
@@ -26,21 +31,60 @@ namespace Components {
 		GenericListItemClassBase(CString styleName, bool defaultEventClick = true);
 		bool itemClickEnabled;
 	public:
+		/**
+		 * Helper to retrieve a package that holds the item's class, data, and GenericList it belongs to.
+		 *
+		 * @param genlist GenericList that the item of this class belongs to.
+		 * @param itemData Item's data.
+		 *
+		 * @return Struct that consist of the GenericListItemClassBase, along with genlist and itemData from parameter.
+		 */
 		void* operator()(GenericList* genlist, void* itemData);
+
+		/**
+		 * Operator overloading that enables casting from GenericListItemClassBase to Elm_Genlist_Item_Class*.
+		 */
 		operator Elm_Genlist_Item_Class*();
+
+		/**
+		 * Destructor for GenericListItemClassBase.
+		 */
 		virtual ~GenericListItemClassBase();
+
+		/**
+		 * Method to get whether the item is clickable or not.
+		 */
 		bool IsItemClickEnabled();
 	};
 
+	/**
+	 * Class that enables template for GenericListItemClassBase.
+	 * Inherit this if you want to create custom GenericList item class beyond what's provided in SimpleGenericListItemClass.
+	 */
 	template<class T>
 	class GenericListItemClass : public AdapterItemClass<T>, public GenericListItemClassBase
 	{
 	protected:
+		/**
+		 * Constructor for GenericListItemClass.
+		 *
+		 * @param styleName Name of the style that will be used.
+		 */
 		GenericListItemClass(CString styleName);
 	public:
+		/**
+		 * Destructor for GenericListItemClass.
+		 */
 		virtual ~GenericListItemClass() { };
 	};
 
+	/**
+	 * A simple template for GenericListItemClass.
+	 * Provides easy to use mapping for template argument members as text parts,
+	 * so you don't have to use GetString manually.
+	 * It's preferable to inherit this class to be used in genlist's adapter,
+	 * especially if your genlist consists of mostly texts.
+	 */
 	template<class T>
 	class SimpleGenericListItemClass : public GenericListItemClass<T>
 	{
@@ -59,16 +103,62 @@ namespace Components {
 
 		std::unordered_map<std::string, Pointer> mappingMap;
 	protected:
+		/**
+		 * Add mapping from a member string of the template argument to a certain part.
+		 *
+		 * @param ptr String member pointer (ex. &T::member)
+		 * @param mapTo Corresponding part name where it will be placed.
+		 */
 		void AddToMap(PointerToMemberString ptr, std::string mapTo);
+
+		/**
+		 * Add mapping from a non-const getter string method of the template argument to a certain part.
+		 *
+		 * @param ptr String getter string method pointer (ex. &T::GetMember)
+		 * @param mapTo Corresponding part name where it will be placed.
+		 */
 		void AddToMap(PointerToGetterString ptr, std::string mapTo);
+
+		/**
+		 * Add mapping from a const getter string method of the template argument to a certain part.
+		 *
+		 * @param ptr String getter string method pointer (ex. &T::GetMember)
+		 * @param mapTo Corresponding part name where it will be placed.
+		 */
 		void AddToMap(PointerToGetterStringConst ptr, std::string mapTo);
+
+		/**
+		 * Constructor for SimpleGenericListItemClass.
+		 *
+		 * @param styleName Name of the style that will be used.
+		 */
 		SimpleGenericListItemClass(CString styleName);
 	public:
 		virtual std::string GetString(T* data, Evas_Object *obj, const char *part) final;
+
+		/**
+		 * Abstract method for providing Evas_Object representation from a part of a genlist item.
+		 *
+		 * @param data Item's data.
+		 * @param obj Parent Evas_Object.
+		 * @param part Corresponding part's name.
+		 *
+		 * @return The Evas_Object representation.
+		 */
 		virtual Evas_Object* GetContent(T* data, Evas_Object *obj, const char *part);
+
+		/**
+		 * Destructor for SimpleGenericListItemClass.
+		 */
 		virtual ~SimpleGenericListItemClass() { };
 	};
 
+	/**
+	 * Component that provides interactive & customizable list UI.
+	 * It acts as a wrapper for Elm_Genlist, and provides support for features such as load more on end of list,
+	 * showing back to top indicator after certain amount of scroll, and longpressing items.
+	 * It uses adapter pattern for appending and removing items.
+	 */
 	class LIBAPI GenericList : public ComponentBase
 	{
 	private:
@@ -133,31 +223,118 @@ namespace Components {
 		void OnItemUnrealized(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData);
 		
 	protected:
+		/**
+		 * Method overriden from ComponentBase, creates the UI elements of the component.
+		 *
+		 * @param root The root/parent given for this component.
+		 *
+		 * @return An Elm_Genlist widget.
+		 */
 		virtual Evas_Object* CreateComponent(Evas_Object* root);
 	public:
+		/**
+		 * Constructor for GenericList.
+		 */
 		GenericList();
+
 		~GenericList();
+
+
+		/**
+		 * Method to reset scroll position to top.
+		 *
+		 * @param animated If true, the resetting procedure will be animated.
+		 */
 		void ResetScroll(bool animated);
+
+		/**
+		 * Property that enables getting & setting the adapter of genlist.
+		 * The return/parameter type is Adapter.
+		 */
 		Property<GenericList, Adapter*>::GetSet<&GenericList::GetDataSource, &GenericList::SetDataSource> DataSource;
+
+		/**
+		 * Property that enables getting & setting whether overscrolling (end of list action) is enabled or not.
+		 * The return/parameter type is bool.
+		 */
 		Property<GenericList, bool>::GetSet<&GenericList::GetOverscroll, &GenericList::SetOverscroll> Overscroll;
+
 		Property<GenericList, bool>::GetSet<&GenericList::GetUnderscroll, &GenericList::SetUnderscroll> Underscroll;
+
+
+		/**
+		 * Property that enables getting & setting whether longpressing item is enabled or not.
+		 * The return/parameter type is bool.
+		 */
 		Property<GenericList, bool>::GetSet<&GenericList::GetLongClicked, &GenericList::SetLongClicked> IsLongClicked;
+
+		/**
+		 * Property that enables getting & setting the threshold for showing back to top action.
+		 * The return/parameter type is int.
+		 */
 		Property<GenericList, int>::GetSet<&GenericList::GetBackToTopThreshold, &GenericList::SetBackToTopThreshold> BackToTopThreshold;
 
+		/**
+		 * Event that will be triggered when the list is scrolled.
+		 */
 		Event<GenericList*, void*> eventScrolled;
-		Event<GenericList*, void*> eventScrolledDown;
-		Event<GenericList*, void*> eventScrolledUp;
-		Event<GenericList*, void*> eventScrolledBottom;
-		Event<GenericList*, void*> eventScrolledTop;
-		Event<GenericList*, void*> eventReachingBottom;
-		Event<GenericList*, void*> eventItemClicked;
-		Event<GenericList*, void*> eventItemLongClicked;
-		Event<GenericList*, void*> eventScrollingStart;
-		Event<GenericList*, void*> eventScrollingEnd;
-		Event<GenericList*, bool*> eventShowBackToTop;
-		Event<GenericList*, Evas_Object**> eventDummyBottomContent;
-		Event<Adapter::AdapterItem*, EFL::EdjeSignalInfo> eventItemSignal;
 
+		/**
+		 * Event that will be triggered when the list is scrolled down.
+		 */
+		Event<GenericList*, void*> eventScrolledDown;
+
+		/**
+		 * Event that will be triggered when the list is scrolled up.
+		 */
+		Event<GenericList*, void*> eventScrolledUp;
+
+		/**
+		 * Event that will be triggered when the list is scrolled to the bottom of the list.
+		 */
+		Event<GenericList*, void*> eventScrolledBottom;
+
+		/**
+		 * Event that will be triggered when the list is scrolled to the top of the list.
+		 */
+		Event<GenericList*, void*> eventScrolledTop;
+
+		/**
+		 * Event that will be triggered when the dummy bottom-most item on the list is realized.
+		 */
+		Event<GenericList*, void*> eventReachingBottom;
+
+		/**
+		 * Event that will be triggered when an item on the list is clicked.
+		 */
+		Event<GenericList*, void*> eventItemClicked;
+
+		/**
+		 * Event that will be triggered when an item on the list is longpressed.
+		 */
+		Event<GenericList*, void*> eventItemLongClicked;
+
+		/**
+		 * Event that will be triggered when the list is starting to scroll.
+		 */
+		Event<GenericList*, void*> eventScrollingStart;
+
+		/**
+		 * Event that will be triggered when the list is ending its scroll.
+		 */
+		Event<GenericList*, void*> eventScrollingEnd;
+
+		/**
+		 * Event that will be triggered when the back to top scroll threshold is passed (so it will be appropriate to enable the back to top action).
+		 */
+		Event<GenericList*, bool*> eventShowBackToTop;
+
+		/**
+		 * Event that can be used to customize the dummy bottom-most item on the list by assigning an Evas_Object to its event data.
+		 */
+		Event<GenericList*, Evas_Object**> eventDummyBottomContent;
+
+		Event<Adapter::AdapterItem*, EdjeSignalInfo> eventItemSignal;
 	};
 }
 }
