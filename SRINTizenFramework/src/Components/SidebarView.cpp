@@ -46,9 +46,9 @@ LIBAPI Evas_Object* SidebarView::CreateView(Evas_Object* root)
 	elm_object_content_set(leftPanel, sidebarContent);
 
 	// Create content wrapper if any
-	//this->contentWrapper = CreateContentWrapper(layout);
-	//if(this->contentWrapper != nullptr)
-		//elm_object_part_content_set(layout, "elm.swallow.content", contentWrapper);
+	this->contentWrapper = CreateContentWrapper(layout);
+	if(this->contentWrapper != nullptr)
+		elm_object_part_content_set(layout, "elm.swallow.content", contentWrapper);
 
 	// Set the panel to base layout
 	elm_object_part_content_set(layout, "elm.swallow.left", leftPanel);
@@ -61,13 +61,13 @@ LIBAPI void SidebarView::Attach(ViewBase* view)
 	if (currentContent != nullptr)
 		Detach();
 
-	currentContent = view->Create(layout);
-	elm_object_part_content_set(layout, "elm.swallow.content", currentContent);
+	currentContent = view->Create(this->contentWrapper ? this->contentWrapper : layout);
+	elm_object_part_content_set(this->contentWrapper ? this->contentWrapper : layout, "elm.swallow.content", currentContent);
 }
 
 LIBAPI void SidebarView::Detach()
 {
-	elm_object_part_content_unset(layout, "elm.swallow.content");
+	elm_object_part_content_unset(this->contentWrapper ? this->contentWrapper : layout, "elm.swallow.content");
 	evas_object_hide(currentContent);
 	currentContent = nullptr;
 }
@@ -130,7 +130,7 @@ void SRIN::Components::SidebarView::DrawerButtonStyle(Evas_Object* button)
 	elm_object_style_set(button, "naviframe/drawers");
 }
 
-Evas_Object* SRIN::Components::SidebarView::CreateContentWrapper(Evas_Object* root)
+LIBAPI Evas_Object* SRIN::Components::SidebarView::CreateContentWrapper(Evas_Object* root)
 {
 	return nullptr;
 }
