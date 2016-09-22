@@ -31,7 +31,7 @@ bool SRIN::Infrastructures::ScheduledTask::TimerCallback() {
 	Run();
 
 	// Check if it is periodic
-	auto isPeriodic = this->interval == std::chrono::microseconds::zero();
+	auto isPeriodic = this->interval != std::chrono::microseconds::zero();
 	if(isPeriodic && !this->firstStarted)
 	{
 		// If it is the first time it is started, recreate the new timer with the specifid interval
