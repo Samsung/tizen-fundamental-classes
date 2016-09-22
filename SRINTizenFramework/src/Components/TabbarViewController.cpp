@@ -143,6 +143,7 @@ void SRIN::Components::TabbarViewController::LookupAndBringContent(
 			this->currentTab = tabCount;
 			this->disableChangeTabByScroll = true;
 			elm_scroller_page_bring_in(this->scroller, tabCount, 0);
+			tab.controller->Reload(nullptr);
 			break;
 		}
 		tabCount++;
