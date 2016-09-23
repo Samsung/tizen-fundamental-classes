@@ -65,6 +65,9 @@ LIBAPI Evas_Object* SRIN::Components::TabbarViewController::CreateView(
 
 		tab.objectItem = elm_toolbar_item_append(tabbar, nullptr, tab.tabText.length() ? tab.tabText.c_str() : nullptr, EFL::EvasSmartEventHandler, &this->eventTabbarButtonClicked);
 		tab.tabNumber = num;
+
+		if(num == 0)
+			tab.controller->Reload(nullptr);
 		num++;
 	}
 
@@ -132,34 +135,31 @@ void SRIN::Components::TabbarViewController::OnTabbarButtonClicked(
 
 void SRIN::Components::TabbarViewController::LookupAndBringContent(
 		Elm_Object_Item* tabItem) {
-	int tabCount = 0;
+
 	for(TabEntry& tab : this->tabs)
 	{
 		if(tab.objectItem == tabItem)
 		{
-			if(this->currentTab == tabCount)
+
+
+			if(this->currentTab == tab.tabNumber)
 				break;
 
-			this->currentTab = tabCount;
+
+
+			this->currentTab = tab.tabNumber;
 			this->disableChangeTabByScroll = true;
-			elm_scroller_page_bring_in(this->scroller, tabCount, 0);
+			elm_scroller_page_bring_in(this->scroller, tab.tabNumber, 0);
 			tab.controller->Reload(nullptr);
 			break;
 		}
-		tabCount++;
 	}
 }
 
 void SRIN::Components::TabbarViewController::OnTabContentScrolled(
 		EFL::EvasSmartEvent* event, Evas_Object* source, void* event_data) {
 
-	int pageH, pageV;
-	elm_scroller_current_page_get(source, &pageH, &pageV);
 
-	if(this->currentTab == pageH)
-		return;
-
-	this->currentTab = pageH;
 
 #if _DEBUG
 	static int count = 0;
@@ -175,6 +175,14 @@ void SRIN::Components::TabbarViewController::OnTabContentScrolled(
 		this->disableChangeTabByScroll = false;
 		return;
 	}
+
+	int pageH, pageV;
+	elm_scroller_current_page_get(source, &pageH, &pageV);
+
+	if(this->currentTab == pageH)
+		return;
+
+	this->currentTab = pageH;
 
 	auto objectItem = this->tabs[pageH].objectItem;
 
