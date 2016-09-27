@@ -71,6 +71,7 @@ LIBAPI Evas_Object* SRIN::Components::TabbarViewController::CreateView(
 
 		auto viewRoot = tab.controller->View->Create(this->box);
 		edje_object_part_swallow(content, "elm.swallow.content", viewRoot);
+		evas_object_show(content);
 		elm_box_pack_end(this->box, content);
 
 		tab.objectItem = elm_toolbar_item_append(tabbar, nullptr, tab.tabText.length() ? tab.tabText.c_str() : nullptr, EFL::EvasSmartEventHandler, &this->eventTabbarButtonClicked);
