@@ -20,6 +20,7 @@ struct TabEntry
 	Framework::ControllerBase* controller;
 	std::string tabText;
 	Elm_Object_Item* objectItem;
+	Evas_Object* content;
 	int tabNumber;
 };
 

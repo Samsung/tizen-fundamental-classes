@@ -7,6 +7,9 @@
 
 #include "SRIN/Components/TabbarViewController.h"
 
+#define FILE_EDC_CONTENT "SRIN/edc/Content.edj"
+
+
 LIBAPI Evas_Object* SRIN::Components::TabbarViewController::CreateView(
 		Evas_Object* root) {
 
@@ -58,13 +61,21 @@ LIBAPI Evas_Object* SRIN::Components::TabbarViewController::CreateView(
 
 	int num = 0;
 
+
+	auto edj_path = Framework::ApplicationBase::GetResourcePath(FILE_EDC_CONTENT);
+
 	for(TabEntry& tab : this->tabs)
 	{
+		auto content = edje_object_add(evas_object_evas_get(this->box));
+		edje_object_file_set(content, edj_path.c_str(), "main");
+
 		auto viewRoot = tab.controller->View->Create(this->box);
-		elm_box_pack_end(this->box, viewRoot);
+		edje_object_part_swallow(content, "elm.swallow.content", viewRoot);
+		elm_box_pack_end(this->box, content);
 
 		tab.objectItem = elm_toolbar_item_append(tabbar, nullptr, tab.tabText.length() ? tab.tabText.c_str() : nullptr, EFL::EvasSmartEventHandler, &this->eventTabbarButtonClicked);
 		tab.tabNumber = num;
+		tab.content = content;
 
 		if(num == 0)
 			tab.controller->Reload(nullptr);
@@ -102,9 +113,8 @@ void SRIN::Components::TabbarViewController::OnLayoutResize(
 
 	for(TabEntry& tab : this->tabs)
 	{
-		auto viewRoot = tab.controller->View->GetViewRoot();
-		evas_object_size_hint_min_set(viewRoot, w, h - tabH);
-		evas_object_size_hint_max_set(viewRoot, w, h - tabH);
+		evas_object_size_hint_min_set(tab.content, w, h - tabH);
+		evas_object_size_hint_max_set(tab.content, w, h - tabH);
 	}
 
 	elm_scroller_page_size_set(this->scroller, w, h);
