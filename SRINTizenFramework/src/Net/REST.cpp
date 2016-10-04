@@ -328,6 +328,8 @@ RESTResultBase SRIN::Net::RESTServiceTemplateBase::PerformCall()
 		case HTTPMode::Delete:
 			curl_easy_setopt(curlHandle, CURLOPT_CUSTOMREQUEST, "DELETE");
 			break;
+		case HTTPMode::Unknown:
+			break;
 		}
 
 		// USer Agent
