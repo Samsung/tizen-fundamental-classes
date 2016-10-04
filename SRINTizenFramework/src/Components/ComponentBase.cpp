@@ -10,7 +10,7 @@
 using namespace SRIN::Components;
 
 ComponentBase::ComponentBase() :
-	Enabled(this), Name(this), Visible(this)
+	Enabled(this), Visible(this), Name(this)
 {
 	weightX = EVAS_HINT_EXPAND;
 	alignY = EVAS_HINT_FILL;
@@ -73,11 +73,12 @@ void ComponentBase::SetVisible(const bool& visible)
 {
 	this->visible = visible;
 
-	if (componentRoot)
+	if (componentRoot) {
 		if (visible)
 			evas_object_show(componentRoot);
 		else
 			evas_object_hide(componentRoot);
+	}
 }
 
 bool ComponentBase::GetVisible()
