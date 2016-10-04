@@ -14,6 +14,9 @@
 
 #ifdef LIBBUILD
 #define LIBAPI __attribute__((__visibility__("default")))
+#ifdef LOG_TAG
+#undef LOG_TAG
+#endif
 #define LOG_TAG "SRINFW"
 #else
 #define LIBAPI
