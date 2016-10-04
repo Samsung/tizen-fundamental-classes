@@ -182,7 +182,7 @@ std::string LIBAPI SRIN::Net::ImageCache::LoadImage(const std::string& url)
 				sqlite3_bind_text(statement, 1, strdup(url.c_str()), -1, [] (void* d) { free(d); });
 				sqlite3_bind_text(statement, 2, strdup(fileName.c_str()), -1, [] (void* d) { free(d); });
 
-				auto queryResult = sqlite3_step(statement);
+				sqlite3_step(statement);
 
 				dlog_print(DLOG_DEBUG, LOG_TAG, "Prepare result: %d", prepareResult);
 

@@ -393,8 +393,6 @@ void SRIN::Components::GenericList::OnDummyRealized(EFL::EvasSmartEvent* event, 
 	}
 	else
 	{
-		auto ret = elm_object_item_widget_get((Elm_Object_Item*)eventData);
-
 		dlog_print(DLOG_DEBUG, LOG_TAG, "Widget Realized SRIN %d", obj);
 	}
 }

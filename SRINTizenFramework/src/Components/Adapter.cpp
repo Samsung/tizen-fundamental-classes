@@ -40,7 +40,6 @@ LIBAPI void SRIN::Components::Adapter::AddItemInternal(void* data, AdapterItemCl
 
 LIBAPI void SRIN::Components::Adapter::RemoveItemInternal(void* data)
 {
-	int i = 0;
 	for(auto iter = adapterItems.begin(); iter != adapterItems.end(); )
 	{
 		if(iter->data == data)

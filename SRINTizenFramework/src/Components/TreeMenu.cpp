@@ -33,8 +33,6 @@ void TreeMenu::MenuScrollInternal(GenlistEvent* eventSource,
 void TreeMenu::MenuPressedInternal(GenlistEvent* eventSource,
 		Evas_Object* objSource, Elm_Object_Item* genlistItem) {
 	if (!isClickPersist) {
-		auto item = reinterpret_cast<TreeMenuItemPackage*>(elm_object_item_data_get(genlistItem));
-
 		auto icon = elm_object_item_part_content_get(genlistItem, "menu_icon");
 		edje_object_signal_emit(icon, "elm,state,selected", "elm");
 	}

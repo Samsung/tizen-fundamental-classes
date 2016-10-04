@@ -19,7 +19,6 @@ namespace SRIN {
 	namespace Components {
 		class LIBAPI Toast : public EventClass {
 		private:
-			Evas_Object* popup;
 			void OnDismiss(EFL::EvasSmartEvent* event, Evas_Object* objSource, void* eventData);
 			bool BackButtonPressed(EFL::EvasSmartEvent* event, Evas_Object* objSource, void* eventData);
 			EFL::EvasSmartEvent eventDismiss;
