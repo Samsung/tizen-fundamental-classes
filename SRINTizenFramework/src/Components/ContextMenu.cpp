@@ -25,19 +25,20 @@ void ContextMenu_ItemClickHandler(void* data, Evas_Object* obj, void* eventData)
 
 void SRIN::Components::ContextMenu::SetText(const std::string& text)
 {
+	this->text = text;
 }
 
 std::string& SRIN::Components::ContextMenu::GetText()
 {
-
+	return text;
 }
 
 SRIN::Components::ContextMenu::ContextMenu() :
 	naviframe(nullptr),
 	button(nullptr),
+	contextMenu(nullptr),
 	menuShown(false),
-	Text(this),
-	contextMenu(nullptr)
+	Text(this)
 {
 	eventContextMenuButtonClicked += EventHandler(ContextMenu::OnContextMenuButtonClicked);
 	eventContextMenuDismissed += EventHandler(ContextMenu::OnContextMenuDismissed);
