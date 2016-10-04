@@ -84,7 +84,6 @@ struct DispatchAsyncBuilder<void>
 	EventType* eventTarget;
 };
 
-template<>
 template<class R>
 struct DispatchAsyncBuilder<AsyncTask<R>*>
 {
@@ -131,7 +130,6 @@ struct AsyncBuilder
 	template<class T>
 	AsyncTask<typename DispatchAsyncBuilder<T>::R>* operator&(DispatchAsyncBuilder<T> builder)
 	{
-		typedef typename DispatchAsyncBuilder<T>::R R;
 		//auto eventTarget = builder.eventTarget;
 		std::function<void(void*, void*)> dispatcher = GetDispatcher(*(builder.eventTarget));
 		return AsyncCall(builder.lambda, dispatcher);
@@ -151,7 +149,6 @@ struct PriorityBuilder
 	template<class T>
 	AsyncTask<typename DispatchAsyncBuilder<T>::R>* operator&(DispatchAsyncBuilder<T> builder)
 	{
-		typedef typename DispatchAsyncBuilder<T>::R R;
 		//auto eventTarget = builder.eventTarget;
 		std::function<void(void*, void*)> dispatcher = GetDispatcher(*(builder.eventTarget));
 		return AsyncCall(builder.lambda, dispatcher, true);
@@ -249,13 +246,11 @@ void dwait(AsyncTask<R>* task, Event<AsyncTask<R>*, R>& eventTarget)
 }
 
 // Cancelling function trait for type DispatchAsyncBuilder so the overload can call correct function
-template<>
 template<class Lambda>
 struct function_traits<SRIN::DispatchAsyncBuilder<Lambda>>
 {
 };
 
-template<>
 template<class R>
 struct function_traits<SRIN::AsyncTask<R>*>
 {

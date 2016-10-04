@@ -14,11 +14,8 @@
 #include <mutex>
 #include <map>
 
-#ifdef LOG_TAG
-#undef LOG_TAG
-#endif
 
-#define LOG_TAG "SRINFW-Async"
+#define ASYNC_LOG_TAG "SRINFW-Async"
 
 
 namespace SRIN {
@@ -50,7 +47,7 @@ public:
 		state = TaskState::Created;
 		dwait = false;
 		threadId = 0;
-		dlog_print(DLOG_DEBUG, LOG_TAG, "Task created %d", this);
+		dlog_print(DLOG_DEBUG, ASYNC_LOG_TAG, "Task created %d", this);
 	}
 
 	void Start()
@@ -67,7 +64,7 @@ public:
 
 	~AsyncTaskObj()
 	{
-		dlog_print(DLOG_DEBUG, LOG_TAG, "Task destroyed %d", this);
+		dlog_print(DLOG_DEBUG, ASYNC_LOG_TAG, "Task destroyed %d", this);
 	}
 
 };
@@ -100,12 +97,12 @@ struct TaskContext
 
 	TaskContext() : task(nullptr)
 	{
-		dlog_print(DLOG_DEBUG, LOG_TAG, "Context created");
+		dlog_print(DLOG_DEBUG, ASYNC_LOG_TAG, "Context created");
 	}
 
 	~TaskContext()
 	{
-		dlog_print(DLOG_DEBUG, LOG_TAG, "Context destroyed");
+		dlog_print(DLOG_DEBUG, ASYNC_LOG_TAG, "Context destroyed");
 	}
 };
 
