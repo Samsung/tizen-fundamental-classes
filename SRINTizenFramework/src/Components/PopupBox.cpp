@@ -37,26 +37,21 @@ LIBAPI std::string& SRIN::Components::PopupBox::GetMessageString() {
 }
 
 LIBAPI SRIN::Components::PopupBox::PopupBox() :
-		Message(this), Title(this), Orientation(this),
-		shown(false), IsShown(shown)
+		shown(false), popup(nullptr), popupLayout(nullptr), root(nullptr),
+		orientation(Elm_Popup_Orient::ELM_POPUP_ORIENT_BOTTOM),
+		Title(this), Message(this), Orientation(this), IsShown(shown)
 {
+	Visible = false;
+	title = "";
+	message = "";
 
-	this->popup 		= nullptr;
-	this->popupLayout 	= nullptr;
-	this->root 			= nullptr;
-	this->orientation   = Elm_Popup_Orient::ELM_POPUP_ORIENT_BOTTOM;
+	buttonOneText = "";
+	buttonTwoText = "";
+	buttonThreeText = "";
 
-	this->Visible 		= false;
-	this->title 		= "";
-	this->message 		= "";
-
-	buttonOneText 		= "";
-	buttonTwoText 		= "";
-	buttonThreeText 	= "";
-
-	buttonOneImage 		= "";
-	buttonTwoImage 		= "";
-	buttonThreeImage 	= "";
+	buttonOneImage = "";
+	buttonTwoImage = "";
+	buttonThreeImage = "";
 }
 
 LIBAPI void SRIN::Components::PopupBox::Show() {

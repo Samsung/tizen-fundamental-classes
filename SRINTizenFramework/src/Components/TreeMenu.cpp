@@ -257,8 +257,9 @@ void TreeMenu::GenerateRootMenu()
 }
 
 TreeMenu::TreeMenu() :
-	genlist(nullptr), itemClass(nullptr), currentlySelected(nullptr), submenuItemClass(nullptr), MenuItems(this),
-	AutoExpanded(this), autoExpand(false)
+	genlist(nullptr), itemClass(nullptr), submenuItemClass(nullptr),
+	currentlySelected(nullptr), autoExpand(false),
+	MenuItems(this), AutoExpanded(this)
 
 {
 	eventMenuScrollInternal +=  EventHandler(TreeMenu::MenuScrollInternal);

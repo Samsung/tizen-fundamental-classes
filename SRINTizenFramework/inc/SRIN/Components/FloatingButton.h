@@ -20,8 +20,8 @@ namespace SRIN {
 		private:
 			Evas_Object* naviframe;
 			Evas_Object* floatingButton;
-			Evas_Object* buttonRight;
 			Evas_Object* buttonLeft;
+			Evas_Object* buttonRight;
 		protected:
 			/**
 			 * Method overriden from ComponentBase, creates the UI elements of the component.

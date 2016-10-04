@@ -92,7 +92,7 @@ LIBAPI Evas_Object* SRIN::Components::TabbarViewController::CreateView(
 
 LIBAPI SRIN::Components::TabbarViewController::TabbarViewController(SRIN::Framework::ControllerManager* m, CString controllerName) :
 		SRIN::Framework::ControllerBase(m, this, controllerName),
-		box(nullptr), scroller(nullptr)
+		scroller(nullptr), box(nullptr), tabbar(nullptr)
 {
 	this->disableChangeTabByScroll = false;
 	this->currentTab = 0;

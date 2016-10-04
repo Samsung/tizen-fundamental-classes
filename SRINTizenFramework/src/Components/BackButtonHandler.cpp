@@ -40,7 +40,9 @@ void SRIN::Components::BackButtonHandler::Release()
 	}
 }
 
-SRIN::Components::BackButtonHandler::BackButtonHandler() : acquired(false), obj(nullptr)
+SRIN::Components::BackButtonHandler::BackButtonHandler() :
+		obj(nullptr),
+		acquired(false)
 {
 }
 

@@ -143,7 +143,7 @@ std::string& SRIN::Components::DatePickerPopup::GetTitle() {
 	return datePopupMenu.Title;
 }
 
-SRIN::Components::DatePickerPopup::DatePickerPopup() : Title(this), Orientation(this), Hint(this) {
+SRIN::Components::DatePickerPopup::DatePickerPopup() : Title(this), Hint(this), Orientation(this) {
 	buttonText			= "Select Date";
 
 	std::time_t time	= std::time(nullptr);

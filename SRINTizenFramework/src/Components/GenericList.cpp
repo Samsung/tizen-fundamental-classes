@@ -87,8 +87,8 @@ LIBAPI SRIN::Components::GenericListItemClassBase::~GenericListItemClassBase()
  * ================================================================================================================= */
 
 LIBAPI SRIN::Components::GenericList::GenericList() :
-	dataSource(nullptr), genlist(nullptr), realBottom(nullptr), DataSource(this),
-	Overscroll(this), overscroll(false), Underscroll(this), underscroll(false),
+	genlist(nullptr), realBottom(nullptr), dataSource(nullptr), overscroll(false), underscroll(false),
+	DataSource(this), Overscroll(this), Underscroll(this),
 	IsLongClicked(this), BackToTopThreshold(this)
 {
 	eventScrolledInternal += EventHandler(GenericList::OnScrolledInternal);

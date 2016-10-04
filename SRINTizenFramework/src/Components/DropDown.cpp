@@ -42,9 +42,9 @@ LIBAPI Evas_Object* SRIN::Components::DropDown::CreateComponent(Evas_Object* roo
 }
 
 LIBAPI SRIN::Components::DropDown::DropDown() :
+	parentComponent(nullptr),
 	dropdownComponent(nullptr),
 	dataSource(nullptr),
-	parentComponent(nullptr),
 	DataSource(this)
 {
 	eventDropdownButtonClick += EventHandler(DropDown::OnDropDownButtonClick);

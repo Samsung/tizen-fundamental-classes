@@ -105,12 +105,10 @@ LIBAPI bool SRIN::Components::Field::GetBottomBorderVisible()
 	return bottomBorder;
 }
 
-LIBAPI SRIN::Components::Field::Field() : BottomBorderVisible(this), Multiline(this), Text(this)
+LIBAPI SRIN::Components::Field::Field() :
+		text(""), multiline(false), bottomBorder(false), field(nullptr),
+		Text(this), Multiline(this), BottomBorderVisible(this)
 {
-	field = nullptr;
-	text = "";
-	multiline = false;
-	bottomBorder = false;
 }
 
 LIBAPI void SRIN::Components::Field::SetDisable(const bool& disable)

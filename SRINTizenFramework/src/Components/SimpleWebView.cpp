@@ -353,8 +353,8 @@ void SRIN::Components::SimpleWebView::Render()
 }
 
 SRIN::Components::SimpleWebView::SimpleWebView() :
-		Font(this), FontSize(this),
-		box(nullptr), boxPage(nullptr)
+		box(nullptr), boxPage(nullptr), isRendering(false),
+		Font(this), FontSize(this)
 {
 	eventImageDownloadCompleted += { this, &SimpleWebView::OnImageDownloadCompleted };
 
