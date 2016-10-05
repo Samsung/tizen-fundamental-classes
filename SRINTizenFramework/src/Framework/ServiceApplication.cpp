@@ -2,7 +2,8 @@
  * ServiceApplication.cpp
  *
  *  Created on: Sep 9, 2016
- *      Author: Gilang
+ *      Contributor:
+ *        Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
 #include "SRIN/Framework/ServiceApplication.h"

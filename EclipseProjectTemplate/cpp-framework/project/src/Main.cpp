@@ -4,7 +4,8 @@
  *	Main implementation for native application utilizing SRIN C++ Framework
  *
  *  Template Created on: Apr 11, 2016
- *      		 Author: Gilang M. Hamidy (g.hamidy@samsung.com)
+ *      Contributor:
+ *        Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
 #include "$(appName).h"

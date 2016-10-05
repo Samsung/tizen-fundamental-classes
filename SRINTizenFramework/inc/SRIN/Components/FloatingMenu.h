@@ -2,7 +2,9 @@
  * FloatingMenu.h
  *
  *  Created on: May 20, 2016
- *      Author: Kevin Winata
+ *      Contributor:
+ *        Kevin Winata (k.winata@samsung.com)
+ *        Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
 #ifndef FLOATINGMENU_H_

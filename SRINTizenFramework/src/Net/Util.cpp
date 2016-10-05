@@ -3,6 +3,7 @@
  *
  *  Created on: Mar 1, 2016
  *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
+ *        Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
 #include "SRIN/Net/Util.h"

@@ -2,7 +2,9 @@
  * Util.h
  *
  *  Created on: Mar 1, 2016
- *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
+ *      Contributor:
+ *        Gilang M. Hamidy (g.hamidy@samsung.com)
+ *        Kevin Winata (k.winata@samsung.com)
  */
 
 #ifndef SRINFW_UTIL_H_

@@ -2,7 +2,9 @@
  * SimpleWebView.h
  *
  *  Created on: Mar 17, 2016
- *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
+ *      Contributor:
+ *        Gilang M. Hamidy (g.hamidy@samsung.com)
+ *        Kevin Winata (k.winata@samsung.com)
  */
 
 #ifndef SRIN_COMP_SIMPLEWEBVIEW_H_

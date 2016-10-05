@@ -2,7 +2,8 @@
  * ScheduledEvent.h
  *
  *  Created on: Sep 22, 2016
- *      Author: Kevin Winata
+ *      Contributor:
+ *        Kevin Winata (k.winata@samsung.com)
  */
 
 #ifndef SRIN_INFRASTRUCTURES_SCHEDULEDEVENT_H_

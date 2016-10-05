@@ -1,8 +1,10 @@
 /*
- * AsyncTask.cpp
+ * Async.cpp
  *
  *  Created on: Mar 1, 2016
- *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
+ *      Contributor:
+ *        Gilang M. Hamidy (g.hamidy@samsung.com)
+ *        Kevin Winata (k.winata@samsung.com)
  */
 #include "SRIN/Core.h"
 #include "SRIN/Async.h"

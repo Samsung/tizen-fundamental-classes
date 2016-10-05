@@ -1,8 +1,9 @@
 /*
  * EFL.cpp
  *
- *  Created on: Aug 9, 2016
- *      Author: Gilang
+ *  Created on: Aug 31, 2016
+ *  Contributor:
+ *        Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
 #include "SRIN/EFL.h"

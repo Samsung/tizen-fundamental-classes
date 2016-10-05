@@ -2,7 +2,8 @@
  * SlidePresenter.h
  *
  *  Created on: Sep 13, 2016
- *      Author: Gilang
+ *      Contributor:
+ *        Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
 #ifndef SLIDEPRESENTER_H_

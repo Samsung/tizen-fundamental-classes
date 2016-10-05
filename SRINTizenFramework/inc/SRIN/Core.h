@@ -2,7 +2,10 @@
  * Core.h
  *
  *  Created on: Feb 12, 2016
- *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
+ *      Contributor:
+ *        Gilang Mentari Hamidy (g.hamidy@samsung.com)
+ *        g.kusuma (g.kusuma@samsung.com)
+ *        Kevin Winata (k.winata@samsung.com)
  */
 
 #ifndef CORE_H_

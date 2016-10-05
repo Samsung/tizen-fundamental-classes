@@ -2,7 +2,8 @@
  * TabbarControllerBase.h
  *
  *  Created on: Feb 19, 2016
- *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
+ *      Contributor:
+ *        Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
 #ifndef SRINFW_TABBARVIEWCONTROLLER_H_

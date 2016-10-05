@@ -2,7 +2,8 @@
  * Bundle.h
  *
  *  Created on: Sep 16, 2016
- *      Author: Gilang
+ *      Contributor:
+ *        Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
 #ifndef BUNDLE_H_

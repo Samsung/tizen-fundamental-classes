@@ -2,7 +2,11 @@
  * Field.h
  *
  *  Created on: Mar 3, 2016
- *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
+ *      Contributor:
+ *        Gilang M. Hamidy (g.hamidy@samsung.com)
+ *        ib.putu (ib.putu@samsung.com)
+ *        Kevin Winata (k.winata@samsung.com)
+ *        Calvin Windoro (calvin.w@samsung.com)
  */
 
 #ifndef SRIN_FIELD_H_

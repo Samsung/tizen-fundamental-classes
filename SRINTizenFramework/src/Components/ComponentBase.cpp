@@ -2,7 +2,9 @@
  * ComponentBase.cpp
  *
  *  Created on: Feb 19, 2016
- *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
+ *      Contributor:
+ *        Gilang M. Hamidy (g.hamidy@samsung.com)
+ *        Kevin Winata (k.winata@samsung.com)
  */
 
 #include "SRIN/Components/ComponentBase.h"

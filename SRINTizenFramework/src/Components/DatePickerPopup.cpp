@@ -2,7 +2,10 @@
  * DatePickerPopup.cpp
  *
  *  Created on: Mar 16, 2016
- *      Author: Ida Bagus Putu Peradnya Dinata
+ *      Contributor:
+ *        ib.putu (ib.putu@samsung.com)
+ *        Gilang M. Hamidy (g.hamidy@samsung.com)
+ *        Kevin Winata (k.winata@samsung.com)
  */
 
 #include "SRIN/Components/DatePickerPopup.h"

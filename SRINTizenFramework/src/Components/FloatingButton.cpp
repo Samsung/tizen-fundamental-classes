@@ -2,7 +2,9 @@
  * FloatingButton.cpp
  *
  *  Created on: May 17, 2016
- *      Author: Kevin Winata
+ *      Contributor:
+ *        Kevin Winata (k.winata@samsung.com)
+ *        Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
 #include "SRIN/Components/FloatingButton.h"

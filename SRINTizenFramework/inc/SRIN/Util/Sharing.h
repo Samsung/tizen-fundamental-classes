@@ -2,7 +2,9 @@
  * Sharing.h
  *
  *  Created on: Mar 28, 2016
- *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
+ *      Contributor:
+ *        Gilang M. Hamidy (g.hamidy@samsung.com)
+ *        Kevin Winata (k.winata@samsung.com)
  */
 
 #ifndef SRIN_SHARING_H_

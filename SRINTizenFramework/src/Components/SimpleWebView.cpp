@@ -1,9 +1,11 @@
-
 /*
  * SimpleWebView.cpp
  *
  *  Created on: Mar 17, 2016
- *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
+ *      Contributor:
+ *        Gilang M. Hamidy (g.hamidy@samsung.com)
+ *        ib.putu (ib.putu@samsung.com)
+ *        Kevin Winata (k.winata@samsung.com)
  */
 
 #include <EWebKit.h>

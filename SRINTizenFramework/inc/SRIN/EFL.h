@@ -3,7 +3,8 @@
  * Replacement for ELMInterface.h, which applies a new namespace format
  *
  *  Created on: Aug 9, 2016
- *      Author: Gilang M. Hamidy
+ *  Contributor:
+ *        Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
 #ifndef SRIN_EFL_H_

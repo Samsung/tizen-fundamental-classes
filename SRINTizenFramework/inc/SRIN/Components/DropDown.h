@@ -2,7 +2,10 @@
  * DropDown.h
  *
  *  Created on: Mar 21, 2016
- *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
+ *      Contributor:
+ *        Gilang M. Hamidy (g.hamidy@samsung.com)
+ *        Kevin Winata (k.winata@samsung.com)
+ *        Calvin Windoro (calvin.w@samsung.com)
  */
 
 #ifndef SRIN_COMP_DROPDOWN_H_

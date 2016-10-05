@@ -2,7 +2,9 @@
  * DatePickerPopup.h
  *
  *  Created on: Mar 16, 2016
- *      Author: Ida Bagus Putu Peradnya Dinata
+ *      Contributor:
+ *        ib.putu (ib.putu@samsung.com)
+ *        Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
 #ifndef DATEPICKERPOPUP_H_

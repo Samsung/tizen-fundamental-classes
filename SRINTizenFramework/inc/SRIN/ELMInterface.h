@@ -2,7 +2,8 @@
  * ELMInterface.h
  *
  *  Created on: Feb 16, 2016
- *      Author: SRIN
+ *      Contributor:
+ *        Gilang Mentari Hamidy (g.hamidy@samsung.com)
  */
 
 #ifndef SRINFW_ELMINTERFACE_H_

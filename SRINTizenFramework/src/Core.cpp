@@ -2,7 +2,8 @@
  * Core.cpp
  *
  *  Created on: Mar 22, 2016
- *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
+ *      Contributor:
+ *        Gilang Mentari Hamidy (g.hamidy@samsung.com)
  */
 
 #include "SRIN/Core.h"

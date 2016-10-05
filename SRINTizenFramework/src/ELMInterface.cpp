@@ -2,7 +2,8 @@
  * ELMInterface.cpp
  *
  *  Created on: Feb 16, 2016
- *      Author: SRIN
+ *      Contributor:
+ *        Gilang Mentari Hamidy (g.hamidy@samsung.com)
  */
 
 #define USE_LEGACY_EFL_INTERFACE

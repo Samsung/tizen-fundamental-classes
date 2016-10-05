@@ -2,7 +2,10 @@
  * Adapter.h
  *
  *  Created on: Mar 8, 2016
- *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
+ *      Contributor:
+ *        Gilang M. Hamidy (g.hamidy@samsung.com)
+ *        ib.putu (ib.putu@samsung.com)
+ *        Kevin Winata (k.winata@samsung.com)
  */
 
 #ifndef SRIN_ADAPTER_H_

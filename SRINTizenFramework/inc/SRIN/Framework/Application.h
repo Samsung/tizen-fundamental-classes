@@ -2,7 +2,10 @@
  * Application.h
  *
  *  Created on: Feb 12, 2016
- *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
+ *      Contributor:
+ *        Gilang M. Hamidy (g.hamidy@samsung.com)
+ *        ib.putu (ib.putu@samsung.com)
+ *        Kevin Winata (k.winata@samsung.com)
  */
 
 #ifndef SRINFW__APPLICATION_H__

@@ -4,7 +4,9 @@
  * Source file for class ApplicationBase
  *
  *  Created on: Feb 12, 2016
- *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
+ *      Contributor:
+ *        Gilang M. Hamidy (g.hamidy@samsung.com)
+ *        ib.putu (ib.putu@samsung.com)
  */
 
 #include "SRIN/Framework/Application.h"

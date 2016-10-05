@@ -2,7 +2,9 @@
  * BackButtonHandler.h
  *
  *  Created on: Apr 27, 2016
- *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
+ *      Contributor:
+ *        Gilang M. Hamidy (g.hamidy@samsung.com)
+ *        Kevin Winata (k.winata@samsung.com)
  */
 
 #ifndef SRIN_COMPONENTS_BACKBUTTONHANDLER_H_

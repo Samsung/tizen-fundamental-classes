@@ -2,7 +2,9 @@
  * MenuItem.cpp
  *
  *  Created on: Apr 26, 2016
- *      Author: Gilang M. Hamidy (g.hamidy@samsung.com)
+ *      Contributor:
+ *        Gilang M. Hamidy (g.hamidy@samsung.com)
+ *        Kevin Winata (k.winata@samsung.com)
  */
 
 #include "SRIN/Components/MenuItem.h"

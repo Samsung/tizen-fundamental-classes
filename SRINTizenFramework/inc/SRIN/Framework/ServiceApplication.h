@@ -2,7 +2,8 @@
  * ServiceApplication.h
  *
  *  Created on: Sep 9, 2016
- *      Author: Gilang
+ *      Contributor:
+ *        Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
 #ifndef SERVICEAPPLICATION_H_
