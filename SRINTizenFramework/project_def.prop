@@ -1,0 +1,11 @@
+APPNAME = tizen
+
+type = sharedLib
+profile = mobile-2.4
+
+USER_SRCS = src/tizen.c
+USER_DEFS =
+USER_INC_DIRS = inc
+USER_OBJS =
+USER_LIBS =
+USER_EDCS =
