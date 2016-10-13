@@ -63,8 +63,6 @@ void SRIN::EFL::EdjeObjectItemSignalEventHandler(void* data,
 
 }
 
-void SRIN::EFL::EcoreJobEventHandler(void* d)
-
 LIBAPI void SRIN::EFL::EcoreJobEventHandler(void* d)
 {
 	auto ev = reinterpret_cast<EcoreJobEvent*>(d);

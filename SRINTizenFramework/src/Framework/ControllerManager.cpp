@@ -152,7 +152,7 @@ void StackingControllerManager::OnPerformNavigation(EFL::EcoreJobEvent* ev, void
 		else
 		{
 			// Navigate back
-			void* returnedData = this->chain->instance->Unload();
+			ObjectClass* returnedData = this->chain->instance->Unload();
 			app->Detach();
 			bool popResult = PopController();
 

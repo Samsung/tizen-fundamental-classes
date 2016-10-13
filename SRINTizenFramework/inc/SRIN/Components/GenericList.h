@@ -337,7 +337,10 @@ namespace Components {
 		 */
 		Event<GenericList*, Evas_Object**> eventDummyBottomContent;
 
-		Event<Adapter::AdapterItem*, EdjeSignalInfo> eventItemSignal;
+		Event<GenericList*, Evas_Object**> eventDummyTopContent;
+		Event<GenericList*, void*> eventUnderscrolled;
+
+		Event<Adapter::AdapterItem*, EFL::EdjeSignalInfo> eventItemSignal;
 	};
 }
 }

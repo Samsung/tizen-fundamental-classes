@@ -462,7 +462,7 @@ private:
 	bool pendingNavigation;
 	bool navigateForward;
 	CString nextControllerName;
-	void* data;
+	ObjectClass* data;
 	bool noTrail;
 	void OnPerformNavigation(EFL::EcoreJobEvent* ev, void* u1, void* u2);
 protected:

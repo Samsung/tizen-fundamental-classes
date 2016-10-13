@@ -143,7 +143,7 @@ LIBAPI SRIN::Components::GenericList::GenericList() :
 		GenericList* genlist = (GenericList*)data;
 		Evas_Object* content = nullptr;
 
-		genlist->DummyTopContent(genlist, &content);
+		genlist->eventDummyTopContent(genlist, &content);
 
 		if(content != nullptr)
 			return content;
@@ -400,7 +400,7 @@ void SRIN::Components::GenericList::OnDummyRealized(EFL::EvasSmartEvent* event, 
 	}
 }
 
-void SRIN::Components::GenericList::OnItemUnrealized(ElementaryEvent* event, Evas_Object* obj, void* eventData)
+void SRIN::Components::GenericList::OnItemUnrealized(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
 {
 	if(dummyTop && eventData == elm_genlist_item_next_get(dummyTop))
 	{
@@ -461,7 +461,7 @@ void SRIN::Components::GenericList::OnScrollingEnd(EFL::EvasSmartEvent* event, E
 		if (y == 0) {
 			elm_object_item_del(dummyTop);
 			dummyTop = nullptr;
-			UnderScrolled(this, nullptr);
+			eventUnderscrolled(this, nullptr);
 		}
 		else {
 			int x, y;

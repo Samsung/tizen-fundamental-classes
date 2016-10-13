@@ -279,12 +279,9 @@
 		</cconfiguration>
 		<cconfiguration id="org.tizen.nativecore.config.sbi.gcc45.so.release.656287997">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="org.tizen.nativecore.config.sbi.gcc45.so.release.656287997" moduleId="org.eclipse.cdt.core.settings" name="Release">
-<<<<<<< Upstream, based on devel/core/v0.2
-=======
 				<macros>
 					<stringMacro name="build_repo_folder" type="VALUE_TEXT" value="~/git/srin-framework-stable/CurrentBuild/"/>
 				</macros>
->>>>>>> 817d700 Fix s_async keywords which does not add namespace to its internal call
 				<externalSettings/>
 				<extensions>
 					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
@@ -298,11 +295,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-<<<<<<< Upstream, based on devel/core/v0.2
-				<configuration artifactExtension="so" artifactName="srintizenfw" buildArtefactType="org.tizen.nativecore.buildArtefactType.sharedLib" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.tizen.nativecore.buildArtefactType.sharedLib,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" description="" errorParsers="org.eclipse.cdt.core.MakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;" id="org.tizen.nativecore.config.sbi.gcc45.so.release.656287997" name="Release" parent="org.tizen.nativecore.config.sbi.gcc45.so.release">
-=======
 				<configuration artifactExtension="so" artifactName="srintizenfw" buildArtefactType="org.tizen.nativecore.buildArtefactType.sharedLib" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.tizen.nativecore.buildArtefactType.sharedLib,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" description="" errorParsers="org.eclipse.cdt.core.MakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;" id="org.tizen.nativecore.config.sbi.gcc45.so.release.656287997" name="Release" parent="org.tizen.nativecore.config.sbi.gcc45.so.release" postbuildStep="cp -rf ${PROJ_PATH}/inc/* ${build_repo_folder}inc; cp -rf ${OUTPUT_PATH}/*.so ${build_repo_folder}lib/${SDK_ARCH};">
->>>>>>> 817d700 Fix s_async keywords which does not add namespace to its internal call
 					<folderInfo id="org.tizen.nativecore.config.sbi.gcc45.so.release.656287997." name="/" resourcePath="">
 						<toolChain id="org.tizen.nativecore.toolchain.sbi.gcc45.so.release.1733243893" name="Tizen Native Toolchain" superClass="org.tizen.nativecore.toolchain.sbi.gcc45.so.release">
 							<targetPlatform binaryParser="org.eclipse.cdt.core.ELF" id="org.tizen.nativeide.target.sbi.gnu.platform.base.1213015440" osList="linux,win32" superClass="org.tizen.nativeide.target.sbi.gnu.platform.base"/>
@@ -411,6 +404,7 @@
 								<option id="gnu.cpp.compiler.option.preprocessor.def.1166124449" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="LIBBUILD"/>
 								</option>
+								<option id="gnu.cpp.compiler.option.other.other.56818109" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" value="-c -fmessage-length=0 -frtti" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1812691294" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool command="clang.exe" id="org.tizen.nativecore.tool.sbi.gnu.c.compiler.1362758560" name="C Compiler" superClass="org.tizen.nativecore.tool.sbi.gnu.c.compiler">
@@ -548,8 +542,6 @@
 							<tool id="org.tizen.nativecore.tool.sbi.gnu.archiver.mergelib.942806413" name="Archive Generator" superClass="org.tizen.nativecore.tool.sbi.gnu.archiver.mergelib"/>
 							<tool id="org.tizen.nativecore.tool.sbi.po.compiler.1404393724" name="PO Resource Compiler" superClass="org.tizen.nativecore.tool.sbi.po.compiler"/>
 							<tool id="org.tizen.nativecore.tool.sbi.edc.compiler.698545826" name="EDC Resource Compiler" superClass="org.tizen.nativecore.tool.sbi.edc.compiler"/>
-<<<<<<< Upstream, based on devel/core/v0.2
-=======
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
@@ -1378,7 +1370,6 @@
 							<tool id="org.tizen.nativecore.tool.sbi.gnu.archiver.mergelib.1923709078" name="Archive Generator" superClass="org.tizen.nativecore.tool.sbi.gnu.archiver.mergelib"/>
 							<tool id="org.tizen.nativecore.tool.sbi.po.compiler.1119843616" name="PO Resource Compiler" superClass="org.tizen.nativecore.tool.sbi.po.compiler"/>
 							<tool id="org.tizen.nativecore.tool.sbi.edc.compiler.1708370110" name="EDC Resource Compiler" superClass="org.tizen.nativecore.tool.sbi.edc.compiler"/>
->>>>>>> 817d700 Fix s_async keywords which does not add namespace to its internal call
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
@@ -1405,6 +1396,13 @@
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="Debug - ARM">
+			<resource resourceType="PROJECT" workspacePath="/SRINTizenFramework"/>
+		</configuration>
+		<configuration configurationName="Release-ARM">
+			<resource resourceType="PROJECT" workspacePath="/SRINTizenFramework"/>
+		</configuration>
+		<configuration configurationName="Debug-ARM"/>
 		<configuration configurationName="Debug">
 			<resource resourceType="PROJECT" workspacePath="/SRINTizenFramework"/>
 		</configuration>
