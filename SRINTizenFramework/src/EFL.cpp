@@ -9,7 +9,7 @@
 #include "SRIN/EFL.h"
 
 
-void SRIN::EFL::EvasSmartEventHandler(void* data, Evas_Object* obj,
+LIBAPI void SRIN::EFL::EvasSmartEventHandler(void* data, Evas_Object* obj,
 		void* eventData)
 {
 	auto package = static_cast<EvasSmartEvent*>(data);
@@ -22,7 +22,7 @@ void SRIN::EFL::EvasSmartEventHandler(void* data, Evas_Object* obj,
 	(*package)(obj, eventData);
 }
 
-void SRIN::EFL::EvasObjectEventHandler(void* data, Evas* evas, Evas_Object* obj,
+LIBAPI void SRIN::EFL::EvasObjectEventHandler(void* data, Evas* evas, Evas_Object* obj,
 		void* eventData)
 {
 	auto package = static_cast<EvasObjectEvent*>(data);
@@ -36,7 +36,7 @@ void SRIN::EFL::EvasObjectEventHandler(void* data, Evas* evas, Evas_Object* obj,
 	(*package)(&source, eventData);
 }
 
-void SRIN::EFL::EdjeSignalEventHandler(void* data, Evas_Object* obj,
+LIBAPI void SRIN::EFL::EdjeSignalEventHandler(void* data, Evas_Object* obj,
 		const char* emission, const char* source)
 {
 	auto package = static_cast<EdjeSignalEvent*>(data);
@@ -49,7 +49,7 @@ void SRIN::EFL::EdjeSignalEventHandler(void* data, Evas_Object* obj,
 	(*package)(obj, { emission, source });
 }
 
-void SRIN::EFL::EdjeObjectItemSignalEventHandler(void* data,
+LIBAPI void SRIN::EFL::EdjeObjectItemSignalEventHandler(void* data,
 		Elm_Object_Item* it, const char* emission, const char* source)
 {
 	auto package = static_cast<ObjectItemEdjeSignalEvent*>(data);
