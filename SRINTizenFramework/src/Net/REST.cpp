@@ -10,8 +10,8 @@
 #include <curl/curl.h>
 #include <exception>
 
-#include "SRIN/Net/REST.h"
-#include "SRIN/Net/Util.h"
+#include "TFC/Net/REST.h"
+#include "TFC/Net/Util.h"
 
 #define REGEX_URLPARAM R"REGEX((\{([A-Za-z0-9_]+)\}))REGEX"
 #include <regex>
@@ -20,7 +20,7 @@
 #include <sstream>
 #include <vector>
 
-using namespace SRIN::Net;
+using namespace TFC::Net;
 
 void RESTServiceTemplateBase::RegisterParameter(ParameterType paramType, CString key, IServiceParameter* ref)
 {
@@ -97,13 +97,13 @@ GSPDefineDefault(float);
 GSPDefineDefault(double);
 
 template<>
-LIBAPI std::string SRIN::Net::GenericServiceParameter<std::string>::GetRawValue()
+LIBAPI std::string TFC::Net::GenericServiceParameter<std::string>::GetRawValue()
 {
 	return this->value;
 }
 
 template<>
-LIBAPI std::string SRIN::Net::GenericServiceParameter<std::string>::GetEncodedValue()
+LIBAPI std::string TFC::Net::GenericServiceParameter<std::string>::GetEncodedValue()
 {
 	std::stringstream st;
 	size_t len = this->value.length();
@@ -134,19 +134,19 @@ std::string GenericServiceParameter<BasicAuthAccount>::GetEncodedValue()
 }
 
 template<>
-LIBAPI std::string SRIN::Net::BasicAuthParameter<ParameterType::Query>::GetRawValue()
+LIBAPI std::string TFC::Net::BasicAuthParameter<ParameterType::Query>::GetRawValue()
 {
 	return std::string();
 }
 
 template<>
-LIBAPI std::string SRIN::Net::BasicAuthParameter<ParameterType::Query>::GetEncodedValue()
+LIBAPI std::string TFC::Net::BasicAuthParameter<ParameterType::Query>::GetEncodedValue()
 {
 	return std::string();
 }
 
 template<>
-LIBAPI std::string SRIN::Net::BasicAuthParameter<ParameterType::Header>::GetRawValue()
+LIBAPI std::string TFC::Net::BasicAuthParameter<ParameterType::Header>::GetRawValue()
 {
 	std::string combined = this->value.username + ":" + this->value.password;
 	std::string encoded = "Basic " + Base64Encode((uint8_t*) combined.c_str(), combined.length());
@@ -155,12 +155,12 @@ LIBAPI std::string SRIN::Net::BasicAuthParameter<ParameterType::Header>::GetRawV
 }
 
 template<>
-LIBAPI std::string SRIN::Net::BasicAuthParameter<ParameterType::Header>::GetEncodedValue()
+LIBAPI std::string TFC::Net::BasicAuthParameter<ParameterType::Header>::GetEncodedValue()
 {
 	abort();
 }
 
-struct curl_slist* SRIN::Net::RESTServiceTemplateBase::PrepareHeader()
+struct curl_slist* TFC::Net::RESTServiceTemplateBase::PrepareHeader()
 {
 	struct curl_slist* headerList = nullptr;
 
@@ -177,15 +177,15 @@ struct curl_slist* SRIN::Net::RESTServiceTemplateBase::PrepareHeader()
 	return headerList;
 }
 
-SRIN::Net::RESTServiceTemplateBase::RESTServiceTemplateBase(std::string url, HTTPMode httpMode) :
-	UserAgent("srin-framework-tizen/1.0"),
+TFC::Net::RESTServiceTemplateBase::RESTServiceTemplateBase(std::string url, HTTPMode httpMode) :
+	UserAgent("TFC-framework-tizen/1.0"),
 	Url(url),
 	working(false),
 	httpMode(httpMode)
 {
 }
 
-void SRIN::Net::RESTServiceTemplateBase::PrepareUrl()
+void TFC::Net::RESTServiceTemplateBase::PrepareUrl()
 {
 	// Construct query string
 	std::stringstream urlBuffer;
@@ -277,7 +277,7 @@ size_t RESTServiceTemplateBase_WriteCallback(char *data, size_t size, size_t nme
 	return realsize;
 }
 
-RESTResultBase SRIN::Net::RESTServiceTemplateBase::PerformCall()
+RESTResultBase TFC::Net::RESTServiceTemplateBase::PerformCall()
 {
 	this->working = true;
 	auto curlHandle = curl_easy_init();
@@ -373,22 +373,22 @@ RESTResultBase SRIN::Net::RESTServiceTemplateBase::PerformCall()
 	return returnObj;
 }
 
-std::string* SRIN::Net::SimpleRESTServiceBase::OnProcessResponse(int httpCode, const std::string& responseStr, int& errorCode, std::string& errorMessage)
+std::string* TFC::Net::SimpleRESTServiceBase::OnProcessResponse(int httpCode, const std::string& responseStr, int& errorCode, std::string& errorMessage)
 {
 	return nullptr;
 }
 
-SRIN::Net::RESTServiceTemplateBase::~RESTServiceTemplateBase()
+TFC::Net::RESTServiceTemplateBase::~RESTServiceTemplateBase()
 {
 	dlog_print(DLOG_DEBUG, LOG_TAG, "REST service destroyed");
 }
 
-RESTResultBase SRIN::Net::RESTServiceTemplateBase::CallInternal()
+RESTResultBase TFC::Net::RESTServiceTemplateBase::CallInternal()
 {
 	return PerformCall();
 }
 
-SRIN::Net::RESTResultBase::RESTResultBase() :
+TFC::Net::RESTResultBase::RESTResultBase() :
 	resultType(ResultType::OK),
 	responseObj(nullptr),
 	httpCode(0),
@@ -396,6 +396,6 @@ SRIN::Net::RESTResultBase::RESTResultBase() :
 {
 }
 
-SRIN::Net::IServiceParameter::~IServiceParameter()
+TFC::Net::IServiceParameter::~IServiceParameter()
 {
 }

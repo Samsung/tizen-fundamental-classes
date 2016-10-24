@@ -7,32 +7,32 @@
  *        Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
-#include "SRIN/Components/Toast.h"
+#include "TFC/Components/Toast.h"
 #include <string>
 
-SRIN::Components::Toast toastObj;
+TFC::Components::Toast toastObj;
 
-LIBAPI bool SRIN::Components::Toast::BackButtonPressed(EFL::EvasSmartEvent* event, Evas_Object* objSource, void* eventData) {
+LIBAPI bool TFC::Components::Toast::BackButtonPressed(EFL::EvasSmartEvent* event, Evas_Object* objSource, void* eventData) {
 	OnDismiss(event, objSource, eventData);
 	return false;
 }
 
-LIBAPI SRIN::Components::Toast::Toast() {
+LIBAPI TFC::Components::Toast::Toast() {
 	this->eventDismiss += EventHandler(Toast::OnDismiss);
 }
 
 
-LIBAPI void SRIN::Components::Toast::Show(const std::string& message) {
+LIBAPI void TFC::Components::Toast::Show(const std::string& message) {
 	Show(message, 2.0);
 }
 
-LIBAPI void SRIN::Components::Toast::OnDismiss(EFL::EvasSmartEvent* event, Evas_Object* objSource, void* eventData)
+LIBAPI void TFC::Components::Toast::OnDismiss(EFL::EvasSmartEvent* event, Evas_Object* objSource, void* eventData)
 {
 	evas_object_del(objSource);
 }
 
-LIBAPI void SRIN::Components::Toast::Show(const std::string& message, double timeout) {
-	auto popup = elm_popup_add(SRIN::Framework::UIApplicationBase::CurrentInstance->GetApplicationConformant());
+LIBAPI void TFC::Components::Toast::Show(const std::string& message, double timeout) {
+	auto popup = elm_popup_add(TFC::Framework::UIApplicationBase::CurrentInstance->GetApplicationConformant());
 	elm_object_style_set(popup, "toast");
 	evas_object_size_hint_weight_set(popup, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
 

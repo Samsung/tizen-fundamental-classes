@@ -7,11 +7,11 @@
  */
 
 #define USE_LEGACY_EFL_INTERFACE
-#include "SRIN/ELMInterface.h"
+#include "TFC/ELMInterface.h"
 
 LIBAPI void SmartEventHandler(void* data, Evas_Object* obj, void* eventData)
 {
-	SRIN::EFL::EvasSmartEventHandler(data, obj, eventData);
+	TFC::EFL::EvasSmartEventHandler(data, obj, eventData);
 }
 
 LIBAPI void ObjectEventHandler(void* data, Evas* evas, Evas_Object* obj, void* eventData)

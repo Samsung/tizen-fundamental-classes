@@ -6,11 +6,11 @@
  *        Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
-#include "SRIN/Framework/Application.h"
+#include "TFC/Framework/Application.h"
 
-using namespace SRIN::Framework;
+using namespace TFC::Framework;
 
-LIBAPI SRIN::Framework::SwitchingControllerManager::SwitchingControllerManager(IAttachable* iattachable) :
+LIBAPI TFC::Framework::SwitchingControllerManager::SwitchingControllerManager(IAttachable* iattachable) :
 	iattachable(iattachable)
 {
 }
@@ -48,6 +48,6 @@ bool SwitchingControllerManager::NavigateBack()
 }
 
 
-LIBAPI ControllerBase* SRIN::Framework::SwitchingControllerManager::GetCurrentController() {
+LIBAPI ControllerBase* TFC::Framework::SwitchingControllerManager::GetCurrentController() {
 	return this->currentController;
 }

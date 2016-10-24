@@ -7,9 +7,9 @@
  *        Kevin Winata (k.winata@samsung.com)
  */
 
-#include "SRIN/Framework/Application.h"
+#include "TFC/Framework/Application.h"
 
-using namespace SRIN::Framework;
+using namespace TFC::Framework;
 
 /*====================================================================================================================*
  * UIApllicationBase class implementation																			  *
@@ -31,7 +31,7 @@ void win_more_request_cb(void *data, Evas_Object *obj, void *event_info)
 
 SimpleReadOnlyProperty<UIApplicationBase, UIApplicationBase*> UIApplicationBase::CurrentInstance;
 
-LIBAPI SRIN::Framework::UIApplicationBase::UIApplicationBase(CString packageName) :
+LIBAPI TFC::Framework::UIApplicationBase::UIApplicationBase(CString packageName) :
 	ApplicationBase(packageName)
 {
 	this->rootFrame = this->win = this->conform = NULL;
@@ -39,7 +39,7 @@ LIBAPI SRIN::Framework::UIApplicationBase::UIApplicationBase(CString packageName
 	this->haveEventMorePressed = false;
 }
 
-LIBAPI void SRIN::Framework::UIApplicationBase::SetIndicatorColor(Color color)
+LIBAPI void TFC::Framework::UIApplicationBase::SetIndicatorColor(Color color)
 {
 	Evas_Object* bg = elm_object_part_content_get(this->conform, "elm.swallow.indicator_bg");
 
@@ -107,7 +107,7 @@ LIBAPI bool UIApplicationBase::ApplicationCreate()
 	return true;
 }
 
-LIBAPI void SRIN::Framework::UIApplicationBase::SetIndicatorVisibility(bool value)
+LIBAPI void TFC::Framework::UIApplicationBase::SetIndicatorVisibility(bool value)
 {
 	if (value)
 	{
@@ -292,7 +292,7 @@ LIBAPI void UIApplicationBase::EnableMoreButtonCallback(bool enable)
 	}
 }
 
-LIBAPI void SRIN::Framework::IndicatorStyler::OnPostNavigation(Event<ControllerManager*, ControllerBase*>* event,
+LIBAPI void TFC::Framework::IndicatorStyler::OnPostNavigation(Event<ControllerManager*, ControllerBase*>* event,
 	ControllerManager* manager, ControllerBase* controller)
 {
 	auto colorable = dynamic_cast<IIndicatorStyle*>(controller->View);
@@ -312,23 +312,23 @@ LIBAPI void SRIN::Framework::IndicatorStyler::OnPostNavigation(Event<ControllerM
  * IndicatorStyler class implementation																				  *
  *====================================================================================================================*/
 
-LIBAPI SRIN::Framework::IndicatorStyler::IndicatorStyler(UIApplicationBase* app, ControllerManager* manager, Color defaultColor) :
+LIBAPI TFC::Framework::IndicatorStyler::IndicatorStyler(UIApplicationBase* app, ControllerManager* manager, Color defaultColor) :
 	app(app), manager(manager), defaultColor(defaultColor)
 {
 	manager->NavigationProcessed += { this, &IndicatorStyler::OnPostNavigation };
 }
 
-LIBAPI SRIN::Framework::IndicatorStyler::~IndicatorStyler()
+LIBAPI TFC::Framework::IndicatorStyler::~IndicatorStyler()
 {
 	manager->NavigationProcessed -= { this, &IndicatorStyler::OnPostNavigation };
 }
 
-LIBAPI SRIN::Framework::INaviframeContent::INaviframeContent() :
+LIBAPI TFC::Framework::INaviframeContent::INaviframeContent() :
 	naviframeItem(nullptr)
 {
 
 }
 
-LIBAPI SRIN::Framework::IIndicatorStyle::IIndicatorStyle() {
+LIBAPI TFC::Framework::IIndicatorStyle::IIndicatorStyle() {
 	this->IndicatorVisible = true;
 }

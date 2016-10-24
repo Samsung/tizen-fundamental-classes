@@ -7,13 +7,13 @@
  *        Kevin Winata (k.winata@samsung.com)
  */
 
-#include "SRIN/Util/Sharing.h"
-#include "SRIN/Core.h"
+#include "TFC/Util/Sharing.h"
+#include "TFC/Core.h"
 #include <app_control.h>
 
-using namespace SRIN::Util;
+using namespace TFC::Util;
 
-LIBAPI void SRIN::Util::ShareString(const std::string& str)
+LIBAPI void TFC::Util::ShareString(const std::string& str)
 {
 	app_control_h appControl;
 
@@ -29,13 +29,13 @@ LIBAPI void SRIN::Util::ShareString(const std::string& str)
 
 }
 
-LIBAPI bool SRIN::Util::CopyStringToClipboard(const std::string& str, Evas_Object* source)
+LIBAPI bool TFC::Util::CopyStringToClipboard(const std::string& str, Evas_Object* source)
 {
 	Eina_Bool ret = elm_cnp_selection_set(source, ELM_SEL_TYPE_CLIPBOARD, ELM_SEL_FORMAT_TEXT, str.c_str(), str.size());
 	return (ret == EINA_TRUE);
 }
 
-LIBAPI void SRIN::Util::OpenURL(const std::string& url)
+LIBAPI void TFC::Util::OpenURL(const std::string& url)
 {
 	app_control_h app_control;
 	app_control_create(&app_control);
@@ -47,7 +47,7 @@ LIBAPI void SRIN::Util::OpenURL(const std::string& url)
 	app_control_destroy(app_control);
 }
 
-LIBAPI void SRIN::Util::LaunchViewer(const std::string& uri, const std::string& mimeType)
+LIBAPI void TFC::Util::LaunchViewer(const std::string& uri, const std::string& mimeType)
 {
 	app_control_h appControl;
 	app_control_create(&appControl);
@@ -60,7 +60,7 @@ LIBAPI void SRIN::Util::LaunchViewer(const std::string& uri, const std::string& 
 	app_control_destroy(appControl);
 }
 
-LIBAPI void SRIN::Util::ComposeMailForOne(const std::string& recipient, const std::string& subject, const std::string& text)
+LIBAPI void TFC::Util::ComposeMailForOne(const std::string& recipient, const std::string& subject, const std::string& text)
 {
 	app_control_h appControl;
 	app_control_create(&appControl);

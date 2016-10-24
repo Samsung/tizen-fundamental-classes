@@ -6,9 +6,9 @@
  *        Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
-#include "SRIN/Framework/Application.h"
+#include "TFC/Framework/Application.h"
 
-using namespace SRIN::Framework;
+using namespace TFC::Framework;
 
 LIBAPI ViewBase::ViewBase()
 {
@@ -38,13 +38,13 @@ LIBAPI ViewBase::~ViewBase()
 
 }
 
-void SRIN::Framework::ITitleProvider::SetTitle(const std::string& value)
+void TFC::Framework::ITitleProvider::SetTitle(const std::string& value)
 {
 	this->viewTitle = value;
 	dlog_print(DLOG_DEBUG, LOG_TAG, "Set title on ViewBase %s", value.c_str());
 }
 
-std::string& SRIN::Framework::ITitleProvider::GetTitle()
+std::string& TFC::Framework::ITitleProvider::GetTitle()
 {
 	return this->viewTitle;
 }

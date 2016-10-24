@@ -7,10 +7,10 @@
  *        Kevin Winata (k.winata@samsung.com)
  */
 
-#include "SRIN/Components/SidebarView.h"
+#include "TFC/Components/SidebarView.h"
 #include <limits>
 
-using namespace SRIN::Components;
+using namespace TFC::Components;
 
 LIBAPI SidebarView::SidebarView() :
 	Framework::ViewBase(),
@@ -122,38 +122,38 @@ Evas_Object* SidebarView::GetTitleRightButton(CString* buttonPart)
 	return nullptr;
 }
 
-LIBAPI CString SRIN::Components::SidebarView::GetContentStyle()
+LIBAPI CString TFC::Components::SidebarView::GetContentStyle()
 {
 	return nullptr; //"drawers";
 }
 
-void SRIN::Components::SidebarView::DrawerButtonStyle(Evas_Object* button)
+void TFC::Components::SidebarView::DrawerButtonStyle(Evas_Object* button)
 {
 	elm_object_style_set(button, "naviframe/drawers");
 }
 
-LIBAPI Evas_Object* SRIN::Components::SidebarView::CreateContentWrapper(Evas_Object* root)
+LIBAPI Evas_Object* TFC::Components::SidebarView::CreateContentWrapper(Evas_Object* root)
 {
 	return nullptr;
 }
 
-void SRIN::Components::SidebarView::ToggleSidebar()
+void TFC::Components::SidebarView::ToggleSidebar()
 {
 	if (!elm_object_disabled_get(leftPanel))
 		elm_panel_toggle(leftPanel);
 }
 
-void SRIN::Components::SidebarView::ToggleSidebar(bool show)
+void TFC::Components::SidebarView::ToggleSidebar(bool show)
 {
 	elm_panel_hidden_set(leftPanel, (show ? EINA_FALSE : EINA_TRUE));
 }
 
-LIBAPI Eina_Bool SRIN::Components::SidebarView::IsDrawerOpened()
+LIBAPI Eina_Bool TFC::Components::SidebarView::IsDrawerOpened()
 {
 	return !(elm_panel_hidden_get(leftPanel));
 }
 
-LIBAPI bool SRIN::Components::SidebarView::BackButtonClicked()
+LIBAPI bool TFC::Components::SidebarView::BackButtonClicked()
 {
 	ToggleSidebar();
 	return false;

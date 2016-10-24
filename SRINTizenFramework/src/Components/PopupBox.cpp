@@ -8,38 +8,38 @@
  *        Kevin Winata (k.winata@samsung.com)
  */
 
-#include "SRIN/Components/PopupBox.h"
+#include "TFC/Components/PopupBox.h"
 #include <string>
 
-using namespace SRIN::Components;
+using namespace TFC::Components;
 
-LIBAPI Evas_Object* SRIN::Components::PopupBox::CreateComponent(Evas_Object* root) {
+LIBAPI Evas_Object* TFC::Components::PopupBox::CreateComponent(Evas_Object* root) {
 	this->root = root;
 	return nullptr;
 }
 
-LIBAPI Evas_Object* SRIN::Components::PopupBox::CreateContent(Evas_Object* root) {
+LIBAPI Evas_Object* TFC::Components::PopupBox::CreateContent(Evas_Object* root) {
 	return nullptr;
 }
 
-LIBAPI void SRIN::Components::PopupBox::SetTitle(const std::string& text) {
+LIBAPI void TFC::Components::PopupBox::SetTitle(const std::string& text) {
 	this->title = text;
 	elm_object_part_text_set(this->popup, "title,text", this->title.c_str());
 }
 
-LIBAPI std::string& SRIN::Components::PopupBox::GetTitle() {
+LIBAPI std::string& TFC::Components::PopupBox::GetTitle() {
 	return this->title;
 }
 
-LIBAPI void SRIN::Components::PopupBox::SetMessage(const std::string& text) {
+LIBAPI void TFC::Components::PopupBox::SetMessage(const std::string& text) {
 	this->message = text;
 }
 
-LIBAPI std::string& SRIN::Components::PopupBox::GetMessageString() {
+LIBAPI std::string& TFC::Components::PopupBox::GetMessageString() {
 	return this->message;
 }
 
-LIBAPI SRIN::Components::PopupBox::PopupBox() :
+LIBAPI TFC::Components::PopupBox::PopupBox() :
 		shown(false), popup(nullptr), popupLayout(nullptr), root(nullptr),
 		orientation(Elm_Popup_Orient::ELM_POPUP_ORIENT_BOTTOM),
 		Title(this), Message(this), Orientation(this), IsShown(shown)
@@ -57,7 +57,7 @@ LIBAPI SRIN::Components::PopupBox::PopupBox() :
 	buttonThreeImage = "";
 }
 
-LIBAPI void SRIN::Components::PopupBox::Show() {
+LIBAPI void TFC::Components::PopupBox::Show() {
 	this->popup = elm_popup_add(root);
 	BackButtonHandler::Acquire();
 
@@ -86,7 +86,7 @@ LIBAPI void SRIN::Components::PopupBox::Show() {
 		if(buttonOneImage.size() > 0)
 		{
 			Evas_Object* img = elm_icon_add(btn);
-			std::string path = SRIN::Framework::ApplicationBase::GetResourcePath(buttonOneImage.c_str());
+			std::string path = TFC::Framework::ApplicationBase::GetResourcePath(buttonOneImage.c_str());
 			elm_image_file_set(img, path.c_str(), nullptr);
 			evas_object_show(img);
 
@@ -106,7 +106,7 @@ LIBAPI void SRIN::Components::PopupBox::Show() {
 		if(buttonTwoImage.size() > 0)
 		{
 			Evas_Object* img = elm_icon_add(btn);
-			std::string path = SRIN::Framework::ApplicationBase::GetResourcePath(buttonTwoImage.c_str());
+			std::string path = TFC::Framework::ApplicationBase::GetResourcePath(buttonTwoImage.c_str());
 			elm_image_file_set(img, path.c_str(), nullptr);
 			evas_object_show(img);
 
@@ -128,7 +128,7 @@ LIBAPI void SRIN::Components::PopupBox::Show() {
 		if(buttonThreeImage.size() > 0)
 		{
 			Evas_Object* img = elm_icon_add(btn);
-			std::string path = SRIN::Framework::ApplicationBase::GetResourcePath(buttonThreeImage.c_str());
+			std::string path = TFC::Framework::ApplicationBase::GetResourcePath(buttonThreeImage.c_str());
 			elm_image_file_set(img, path.c_str(), nullptr);
 			evas_object_show(img);
 
@@ -143,7 +143,7 @@ LIBAPI void SRIN::Components::PopupBox::Show() {
 
 }
 
-LIBAPI void SRIN::Components::PopupBox::Dismiss() {
+LIBAPI void TFC::Components::PopupBox::Dismiss() {
 	evas_object_del(this->popup);
 	this->popup = nullptr;
 	this->popupLayout = nullptr;
@@ -153,15 +153,15 @@ LIBAPI void SRIN::Components::PopupBox::Dismiss() {
 
 }
 
-void SRIN::Components::PopupBox::SetOrientation(const Elm_Popup_Orient& orientation) {
+void TFC::Components::PopupBox::SetOrientation(const Elm_Popup_Orient& orientation) {
 	this->orientation   = orientation;
 }
 
-Elm_Popup_Orient& SRIN::Components::PopupBox::GetOrientation() {
+Elm_Popup_Orient& TFC::Components::PopupBox::GetOrientation() {
 	return this->orientation;
 }
 
-LIBAPI bool SRIN::Components::PopupBox::BackButtonClicked()
+LIBAPI bool TFC::Components::PopupBox::BackButtonClicked()
 {
 	dlog_print(DLOG_DEBUG, LOG_TAG, "Dismiss via back button");
 	Dismiss();

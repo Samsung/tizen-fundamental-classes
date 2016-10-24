@@ -8,16 +8,16 @@
  *        Kevin Winata (k.winata@samsung.com)
  */
 
-#include "SRIN/Components/DatePickerPopup.h"
+#include "TFC/Components/DatePickerPopup.h"
 #include <string>
 #include <cstdio>
 
-SRIN::Components::DatePickerPopupMenu::DatePickerPopupMenu() : PopupBox() {
+TFC::Components::DatePickerPopupMenu::DatePickerPopupMenu() : PopupBox() {
 	classicTheme 	= false;
 	dateTime		= nullptr;
 }
 
-std::tm& SRIN::Components::DatePickerPopupMenu::GetSelectedDate() {
+std::tm& TFC::Components::DatePickerPopupMenu::GetSelectedDate() {
 	if (classicTheme) {
 		elm_datetime_value_get(dateTime, &selectedDate);
 	} else {
@@ -27,7 +27,7 @@ std::tm& SRIN::Components::DatePickerPopupMenu::GetSelectedDate() {
 	return selectedDate;
 }
 
-std::string& SRIN::Components::DatePickerPopupMenu::GetFormatedSelectedDate() {
+std::string& TFC::Components::DatePickerPopupMenu::GetFormatedSelectedDate() {
 	char buffer[20];
 
 	if (classicTheme) {
@@ -41,18 +41,18 @@ std::string& SRIN::Components::DatePickerPopupMenu::GetFormatedSelectedDate() {
 	return strDate;
 }
 
-void SRIN::Components::DatePickerPopupMenu::UseClassicTheme(
+void TFC::Components::DatePickerPopupMenu::UseClassicTheme(
 		const bool& classic) {
 	this->classicTheme = classic;
 }
 
-void SRIN::Components::DatePickerPopupMenu::SetSelectedDate(
+void TFC::Components::DatePickerPopupMenu::SetSelectedDate(
 		const std::tm& date) {
 
 	selectedDate = date;
 }
 
-void SRIN::Components::DatePickerPopupMenu::SetFormatedSelectedDate(
+void TFC::Components::DatePickerPopupMenu::SetFormatedSelectedDate(
 		const std::string& date) {
 
 	if (date.size() > 0) {
@@ -68,7 +68,7 @@ void SRIN::Components::DatePickerPopupMenu::SetFormatedSelectedDate(
 }
 
 
-Evas_Object* SRIN::Components::DatePickerPopupMenu::CreateContent(
+Evas_Object* TFC::Components::DatePickerPopupMenu::CreateContent(
 		Evas_Object* root) {
 
 	if (classicTheme) {
@@ -100,13 +100,13 @@ Evas_Object* SRIN::Components::DatePickerPopupMenu::CreateContent(
 
 /** ============================================================================ **/
 
-void SRIN::Components::DatePickerPopup::DatePickerButtonClick(
+void TFC::Components::DatePickerPopup::DatePickerButtonClick(
 		EFL::EvasSmartEvent* viewSource, Evas_Object* objSource,
 		void* eventData) {
 	datePopupMenu.Show();
 }
 
-void SRIN::Components::DatePickerPopup::DatePickerPopupOkButtonClick(
+void TFC::Components::DatePickerPopup::DatePickerPopupOkButtonClick(
 		EFL::EvasSmartEvent* viewSource, Evas_Object* objSource,
 		void* eventData) {
 	formatedDate = datePopupMenu.GetFormatedSelectedDate();
@@ -115,18 +115,18 @@ void SRIN::Components::DatePickerPopup::DatePickerPopupOkButtonClick(
 	datePopupMenu.Dismiss();
 }
 
-void SRIN::Components::DatePickerPopup::DatePickerPopupCancelButtonClick(
+void TFC::Components::DatePickerPopup::DatePickerPopupCancelButtonClick(
 		EFL::EvasSmartEvent* viewSource, Evas_Object* objSource,
 		void* eventData) {
 	datePopupMenu.Dismiss();
 }
 
-void SRIN::Components::DatePickerPopup::OnDateChangedCb(
+void TFC::Components::DatePickerPopup::OnDateChangedCb(
 	EFL::EvasSmartEvent* viewSource, Evas_Object* objSource, void* eventData) {
 
 }
 
-Evas_Object* SRIN::Components::DatePickerPopup::CreateComponent(
+Evas_Object* TFC::Components::DatePickerPopup::CreateComponent(
 		Evas_Object* root) {
 	buttonRoot = elm_button_add(root);
 	elm_object_text_set(buttonRoot, buttonText.c_str());
@@ -138,15 +138,15 @@ Evas_Object* SRIN::Components::DatePickerPopup::CreateComponent(
 	return buttonRoot;
 }
 
-void SRIN::Components::DatePickerPopup::SetTitle(const std::string& text) {
+void TFC::Components::DatePickerPopup::SetTitle(const std::string& text) {
 	datePopupMenu.Title = text;
 }
 
-std::string& SRIN::Components::DatePickerPopup::GetTitle() {
+std::string& TFC::Components::DatePickerPopup::GetTitle() {
 	return datePopupMenu.Title;
 }
 
-SRIN::Components::DatePickerPopup::DatePickerPopup() : Title(this), Hint(this), Orientation(this) {
+TFC::Components::DatePickerPopup::DatePickerPopup() : Title(this), Hint(this), Orientation(this) {
 	buttonText			= "Select Date";
 
 	std::time_t time	= std::time(nullptr);
@@ -167,40 +167,40 @@ SRIN::Components::DatePickerPopup::DatePickerPopup() : Title(this), Hint(this), 
 
 }
 
-std::tm& SRIN::Components::DatePickerPopup::GetSelectedDate() {
+std::tm& TFC::Components::DatePickerPopup::GetSelectedDate() {
 	return selectedDate;
 }
 
-std::string& SRIN::Components::DatePickerPopup::GetFormatedSelectedDate() {
+std::string& TFC::Components::DatePickerPopup::GetFormatedSelectedDate() {
 	return formatedDate;
 }
 
-void SRIN::Components::DatePickerPopup::SetSelectedDate(const std::tm& date) {
+void TFC::Components::DatePickerPopup::SetSelectedDate(const std::tm& date) {
 	datePopupMenu.SetSelectedDate(date);
 }
 
-void SRIN::Components::DatePickerPopup::SetFormatedSelectedDate(const std::string& date) {
+void TFC::Components::DatePickerPopup::SetFormatedSelectedDate(const std::string& date) {
 	datePopupMenu.SetFormatedSelectedDate(date);
 	//formatedDate = datePopupMenu.GetFormatedSelectedDate();
 	//selectedDate = datePopupMenu.GetSelectedDate();
 }
 
-void SRIN::Components::DatePickerPopup::UseClassicTheme(const bool& classic) {
+void TFC::Components::DatePickerPopup::UseClassicTheme(const bool& classic) {
 	datePopupMenu.UseClassicTheme(classic);
 }
 
-void SRIN::Components::DatePickerPopup::SetOrientation(const Elm_Popup_Orient& orientation) {
+void TFC::Components::DatePickerPopup::SetOrientation(const Elm_Popup_Orient& orientation) {
 	datePopupMenu.Orientation = orientation;
 }
 
-Elm_Popup_Orient& SRIN::Components::DatePickerPopup::GetOrientation() {
+Elm_Popup_Orient& TFC::Components::DatePickerPopup::GetOrientation() {
 	return datePopupMenu.Orientation;
 }
 
-void SRIN::Components::DatePickerPopup::SetHint(const std::string& text) {
+void TFC::Components::DatePickerPopup::SetHint(const std::string& text) {
 	this->buttonText = text;
 }
 
-std::string& SRIN::Components::DatePickerPopup::GetHint() {
+std::string& TFC::Components::DatePickerPopup::GetHint() {
 	return buttonText;
 }

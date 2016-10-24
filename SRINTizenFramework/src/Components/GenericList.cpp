@@ -8,10 +8,10 @@
  *        Kevin Winata (k.winata@samsung.com)
  */
 
-#include "SRIN/Components/GenericList.h"
+#include "TFC/Components/GenericList.h"
 #include <cstdlib>
 
-using namespace SRIN::Components;
+using namespace TFC::Components;
 
 typedef struct
 {
@@ -36,7 +36,7 @@ void Genlist_ClickedEventHandler(void* data, Evas_Object* obj, void* eventData)
  * IMPLEMENTATION: GenericListItemClassBase
  * ================================================================================================================= */
 
-LIBAPI SRIN::Components::GenericListItemClassBase::GenericListItemClassBase(CString styleName, bool defaultEventClick)
+LIBAPI TFC::Components::GenericListItemClassBase::GenericListItemClassBase(CString styleName, bool defaultEventClick)
 {
 	itemClass = elm_genlist_item_class_new();
 	itemClass->item_style = styleName;
@@ -66,17 +66,17 @@ LIBAPI SRIN::Components::GenericListItemClassBase::GenericListItemClassBase(CStr
 	};
 }
 
-LIBAPI void* SRIN::Components::GenericListItemClassBase::operator ()(GenericList* genlist, void* itemData)
+LIBAPI void* TFC::Components::GenericListItemClassBase::operator ()(GenericList* genlist, void* itemData)
 {
 	return new GenlistItemClassPackage({this, genlist, itemData}) ;
 }
 
-LIBAPI SRIN::Components::GenericListItemClassBase::operator Elm_Genlist_Item_Class*()
+LIBAPI TFC::Components::GenericListItemClassBase::operator Elm_Genlist_Item_Class*()
 {
 	return this->itemClass;
 }
 
-LIBAPI SRIN::Components::GenericListItemClassBase::~GenericListItemClassBase()
+LIBAPI TFC::Components::GenericListItemClassBase::~GenericListItemClassBase()
 {
 	if(this->itemClass)
 	{
@@ -89,7 +89,7 @@ LIBAPI SRIN::Components::GenericListItemClassBase::~GenericListItemClassBase()
  * IMPLEMENTATION: GenericList
  * ================================================================================================================= */
 
-LIBAPI SRIN::Components::GenericList::GenericList() :
+LIBAPI TFC::Components::GenericList::GenericList() :
 	genlist(nullptr), realBottom(nullptr), dataSource(nullptr), overscroll(false), underscroll(false),
 	DataSource(this), Overscroll(this), Underscroll(this),
 	IsLongClicked(this), BackToTopThreshold(this)
@@ -159,7 +159,7 @@ LIBAPI SRIN::Components::GenericList::GenericList() :
 	};
 }
 
-LIBAPI SRIN::Components::GenericList::~GenericList()
+LIBAPI TFC::Components::GenericList::~GenericList()
 {
 
 	evas_object_smart_callback_del(genlist, "scroll", EFL::EvasSmartEventHandler);
@@ -173,7 +173,7 @@ LIBAPI SRIN::Components::GenericList::~GenericList()
 	evas_object_smart_callback_del(genlist, "unrealized", EFL::EvasSmartEventHandler);
 }
 
-LIBAPI void SRIN::Components::GenericList::ResetScroll(bool animated)
+LIBAPI void TFC::Components::GenericList::ResetScroll(bool animated)
 {
 	if (animated) {
 		elm_scroller_page_bring_in(genlist, 0, 0);
@@ -188,7 +188,7 @@ LIBAPI void SRIN::Components::GenericList::ResetScroll(bool animated)
 	}
 }
 
-LIBAPI void SRIN::Components::GenericList::SetDataSource(Adapter* newAdapter)
+LIBAPI void TFC::Components::GenericList::SetDataSource(Adapter* newAdapter)
 {
 	// Unbind the old adapter
 	if(dataSource != nullptr)
@@ -221,7 +221,7 @@ LIBAPI void SRIN::Components::GenericList::SetDataSource(Adapter* newAdapter)
 	dataSource->eventItemRemove += EventHandler(GenericList::OnItemRemove);
 }
 
-LIBAPI void SRIN::Components::GenericList::AppendItemToGenlist(Adapter::AdapterItem* data)
+LIBAPI void TFC::Components::GenericList::AppendItemToGenlist(Adapter::AdapterItem* data)
 {
 	auto itemClass = dynamic_cast<GenericListItemClassBase*>(data->itemClass);
 	if(itemClass == nullptr)
@@ -264,17 +264,17 @@ LIBAPI void SRIN::Components::GenericList::AppendItemToGenlist(Adapter::AdapterI
 
 
 	elm_object_item_signal_callback_add(realBottom, "*", "*", [] (void *data, Evas_Object *obj, const char *emission, const char *source) {
-			dlog_print(DLOG_DEBUG, "SRINFW-Signal", "Signal SRIN %s, source %s", emission, source);
+			dlog_print(DLOG_DEBUG, "TFCFW-Signal", "Signal TFC %s, source %s", emission, source);
 	}, nullptr);
 }
 
-LIBAPI void SRIN::Components::GenericList::OnItemAdd(Event<Adapter*, Adapter::AdapterItem*>* event, Adapter* adapter,
+LIBAPI void TFC::Components::GenericList::OnItemAdd(Event<Adapter*, Adapter::AdapterItem*>* event, Adapter* adapter,
 	Adapter::AdapterItem* data)
 {
 	AppendItemToGenlist(data);
 }
 
-LIBAPI void SRIN::Components::GenericList::OnItemRemove(Event<Adapter*, Adapter::AdapterItem*>* event, Adapter* adapter,
+LIBAPI void TFC::Components::GenericList::OnItemRemove(Event<Adapter*, Adapter::AdapterItem*>* event, Adapter* adapter,
 	Adapter::AdapterItem* data)
 {
 	// BUG ON EFL: insert before dummy bottom will create UI render error if at some point dummy bottom is disabled
@@ -300,7 +300,7 @@ LIBAPI void SRIN::Components::GenericList::OnItemRemove(Event<Adapter*, Adapter:
 	}
 }
 
-LIBAPI Evas_Object* SRIN::Components::GenericList::CreateComponent(Evas_Object* root)
+LIBAPI Evas_Object* TFC::Components::GenericList::CreateComponent(Evas_Object* root)
 {
 	genlist = elm_genlist_add(root);
 	evas_object_smart_callback_add(genlist, "scroll", EFL::EvasSmartEventHandler, &eventScrolledInternal);
@@ -320,12 +320,12 @@ LIBAPI Evas_Object* SRIN::Components::GenericList::CreateComponent(Evas_Object* 
 	return genlist;
 }
 
-LIBAPI SRIN::Components::Adapter* SRIN::Components::GenericList::GetDataSource()
+LIBAPI TFC::Components::Adapter* TFC::Components::GenericList::GetDataSource()
 {
 	return dataSource;
 }
 
-void SRIN::Components::GenericList::OnScrolledInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
+void TFC::Components::GenericList::OnScrolledInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
 {
 	int x, y, w, h;
 	elm_scroller_region_get(genlist, &x, &y, &w, &h);
@@ -341,27 +341,27 @@ void SRIN::Components::GenericList::OnScrolledInternal(EFL::EvasSmartEvent* even
 	eventScrolled(this, eventData);
 }
 
-void SRIN::Components::GenericList::OnScrolledDownInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
+void TFC::Components::GenericList::OnScrolledDownInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
 {
 	eventScrolledDown(this, eventData);
 }
 
-void SRIN::Components::GenericList::OnScrolledUpInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
+void TFC::Components::GenericList::OnScrolledUpInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
 {
 	eventScrolledUp(this, eventData);
 }
 
-void SRIN::Components::GenericList::OnScrolledBottomInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
+void TFC::Components::GenericList::OnScrolledBottomInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
 {
 	eventScrolledBottom(this, eventData);
 }
 
-void SRIN::Components::GenericList::OnScrolledTopInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
+void TFC::Components::GenericList::OnScrolledTopInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
 {
 
 }
 
-void SRIN::Components::GenericList::OnDummyRealized(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
+void TFC::Components::GenericList::OnDummyRealized(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
 {
 	if (firstRealize)
 	{
@@ -396,11 +396,11 @@ void SRIN::Components::GenericList::OnDummyRealized(EFL::EvasSmartEvent* event, 
 	}
 	else
 	{
-		dlog_print(DLOG_DEBUG, LOG_TAG, "Widget Realized SRIN %d", obj);
+		dlog_print(DLOG_DEBUG, LOG_TAG, "Widget Realized TFC %d", obj);
 	}
 }
 
-void SRIN::Components::GenericList::OnItemUnrealized(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
+void TFC::Components::GenericList::OnItemUnrealized(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
 {
 	if(dummyTop && eventData == elm_genlist_item_next_get(dummyTop))
 	{
@@ -410,7 +410,7 @@ void SRIN::Components::GenericList::OnItemUnrealized(EFL::EvasSmartEvent* event,
 	}
 }
 
-void SRIN::Components::GenericList::SetOverscroll(const bool& o)
+void TFC::Components::GenericList::SetOverscroll(const bool& o)
 {
 	this->overscroll = o;
 
@@ -429,30 +429,30 @@ void SRIN::Components::GenericList::SetOverscroll(const bool& o)
 	}
 }
 
-bool SRIN::Components::GenericList::GetOverscroll()
+bool TFC::Components::GenericList::GetOverscroll()
 {
 	return this->overscroll;
 }
 
-void SRIN::Components::GenericList::SetUnderscroll(const bool& o)
+void TFC::Components::GenericList::SetUnderscroll(const bool& o)
 {
 	this->underscroll = o;
 }
 
-bool SRIN::Components::GenericList::GetUnderscroll()
+bool TFC::Components::GenericList::GetUnderscroll()
 {
 	return this->underscroll;
 }
 
 
-void SRIN::Components::GenericList::OnScrollingStart(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
+void TFC::Components::GenericList::OnScrollingStart(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
 {
 	isScrolling   = true;
 	IsLongClicked = false;
 	eventScrollingStart(this, nullptr);
 }
 
-void SRIN::Components::GenericList::OnScrollingEnd(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
+void TFC::Components::GenericList::OnScrollingEnd(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData)
 {
 	if (underscroll && dummyTop)
 	{
@@ -475,7 +475,7 @@ void SRIN::Components::GenericList::OnScrollingEnd(EFL::EvasSmartEvent* event, E
 	eventScrollingEnd(this, nullptr);
 }
 
-void SRIN::Components::GenericList::OnItemSignalEmit(EFL::ObjectItemEdjeSignalEvent* event, Elm_Object_Item* obj,
+void TFC::Components::GenericList::OnItemSignalEmit(EFL::ObjectItemEdjeSignalEvent* event, Elm_Object_Item* obj,
 	EFL::EdjeSignalInfo eventData)
 {
 	dlog_print(DLOG_DEBUG, LOG_TAG, "Signal %s", eventData.source);
@@ -484,15 +484,15 @@ void SRIN::Components::GenericList::OnItemSignalEmit(EFL::ObjectItemEdjeSignalEv
 	eventItemSignal(data, eventData);
 }
 
-void SRIN::Components::GenericList::SetLongClicked(const bool& o) {
+void TFC::Components::GenericList::SetLongClicked(const bool& o) {
 	longpressed = o;
 }
 
-bool SRIN::Components::GenericList::GetLongClicked() {
+bool TFC::Components::GenericList::GetLongClicked() {
 	return longpressed;
 }
 
-void SRIN::Components::GenericList::OnLongPressedInternal(
+void TFC::Components::GenericList::OnLongPressedInternal(
 		EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData) {
 	if (isScrolling) {
 		IsLongClicked = false;
@@ -505,6 +505,6 @@ void SRIN::Components::GenericList::OnLongPressedInternal(
 	}
 }
 
-bool SRIN::Components::GenericListItemClassBase::IsItemClickEnabled() {
+bool TFC::Components::GenericListItemClassBase::IsItemClickEnabled() {
 	return this->itemClickEnabled;
 }

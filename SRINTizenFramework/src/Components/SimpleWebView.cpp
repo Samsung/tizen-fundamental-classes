@@ -9,10 +9,10 @@
  */
 
 #include <EWebKit.h>
-#include "SRIN/Framework/Application.h"
-#include "SRIN/Components/SimpleWebView.h"
-#include "SRIN/Net/ImageCache.h"
-#include "SRIN/Async.h"
+#include "TFC/Framework/Application.h"
+#include "TFC/Components/SimpleWebView.h"
+#include "TFC/Net/ImageCache.h"
+#include "TFC/Async.h"
 #include <regex>
 #include <stack>
 #include <math.h>
@@ -82,9 +82,9 @@ std::string GetImageURL(std::string attributeList)
 	return "";
 }
 
-using namespace SRIN;
+using namespace TFC;
 
-Evas_Object* SRIN::Components::SimpleWebView::CreateComponent(Evas_Object* root)
+Evas_Object* TFC::Components::SimpleWebView::CreateComponent(Evas_Object* root)
 {
 	fontFormat = "<font=";
 	fontFormat.append(font);
@@ -92,7 +92,7 @@ Evas_Object* SRIN::Components::SimpleWebView::CreateComponent(Evas_Object* root)
 	fontFormat.append(std::to_string(fontSize));
 	fontFormat.append(">");
 
-	dlog_print(DLOG_INFO, "SRINFW-Parser", fontFormat.c_str());
+	dlog_print(DLOG_INFO, "TFCFW-Parser", fontFormat.c_str());
 
 	this->box = elm_box_add(root);
 	evas_object_size_hint_weight_set(this->box, EVAS_HINT_EXPAND, 0);
@@ -123,7 +123,7 @@ Evas_Object* SRIN::Components::SimpleWebView::CreateComponent(Evas_Object* root)
 	return layout;*/
 }
 
-void SRIN::Components::SimpleWebView::Render()
+void TFC::Components::SimpleWebView::Render()
 {
 	if(!this->box)
 		return;
@@ -173,7 +173,7 @@ void SRIN::Components::SimpleWebView::Render()
 				lastToken = match[HTML_REGEX_OPENINGTAG].second;
 
 				std::string tag = match[HTML_REGEX_OPENINGTAGSTR];
-				dlog_print(DLOG_VERBOSE, "SRINFW-Parser", "%s OPEN %s",  strCurr.c_str(), tag.c_str());
+				dlog_print(DLOG_VERBOSE, "TFCFW-Parser", "%s OPEN %s",  strCurr.c_str(), tag.c_str());
 
 				if(iequals(tag, HTML_TAG_LINEBREAK) || iequals(tag, HTML_TAG_IMAGE) || iequals(tag, HTML_TAG_P))
 				{
@@ -286,7 +286,7 @@ void SRIN::Components::SimpleWebView::Render()
 				// Store string between tag to buffer
 				std::string token(lastToken, tokenEnd);
 				buffer << token;
-				dlog_print(DLOG_VERBOSE, "SRINFW-Parser", "%s CLOSING %s", token.c_str(), match[HTML_REGEX_CLOSINGTAGSTR].str().c_str());
+				dlog_print(DLOG_VERBOSE, "TFCFW-Parser", "%s CLOSING %s", token.c_str(), match[HTML_REGEX_CLOSINGTAGSTR].str().c_str());
 				if(!currentTag.empty())
 				{
 					auto& top = currentTag.top();
@@ -354,7 +354,7 @@ void SRIN::Components::SimpleWebView::Render()
 	isRendering = false;
 }
 
-SRIN::Components::SimpleWebView::SimpleWebView() :
+TFC::Components::SimpleWebView::SimpleWebView() :
 		box(nullptr), boxPage(nullptr), isRendering(false),
 		Font(this), FontSize(this)
 {
@@ -367,27 +367,27 @@ SRIN::Components::SimpleWebView::SimpleWebView() :
 	eventEwkLoadFinished += { this, &SimpleWebView::OnEwkLoadFinished };*/
 }
 
-void SRIN::Components::SimpleWebView::SetFont(const std::string& font)
+void TFC::Components::SimpleWebView::SetFont(const std::string& font)
 {
 	this->font = font;
 }
 
-std::string& SRIN::Components::SimpleWebView::GetFont()
+std::string& TFC::Components::SimpleWebView::GetFont()
 {
 	return font;
 }
 
-void SRIN::Components::SimpleWebView::SetFontSize(const int& fontSize)
+void TFC::Components::SimpleWebView::SetFontSize(const int& fontSize)
 {
 	this->fontSize = fontSize;
 }
 
-int SRIN::Components::SimpleWebView::GetFontSize()
+int TFC::Components::SimpleWebView::GetFontSize()
 {
 	return fontSize;
 }
 
-void SRIN::Components::SimpleWebView::AddParagraph(Evas_Object* boxPage, std::string& paragraph)
+void TFC::Components::SimpleWebView::AddParagraph(Evas_Object* boxPage, std::string& paragraph)
 {
 	auto textField = elm_entry_add(boxPage);
 	evas_object_size_hint_weight_set(textField, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
@@ -404,10 +404,10 @@ void SRIN::Components::SimpleWebView::AddParagraph(Evas_Object* boxPage, std::st
 	elm_entry_editable_set(textField, EINA_FALSE);
 	evas_object_show(textField);
 	elm_box_pack_end(boxPage, textField);
-	dlog_print(DLOG_INFO, "SRINFW-Parser", "DUMP PAR %s", formatted.c_str());
+	dlog_print(DLOG_INFO, "TFCFW-Parser", "DUMP PAR %s", formatted.c_str());
 }
 
-void SRIN::Components::SimpleWebView::AddImage(std::string& url)
+void TFC::Components::SimpleWebView::AddImage(std::string& url)
 {
 	dlog_print(DLOG_DEBUG, LOG_TAG, "WebView: Add image %s", url.c_str());
 	std::string filePath;
@@ -470,7 +470,7 @@ void SRIN::Components::SimpleWebView::AddImage(std::string& url)
 	}
 }
 
-void SRIN::Components::SimpleWebView::SetHTMLData(const std::string& data)
+void TFC::Components::SimpleWebView::SetHTMLData(const std::string& data)
 {
 	this->data = data;
 	Render();
@@ -480,7 +480,7 @@ void SRIN::Components::SimpleWebView::SetHTMLData(const std::string& data)
 	evas_object_smart_callback_add(ewk, "load,finished", &SmartEventHandler, &eventEwkLoadFinished);*/
 }
 
-/*void SRIN::Components::SimpleWebView::OnEwkLoadFinished(ElementaryEvent* viewSource, Evas_Object* objSource, void* eventData)
+/*void TFC::Components::SimpleWebView::OnEwkLoadFinished(ElementaryEvent* viewSource, Evas_Object* objSource, void* eventData)
 {
 	Evas_Coord ewkWidth, ewkHeight, bgWidth, bgHeight;
 	ewk_view_contents_size_get(ewk, &ewkWidth, &ewkHeight);
@@ -493,7 +493,7 @@ void SRIN::Components::SimpleWebView::SetHTMLData(const std::string& data)
 	evas_object_size_hint_min_set(bg, NULL, (int)(std::round(optimumSize)));
 }*/
 
-void SRIN::Components::SimpleWebView::OnImageDownloadCompleted(Async<ImageAsyncPackage>::BaseEvent* event,
+void TFC::Components::SimpleWebView::OnImageDownloadCompleted(Async<ImageAsyncPackage>::BaseEvent* event,
 	Async<ImageAsyncPackage>::Task* asyncTask, ImageAsyncPackage result)
 {
 	auto img = elm_image_add(result.placeholder);
@@ -518,7 +518,7 @@ void SRIN::Components::SimpleWebView::OnImageDownloadCompleted(Async<ImageAsyncP
 	evas_object_unref(result.placeholder);
 }
 
-SRIN::Components::SimpleWebView::~SimpleWebView()
+TFC::Components::SimpleWebView::~SimpleWebView()
 {
 	eventImageDownloadCompleted -= { this, &SimpleWebView::OnImageDownloadCompleted };
 
@@ -526,11 +526,11 @@ SRIN::Components::SimpleWebView::~SimpleWebView()
 	/*ewk_shutdown();*/
 }
 
-void SRIN::Components::SimpleWebView::AddCustomComponent(
+void TFC::Components::SimpleWebView::AddCustomComponent(
 		Evas_Object* component) {
 	if(this->isRendering)
 	{
 		elm_box_pack_end(this->boxPage, component);
-		dlog_print(DLOG_VERBOSE, "SRINFW-Parser", "Custom Component");
+		dlog_print(DLOG_VERBOSE, "TFCFW-Parser", "Custom Component");
 	}
 }

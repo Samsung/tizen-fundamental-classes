@@ -7,11 +7,11 @@
  *        Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
-#include "SRIN/Components/FloatingButton.h"
-#include "SRIN/Framework/Application.h"
+#include "TFC/Components/FloatingButton.h"
+#include "TFC/Framework/Application.h"
 #include <efl_extension.h>
 
-using namespace SRIN::Components;
+using namespace TFC::Components;
 
 LIBAPI FloatingButton::FloatingButton() :
 		naviframe(nullptr),
@@ -39,7 +39,7 @@ LIBAPI Evas_Object* FloatingButton::CreateComponent(Evas_Object* root)
 
 	if (buttonLeftImage.size() > 0) {
 		auto image = elm_image_add(floatingButton);
-		std::string path = SRIN::Framework::ApplicationBase::GetResourcePath(buttonLeftImage.c_str());
+		std::string path = TFC::Framework::ApplicationBase::GetResourcePath(buttonLeftImage.c_str());
 		elm_image_file_set(image, path.c_str(), NULL);
 		elm_object_part_content_set(buttonLeft, "icon", image);
 	}
@@ -51,7 +51,7 @@ LIBAPI Evas_Object* FloatingButton::CreateComponent(Evas_Object* root)
 
 		if (buttonRightImage.size() > 0) {
 			auto image = elm_image_add(floatingButton);
-			std::string path = SRIN::Framework::ApplicationBase::GetResourcePath(buttonRightImage.c_str());
+			std::string path = TFC::Framework::ApplicationBase::GetResourcePath(buttonRightImage.c_str());
 			elm_image_file_set(image, path.c_str(), NULL);
 			elm_object_part_content_set(buttonRight, "icon", image);
 		}

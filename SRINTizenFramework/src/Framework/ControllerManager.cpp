@@ -6,9 +6,9 @@
  *        Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
-#include "SRIN/Framework/Application.h"
+#include "TFC/Framework/Application.h"
 
-using namespace SRIN::Framework;
+using namespace TFC::Framework;
 
 void ControllerManager_FreeFactory(void* data)
 {
@@ -16,7 +16,7 @@ void ControllerManager_FreeFactory(void* data)
 	delete factory;
 }
 
-SRIN::Framework::ControllerManager::ControllerManager() :
+TFC::Framework::ControllerManager::ControllerManager() :
 	CurrentController(this)
 {
 	this->controllerTable = eina_hash_string_superfast_new(ControllerManager_FreeFactory);
@@ -42,7 +42,7 @@ LIBAPI ControllerFactory* ControllerManager::GetControllerFactoryEntry(const cha
 	return static_cast<ControllerFactory*>(entry);
 }
 
-SRIN::Framework::ControllerManager::~ControllerManager()
+TFC::Framework::ControllerManager::~ControllerManager()
 {
 }
 
@@ -179,7 +179,7 @@ LIBAPI ControllerFactory::ControllerFactory(CString controllerName, ControllerFa
 	attachedData = nullptr;
 }
 
-LIBAPI ControllerBase* SRIN::Framework::StackingControllerManager::GetCurrentController() {
+LIBAPI ControllerBase* TFC::Framework::StackingControllerManager::GetCurrentController() {
 	return this->chain->instance;
 }
 

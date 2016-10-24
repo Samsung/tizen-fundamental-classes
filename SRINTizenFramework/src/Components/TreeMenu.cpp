@@ -8,12 +8,12 @@
  *        Kevin Winata (k.winata@samsung.com)
  */
 
-#include "SRIN/Components/TreeMenu.h"
-#include "SRIN/Components/MenuItem.h"
+#include "TFC/Components/TreeMenu.h"
+#include "TFC/Components/MenuItem.h"
 
 #include <algorithm>
 
-using namespace SRIN::Components;
+using namespace TFC::Components;
 
 struct TreeMenuItemPackage
 {
@@ -139,9 +139,9 @@ Evas_Object* TreeMenu::CreateComponent(Evas_Object* root)
 				elm_genlist_item_expanded_set(genlistItem, !expanded);
 
 				if(expanded)
-					elm_object_signal_emit(obj, "expandButton", "srin");
+					elm_object_signal_emit(obj, "expandButton", "TFC");
 				else
-					elm_object_signal_emit(obj, "collapseButton", "srin");
+					elm_object_signal_emit(obj, "collapseButton", "TFC");
 
 				// Refresh the selected state on currently selected object item
 				// Bug in EFL which it emits default signal inapproriately as this button is clicked, which
@@ -156,9 +156,9 @@ Evas_Object* TreeMenu::CreateComponent(Evas_Object* root)
 
 			auto expanded = elm_genlist_item_expanded_get(menuItem->genlistItem);
 			if(!expanded)
-				elm_object_signal_emit(button, "expandButton", "srin");
+				elm_object_signal_emit(button, "expandButton", "TFC");
 			else
-				elm_object_signal_emit(button, "collapseButton", "srin");
+				elm_object_signal_emit(button, "collapseButton", "TFC");
 
 			evas_object_event_callback_add(button, EVAS_CALLBACK_MOUSE_DOWN,
 				[] (void* data, Evas* evas, Evas_Object* obj, void* eventData) { }, nullptr);
@@ -358,7 +358,7 @@ void TreeMenu::GenerateSubMenu(MenuItem* rootMenu)
 	}
 }
 
-void SRIN::Components::TreeMenu::AddMenu(const std::vector<MenuItem*>& listOfMenus)
+void TFC::Components::TreeMenu::AddMenu(const std::vector<MenuItem*>& listOfMenus)
 {
 	for (auto item : listOfMenus)
 	{
@@ -367,7 +367,7 @@ void SRIN::Components::TreeMenu::AddMenu(const std::vector<MenuItem*>& listOfMen
 
 }
 
-SRIN::Components::CustomMenuStyle::CustomMenuStyle(CString style)
+TFC::Components::CustomMenuStyle::CustomMenuStyle(CString style)
 {
 	this->customStyle = elm_genlist_item_class_new();
 	this->customStyle->item_style = style;
@@ -391,22 +391,22 @@ SRIN::Components::CustomMenuStyle::CustomMenuStyle(CString style)
 	};
 }
 
-SRIN::Components::CustomMenuStyle::operator Elm_Genlist_Item_Class*()
+TFC::Components::CustomMenuStyle::operator Elm_Genlist_Item_Class*()
 {
 	return this->customStyle;
 }
 
-SRIN::Components::CustomMenuStyle::~CustomMenuStyle()
+TFC::Components::CustomMenuStyle::~CustomMenuStyle()
 {
 	elm_genlist_item_class_free(this->customStyle);
 }
 
-const std::vector<MenuItem*>& SRIN::Components::TreeMenu::GetMenuItems()
+const std::vector<MenuItem*>& TFC::Components::TreeMenu::GetMenuItems()
 {
 	return this->rootMenu;
 }
 
-void SRIN::Components::TreeMenu::AddMenuAt(int index, MenuItem* menu)
+void TFC::Components::TreeMenu::AddMenuAt(int index, MenuItem* menu)
 {
 	if(index >= this->rootMenu.size())
 		AddMenu(menu);
@@ -433,24 +433,24 @@ void SRIN::Components::TreeMenu::AddMenuAt(int index, MenuItem* menu)
 	}
 }
 
-bool SRIN::Components::TreeMenu::GetAutoExpanded()
+bool TFC::Components::TreeMenu::GetAutoExpanded()
 {
 	return autoExpand;
 }
 
-void SRIN::Components::TreeMenu::SetAutoExpanded(const bool& val)
+void TFC::Components::TreeMenu::SetAutoExpanded(const bool& val)
 {
 	autoExpand = val;
 }
 
-void SRIN::Components::TreeMenu::RemoveMenu(MenuItem* menu)
+void TFC::Components::TreeMenu::RemoveMenu(MenuItem* menu)
 {
 	auto pos = std::find(rootMenu.begin(), rootMenu.end(), menu);
 	rootMenu.erase(pos);
 
 }
 
-void SRIN::Components::TreeMenu::ResetCurrentlySelectedItem()
+void TFC::Components::TreeMenu::ResetCurrentlySelectedItem()
 {
 	currentlySelected = nullptr;
 }

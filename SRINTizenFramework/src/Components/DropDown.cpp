@@ -7,11 +7,11 @@
  *        Kevin Winata (k.winata@samsung.com)
  */
 
-#include "SRIN/Components/DropDown.h"
+#include "TFC/Components/DropDown.h"
 
 #include <efl_extension.h>
 
-using namespace SRIN::Components;
+using namespace TFC::Components;
 
 typedef struct {
 	DropDown* dropdownRef;
@@ -30,7 +30,7 @@ void DropdownAdapter_DeleteCallback(void* data, Evas_Object* obj, void* eventInf
 	delete package;
 }
 
-LIBAPI Evas_Object* SRIN::Components::DropDown::CreateComponent(Evas_Object* root)
+LIBAPI Evas_Object* TFC::Components::DropDown::CreateComponent(Evas_Object* root)
 {
 	Evas_Object* dropDown = elm_button_add(root);
 	elm_object_style_set(dropDown, "dropdown");
@@ -43,7 +43,7 @@ LIBAPI Evas_Object* SRIN::Components::DropDown::CreateComponent(Evas_Object* roo
 	return dropDown;
 }
 
-LIBAPI SRIN::Components::DropDown::DropDown() :
+LIBAPI TFC::Components::DropDown::DropDown() :
 	parentComponent(nullptr),
 	dropdownComponent(nullptr),
 	dataSource(nullptr),
@@ -53,7 +53,7 @@ LIBAPI SRIN::Components::DropDown::DropDown() :
 	SelectedItem = nullptr;
 }
 
-LIBAPI void SRIN::Components::DropDown::ShowDropdown()
+LIBAPI void TFC::Components::DropDown::ShowDropdown()
 {
 	dropdownComponent = elm_ctxpopup_add(this->parentComponent);
 	elm_object_style_set(dropdownComponent, "dropdown/list");
@@ -89,13 +89,13 @@ LIBAPI void SRIN::Components::DropDown::ShowDropdown()
 	evas_object_show(dropdownComponent);
 }
 
-LIBAPI void SRIN::Components::DropDown::OnDropDownButtonClick(EFL::EvasSmartEvent* viewSource, Evas_Object* objSource,
+LIBAPI void TFC::Components::DropDown::OnDropDownButtonClick(EFL::EvasSmartEvent* viewSource, Evas_Object* objSource,
 	void* eventData)
 {
 	ShowDropdown();
 }
 
-LIBAPI void SRIN::Components::DropDown::ItemClick(Adapter::AdapterItem* item)
+LIBAPI void TFC::Components::DropDown::ItemClick(Adapter::AdapterItem* item)
 {
 	SelectedItem = item->data;
 	text = item->itemClass->GetString(item->data, nullptr, "text");
@@ -116,12 +116,12 @@ LIBAPI void SRIN::Components::DropDown::ItemClick(Adapter::AdapterItem* item)
 	ItemSelectionChanged(this, SelectedItem);
 }
 
-LIBAPI void SRIN::Components::DropDown::SetDataSource(Adapter* adapter)
+LIBAPI void TFC::Components::DropDown::SetDataSource(Adapter* adapter)
 {
 	this->dataSource = adapter;
 }
 
-LIBAPI Adapter* SRIN::Components::DropDown::GetDataSource()
+LIBAPI Adapter* TFC::Components::DropDown::GetDataSource()
 {
 	return this->dataSource;
 }

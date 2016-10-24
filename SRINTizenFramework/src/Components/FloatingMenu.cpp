@@ -7,11 +7,11 @@
  *        Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
-#include "SRIN/Components/FloatingMenu.h"
+#include "TFC/Components/FloatingMenu.h"
 #include <efl_extension.h>
 #include <algorithm>
 
-SRIN::Components::FloatingMenu::FloatingMenu() :
+TFC::Components::FloatingMenu::FloatingMenu() :
 	naviframe(nullptr),
 	floatingLayout(nullptr),
 	button(nullptr),
@@ -23,7 +23,7 @@ SRIN::Components::FloatingMenu::FloatingMenu() :
 	eventContextMenuDismissed += EventHandler(FloatingMenu::OnContextMenuDismissed);
 }
 
-Evas_Object* SRIN::Components::FloatingMenu::CreateComponent(Evas_Object* root)
+Evas_Object* TFC::Components::FloatingMenu::CreateComponent(Evas_Object* root)
 {
 	naviframe = root;
 
@@ -36,7 +36,7 @@ Evas_Object* SRIN::Components::FloatingMenu::CreateComponent(Evas_Object* root)
 
 	if (buttonImage.size() > 0) {
 		auto image = elm_image_add(floatingLayout);
-		std::string path = SRIN::Framework::ApplicationBase::GetResourcePath(buttonImage.c_str());
+		std::string path = TFC::Framework::ApplicationBase::GetResourcePath(buttonImage.c_str());
 		elm_image_file_set(image, path.c_str(), NULL);
 		elm_object_part_content_set(button, "icon", image);
 	}
@@ -46,16 +46,16 @@ Evas_Object* SRIN::Components::FloatingMenu::CreateComponent(Evas_Object* root)
 
 void FloatingMenu_ItemClickHandler(void* data, Evas_Object* obj, void* eventData)
 {
-	auto pkg = reinterpret_cast<SRIN::Components::FloatingMenu::ContextMenuPackage*>(data);
+	auto pkg = reinterpret_cast<TFC::Components::FloatingMenu::ContextMenuPackage*>(data);
 	pkg->RaiseEvent();
 }
 
-void SRIN::Components::FloatingMenu::AddMenu(MenuItem* menu)
+void TFC::Components::FloatingMenu::AddMenu(MenuItem* menu)
 {
 	rootMenu.push_back(menu);
 }
 
-void SRIN::Components::FloatingMenu::AddMenuAt(int index, MenuItem* menu)
+void TFC::Components::FloatingMenu::AddMenuAt(int index, MenuItem* menu)
 {
 	if(index >= this->rootMenu.size())
 		AddMenu(menu);
@@ -66,13 +66,13 @@ void SRIN::Components::FloatingMenu::AddMenuAt(int index, MenuItem* menu)
 	}
 }
 
-void SRIN::Components::FloatingMenu::RemoveMenu(MenuItem* menu)
+void TFC::Components::FloatingMenu::RemoveMenu(MenuItem* menu)
 {
 	auto pos = std::find(rootMenu.begin(), rootMenu.end(), menu);
 	rootMenu.erase(pos);
 }
 
-void SRIN::Components::FloatingMenu::AddMenu(const std::vector<MenuItem*>& listOfMenus)
+void TFC::Components::FloatingMenu::AddMenu(const std::vector<MenuItem*>& listOfMenus)
 {
 	for (auto item : listOfMenus)
 	{
@@ -80,18 +80,18 @@ void SRIN::Components::FloatingMenu::AddMenu(const std::vector<MenuItem*>& listO
 	}
 }
 
-void SRIN::Components::FloatingMenu::SetMenu(const std::vector<MenuItem*>& listOfMenus)
+void TFC::Components::FloatingMenu::SetMenu(const std::vector<MenuItem*>& listOfMenus)
 {
 	rootMenu = listOfMenus;
 }
 
-bool SRIN::Components::FloatingMenu::BackButtonClicked()
+bool TFC::Components::FloatingMenu::BackButtonClicked()
 {
 	elm_ctxpopup_dismiss(this->contextMenu);
 	return false;
 }
 
-void SRIN::Components::FloatingMenu::OnButtonClicked(EFL::EvasSmartEvent* ev, Evas_Object* obj, void* eventData)
+void TFC::Components::FloatingMenu::OnButtonClicked(EFL::EvasSmartEvent* ev, Evas_Object* obj, void* eventData)
 {
 	if(not this->menuShown)
 		this->ShowMenu();
@@ -99,12 +99,12 @@ void SRIN::Components::FloatingMenu::OnButtonClicked(EFL::EvasSmartEvent* ev, Ev
 		this->HideMenu();
 }
 
-void SRIN::Components::FloatingMenu::OnContextMenuDismissed(EFL::EvasSmartEvent* ev, Evas_Object* obj, void* eventData)
+void TFC::Components::FloatingMenu::OnContextMenuDismissed(EFL::EvasSmartEvent* ev, Evas_Object* obj, void* eventData)
 {
 	HideMenu();
 }
 
-void SRIN::Components::FloatingMenu::ShowMenu()
+void TFC::Components::FloatingMenu::ShowMenu()
 {
 	BackButtonHandler::Acquire();
 
@@ -139,7 +139,7 @@ void SRIN::Components::FloatingMenu::ShowMenu()
 	evas_object_show(contextMenu);
 }
 
-void SRIN::Components::FloatingMenu::HideMenu()
+void TFC::Components::FloatingMenu::HideMenu()
 {
 	if(this->contextMenu != nullptr)
 	{
@@ -157,16 +157,16 @@ void SRIN::Components::FloatingMenu::HideMenu()
 	BackButtonHandler::Release();
 }
 
-SRIN::Components::FloatingMenu::~FloatingMenu()
+TFC::Components::FloatingMenu::~FloatingMenu()
 {
 	HideMenu();
 }
 
-void SRIN::Components::FloatingMenu::ContextMenuPackage::RaiseEvent() {
+void TFC::Components::FloatingMenu::ContextMenuPackage::RaiseEvent() {
 	this->thisRef->RaiseOnClickEvent(this->menuItemRef);
 }
 
-void SRIN::Components::FloatingMenu::RaiseOnClickEvent(MenuItem* menuItemRef) {
+void TFC::Components::FloatingMenu::RaiseOnClickEvent(MenuItem* menuItemRef) {
 	elm_ctxpopup_dismiss(this->contextMenu);
 	menuItemRef->OnMenuItemClick(menuItemRef, nullptr);
 }

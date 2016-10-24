@@ -6,7 +6,7 @@
  *        Gilang Mentari Hamidy (g.hamidy@samsung.com)
  */
 
-#include "SRIN/Core.h"
+#include "TFC/Core.h"
 #include <pthread.h>
 
 
@@ -20,3 +20,18 @@ LIBAPI ObjectClass::~ObjectClass()
 {
 
 }
+
+class SomeComponents : public TFC::EventClass, TFC::EventEmitterClass<SomeComponents>
+{
+private:
+	Event<int> eventSomeEvent;
+	void AnEventHandler(decltype(eventSomeEvent)* ev, SomeComponents* a, int b)
+	{
+
+	}
+public:
+	SomeComponents()
+	{
+		eventSomeEvent += { this, &SomeComponents::AnEventHandler };
+	}
+};

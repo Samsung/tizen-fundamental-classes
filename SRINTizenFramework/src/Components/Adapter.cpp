@@ -8,13 +8,13 @@
  *        Kevin Winata (k.winata@samsung.com)
  */
 
-#include "SRIN/Components/Adapter.h"
+#include "TFC/Components/Adapter.h"
 
 /* =================================================================================================================
  * IMPLEMENTATION: AdapterItemClassBase
  * ================================================================================================================= */
 
-LIBAPI SRIN::Components::AdapterItemClassBase::~AdapterItemClassBase()
+LIBAPI TFC::Components::AdapterItemClassBase::~AdapterItemClassBase()
 {
 }
 
@@ -23,25 +23,25 @@ LIBAPI SRIN::Components::AdapterItemClassBase::~AdapterItemClassBase()
  * IMPLEMENTATION: BasicAdapter
  * ================================================================================================================= */
 
-LIBAPI SRIN::Components::Adapter::Adapter() :
+LIBAPI TFC::Components::Adapter::Adapter() :
 	adapterItems()
 {
 
 }
 
-LIBAPI SRIN::Components::Adapter::~Adapter()
+LIBAPI TFC::Components::Adapter::~Adapter()
 {
 	Clear();
 }
 
-LIBAPI void SRIN::Components::Adapter::AddItemInternal(void* data, AdapterItemClassBase* itemClass)
+LIBAPI void TFC::Components::Adapter::AddItemInternal(void* data, AdapterItemClassBase* itemClass)
 {
 	adapterItems.push_back({data, itemClass, nullptr});
 	auto& lastItem = adapterItems.back();
 	eventItemAdd(this, &lastItem);
 }
 
-LIBAPI void SRIN::Components::Adapter::RemoveItemInternal(void* data)
+LIBAPI void TFC::Components::Adapter::RemoveItemInternal(void* data)
 {
 	for(auto iter = adapterItems.begin(); iter != adapterItems.end(); )
 	{
@@ -56,12 +56,12 @@ LIBAPI void SRIN::Components::Adapter::RemoveItemInternal(void* data)
 	}
 }
 
-LIBAPI std::vector<SRIN::Components::Adapter::AdapterItem>& SRIN::Components::Adapter::GetAll()
+LIBAPI std::vector<TFC::Components::Adapter::AdapterItem>& TFC::Components::Adapter::GetAll()
 {
 	return adapterItems;
 }
 
-LIBAPI void SRIN::Components::Adapter::Clear(bool deallocate)
+LIBAPI void TFC::Components::Adapter::Clear(bool deallocate)
 {
 	for(auto iter = adapterItems.begin(); iter != adapterItems.end();)
 	{
@@ -79,7 +79,7 @@ LIBAPI void SRIN::Components::Adapter::Clear(bool deallocate)
 	}
 }
 
-LIBAPI int SRIN::Components::Adapter::GetCount()
+LIBAPI int TFC::Components::Adapter::GetCount()
 {
 	return adapterItems.empty() ? 0 : adapterItems.size();
 }
@@ -88,13 +88,13 @@ LIBAPI int SRIN::Components::Adapter::GetCount()
  * IMPLEMENTATION: BasicListAdapter
  * ================================================================================================================= */
 
-SRIN::Components::BasicListAdapter::BasicListItemClass SRIN::Components::BasicListAdapter::basicListItemClass;
+TFC::Components::BasicListAdapter::BasicListItemClass TFC::Components::BasicListAdapter::basicListItemClass;
 
-SRIN::Components::BasicListAdapter::BasicListAdapter()
+TFC::Components::BasicListAdapter::BasicListAdapter()
 {
 }
 
-SRIN::Components::BasicListAdapter::BasicListAdapter(std::initializer_list<std::string> init)
+TFC::Components::BasicListAdapter::BasicListAdapter(std::initializer_list<std::string> init)
 {
 	for(auto& item : init)
 	{
@@ -102,29 +102,29 @@ SRIN::Components::BasicListAdapter::BasicListAdapter(std::initializer_list<std::
 	}
 }
 
-SRIN::Components::BasicListAdapter::~BasicListAdapter()
+TFC::Components::BasicListAdapter::~BasicListAdapter()
 {
 
 }
 
-void SRIN::Components::BasicListAdapter::AddItem(std::string string)
+void TFC::Components::BasicListAdapter::AddItem(std::string string)
 {
 	int currentCount = this->GetCount();
 	Adapter::AddItem(new BasicAdapterItem({ currentCount, string }), &basicListItemClass);
 }
 
-void SRIN::Components::BasicListAdapter::RemoveItem(std::string string)
+void TFC::Components::BasicListAdapter::RemoveItem(std::string string)
 {
 	// Unimplemented
 }
 
-std::string SRIN::Components::BasicListAdapter::BasicListItemClass::GetString(BasicAdapterItem* data, Evas_Object* obj,
+std::string TFC::Components::BasicListAdapter::BasicListItemClass::GetString(BasicAdapterItem* data, Evas_Object* obj,
 	const char* part)
 {
 	return data->value;
 }
 
-Evas_Object* SRIN::Components::BasicListAdapter::BasicListItemClass::GetContent(BasicAdapterItem* data, Evas_Object* obj,
+Evas_Object* TFC::Components::BasicListAdapter::BasicListItemClass::GetContent(BasicAdapterItem* data, Evas_Object* obj,
 	const char* part)
 {
 	return nullptr;

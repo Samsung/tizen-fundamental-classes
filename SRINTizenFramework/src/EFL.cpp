@@ -6,10 +6,10 @@
  *        Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
-#include "SRIN/EFL.h"
+#include "TFC/EFL.h"
 
 
-LIBAPI void SRIN::EFL::EvasSmartEventHandler(void* data, Evas_Object* obj,
+LIBAPI void TFC::EFL::EvasSmartEventHandler(void* data, Evas_Object* obj,
 		void* eventData)
 {
 	auto package = static_cast<EvasSmartEvent*>(data);
@@ -22,7 +22,7 @@ LIBAPI void SRIN::EFL::EvasSmartEventHandler(void* data, Evas_Object* obj,
 	(*package)(obj, eventData);
 }
 
-LIBAPI void SRIN::EFL::EvasObjectEventHandler(void* data, Evas* evas, Evas_Object* obj,
+LIBAPI void TFC::EFL::EvasObjectEventHandler(void* data, Evas* evas, Evas_Object* obj,
 		void* eventData)
 {
 	auto package = static_cast<EvasObjectEvent*>(data);
@@ -36,7 +36,7 @@ LIBAPI void SRIN::EFL::EvasObjectEventHandler(void* data, Evas* evas, Evas_Objec
 	(*package)(&source, eventData);
 }
 
-LIBAPI void SRIN::EFL::EdjeSignalEventHandler(void* data, Evas_Object* obj,
+LIBAPI void TFC::EFL::EdjeSignalEventHandler(void* data, Evas_Object* obj,
 		const char* emission, const char* source)
 {
 	auto package = static_cast<EdjeSignalEvent*>(data);
@@ -49,7 +49,7 @@ LIBAPI void SRIN::EFL::EdjeSignalEventHandler(void* data, Evas_Object* obj,
 	(*package)(obj, { emission, source });
 }
 
-LIBAPI void SRIN::EFL::EdjeObjectItemSignalEventHandler(void* data,
+LIBAPI void TFC::EFL::EdjeObjectItemSignalEventHandler(void* data,
 		Elm_Object_Item* it, const char* emission, const char* source)
 {
 	auto package = static_cast<ObjectItemEdjeSignalEvent*>(data);
@@ -63,13 +63,13 @@ LIBAPI void SRIN::EFL::EdjeObjectItemSignalEventHandler(void* data,
 
 }
 
-LIBAPI void SRIN::EFL::EcoreJobEventHandler(void* d)
+LIBAPI void TFC::EFL::EcoreJobEventHandler(void* d)
 {
 	auto ev = reinterpret_cast<EcoreJobEvent*>(d);
 	(*ev)(nullptr, nullptr);
 }
 
-LIBAPI Ecore_Job* SRIN::EFL::QueueJob(EcoreJobEvent& event)
+LIBAPI Ecore_Job* TFC::EFL::QueueJob(EcoreJobEvent& event)
 {
 	auto ptr = &event;
 	return ecore_job_add(EcoreJobEventHandler, ptr);

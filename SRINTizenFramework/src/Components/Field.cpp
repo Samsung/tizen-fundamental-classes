@@ -9,12 +9,12 @@
  *        Calvin Windoro (calvin.w@samsung.com)
  */
 
-#include "SRIN/Framework/Application.h"
-#include "SRIN/Components/Field.h"
+#include "TFC/Framework/Application.h"
+#include "TFC/Components/Field.h"
 
-#define FILE_EDC_FIELD "SRIN/edc/Field.edj"
+#define FILE_EDC_FIELD "TFC/edc/Field.edj"
 
-LIBAPI Evas_Object* SRIN::Components::Field::CreateComponent(Evas_Object* root)
+LIBAPI Evas_Object* TFC::Components::Field::CreateComponent(Evas_Object* root)
 {
 	Evas_Object* box;
 
@@ -56,7 +56,7 @@ LIBAPI Evas_Object* SRIN::Components::Field::CreateComponent(Evas_Object* root)
 	return box;
 }
 
-LIBAPI void SRIN::Components::Field::SetText(const std::string& text)
+LIBAPI void TFC::Components::Field::SetText(const std::string& text)
 {
 	this->text = text;
 
@@ -64,7 +64,7 @@ LIBAPI void SRIN::Components::Field::SetText(const std::string& text)
 		elm_object_text_set(this->field, this->text.c_str());
 }
 
-LIBAPI std::string& SRIN::Components::Field::GetText()
+LIBAPI std::string& TFC::Components::Field::GetText()
 {
 	if (field)
 	{
@@ -75,7 +75,7 @@ LIBAPI std::string& SRIN::Components::Field::GetText()
 	return this->text;
 }
 
-LIBAPI void SRIN::Components::Field::SetMultiline(const bool& val)
+LIBAPI void TFC::Components::Field::SetMultiline(const bool& val)
 {
 	this->multiline = val;
 	if (this->componentRoot)
@@ -94,28 +94,28 @@ LIBAPI void SRIN::Components::Field::SetMultiline(const bool& val)
 	}
 }
 
-LIBAPI bool SRIN::Components::Field::GetMultiline()
+LIBAPI bool TFC::Components::Field::GetMultiline()
 {
 	return multiline;
 }
 
-LIBAPI void SRIN::Components::Field::SetBottomBorderVisible(const bool& visible)
+LIBAPI void TFC::Components::Field::SetBottomBorderVisible(const bool& visible)
 {
 	bottomBorder = visible;
 }
 
-LIBAPI bool SRIN::Components::Field::GetBottomBorderVisible()
+LIBAPI bool TFC::Components::Field::GetBottomBorderVisible()
 {
 	return bottomBorder;
 }
 
-LIBAPI SRIN::Components::Field::Field() :
+LIBAPI TFC::Components::Field::Field() :
 		text(""), multiline(false), bottomBorder(false), field(nullptr),
 		Text(this), Multiline(this), BottomBorderVisible(this)
 {
 }
 
-LIBAPI void SRIN::Components::Field::SetDisable(const bool& disable)
+LIBAPI void TFC::Components::Field::SetDisable(const bool& disable)
 {
 	if (disable)
 	{
@@ -127,12 +127,12 @@ LIBAPI void SRIN::Components::Field::SetDisable(const bool& disable)
 	}
 }
 
-LIBAPI void SRIN::Components::Field::SetHint(const CString& hint)
+LIBAPI void TFC::Components::Field::SetHint(const CString& hint)
 {
 	elm_object_part_text_set(field, "guide", hint);
 }
 
-LIBAPI void SRIN::Components::Field::SetFocus(const bool& disable)
+LIBAPI void TFC::Components::Field::SetFocus(const bool& disable)
 {
 	if (disable)
 	{
@@ -146,23 +146,23 @@ LIBAPI void SRIN::Components::Field::SetFocus(const bool& disable)
 	}
 }
 
-LIBAPI void SRIN::Components::Field::SetFontStyle(const CString& style)
+LIBAPI void TFC::Components::Field::SetFontStyle(const CString& style)
 {
 	elm_entry_text_style_user_push(field, style);
 }
 
-void SRIN::Components::Field::SetReturnKeyType(
+void TFC::Components::Field::SetReturnKeyType(
 		const Elm_Input_Panel_Return_Key_Type& type) {
 	elm_entry_input_panel_return_key_type_set(field, type);
 
 }
 
-void SRIN::Components::Field::SetKeyboardType(
+void TFC::Components::Field::SetKeyboardType(
 		const Elm_Input_Panel_Layout& type) {
 	elm_entry_input_panel_layout_set(field, type);
 }
 
-LIBAPI void SRIN::Components::Field::SetAsPasswordField()
+LIBAPI void TFC::Components::Field::SetAsPasswordField()
 {
 	elm_entry_password_set(field, EINA_TRUE);
 }

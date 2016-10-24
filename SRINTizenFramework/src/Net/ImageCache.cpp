@@ -7,7 +7,7 @@
  *        Kevin Winata (k.winata@samsung.com)
  */
 
-#include "SRIN/Net/ImageCache.h"
+#include "TFC/Net/ImageCache.h"
 
 #define __STDBOOL_H // Remove STDBOOL
 #include <app.h>
@@ -21,7 +21,7 @@
 
 #define DBNAME "ImageCache.db"
 
-using namespace SRIN::Net;
+using namespace TFC::Net;
 
 bool staticInitialized = false;
 std::string storagePath;
@@ -128,7 +128,7 @@ std::string ImageCache_ExtractFilename(const std::string& url)
 	}
 }
 
-std::string LIBAPI SRIN::Net::ImageCache::LoadImage(const std::string& url)
+std::string LIBAPI TFC::Net::ImageCache::LoadImage(const std::string& url)
 {
 	// Just return plain url if the cache init failed
 	if(!ImageCache_EnsureStaticInitialized())
@@ -201,7 +201,7 @@ std::string LIBAPI SRIN::Net::ImageCache::LoadImage(const std::string& url)
 		return url;
 }
 
-bool LIBAPI SRIN::Net::ImageCache::RequireDownloading(const std::string& url, std::string& filePath)
+bool LIBAPI TFC::Net::ImageCache::RequireDownloading(const std::string& url, std::string& filePath)
 {
 	if(!ImageCache_EnsureStaticInitialized())
 	{

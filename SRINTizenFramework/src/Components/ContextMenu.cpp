@@ -8,10 +8,10 @@
  *        Kevin Winata (k.winata@samsung.com)
  */
 
-#include "SRIN/Components/ContextMenu.h"
+#include "TFC/Components/ContextMenu.h"
 #include <algorithm>
 
-Evas_Object* SRIN::Components::ContextMenu::CreateComponent(Evas_Object* root)
+Evas_Object* TFC::Components::ContextMenu::CreateComponent(Evas_Object* root)
 {
 	naviframe = root;
 	button = elm_button_add(root);
@@ -22,21 +22,21 @@ Evas_Object* SRIN::Components::ContextMenu::CreateComponent(Evas_Object* root)
 
 void ContextMenu_ItemClickHandler(void* data, Evas_Object* obj, void* eventData)
 {
-	auto pkg = reinterpret_cast<SRIN::Components::ContextMenu::ContextMenuPackage*>(data);
+	auto pkg = reinterpret_cast<TFC::Components::ContextMenu::ContextMenuPackage*>(data);
 	pkg->RaiseEvent();
 }
 
-void SRIN::Components::ContextMenu::SetText(const std::string& text)
+void TFC::Components::ContextMenu::SetText(const std::string& text)
 {
 	this->text = text;
 }
 
-std::string& SRIN::Components::ContextMenu::GetText()
+std::string& TFC::Components::ContextMenu::GetText()
 {
 	return text;
 }
 
-SRIN::Components::ContextMenu::ContextMenu() :
+TFC::Components::ContextMenu::ContextMenu() :
 	naviframe(nullptr),
 	button(nullptr),
 	contextMenu(nullptr),
@@ -47,12 +47,12 @@ SRIN::Components::ContextMenu::ContextMenu() :
 	eventContextMenuDismissed += EventHandler(ContextMenu::OnContextMenuDismissed);
 }
 
-void SRIN::Components::ContextMenu::AddMenu(MenuItem* menu)
+void TFC::Components::ContextMenu::AddMenu(MenuItem* menu)
 {
 	rootMenu.push_back(menu);
 }
 
-void SRIN::Components::ContextMenu::AddMenuAt(int index, MenuItem* menu)
+void TFC::Components::ContextMenu::AddMenuAt(int index, MenuItem* menu)
 {
 	if(index >= this->rootMenu.size())
 		AddMenu(menu);
@@ -63,13 +63,13 @@ void SRIN::Components::ContextMenu::AddMenuAt(int index, MenuItem* menu)
 	}
 }
 
-void SRIN::Components::ContextMenu::RemoveMenu(MenuItem* menu)
+void TFC::Components::ContextMenu::RemoveMenu(MenuItem* menu)
 {
 	auto pos = std::find(rootMenu.begin(), rootMenu.end(), menu);
 	rootMenu.erase(pos);
 }
 
-void SRIN::Components::ContextMenu::AddMenu(const std::vector<MenuItem*>& listOfMenus)
+void TFC::Components::ContextMenu::AddMenu(const std::vector<MenuItem*>& listOfMenus)
 {
 	for (auto item : listOfMenus)
 	{
@@ -77,12 +77,12 @@ void SRIN::Components::ContextMenu::AddMenu(const std::vector<MenuItem*>& listOf
 	}
 }
 
-void SRIN::Components::ContextMenu::SetMenu(const std::vector<MenuItem*>& listOfMenus)
+void TFC::Components::ContextMenu::SetMenu(const std::vector<MenuItem*>& listOfMenus)
 {
 	rootMenu = listOfMenus;
 }
 
-void SRIN::Components::ContextMenu::OnContextMenuButtonClicked(EFL::EvasSmartEvent* ev, Evas_Object* obj, void* eventData)
+void TFC::Components::ContextMenu::OnContextMenuButtonClicked(EFL::EvasSmartEvent* ev, Evas_Object* obj, void* eventData)
 {
 	if(not this->menuShown)
 		this->ShowMenu();
@@ -90,7 +90,7 @@ void SRIN::Components::ContextMenu::OnContextMenuButtonClicked(EFL::EvasSmartEve
 		this->HideMenu();
 }
 
-void SRIN::Components::ContextMenu::ShowMenu()
+void TFC::Components::ContextMenu::ShowMenu()
 {
 	BackButtonHandler::Acquire();
 
@@ -126,7 +126,7 @@ void SRIN::Components::ContextMenu::ShowMenu()
 	evas_object_show(contextMenu);
 }
 
-void SRIN::Components::ContextMenu::HideMenu()
+void TFC::Components::ContextMenu::HideMenu()
 {
 	if(this->contextMenu != nullptr)
 	{
@@ -144,27 +144,27 @@ void SRIN::Components::ContextMenu::HideMenu()
 	BackButtonHandler::Release();
 }
 
-bool SRIN::Components::ContextMenu::BackButtonClicked()
+bool TFC::Components::ContextMenu::BackButtonClicked()
 {
 	elm_ctxpopup_dismiss(this->contextMenu);
 	return false;
 }
 
-SRIN::Components::ContextMenu::~ContextMenu()
+TFC::Components::ContextMenu::~ContextMenu()
 {
 	HideMenu();
 }
 
-void SRIN::Components::ContextMenu::OnContextMenuDismissed(EFL::EvasSmartEvent* ev,
+void TFC::Components::ContextMenu::OnContextMenuDismissed(EFL::EvasSmartEvent* ev,
 		Evas_Object* obj, void* eventData) {
 	HideMenu();
 }
 
-void SRIN::Components::ContextMenu::ContextMenuPackage::RaiseEvent() {
+void TFC::Components::ContextMenu::ContextMenuPackage::RaiseEvent() {
 	this->thisRef->RaiseOnClickEvent(this->menuItemRef);
 }
 
-void SRIN::Components::ContextMenu::RaiseOnClickEvent(MenuItem* menuItemRef) {
+void TFC::Components::ContextMenu::RaiseOnClickEvent(MenuItem* menuItemRef) {
 	elm_ctxpopup_dismiss(this->contextMenu);
 	menuItemRef->OnMenuItemClick(menuItemRef, nullptr);
 }

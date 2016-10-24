@@ -7,9 +7,9 @@
  *        Kevin Winata (k.winata@samsung.com)
  */
 
-#include "SRIN/Components/BackButtonHandler.h"
+#include "TFC/Components/BackButtonHandler.h"
 
-bool SRIN::Components::BackButtonHandler::BackButtonClickedInternal()
+bool TFC::Components::BackButtonHandler::BackButtonClickedInternal()
 {
 	dlog_print(DLOG_DEBUG, LOG_TAG, "Back Button Clicked");
 	this->Release();
@@ -17,7 +17,7 @@ bool SRIN::Components::BackButtonHandler::BackButtonClickedInternal()
 
 }
 
-void SRIN::Components::BackButtonHandler::Acquire()
+void TFC::Components::BackButtonHandler::Acquire()
 {
 	dlog_print(DLOG_DEBUG, LOG_TAG, "Virtual address: %p", &BackButtonHandler::BackButtonClicked);
 
@@ -30,7 +30,7 @@ void SRIN::Components::BackButtonHandler::Acquire()
 
 }
 
-void SRIN::Components::BackButtonHandler::Release()
+void TFC::Components::BackButtonHandler::Release()
 {
 	if(this->acquired)
 	{
@@ -42,21 +42,21 @@ void SRIN::Components::BackButtonHandler::Release()
 	}
 }
 
-SRIN::Components::BackButtonHandler::BackButtonHandler() :
+TFC::Components::BackButtonHandler::BackButtonHandler() :
 		obj(nullptr),
 		acquired(false)
 {
 }
 
-SRIN::Components::BackButtonHandler::~BackButtonHandler()
+TFC::Components::BackButtonHandler::~BackButtonHandler()
 {
 	Release();
 }
 
-SRIN::Components::BackButtonHandler::Wrapper::Wrapper(
+TFC::Components::BackButtonHandler::Wrapper::Wrapper(
 		BackButtonHandler* handler) : handler(handler){
 }
 
-void SRIN::Components::BackButtonHandler::Wrapper::Call() {
+void TFC::Components::BackButtonHandler::Wrapper::Call() {
 	handler->BackButtonClickedInternal();
 }

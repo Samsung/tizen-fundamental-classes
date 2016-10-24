@@ -7,9 +7,9 @@
  *        Kevin Winata (k.winata@samsung.com)
  */
 
-#include "SRIN/Components/MenuItem.h"
+#include "TFC/Components/MenuItem.h"
 
-using namespace SRIN::Components;
+using namespace TFC::Components;
 
 MenuItem::MenuItem(std::string menuText, std::string menuIcon, void* itemData, CustomMenuStyle* customStyle) :
 	parentMenu(nullptr), itemData(itemData), genlistItem(nullptr), expanded(false)

@@ -6,9 +6,9 @@
  *        Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
-#include "SRIN/Framework/Application.h"
+#include "TFC/Framework/Application.h"
 
-using namespace SRIN::Framework;
+using namespace TFC::Framework;
 
 LIBAPI MVCApplicationBase::MVCApplicationBase(CString appPackage, CString mainController) :
 	UIApplicationBase(appPackage), StackingControllerManager(this), mainController(mainController)

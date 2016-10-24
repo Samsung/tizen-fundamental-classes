@@ -7,17 +7,17 @@
  *        Kevin Winata (k.winata@samsung.com)
  */
 
-#include "SRIN/Infrastructures/ScheduledTask.h"
+#include "TFC/Infrastructures/ScheduledTask.h"
 
 #include <stdexcept>
 
 
-Eina_Bool SRIN::Infrastructures::ScheduledTaskDispatcherCallback(void* data)
+Eina_Bool TFC::Infrastructures::ScheduledTaskDispatcherCallback(void* data)
 {
-	return static_cast<SRIN::Infrastructures::ScheduledTask*>(data)->TimerCallback() ? EINA_TRUE : EINA_FALSE;
+	return static_cast<TFC::Infrastructures::ScheduledTask*>(data)->TimerCallback() ? EINA_TRUE : EINA_FALSE;
 }
 
-LIBAPI SRIN::Infrastructures::ScheduledTask::ScheduledTask() :
+LIBAPI TFC::Infrastructures::ScheduledTask::ScheduledTask() :
 		timer(nullptr),
 		interval(std::chrono::microseconds::zero()),
 		firstStarted(false)
@@ -25,11 +25,11 @@ LIBAPI SRIN::Infrastructures::ScheduledTask::ScheduledTask() :
 
 }
 
-LIBAPI SRIN::Infrastructures::ScheduledTask::~ScheduledTask() {
+LIBAPI TFC::Infrastructures::ScheduledTask::~ScheduledTask() {
 	Cancel();
 }
 
-bool SRIN::Infrastructures::ScheduledTask::TimerCallback() {
+bool TFC::Infrastructures::ScheduledTask::TimerCallback() {
 	Run();
 
 	// Check if it is periodic
@@ -48,12 +48,12 @@ bool SRIN::Infrastructures::ScheduledTask::TimerCallback() {
 	return this->firstStarted;
 }
 
-LIBAPI void SRIN::Infrastructures::ScheduledTask::ScheduleOnce(
+LIBAPI void TFC::Infrastructures::ScheduledTask::ScheduleOnce(
 		std::chrono::system_clock::time_point t) {
 	SchedulePeriodic(t, std::chrono::microseconds(0));
 }
 
-LIBAPI void SRIN::Infrastructures::ScheduledTask::SchedulePeriodic(
+LIBAPI void TFC::Infrastructures::ScheduledTask::SchedulePeriodic(
 		std::chrono::system_clock::time_point startAt,
 		std::chrono::microseconds interval) {
 	if(this->timer != nullptr)
@@ -74,7 +74,7 @@ LIBAPI void SRIN::Infrastructures::ScheduledTask::SchedulePeriodic(
 	}
 }
 
-LIBAPI void SRIN::Infrastructures::ScheduledTask::Cancel() {
+LIBAPI void TFC::Infrastructures::ScheduledTask::Cancel() {
 	if(this->timer == nullptr)
 		return;
 

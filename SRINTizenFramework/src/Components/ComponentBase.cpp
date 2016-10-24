@@ -7,9 +7,9 @@
  *        Kevin Winata (k.winata@samsung.com)
  */
 
-#include "SRIN/Components/ComponentBase.h"
+#include "TFC/Components/ComponentBase.h"
 
-using namespace SRIN::Components;
+using namespace TFC::Components;
 
 ComponentBase::ComponentBase() :
 	Enabled(this), Visible(this), Name(this)

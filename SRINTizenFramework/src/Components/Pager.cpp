@@ -6,9 +6,9 @@
  *        Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
-#include "SRIN/Components/Pager.h"
+#include "TFC/Components/Pager.h"
 
-LIBAPI Evas_Object* SRIN::Components::Pager::CreateComponent(Evas_Object* root)
+LIBAPI Evas_Object* TFC::Components::Pager::CreateComponent(Evas_Object* root)
 {
 	this->pagerBox = elm_box_add(root);
 	evas_object_size_hint_weight_set(this->pagerBox, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
@@ -64,8 +64,8 @@ LIBAPI Evas_Object* SRIN::Components::Pager::CreateComponent(Evas_Object* root)
 	txt.append("/");
 	txt.append(std::to_string(maxIndex));
 
-	elm_object_signal_emit(this->pagerTop, "disable_prev", "srin");
-	elm_object_signal_emit(this->pagerBottom, "disable_prev", "srin");
+	elm_object_signal_emit(this->pagerTop, "disable_prev", "TFC");
+	elm_object_signal_emit(this->pagerBottom, "disable_prev", "TFC");
 	elm_object_part_text_set(this->pagerTop, "page_info", txt.c_str());
 	elm_object_part_text_set(this->pagerBottom, "page_info", txt.c_str());
 	*/
@@ -84,15 +84,15 @@ LIBAPI Evas_Object* SRIN::Components::Pager::CreateComponent(Evas_Object* root)
 		elm_object_part_text_set(this->pagerTop, "page_info", txt.c_str());
 		elm_object_part_text_set(this->pagerBottom, "page_info", txt.c_str());
 
-		elm_object_signal_emit(this->pagerTop, "disable_prev_noalign", "srin");
-		elm_object_signal_emit(this->pagerBottom, "disable_prev_noalign", "srin");
+		elm_object_signal_emit(this->pagerTop, "disable_prev_noalign", "TFC");
+		elm_object_signal_emit(this->pagerBottom, "disable_prev_noalign", "TFC");
 
 		eventNavigate(this, 1);
 	}
 	else
 	{
-		elm_object_signal_emit(this->pagerTop, "disable_prev", "srin");
-		elm_object_signal_emit(this->pagerBottom, "disable_prev", "srin");
+		elm_object_signal_emit(this->pagerTop, "disable_prev", "TFC");
+		elm_object_signal_emit(this->pagerBottom, "disable_prev", "TFC");
 		elm_object_part_text_set(this->pagerTop, "page_info", this->UnderflowString->c_str());
 		elm_object_part_text_set(this->pagerBottom, "page_info", this->UnderflowString->c_str());
 		this->CurrentIndex = 0;
@@ -102,7 +102,7 @@ LIBAPI Evas_Object* SRIN::Components::Pager::CreateComponent(Evas_Object* root)
 	return this->pagerBox;
 }
 
-LIBAPI SRIN::Components::Pager::Pager()
+LIBAPI TFC::Components::Pager::Pager()
 {
 	this->pagerTop = nullptr;
 	this->pagerBottom = nullptr;
@@ -117,7 +117,7 @@ LIBAPI SRIN::Components::Pager::Pager()
 	this->eventClickSignal += EventHandler(Pager::OnClickSignal);
 }
 
-void SRIN::Components::Pager::OnClickSignal(EFL::EdjeSignalEvent* event, Evas_Object* source, EFL::EdjeSignalInfo signalInfo)
+void TFC::Components::Pager::OnClickSignal(EFL::EdjeSignalEvent* event, Evas_Object* source, EFL::EdjeSignalInfo signalInfo)
 {
 	dlog_print(DLOG_DEBUG, LOG_TAG, "Pager event! %s", signalInfo.emission);
 
@@ -131,7 +131,7 @@ void SRIN::Components::Pager::OnClickSignal(EFL::EdjeSignalEvent* event, Evas_Ob
 	}
 }
 
-void SRIN::Components::Pager::NextPage()
+void TFC::Components::Pager::NextPage()
 {
 	int currentIndex = this->CurrentIndex;
 	int maxIndex = this->MaxIndex;
@@ -151,8 +151,8 @@ void SRIN::Components::Pager::NextPage()
 		if(currentIndex == maxIndex)
 		{
 			// This is entering overflow
-			elm_object_signal_emit(this->pagerTop, "disable_next", "srin");
-			elm_object_signal_emit(this->pagerBottom, "disable_next", "srin");
+			elm_object_signal_emit(this->pagerTop, "disable_next", "TFC");
+			elm_object_signal_emit(this->pagerBottom, "disable_next", "TFC");
 			elm_object_part_text_set(this->pagerTop, "page_info", this->OverflowString->c_str());
 			elm_object_part_text_set(this->pagerBottom, "page_info", this->OverflowString->c_str());
 			eventOverflow(this, nullptr);
@@ -160,8 +160,8 @@ void SRIN::Components::Pager::NextPage()
 		else if(currentIndex == maxIndex - 1 && !this->OverflowEnable)
 		{
 			// This is entering end of page
-			elm_object_signal_emit(this->pagerTop, "disable_next_noalign", "srin");
-			elm_object_signal_emit(this->pagerBottom, "disable_next_noalign", "srin");
+			elm_object_signal_emit(this->pagerTop, "disable_next_noalign", "TFC");
+			elm_object_signal_emit(this->pagerBottom, "disable_next_noalign", "TFC");
 			eventNavigate(this, currentIndex + 1);
 		}
 		else
@@ -170,7 +170,7 @@ void SRIN::Components::Pager::NextPage()
 	}
 }
 
-void SRIN::Components::Pager::PrevPage()
+void TFC::Components::Pager::PrevPage()
 {
 	int currentIndex = this->CurrentIndex;
 	int maxIndex = this->MaxIndex;
@@ -190,8 +190,8 @@ void SRIN::Components::Pager::PrevPage()
 		if(currentIndex == 1)
 		{
 			// This is entering underflow
-			elm_object_signal_emit(this->pagerTop, "disable_prev", "srin");
-			elm_object_signal_emit(this->pagerBottom, "disable_prev", "srin");
+			elm_object_signal_emit(this->pagerTop, "disable_prev", "TFC");
+			elm_object_signal_emit(this->pagerBottom, "disable_prev", "TFC");
 			elm_object_part_text_set(this->pagerTop, "page_info", this->UnderflowString->c_str());
 			elm_object_part_text_set(this->pagerBottom, "page_info", this->UnderflowString->c_str());
 			eventUnderflow(this, nullptr);
@@ -199,8 +199,8 @@ void SRIN::Components::Pager::PrevPage()
 		else if(currentIndex == 2 && !this->UnderflowEnable)
 		{
 			// This is entering end of page
-			elm_object_signal_emit(this->pagerTop, "disable_prev_noalign", "srin");
-			elm_object_signal_emit(this->pagerBottom, "disable_prev_noalign", "srin");
+			elm_object_signal_emit(this->pagerTop, "disable_prev_noalign", "TFC");
+			elm_object_signal_emit(this->pagerBottom, "disable_prev_noalign", "TFC");
 			eventNavigate(this, currentIndex - 1);
 		}
 		else

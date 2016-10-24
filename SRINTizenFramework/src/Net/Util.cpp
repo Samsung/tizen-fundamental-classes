@@ -6,13 +6,13 @@
  *        Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
-#include "SRIN/Net/Util.h"
+#include "TFC/Net/Util.h"
 
 #include <openssl/evp.h>
 #include <openssl/bio.h>
 #include <openssl/buffer.h>
 
-std::string SRIN::Net::Base64Encode(const uint8_t* buffer, size_t length)
+std::string TFC::Net::Base64Encode(const uint8_t* buffer, size_t length)
 {
 	BIO* bio;
 	BIO* b64;

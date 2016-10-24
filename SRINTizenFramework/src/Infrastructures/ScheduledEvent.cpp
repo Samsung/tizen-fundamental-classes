@@ -6,9 +6,9 @@
  *        Kevin Winata (k.winata@samsung.com)
  */
 
-#include "SRIN/Infrastructures/ScheduledEvent.h"
+#include "TFC/Infrastructures/ScheduledEvent.h"
 
-void SRIN::Infrastructures::ScheduledEvent::Run()
+void TFC::Infrastructures::ScheduledEvent::Run()
 {
 	eventRunTask(this, nullptr);
 }

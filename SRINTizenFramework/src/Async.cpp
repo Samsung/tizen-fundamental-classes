@@ -6,8 +6,8 @@
  *        Gilang M. Hamidy (g.hamidy@samsung.com)
  *        Kevin Winata (k.winata@samsung.com)
  */
-#include "SRIN/Core.h"
-#include "SRIN/Async.h"
+#include "TFC/Core.h"
+#include "TFC/Async.h"
 
 #include <Elementary.h>
 #include <cstdlib>
@@ -17,10 +17,10 @@
 #include <map>
 
 
-#define ASYNC_LOG_TAG "SRINFW-Async"
+#define ASYNC_LOG_TAG "TFCFW-Async"
 
 
-namespace SRIN {
+namespace TFC {
 
 class AsyncTaskObj;
 

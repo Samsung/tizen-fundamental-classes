@@ -9,9 +9,9 @@
  *        ib.putu (ib.putu@samsung.com)
  */
 
-#include "SRIN/Framework/Application.h"
+#include "TFC/Framework/Application.h"
 
-using namespace SRIN::Framework;
+using namespace TFC::Framework;
 
 bool ApplicationBase_AppCreateHandler(void *data)
 {
@@ -171,46 +171,46 @@ LIBAPI ApplicationBase::~ApplicationBase()
 
 }
 
-std::string SRIN::Framework::ApplicationBase::GetResourcePath(CString path)
+std::string TFC::Framework::ApplicationBase::GetResourcePath(CString path)
 {
 	std::string ret = CString(ApplicationBase::ResourcePath);
 	ret += path;
 	return ret;
 }
 
-LIBAPI void SRIN::Framework::INaviframeContent::RaiseAfterNaviframePush(Elm_Object_Item* naviframeItem)
+LIBAPI void TFC::Framework::INaviframeContent::RaiseAfterNaviframePush(Elm_Object_Item* naviframeItem)
 {
 	this->naviframeItem = naviframeItem;
 	AfterNaviframePush(naviframeItem);
 }
 
-LIBAPI void SRIN::Framework::INaviframeContent::SetTitle(const std::string& value)
+LIBAPI void TFC::Framework::INaviframeContent::SetTitle(const std::string& value)
 {
 	ITitleProvider::SetTitle(value);
 	elm_object_item_part_text_set(naviframeItem, "elm.text.title", value.c_str());
 	dlog_print(DLOG_DEBUG, LOG_TAG, "Set title on INavCont %s", value.c_str());
 }
 
-LIBAPI SRIN::Framework::ITitleProvider::ITitleProvider() :
+LIBAPI TFC::Framework::ITitleProvider::ITitleProvider() :
 	Title(this)
 {
 }
 
-LIBAPI SRIN::Framework::ITitleProvider::~ITitleProvider()
+LIBAPI TFC::Framework::ITitleProvider::~ITitleProvider()
 {
 }
 
-LIBAPI SRIN::Framework::HeadlessApplicationBase::HeadlessApplicationBase(CString packageName) :
+LIBAPI TFC::Framework::HeadlessApplicationBase::HeadlessApplicationBase(CString packageName) :
 	ApplicationBase(packageName)
 {
 }
 
-LIBAPI bool SRIN::Framework::HeadlessApplicationBase::ApplicationCreate()
+LIBAPI bool TFC::Framework::HeadlessApplicationBase::ApplicationCreate()
 {
 	return true;
 }
 
-LIBAPI void SRIN::Framework::HeadlessApplicationBase::ApplicationControl(app_control_h app_control)
+LIBAPI void TFC::Framework::HeadlessApplicationBase::ApplicationControl(app_control_h app_control)
 {
 	OnReceiveAppControlMessage(app_control);
 	Exit();

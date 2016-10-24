@@ -6,14 +6,14 @@
  *        Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
-#include "SRIN/Components/SlidePresenter.h"
-#include "SRIN/Framework/Application.h"
+#include "TFC/Components/SlidePresenter.h"
+#include "TFC/Framework/Application.h"
 
 #include <algorithm>
 
-#define FILE_EDC_SLIDEPRESENTER "SRIN/edc/SlidePresenter.edj"
+#define FILE_EDC_SLIDEPRESENTER "TFC/edc/SlidePresenter.edj"
 
-void SRIN::Components::SlidePresenter::OnLayoutResize(
+void TFC::Components::SlidePresenter::OnLayoutResize(
 		EFL::EvasObjectEvent* event, EFL::EvasEventSourceInfo* objSource,
 		void* event_data) {
 
@@ -30,7 +30,7 @@ void SRIN::Components::SlidePresenter::OnLayoutResize(
 	elm_scroller_page_size_set(this->scroller, w, h);
 }
 
-void SRIN::Components::SlidePresenter::OnPageScrolled(
+void TFC::Components::SlidePresenter::OnPageScrolled(
 		EFL::EvasSmartEvent* event, Evas_Object* source, void* event_data) {
 	int pageH, pageV;
 	elm_scroller_current_page_get(source, &pageH, &pageV);
@@ -39,7 +39,7 @@ void SRIN::Components::SlidePresenter::OnPageScrolled(
 	elm_index_item_selected_set(item, EINA_TRUE);
 }
 
-Evas_Object* SRIN::Components::SlidePresenter::CreateComponent(
+Evas_Object* TFC::Components::SlidePresenter::CreateComponent(
 		Evas_Object* root) {
 	auto layout = elm_layout_add(root);
 	auto edj_path = Framework::ApplicationBase::GetResourcePath(FILE_EDC_SLIDEPRESENTER);
@@ -86,7 +86,7 @@ Evas_Object* SRIN::Components::SlidePresenter::CreateComponent(
 	return layout;
 }
 
-SRIN::Components::SlidePresenter::SlidePresenter() :
+TFC::Components::SlidePresenter::SlidePresenter() :
 	box(nullptr), scroller(nullptr), index(nullptr){
 
 	this->eventLayoutResize += EventHandler(SlidePresenter::OnLayoutResize);
@@ -94,12 +94,12 @@ SRIN::Components::SlidePresenter::SlidePresenter() :
 	this->eventIndexSelected += EventHandler(SlidePresenter::OnIndexSelected);
 }
 
-SRIN::Components::SlidePresenter::~SlidePresenter() {
+TFC::Components::SlidePresenter::~SlidePresenter() {
 
 }
 
 
-void SRIN::Components::SlidePresenter::InsertPage(Evas_Object* page) {
+void TFC::Components::SlidePresenter::InsertPage(Evas_Object* page) {
 	this->pageList.push_back(page);
 	elm_box_pack_end(this->box, page);
 	auto indexItem = elm_index_item_append(this->index, nullptr, nullptr, page);
@@ -109,7 +109,7 @@ void SRIN::Components::SlidePresenter::InsertPage(Evas_Object* page) {
 		elm_index_item_selected_set(indexItem, EINA_TRUE);
 }
 
-void SRIN::Components::SlidePresenter::InsertPageAt(Evas_Object* page,
+void TFC::Components::SlidePresenter::InsertPageAt(Evas_Object* page,
 		int index) {
 	if(this->pageList.size() >= index)
 		InsertPage(page);
@@ -127,14 +127,14 @@ void SRIN::Components::SlidePresenter::InsertPageAt(Evas_Object* page,
 	}
 }
 
-void SRIN::Components::SlidePresenter::Remove(int index) {
+void TFC::Components::SlidePresenter::Remove(int index) {
 	auto iter = this->pageList.begin() + index;
 	auto obj = *iter;
 	evas_object_del(obj);
 	elm_box_recalculate(this->box);
 }
 
-void SRIN::Components::SlidePresenter::OnIndexSelected(
+void TFC::Components::SlidePresenter::OnIndexSelected(
 		EFL::EvasSmartEvent* event, Evas_Object* source, void* event_data) {
 
 	auto page = elm_object_item_data_get((Elm_Object_Item*)event_data);

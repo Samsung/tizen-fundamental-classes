@@ -6,9 +6,9 @@
  *        Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
-#include "SRIN/Framework/Application.h"
+#include "TFC/Framework/Application.h"
 
-using namespace SRIN::Framework;
+using namespace TFC::Framework;
 
 LIBAPI ControllerBase::ControllerBase(ControllerManager* m, ViewBase* v, CString c) :
 	Manager(m), View(v), ControllerName(c)
@@ -49,9 +49,9 @@ LIBAPI ControllerBase::~ControllerBase()
 }
 
 
-void SRIN::Framework::ControllerBase::OnLeaving() {
+void TFC::Framework::ControllerBase::OnLeaving() {
 }
 
-void SRIN::Framework::ControllerBase::Leave() {
+void TFC::Framework::ControllerBase::Leave() {
 	this->OnLeaving();
 }

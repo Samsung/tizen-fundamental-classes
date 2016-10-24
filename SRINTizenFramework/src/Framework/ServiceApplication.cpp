@@ -6,49 +6,49 @@
  *        Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
-#include "SRIN/Framework/ServiceApplication.h"
+#include "TFC/Framework/ServiceApplication.h"
 
 #include <system_settings.h>
 
 #define InlineApplicationEventHandler(HANDLERNAME) [] (app_event_info_h e, void* a) { reinterpret_cast<ServiceApplicationBase*>(a)-> HANDLERNAME (e); }
 
-void SRIN::Framework::ServiceApplicationBase::ApplicationTerminate() {
+void TFC::Framework::ServiceApplicationBase::ApplicationTerminate() {
 }
 
-void SRIN::Framework::ServiceApplicationBase::ApplicationControl(
+void TFC::Framework::ServiceApplicationBase::ApplicationControl(
 		app_control_h app_control) {
 }
 
-void SRIN::Framework::ServiceApplicationBase::LanguageChanged(
+void TFC::Framework::ServiceApplicationBase::LanguageChanged(
 		app_event_info_h event_info, const char* locale) {
 }
 
-void SRIN::Framework::ServiceApplicationBase::OrientationChanged(
+void TFC::Framework::ServiceApplicationBase::OrientationChanged(
 		app_event_info_h event_info) {
 }
 
-void SRIN::Framework::ServiceApplicationBase::RegionChanged(
+void TFC::Framework::ServiceApplicationBase::RegionChanged(
 		app_event_info_h event_info) {
 }
 
-void SRIN::Framework::ServiceApplicationBase::LowBattery(
+void TFC::Framework::ServiceApplicationBase::LowBattery(
 		app_event_info_h event_info) {
 }
 
-void SRIN::Framework::ServiceApplicationBase::LowMemory(
+void TFC::Framework::ServiceApplicationBase::LowMemory(
 		app_event_info_h event_info) {
 }
 
-SRIN::Framework::ServiceApplicationBase::ServiceApplicationBase(
+TFC::Framework::ServiceApplicationBase::ServiceApplicationBase(
 		CString packageName) {
 }
 
-SRIN::Framework::ServiceApplicationBase::~ServiceApplicationBase() {
+TFC::Framework::ServiceApplicationBase::~ServiceApplicationBase() {
 }
 
 
 
-int SRIN::Framework::ServiceApplicationBase::Main(
+int TFC::Framework::ServiceApplicationBase::Main(
 		ServiceApplicationBase* appObj, int argc, char* argv[]) {
 
 	service_app_lifecycle_callback_s event_callback;
