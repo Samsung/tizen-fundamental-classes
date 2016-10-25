@@ -7,7 +7,9 @@
  */
 
 #include "TFC/Core.h"
+#include "TFC/Core.new.h"
 #include <pthread.h>
+
 
 
 LIBAPI PropertyClass::PropertyBase::PropertyBase(void* instance)
@@ -17,6 +19,16 @@ LIBAPI PropertyClass::PropertyBase::PropertyBase(void* instance)
 }
 
 LIBAPI ObjectClass::~ObjectClass()
+{
+
+}
+
+LIBAPI TFC::Core::PropertyObjectBase::PropertyObjectBase(void* instance) : instance(instance)
+{
+
+}
+
+LIBAPI TFC::ObjectClass::~ObjectClass()
 {
 
 }
@@ -35,3 +47,5 @@ public:
 		eventSomeEvent += { this, &SomeComponents::AnEventHandler };
 	}
 };
+
+

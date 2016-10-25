@@ -4,13 +4,12 @@
  *  Created on: Feb 12, 2016
  *      Contributor:
  *        Gilang Mentari Hamidy (g.hamidy@samsung.com)
+ *        g.kusuma (g.kusuma@samsung.com)
  *        Kevin Winata (k.winata@samsung.com)
  */
 
-#pragma once
-
-#ifndef TFC_CORE_H_
-#define TFC_CORE_H_
+#ifndef CORE_H_
+#define CORE_H_
 
 #include <dlog.h>
 #include <functional>
@@ -21,43 +20,14 @@
 #ifdef LOG_TAG
 #undef LOG_TAG
 #endif
-#define LOG_TAG "TFC-Debug"
+#define LOG_TAG "SRINFW"
 #else
 #define LIBAPI
 #endif
 
-// Forward declaration of TFC Core Language Features
-namespace TFC {
-
-/**
- * EventClass is an attribute class marking that the class inheriting this class may have
- * a member function as an event handler. Member function with correct signature may be
- * registered as event handler using event handler registration syntax as follow:
- *
- * [CODE]
- *
- *
- */
-class EventClass;
-class ObjectClass;
-class PropertyClass;
-
-template<typename>
-class EventEmitterClass;
-
-namespace Core {
-
-template<typename = void*, typename = void*>
-class EventObject;
-
-template<typename = void*, typename = void*>
-class SharedEventObject;
-
-}
-}
-
-
 typedef const char* CString;
+
+//extern thread_local void* currentConstruct;
 
 /*
  * http://stackoverflow.com/questions/7943525/is-it-possible-to-figure-out-the-parameter-type-and-return-type-of-a-lambda
@@ -109,6 +79,7 @@ inline T* Coalesce(T* ptr, T* valueIfNull)
 {
 	return IsNull(ptr) ? ptr : valueIfNull;
 }
+
 
 class PropertyClass
 {
@@ -320,7 +291,70 @@ public:
 
 };
 
+/*
+template<class DefiningClass, class ValueType, ValueType& (DefiningClass::*GetFunc)(), void (DefiningClass::*SetFunc)(
+	const ValueType&)>
+class Property
+{
+private:
+	DefiningClass* instance;
+public:
+	Property(DefiningClass* inst) :
+		instance(inst)
+	{
+	}
+	operator ValueType()
+	{
+		return (instance->*GetFunc)();
+	}
+	void operator=(const ValueType& val)
+	{
+		(instance->*SetFunc)(val);
+	}
+	ValueType* operator->() const
+	{
+		auto ret = (instance->*GetFunc)();
+		return &ret;
+	}
+};
 
+template<class DefiningClass, class ValueType, ValueType DefiningClass::* LocalVar>
+class SimpleProperty
+{
+private:
+	DefiningClass* instance;
+public:
+	SimpleProperty(DefiningClass* inst) :
+		instance(inst)
+	{
+	}
+	operator ValueType()
+	{
+		return instance->*LocalVar;
+	}
+	void operator=(const ValueType& val)
+	{
+		instance->*LocalVar = (val);
+	}
+};
+
+template<class DefiningClass, class ValueType, ValueType (DefiningClass::*GetFunc)()>
+class ReadOnlyProperty
+{
+private:
+	DefiningClass* instance;
+public:
+	ReadOnlyProperty(DefiningClass* inst) :
+		instance(inst)
+	{
+	}
+	operator ValueType()
+	{
+		auto val = (instance->*GetFunc)();
+		return val;
+	}
+};
+*/
 template<class DefiningClass, class ValueType>
 class SimpleReadOnlyPropertyBase
 {
@@ -389,8 +423,79 @@ public:
 	virtual ~ObjectClass();
 };
 
+template<class ObjectSourceType = void*, class EventDataType = void*>
+class Event
+{
+public:
+	typedef void (EventClass::*EventHandler)(const Event<ObjectSourceType, EventDataType>* eventSource,
+		ObjectSourceType objSource, EventDataType eventData);
 
-#include "TFC/Core/Event.inc.h"
+	class EventDelegate
+	{
+		EventClass* instance;
+		EventHandler eventHandler;
+	public:
+		template<class EventClassType>
+		EventDelegate(EventClassType* instance,
+				void (EventClassType::*eventHandler)(Event<ObjectSourceType, EventDataType>* eventSource,
+					ObjectSourceType objSource, EventDataType eventData));
+
+		friend class Event;
+	};
+
+	Event();
+	Event(bool logDelete);
+	~Event();
+	void operator+=(const EventDelegate& other);
+	void operator-=(const EventDelegate& other);
+	void operator()(ObjectSourceType objSource, EventDataType eventData) const;
+
+private:
+	struct EventNode
+	{
+		EventClass* instance;
+		EventHandler eventHandler;
+		EventNode* next;
+	};
+	EventNode* first;
+	bool logDelete;
+};
+
+template<class ObjectSourceType = void*, class EventDataType = void*>
+class SharedEvent : protected std::shared_ptr<Event<ObjectSourceType, EventDataType>>
+{
+public:
+	SharedEvent();
+	void operator+=(const typename Event<ObjectSourceType, EventDataType>::EventDelegate& other);
+	void operator-=(const typename Event<ObjectSourceType, EventDataType>::EventDelegate& other);
+	void operator()(ObjectSourceType objSource, EventDataType eventData) const;
+};
+
+template<class ObjectSourceType, class EventDataType>
+SharedEvent<ObjectSourceType, EventDataType>::SharedEvent() :
+	std::shared_ptr<Event<ObjectSourceType, EventDataType>>(new Event<ObjectSourceType, EventDataType>(true))
+{
+
+}
+
+template<class ObjectSourceType, class EventDataType>
+void SharedEvent<ObjectSourceType, EventDataType>::operator+=(const typename Event<ObjectSourceType, EventDataType>::EventDelegate& other)
+{
+	std::shared_ptr<Event<ObjectSourceType, EventDataType>>::operator->()->operator +=(other);
+}
+
+template<class ObjectSourceType, class EventDataType>
+void SharedEvent<ObjectSourceType, EventDataType>::operator-=(const typename Event<ObjectSourceType, EventDataType>::EventDelegate& other)
+{
+	std::shared_ptr<Event<ObjectSourceType, EventDataType>>::operator->()->operator -=(other);
+}
+
+template<class ObjectSourceType, class EventDataType>
+void SharedEvent<ObjectSourceType, EventDataType>:: operator()(ObjectSourceType objSource, EventDataType eventData) const
+{
+	std::shared_ptr<Event<ObjectSourceType, EventDataType>>::operator->()->operator ()(objSource, eventData);
+}
+
 #include "TFC/Core.inc"
 
 #define EventHandler(EVENT_METHOD) { this, & EVENT_METHOD }
