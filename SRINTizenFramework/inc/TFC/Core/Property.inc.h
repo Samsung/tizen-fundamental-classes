@@ -14,6 +14,8 @@
 #include "TFC/Core.h"
 #endif
 
+#include <type_traits>
+
 template<typename TClass>
 class TFC::PropertyClass
 {
@@ -35,6 +37,30 @@ template<typename TDefining, typename TValue>
 struct TFC::Core::PropertyGetterFunction
 {
 	typedef TValue (TDefining::*Type)() const;
+	typedef TValue ReturnType;
+};
+
+template<typename TDefining, typename TValue>
+struct TFC::Core::PropertyGetterFunction<TDefining, TValue&>
+{
+	typedef TValue const& (TDefining::*Type)() const;
+	typedef TValue const& ReturnType;
+};
+
+template<typename TDefining, typename TValue>
+struct TFC::Core::PropertyGetterFunction<TDefining, TValue*>
+{
+	typedef TValue* (TDefining::*Type)();
+	typedef TValue* ReturnType;
+	typedef TValue const* ConstReturnType;
+};
+
+template<typename TDefining, typename TValue>
+struct TFC::Core::PropertyGetterFunction<TDefining, TValue const*>
+{
+	typedef TValue const* (TDefining::*Type)() const;
+	typedef TValue const* ReturnType;
+	typedef TValue const* ConstReturnType;
 };
 
 template<typename TDefining, typename TValue>
@@ -47,7 +73,7 @@ struct TFC::Core::PropertySetterFunction
 template<typename TDefining, typename TValue>
 struct TFC::Core::PropertySetterFunction<TDefining, TValue&>
 {
-	typedef void (TDefining::*Type)(TValue&);
+	typedef void (TDefining::*Type)(TValue const&);
 	typedef TValue& OperatorParam;
 };
 
@@ -59,23 +85,33 @@ struct TFC::Core::PropertySetterFunction<TDefining, TValue*>
 };
 
 template<typename TDefining, typename TValue>
+struct TFC::Core::PropertySetterFunction<TDefining, TValue const*>
+{
+	typedef void (TDefining::*Type)(TValue*);
+	typedef TValue* OperatorParam;
+};
+
+template<typename TDefining, typename TValue>
 struct TFC::Core::PropertyObject
 {
-	typedef typename PropertyGetterFunction<TDefining, TValue>::Type GetFunc;
-	typedef typename PropertySetterFunction<TDefining, TValue>::Type SetFunc;
-	typedef typename PropertySetterFunction<TDefining, TValue>::OperatorParam SetFuncParam;
+	typedef typename PropertyGetterFunction<TDefining, TValue>::Type 			GetFunc;
+	typedef typename PropertyGetterFunction<TDefining, TValue>::ReturnType 		GetFuncReturn;
+	typedef typename PropertySetterFunction<TDefining, TValue>::Type 			SetFunc;
+	typedef typename PropertySetterFunction<TDefining, TValue>::OperatorParam 	SetFuncParam;
 
 	template<GetFunc func>
 	class Get : protected TFC::Core::PropertyObjectBase
 	{
 	public:
 		typedef std::false_type Mutable;
-		typedef TValue Type;
 		Get(TDefining* instance) : PropertyObjectBase(instance) { }
-		operator TValue() const
+
+		operator GetFuncReturn() const
 		{
 			return (reinterpret_cast<TDefining*>(instance)->*func)();
 		}
+
+		GetFuncReturn T() const;
 	};
 
 	template<GetFunc getFunc, SetFunc func>
@@ -98,6 +134,49 @@ struct TFC::Core::PropertyObject
 	public:
 		class ReadOnly;
 		class ReadWrite;
+	};
+};
+
+template<typename TDefining, typename TValue>
+struct TFC::Core::PropertyObject<TDefining, TValue*>
+{
+	typedef typename PropertyGetterFunction<TDefining, TValue*>::Type 				GetFunc;
+	typedef typename PropertyGetterFunction<TDefining, TValue*>::ReturnType 		GetFuncReturn;
+	typedef typename PropertyGetterFunction<TDefining, TValue*>::ConstReturnType 	GetFuncConstReturn;
+	typedef typename PropertySetterFunction<TDefining, TValue*>::Type 				SetFunc;
+	typedef typename PropertySetterFunction<TDefining, TValue*>::OperatorParam 		SetFuncParam;
+
+	template<GetFunc func>
+	class Get : protected TFC::Core::PropertyObjectBase
+	{
+	public:
+		typedef std::false_type Mutable;
+		Get(TDefining* instance) : PropertyObjectBase(instance) { }
+
+		operator GetFuncReturn()
+		{
+			return (reinterpret_cast<TDefining*>(instance)->*func)();
+		}
+
+		operator GetFuncConstReturn() const
+		{
+			return (reinterpret_cast<TDefining*>(instance)->*func)();
+		}
+
+		GetFuncReturn T() const;
+	};
+
+	template<GetFunc getFunc, SetFunc func>
+	class GetSet : public Get<getFunc>
+	{
+	public:
+		typedef std::true_type Mutable;
+		typedef TValue Type;
+		GetSet(TDefining* instance) : Get<getFunc>(instance) { }
+		void operator=(SetFuncParam val)
+		{
+			(reinterpret_cast<TDefining*>(this->instance)->*func)(val);
+		}
 	};
 };
 

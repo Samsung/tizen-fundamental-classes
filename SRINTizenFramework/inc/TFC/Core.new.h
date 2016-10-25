@@ -37,7 +37,53 @@ class ObjectClass;
 
 /**
  * PropertyClass is an attribute class marking that the class can implement Property object
- * which is an accessor and mutator that can behaves like a normal field.
+ * which is an accessor and mutator that can behaves like a normal field. PropertyClass should be
+ * inherited as private inheritance because it acts as mixin which introduces Property name inside
+ * the class scope.
+ * ```
+ *    class ClassA : TFC::PropertyClass<ClassA>
+ *    {
+ *    public:
+ *        int valA;
+ *
+ *        int GetA() const
+ *        {
+ *            return valA;
+ *        }
+ *
+ *        void SetA(int const& val)
+ *        {
+ *            this->valA = val;
+ *        }
+ *
+ *        Property<int>::GetSet<&ClassA::GetA, &ClassA::SetA> A;
+ *     };
+ * ```
+ * When using PropertyClass attribute alongside, with a base class that already declare
+ * PropertyClass attribute, Property name must be reintroduced in its subclass scope by calling
+ * `using TFC::PropertyClass<CLASS_NAME>::Property`.
+ *
+ * ```
+ *     class ClassB : public ClassA, TFC::PropertyClass<ClassB>
+ *     {
+ *         using TFC::PropertyClass<ClassB>::Property;
+ *     public:
+ *         int valB;
+ *         int GetB() const
+ *         {
+ *             return valB;
+ *         }
+ *
+ *         void SetB(int const& val)
+ *         {
+ *             this->valB = val;
+ *         }
+ *
+ *         Property<int>::GetSet<&ClassB::GetB, &ClassB::SetB> B;
+ *     };
+ * ```
+ *
+ * @tparam TClass The class itself
  */
 template<typename TClass>
 class PropertyClass;
