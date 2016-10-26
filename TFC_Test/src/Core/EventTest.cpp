@@ -6,9 +6,8 @@
  */
 
 #include "TFC/Core.new.h"
-
+#include <string>
 #include <gtest/gtest.h>
-
 
 class EventTest : public testing::Test
 {
@@ -29,6 +28,46 @@ class EventTest : public testing::Test
 	}
 };
 
+namespace {
+	class EventEmitterA : public TFC::EventEmitterClass<EventEmitterA>
+	{
+	public:
+		Event<std::string> eventSomethingA;
+		void RaiseSomethingA(int what)
+		{
+			std::string tmp = std::to_string(what);
+			eventSomethingA(this, tmp);
+		}
+	};
+
+	class EventHandlerClass : public TFC::EventClass
+	{
+	public:
+		EventEmitterA obj;
+		std::string result;
+
+		EventHandlerClass()
+		{
+			obj.eventSomethingA += { this, &EventHandlerClass::OnSomethingA };
+		}
+
+		void OnSomethingA(EventEmitterA::Event<std::string>* ev, EventEmitterA* source, std::string data)
+		{
+			result = data;
+		}
+
+		void PerformSomething(int what)
+		{
+			obj.RaiseSomethingA(what);
+		}
+
+		void DetachEvent()
+		{
+			obj.eventSomethingA -= { this, &EventHandlerClass::OnSomethingA };
+		}
+	};
+}
+
 TEST_F(EventTest, EventDeclaration)
 {
 	ASSERT_TRUE(true);
@@ -36,5 +75,21 @@ TEST_F(EventTest, EventDeclaration)
 
 TEST_F(EventTest, EventAssignment)
 {
-	ASSERT_TRUE(true);
+	EventHandlerClass eh;
+
+	int data = rand();
+	std::string expected = std::to_string(data);
+
+	EXPECT_NE(expected, eh.result) << "Result string somehow equal";
+	eh.PerformSomething(data);
+	EXPECT_EQ(expected, eh.result) << "Result string not equal";
+
+	// Try to detach event
+	eh.DetachEvent();
+	data = rand();
+	expected = std::to_string(data);
+
+	eh.PerformSomething(data);
+	EXPECT_NE(expected, eh.result) << "Result string still same after detach event";
+
 }

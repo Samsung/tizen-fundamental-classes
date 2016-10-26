@@ -4,15 +4,15 @@
 <SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"></SignatureMethod>
 <Reference URI="author-signature.xml">
 <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"></DigestMethod>
-<DigestValue>sMuQNRMrS6RTj106vD4+4olm5/JhVyZyq6caraE+l64=</DigestValue>
+<DigestValue>2HTv+oqOtx4BAKVFqZvmRAK71EoNJpdOYaqMn66UxTQ=</DigestValue>
 </Reference>
 <Reference URI="bin%2Ftfc_test">
 <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"></DigestMethod>
-<DigestValue>80SJdm/jCTk1n0CFRxYy9H4F01pjlDp8KEjHlxmEigo=</DigestValue>
+<DigestValue>VDP1BOR6Sqzz6XomiXsoTWHW8cwpxWPi7QeDKgIaJpc=</DigestValue>
 </Reference>
 <Reference URI="lib%2Flibsrintizenfw.so">
 <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"></DigestMethod>
-<DigestValue>23i6Lfe0Hujw/CeiHp/MzFuRZcL+bECuzbDNjgmyjrQ=</DigestValue>
+<DigestValue>9PFR/8GhJzLmlVMh93pgXP5344yZJp4Uc/P/SwfZFcU=</DigestValue>
 </Reference>
 <Reference URI="shared%2Fres%2FTFC_Test.png">
 <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"></DigestMethod>
@@ -31,9 +31,9 @@
 </Reference>
 </SignedInfo>
 <SignatureValue>
-AFPJihAPMZphhgoRcU2a4AcZh6bvux1Xr6LEhb47X+5wOnBF+mNyQIBoG8Yl0JS5X40k2vbYMHJS
-9B9DGuPW0m/OhmGDbCCnTPTFCwoKCoCZZRx4kB6qdu4RgVcHYojvboQSiQGZHIMfGeJ6Ly9RCs5N
-1gYbOnkluwFfXgjgais=
+ltEsJXHsbQQoR6D1sjGvFhU8YInj/jVkPZsvJmdwPB/52Sgy/cMn+q46ktgm8shFfeOW0Wvf+MwD
+bX2syB0pGDaGbTsuF2KrvWbqHaw4mH2dCxq6Dixdfh1GMG6iTc+zdAYParopqCNvSNLSwWDBLRlc
+YJBEqZcxYaMTYKjm6fc=
 </SignatureValue>
 <KeyInfo>
 <X509Data>

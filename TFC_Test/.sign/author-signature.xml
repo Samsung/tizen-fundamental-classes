@@ -4,11 +4,11 @@
 <SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"></SignatureMethod>
 <Reference URI="bin%2Ftfc_test">
 <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"></DigestMethod>
-<DigestValue>80SJdm/jCTk1n0CFRxYy9H4F01pjlDp8KEjHlxmEigo=</DigestValue>
+<DigestValue>VDP1BOR6Sqzz6XomiXsoTWHW8cwpxWPi7QeDKgIaJpc=</DigestValue>
 </Reference>
 <Reference URI="lib%2Flibsrintizenfw.so">
 <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"></DigestMethod>
-<DigestValue>23i6Lfe0Hujw/CeiHp/MzFuRZcL+bECuzbDNjgmyjrQ=</DigestValue>
+<DigestValue>9PFR/8GhJzLmlVMh93pgXP5344yZJp4Uc/P/SwfZFcU=</DigestValue>
 </Reference>
 <Reference URI="shared%2Fres%2FTFC_Test.png">
 <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"></DigestMethod>
@@ -27,9 +27,9 @@
 </Reference>
 </SignedInfo>
 <SignatureValue>
-gsOtriW+pYdxsXqMWtoSRKqjR3+SS5ZEB6UGiuwularicrGfUab8f6s+k1VINGjLOSdsrDIzBbZe
-l04J2piUO4e1scWarct3EWw2Ljyhgn45p+1LHl/Mih1u1i6vwDr7PMRNGSdfBPKCg5NTEq6OQz3e
-2LyI7dqmpk2ECbcbE2M=
+R7qVjlB3doEkMaLwIrlN5sxbKkndG5BJbw5khHkD+quZT80t64wCunKoG9uSHqc/ISrD/PbH2ddZ
+6FrwNulYLGvUZ313+ifj2K8UC2UG6TEmD55EoCUZO/fCxeeKsFQtG1reDuCQVLGjavnl6EsmvXjT
+uDR2yDg1h15qYpKkBhQ=
 </SignatureValue>
 <KeyInfo>
 <X509Data>

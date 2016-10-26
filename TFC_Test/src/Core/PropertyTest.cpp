@@ -37,6 +37,16 @@ namespace {
 	{
 		int valA;
 		int valB;
+
+		void MemberFunction(int val)
+		{
+			valA = val;
+		}
+
+		int ConstMemberFunction() const
+		{
+			return valA;
+		}
 	};
 
 	bool operator==(SomeData const& a, SomeData const& b)
@@ -66,9 +76,16 @@ namespace {
 
 		SomeData const* GetDataPtrConst() const;
 
+		int* GetAPtr();
+		void SetAPtr(int* ptr);
+
 		Property<int>::GetSet<
 			&PropertyComponent::GetA,
 			&PropertyComponent::SetA> A;
+
+		Property<int*>::GetSet<
+			&PropertyComponent::GetAPtr,
+			&PropertyComponent::SetAPtr> APtr;
 
 		Property<SomeData>::GetSet<
 			&PropertyComponent::GetData,
@@ -89,12 +106,13 @@ namespace {
 		PropertyComponent();
 
 		int a;
+		int* aPtr;
 		SomeData data;
 		SomeData* dataPtr;
 	};
 
 	PropertyComponent::PropertyComponent() :
-		A(this), Data(this), DataRef(this), DataPtrConst(this), DataPtr(this), a(0), data({0, 0})
+		A(this), Data(this), DataRef(this), DataPtrConst(this), DataPtr(this), a(0), data({0, 0}), aPtr(nullptr), APtr(this)
 	{
 
 	}
@@ -108,6 +126,17 @@ namespace {
 	{
 		this->a = a;
 	}
+
+	int* PropertyComponent::GetAPtr()
+	{
+		return this->aPtr;
+	}
+
+	void PropertyComponent::SetAPtr(int* a)
+	{
+		this->aPtr = a;
+	}
+
 
 	SomeData PropertyComponent::GetData() const
 	{
@@ -362,3 +391,44 @@ TEST_F(PropertyTest, PropertyConstCorrect)
 	*/
 }
 
+/**
+ * Validate the usage of pointer-member-access operator (->) correctness to call its member as
+ * well as its const correctness of the member-access operator operating on const property object
+ */
+TEST_F(PropertyTest, PropertyMemberAccess)
+{
+	int testInt = rand();
+	SomeData testData = { rand(), rand() };
+
+	PropertyComponent comp;
+	comp.dataPtr = &testData;
+	comp.aPtr = &testInt;
+
+	/*
+	// Calling operator -> to non-class pointer (MUST NOT COMPILE)
+	comp.APtr->valA();
+	*/
+
+
+	int value = testData.valA;
+	int result = comp.DataPtr->ConstMemberFunction();
+
+	EXPECT_EQ(value, result) << "SomeData valA is different";
+
+	value = rand();
+	comp.DataPtr->MemberFunction(value);
+	result = testData.valA;
+
+	EXPECT_EQ(value, result) << "SomeData valA is different after set";
+
+	PropertyComponent const& constComp = comp;
+
+	/*
+	// Calling non-const member of pointer-referred object (MUST NOT COMPILE)
+	constComp.DataPtr->MemberFunction(123);
+	*/
+
+	constComp.DataPtr->ConstMemberFunction(); // Allowed
+
+
+}
