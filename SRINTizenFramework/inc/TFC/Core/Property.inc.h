@@ -10,9 +10,10 @@
 #ifndef TFC_CORE_PROPERTY_INC_H_
 #define TFC_CORE_PROPERTY_INC_H_
 
-#ifndef TFC_CORE_H_
-#include "TFC/Core.h"
+#ifndef CORE_NEW_H_
+#include "TFC/Core.new.h"
 #endif
+
 
 #include <type_traits>
 
@@ -159,6 +160,16 @@ struct TFC::Core::PropertyObject<TDefining, TValue*>
 		}
 
 		operator GetFuncConstReturn() const
+		{
+			return (reinterpret_cast<TDefining*>(instance)->*func)();
+		}
+
+		GetFuncReturn operator->()
+		{
+			return (reinterpret_cast<TDefining*>(instance)->*func)();
+		}
+
+		GetFuncConstReturn operator->() const
 		{
 			return (reinterpret_cast<TDefining*>(instance)->*func)();
 		}

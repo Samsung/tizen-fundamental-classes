@@ -355,6 +355,7 @@ public:
 	}
 };
 */
+
 template<class DefiningClass, class ValueType>
 class SimpleReadOnlyPropertyBase
 {
@@ -502,5 +503,7 @@ void SharedEvent<ObjectSourceType, EventDataType>:: operator()(ObjectSourceType 
 
 // For compatibility
 #define AddEventHandler(EVENT_METHOD) { this, & EVENT_METHOD }
+
+
 
 #endif /* CORE_H_ */

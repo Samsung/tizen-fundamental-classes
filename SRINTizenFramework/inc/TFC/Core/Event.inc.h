@@ -5,9 +5,10 @@
 
 #include <memory>
 
-#ifndef TFC_CORE_H_
-#include "TFC/Core.h"
+#ifndef CORE_NEW_H_
+#include "TFC/Core.new.h"
 #endif
+
 
 class TFC::EventClass
 {
@@ -17,7 +18,7 @@ class TFC::EventClass
 template<typename TBase>
 class TFC::EventEmitterClass
 {
-protected:
+public:
 	template<typename TEventData>
 	using Event = TFC::Core::EventObject<TBase*, TEventData>;
 };
@@ -95,15 +96,19 @@ template<class TObjectSource, class TEventData>
 TFC::Core::EventObject<TObjectSource, TEventData>::EventObject(bool logDelete) :
 	first(nullptr), logDelete(logDelete)
 {
+#if VERBOSE
 	if(logDelete)
 		dlog_print(DLOG_DEBUG, "SRINFW-Event", "Event created %d", this);
+#endif
 }
 
 template<class TObjectSource, class TEventData>
 TFC::Core::EventObject<TObjectSource, TEventData>::~EventObject()
 {
+#if VERBOSE
 	if(logDelete)
 		dlog_print(DLOG_DEBUG, "SRINFW-Event", "Event deleted %d", this);
+#endif
 
 	auto current = this->first;
 
@@ -165,8 +170,10 @@ template<class TObjectSource, class TEventData>
 void TFC::Core::EventObject<TObjectSource, TEventData>::operator() (TObjectSource objSource,
 		TEventData eventData) const
 {
+#if VERBOSE
 	if(logDelete)
 		dlog_print(DLOG_DEBUG, "SRINFW-Event", "Event raise %d", this);
+#endif
 
 	auto current = this->first;
 
