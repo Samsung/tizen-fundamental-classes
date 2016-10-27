@@ -1,11 +1,9 @@
 #include "TFC_Test.h"
 #include <gtest/gtest.h>
 
-typedef struct appdata {
-	Evas_Object *win;
-	Evas_Object *conform;
-	Evas_Object *label;
-} appdata_s;
+
+
+appdata_s ad = {0,};
 
 static void
 win_delete_request_cb(void *data, Evas_Object *obj, void *event_info)
@@ -62,6 +60,16 @@ create_base_gui(appdata_s *ad)
 	evas_object_show(ad->win);
 }
 
+void attach_widget(Evas_Object* obj)
+{
+	if(ad.label)
+		evas_object_del(ad.label);
+
+	ad.label = obj;
+	evas_object_size_hint_weight_set(ad.label, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+	elm_object_content_set(ad.conform, ad.label);
+}
+
 static bool
 app_create(void *data)
 {
@@ -73,9 +81,14 @@ app_create(void *data)
 
 	create_base_gui(ad);
 
-	RUN_ALL_TESTS();
-
-	ui_app_exit();
+	// Run test on separate thread
+	ecore_thread_run(
+		[] (void* data, Ecore_Thread *thread) {
+			RUN_ALL_TESTS();
+		},
+		[] (void* data, Ecore_Thread *thread) {
+			ui_app_exit();
+		}, nullptr, nullptr);
 
 	return true;
 }
@@ -143,7 +156,7 @@ ui_app_low_memory(app_event_info_h event_info, void *user_data)
 int
 main(int argc, char *argv[])
 {
-	appdata_s ad = {0,};
+
 	int ret = 0;
 
 	ui_app_lifecycle_callback_s event_callback = {0,};
