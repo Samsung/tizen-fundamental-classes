@@ -42,9 +42,12 @@ public:
 
 private:
 	struct EventNode;
-
 	EventNode* first;
+
+#if VERBOSE
 	bool logDelete;
+#endif
+
 };
 
 template<typename TObjectSource, typename TEventData>
@@ -88,14 +91,21 @@ public:
 
 template<class TObjectSource, class TEventData>
 TFC::Core::EventObject<TObjectSource, TEventData>::EventObject() :
-	first(nullptr), logDelete(false)
+	first(nullptr)
 {
+#if VERBOSE
+	logDelete = false;
+#endif
 }
 
 template<class TObjectSource, class TEventData>
 TFC::Core::EventObject<TObjectSource, TEventData>::EventObject(bool logDelete) :
-	first(nullptr), logDelete(logDelete)
+	first(nullptr)
 {
+#if VERBOSE
+	logDelete = true;
+#endif
+
 #if VERBOSE
 	if(logDelete)
 		dlog_print(DLOG_DEBUG, "SRINFW-Event", "Event created %d", this);

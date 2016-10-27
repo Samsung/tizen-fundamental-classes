@@ -18,6 +18,9 @@
 #define LIBAPI
 #endif
 
+#include <exception>
+#include <string>
+
 // Forward declaration of TFC Core Language Features
 namespace TFC {
 
@@ -94,6 +97,16 @@ class PropertyClass;
  */
 template<typename TClass>
 class EventEmitterClass;
+
+class TFCException : public std::exception
+{
+public:
+	TFCException();
+	explicit TFCException(char const* message);
+	explicit TFCException(std::string&& message);
+	explicit TFCException(std::string const& message);
+	virtual char const* what() const throw ();
+};
 
 namespace Core {
 
