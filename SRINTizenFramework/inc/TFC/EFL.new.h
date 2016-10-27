@@ -20,25 +20,40 @@ struct EvasEventSourceInfo
 	Evas_Object* obj;
 };
 
-class EvasSmartEventObject : public Event<Evas_Object*, void*>
+class EvasSmartEventObject : Event<Evas_Object*, void*>
 {
-
+private:
+	static void Callback(void* data, Evas_Object* obj, void* eventInfo);
+public:
+	void Bind(Evas_Object* obj, char const* eventName);
+	using Event<Evas_Object*, void*>::operator +=;
 };
 
-class EvasObjectEventObject : public Event<EvasEventSourceInfo*, void*>
+class EvasObjectEventObject : Event<EvasEventSourceInfo*, void*>
 {
+private:
+	static void Callback(void* data, Evas* es, Evas_Object* obj, void* eventInfo);
 
+public:
+	void Bind(Evas_Object* obj, Evas_Callback_Type eventType);
 };
 
-class EdjeSignalEventObject : public Event<Evas_Object*, EdjeSignalInfo>
+class EdjeSignalEventObject : Event<Evas_Object*, EdjeSignalInfo>
 {
+private:
+	static void Callback(void* data, Evas_Object* obj, char const* emission, char const* source);
 
+public:
+	void Bind(Evas_Object* obj, char const* emission, char const* source);
 };
 
-
-class ObjectItemEdjeSignalEventObject : public Event<Elm_Object_Item*, EdjeSignalInfo>
+class ObjectItemEdjeSignalEventObject : Event<Elm_Object_Item*, EdjeSignalInfo>
 {
+private:
+	static void Callback(void* data, Elm_Object_Item* it, const char* emission, const char* source);
 
+public:
+	void Bind(Elm_Object_Item*, const char *emission, const char *source);
 };
 
 class EFLProxyClass
