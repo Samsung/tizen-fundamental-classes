@@ -44,6 +44,11 @@ private:
 	struct EventNode;
 	EventNode* first;
 
+	void* operator new(size_t size);
+
+	template<typename, typename>
+	friend class TFC::Core::SharedEventObject;
+
 #if VERBOSE
 	bool logDelete;
 #endif

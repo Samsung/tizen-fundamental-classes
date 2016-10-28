@@ -14,6 +14,9 @@
 namespace TFC {
 namespace EFL {
 
+EXCEPTION_DECLARE		(EFLException, TFCException);
+EXCEPTION_DECLARE_MSG	(EventBoundException, EFLException, "This event object is already bound");
+
 struct EdjeSignalInfo
 {
 	const char* emission;
@@ -26,75 +29,106 @@ struct EvasEventSourceInfo
 	Evas_Object* obj;
 };
 
-template<typename TInfo, typename TCallback, TCallback funcCb, void(*funcFinalize)(Evas_Object*, TInfo const&, void*)>
-class BindingList
-{
-public:
-	typedef void(*FinalizeHandler)(Evas_Object*, TInfo const&);
-
-	BindingList(void* yourself);
-	~BindingList();
-	void AddBinding(Evas_Object* evas, TInfo&& info);
-	void RemoveBinding();
-
-private:
-	TInfo info;
-	void* dataId;
-
-	static void FinalizeCallback(void* data, Evas* es, Evas_Object* obj, void* eventInfo);
-};
-
 class EvasSmartEventObject : Core::EventObject<Evas_Object*, void*>
 {
 public:
 	typedef Core::EventObject<Evas_Object*, void*> Type;
 
 	EvasSmartEventObject();
+	~EvasSmartEventObject();
 
 	void Bind(Evas_Object* obj, char const* eventName);
-	void Unbind(Evas_Object* obj, char const* eventName);
+	void Unbind();
 
 
 	using Core::EventObject<Evas_Object*, void*>::operator +=;
 	using Core::EventObject<Evas_Object*, void*>::operator -=;
 private:
-
 	using Core::EventObject<Evas_Object*, void*>::operator ();
+
 	static void Callback(void* data, Evas_Object* obj, void* eventInfo);
-	static void Finalize(Evas_Object* obj, std::string const& eventName, void* data);
+	static void Finalize(void* data, Evas* e, Evas_Object* obj, void* event_info);
 
-	BindingList<std::string, Evas_Smart_Cb, Callback, Finalize> bindingList;
-
+	char const* eventName;
+	Evas_Object* boundObject;
 };
 
-class EvasObjectEventObject : Core::EventObject<EvasEventSourceInfo*, void*>
+class EvasObjectEventObject : Core::EventObject<EvasEventSourceInfo, void*>
 {
 public:
-	void Bind(Evas_Object* obj, Evas_Callback_Type eventType);
+	typedef Core::EventObject<EvasEventSourceInfo, void*> Type;
 
+	EvasObjectEventObject();
+	~EvasObjectEventObject();
+
+	void Bind(Evas_Object* obj, Evas_Callback_Type eventType);
+	void Unbind();
+
+	using Core::EventObject<EvasEventSourceInfo, void*>::operator +=;
+	using Core::EventObject<EvasEventSourceInfo, void*>::operator -=;
 private:
 	static void Callback(void* data, Evas* es, Evas_Object* obj, void* eventInfo);
+	static void Finalize(void* data, Evas* es, Evas_Object* obj, void* eventInfo);
 
+	Evas_Callback_Type eventType;
+	Evas_Object* boundObject;
 };
 
 class EdjeSignalEventObject : Core::EventObject<Evas_Object*, EdjeSignalInfo>
 {
 public:
-	void Bind(Evas_Object* obj, char const* emission, char const* source);
+	typedef Core::EventObject<Evas_Object*, EdjeSignalInfo> Type;
 
+	EdjeSignalEventObject();
+	~EdjeSignalEventObject();
+
+	void Bind(Evas_Object* obj, char const* emission, char const* source);
+	void Unbind();
+
+	using Core::EventObject<Evas_Object*, EdjeSignalInfo>::operator +=;
+	using Core::EventObject<Evas_Object*, EdjeSignalInfo>::operator -=;
 private:
 	static void Callback(void* data, Evas_Object* obj, char const* emission, char const* source);
+	static void Finalize(void* data, Evas* es, Evas_Object* obj, void* eventInfo);
+
+	Evas_Object* boundObject;
+	char const* emission;
+	char const* source;
 };
 
 class ObjectItemEdjeSignalEventObject : Core::EventObject<Elm_Object_Item*, EdjeSignalInfo>
 {
 public:
-	void Bind(Elm_Object_Item*, const char *emission, const char *source);
+	typedef Core::EventObject<Elm_Object_Item*, EdjeSignalInfo> Type;
 
+	ObjectItemEdjeSignalEventObject();
+	~ObjectItemEdjeSignalEventObject();
+
+	void Bind(Elm_Object_Item* objIt, const char *emission, const char *source);
+	void Unbind();
+
+	using Core::EventObject<Elm_Object_Item*, EdjeSignalInfo>::operator +=;
+	using Core::EventObject<Elm_Object_Item*, EdjeSignalInfo>::operator -=;
 private:
 	static void Callback(void* data, Elm_Object_Item* it, const char* emission, const char* source);
+	static void Finalize(void* data, Evas* es, Evas_Object* obj, void* eventInfo);
+
+	Elm_Object_Item* boundObject;
+	char const* emission;
+	char const* source;
 };
 
+/**
+ * EFLProxyClass is an attribute class which introduces EFL proxy objects in the subclass of this
+ * class. EFL proxy object is used to delegate event which happens on EFL infrastructure into C++
+ * class system automatically. This enables EFL event handling to be written in object-oriented
+ * manner.
+ *
+ * EFL uses Flat-C API pattern which makes it uses procedural approach in calling callback for
+ * handling event. The API user cannot pass C++ non-static function thus disabling the object-
+ * oriented infrastructure when using EFL event functionality directly. EFL proxy objects overcome
+ * this limitation by wrapping EFL event with TFC's Core Event Handling infrastructure.
+ */
 class EFLProxyClass : public TFC::EventClass
 {
 protected:
@@ -105,47 +139,6 @@ protected:
 };
 
 }
-}
-
-template<typename TInfo, typename TCallback, TCallback funcCb,
-		 void (*funcFinalize)(Evas_Object*, const TInfo&, void*)>
-TFC::EFL::BindingList<TInfo, TCallback, funcCb, funcFinalize>::
-BindingList(void* yourself) :
-	dataId(yourself)
-{
-}
-
-template<typename TInfo, typename TCallback, TCallback funcCb,
-		 void (*funcFinalize)(Evas_Object*, const TInfo&, void*)>
-TFC::EFL::BindingList<TInfo, TCallback, funcCb, funcFinalize>::
-~BindingList()
-{
-}
-
-template<typename TInfo, typename TCallback, TCallback funcCb,
-		 void (*funcFinalize)(Evas_Object*, const TInfo&, void*)>
-void TFC::EFL::BindingList<TInfo, TCallback, funcCb, funcFinalize>::
-	 AddBinding(Evas_Object* evas, TInfo&& info)
-{
-
-}
-
-template<typename TInfo, typename TCallback, TCallback funcCb,
-		 void (*funcFinalize)(Evas_Object*, const TInfo&, void*)>
-void TFC::EFL::BindingList<TInfo, TCallback, funcCb, funcFinalize>::
-	 RemoveBinding()
-{
-
-}
-
-
-template<typename TInfo, typename TCallback, TCallback funcCb,
-		void (*funcFinalize)(Evas_Object*, const TInfo&, void*)>
-void TFC::EFL::BindingList<TInfo, TCallback, funcCb, funcFinalize>::
-	 FinalizeCallback(void* data, Evas* es, Evas_Object* obj, void* eventInfo)
-{
-	auto o = reinterpret_cast<TFC::EFL::BindingList<TInfo, TCallback, funcCb, funcFinalize>*>(data);
-
 }
 
 #endif /* EFL_NEW_H_ */

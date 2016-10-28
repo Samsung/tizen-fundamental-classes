@@ -98,14 +98,16 @@ class PropertyClass;
 template<typename TClass>
 class EventEmitterClass;
 
-class TFCException : public std::exception
+class LIBAPI TFCException : public std::exception
 {
 public:
-	TFCException();
 	explicit TFCException(char const* message);
 	explicit TFCException(std::string&& message);
 	explicit TFCException(std::string const& message);
-	virtual char const* what() const throw ();
+	virtual char const* what() const throw () final;
+
+private:
+	std::string msg;
 };
 
 namespace Core {
@@ -156,6 +158,23 @@ public:
 	virtual ~ObjectClass();
 };
 
+#define EXCEPTION_DECLARE(NAME, PARENT)\
+class NAME : public PARENT\
+{\
+public:\
+	explicit inline NAME(char const* message) : PARENT(message) { }\
+	explicit inline NAME(std::string&& message) : PARENT(message) { }\
+	explicit inline NAME(std::string const& message) : PARENT(message) { }\
+}
 
+#define EXCEPTION_DECLARE_MSG(NAME, PARENT, DEFAULT_MESSAGE)\
+class NAME : public PARENT\
+{\
+public:\
+	explicit inline NAME() : PARENT(DEFAULT_MESSAGE) { }\
+	explicit inline NAME(char const* message) : PARENT(message) { }\
+	explicit inline NAME(std::string&& message) : PARENT(message) { }\
+	explicit inline NAME(std::string const& message) : PARENT(message) { }\
+}
 
 #endif /* CORE_NEW_H_ */

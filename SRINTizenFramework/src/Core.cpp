@@ -33,19 +33,22 @@ LIBAPI TFC::ObjectClass::~ObjectClass()
 
 }
 
-class SomeComponents : public TFC::EventClass, TFC::EventEmitterClass<SomeComponents>
-{
-private:
-	Event<int> eventSomeEvent;
-	void AnEventHandler(decltype(eventSomeEvent)* ev, SomeComponents* a, int b)
-	{
+LIBAPI
+TFC::TFCException::TFCException(char const* message) {
+	this->msg = message;
+}
 
-	}
-public:
-	SomeComponents()
-	{
-		eventSomeEvent += { this, &SomeComponents::AnEventHandler };
-	}
-};
+LIBAPI
+TFC::TFCException::TFCException(std::string&& message) {
+	this->msg = message;
+}
 
+LIBAPI
+TFC::TFCException::TFCException(std::string const& message) {
+	this->msg = message;
+}
 
+LIBAPI
+char const* TFC::TFCException::what() const throw () {
+	return this->msg.c_str();
+}
