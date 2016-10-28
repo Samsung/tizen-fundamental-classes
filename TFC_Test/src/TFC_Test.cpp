@@ -4,6 +4,7 @@
 
 
 appdata_s ad = {0,};
+Ecore_Thread* tfc__testThread = nullptr;
 
 static void
 win_delete_request_cb(void *data, Evas_Object *obj, void *event_info)
@@ -70,6 +71,30 @@ void attach_widget(Evas_Object* obj)
 	elm_object_content_set(ad.conform, ad.label);
 }
 
+struct sync_pack
+{
+	void (*func)(void*);
+	void* data;
+};
+
+void sync_thread(void(*func)(void*), void* data)
+{
+	if(tfc__testThread == nullptr)
+		abort();
+
+	sync_pack* p = new sync_pack;
+	*p = {func, data};
+
+	ecore_thread_feedback(tfc__testThread, p);
+}
+
+void app_test_thread_sync(void* data, Ecore_Thread* thread, void* msg_data)
+{
+	sync_pack* p = reinterpret_cast<sync_pack*>(msg_data);
+	(p->func)(p->data);
+	delete p;
+}
+
 static bool
 app_create(void *data)
 {
@@ -82,13 +107,17 @@ app_create(void *data)
 	create_base_gui(ad);
 
 	// Run test on separate thread
-	ecore_thread_run(
+	tfc__testThread = ecore_thread_feedback_run(
 		[] (void* data, Ecore_Thread *thread) {
 			RUN_ALL_TESTS();
 		},
+		app_test_thread_sync,
 		[] (void* data, Ecore_Thread *thread) {
 			ui_app_exit();
-		}, nullptr, nullptr);
+		},
+		nullptr,
+		nullptr,
+		true);
 
 	return true;
 }

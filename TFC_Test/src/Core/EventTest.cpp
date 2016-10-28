@@ -66,6 +66,18 @@ namespace {
 			obj.eventSomethingA -= { this, &EventHandlerClass::OnSomethingA };
 		}
 	};
+
+	class EventEmitterB : public TFC::EventEmitterClass<EventEmitterB>
+	{
+	public:
+		Event<std::string>* ptr;
+		TFC::Core::SharedEventObject<std::string, std::string> eventShared;
+
+		EventEmitterB()
+		{
+			//ptr = new Event<std::string>();
+		}
+	};
 }
 
 TEST_F(EventTest, EventDeclaration)
@@ -91,5 +103,10 @@ TEST_F(EventTest, EventAssignment)
 
 	eh.PerformSomething(data);
 	EXPECT_NE(expected, eh.result) << "Result string still same after detach event";
+
+}
+
+TEST_F(EventTest, AllocatingEventOnHeap)
+{
 
 }

@@ -24,6 +24,8 @@ typedef struct appdata {
 
 extern appdata_s ad;
 
+void sync_thread(void(*func)(void*), void*);
+
 void attach_widget(Evas_Object* obj);
 
 #endif /* __TFC_Test_H__ */
