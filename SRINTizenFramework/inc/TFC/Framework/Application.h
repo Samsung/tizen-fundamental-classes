@@ -12,12 +12,9 @@
 #define TFC_FW_APPLICATION_H__
 
 #define __STDBOOL_H // Remove STDBOOL
+#define USE_TFC_CORE // MIGRATORY
 
 #include <app.h>
-
-extern "C" {
-#include <eina_hash.h>
-}
 
 #include <system_settings.h>
 #include <efl_extension.h>
@@ -26,6 +23,7 @@ extern "C" {
 #include <vector>
 
 #include "TFC/Core.h"
+#include "TFC/Core/Introspect.h"
 #include "TFC/EFL.h"
 
 /**
@@ -41,8 +39,8 @@ extern "C" {
 
 namespace TFC {
 namespace Framework {
-class ViewBase;
 
+class ViewBase;
 class ControllerManager;
 class ApplicationBase;
 
@@ -86,12 +84,12 @@ public:
 class LIBAPI ApplicationBase
 {
 public:
-	const CString packageName;
+	char const* const packageName;
 
 	/**
 	 * Constructor of ApplicationBase class
 	 */
-	ApplicationBase(CString packageName);
+	ApplicationBase(char const* packageName);
 
 	/**
 	 * Method that will be called by Tizen system for any Control event received. Override this
@@ -167,15 +165,19 @@ public:
 	 */
 	static int Main(ApplicationBase* app, int argc, char *argv[]);
 
+	//TODO Give replacement for these SimpleReadOnlyProperty as these classes is no longer available
+	/*
 	static SimpleReadOnlyProperty<ApplicationBase, ApplicationBase*> CurrentInstance;
-	static SimpleReadOnlyProperty<ApplicationBase, CString> ResourcePath;
-	static std::string GetResourcePath(CString path);
+	static SimpleReadOnlyProperty<ApplicationBase, char const*> ResourcePath;
+	*/
+
+	static std::string GetResourcePath(char const* path);
 };
 
 class LIBAPI HeadlessApplicationBase : public ApplicationBase
 {
 public:
-	HeadlessApplicationBase(CString packageName);
+	HeadlessApplicationBase(char const* packageName);
 
 	virtual bool ApplicationCreate() final;
 	virtual void ApplicationControl(app_control_h app_control) final;
@@ -214,7 +216,7 @@ protected:
 	Evas_Object* rootFrame;
 
 public:
-	UIApplicationBase(CString packageName);
+	UIApplicationBase(char const* packageName);
 
 	/**
 	 * Method that will be called after the application creation process is finished. At this
@@ -269,7 +271,10 @@ public:
 	 */
 	void Detach();
 
+	//TODO Give replacement for these SimpleReadOnlyProperty as these classes is no longer available
+	/*
 	static SimpleReadOnlyProperty<UIApplicationBase, UIApplicationBase*> CurrentInstance;
+	*/
 };
 
 /**
@@ -343,7 +348,7 @@ public:
 	 *
 	 * @see {RegisterController}
 	 */
-	ControllerBase(ControllerManager* manager, ViewBase* view, CString controllerName);
+	ControllerBase(ControllerManager* manager, ViewBase* view, char const* controllerName);
 
 	/**
 	 * The reference to the view instance for this controller
@@ -353,7 +358,7 @@ public:
 	/**
 	 * The name of this controller
 	 */
-	CString const ControllerName;
+	char const* const ControllerName;
 
 	/**
 	 * Method that will be called by ControllerManager to load the controller
@@ -404,9 +409,9 @@ public:
 	 * @param controllerName Name of the controller
 	 * @param factory Factory method which will instantiate the controller
 	 */
-	ControllerFactory(CString controllerName, ControllerFactoryMethod factory);
+	ControllerFactory(char const* controllerName, ControllerFactoryMethod factory);
 
-	CString const controllerName;
+	char const* const controllerName;
 	ControllerFactoryMethod const factoryMethod;
 	void* attachedData;
 };
@@ -424,7 +429,10 @@ public:
 /**
  * Class that manages Controller and provides navigation mechanism between loaded controllers
  */
-class LIBAPI ControllerManager : public PropertyClass, public EventClass
+class LIBAPI ControllerManager :
+	public EventClass,
+	public EventEmitterClass<ControllerManager>,
+	PropertyClass<ControllerManager>
 {
 private:
 	Eina_Hash* controllerTable;
@@ -438,8 +446,8 @@ public:
 	virtual void NavigateTo(const char* controllerName, ObjectClass* data) = 0;
 	virtual void NavigateTo(const char* controllerName, ObjectClass* data, bool noTrail) = 0;
 
-	Event<ControllerManager*, ControllerBase*> NavigationProcessed;
-	Property<ControllerManager, ControllerBase*>::Get<&ControllerManager::GetCurrentController> CurrentController;
+	Event<ControllerBase*> NavigationProcessed;
+	Property<ControllerBase*>::Get<&ControllerManager::GetCurrentController> CurrentController;
 
 	/**
 	 * Method to register ControllerFactory to this manager so this manager can recognize
@@ -449,7 +457,7 @@ public:
 	virtual ~ControllerManager();
 };
 
-class StackingControllerManager: public ControllerManager
+class StackingControllerManager: public ControllerManager, public EFL::EFLProxyClass
 {
 private:
 	ControllerChain* chain;
@@ -457,13 +465,12 @@ private:
 	void PushController(ControllerBase* controller);
 	bool PopController();
 
-	EFL::EcoreJobEvent eventPerformNavigation;
 	bool pendingNavigation;
 	bool navigateForward;
-	CString nextControllerName;
+	char const* nextControllerName;
 	ObjectClass* data;
 	bool noTrail;
-	void OnPerformNavigation(EFL::EcoreJobEvent* ev, void* u1, void* u2);
+	void OnPerformNavigation();
 protected:
 	virtual ControllerBase* GetCurrentController();
 public:
@@ -483,40 +490,45 @@ class SwitchingControllerManager: public ControllerManager
 {
 private:
 	IAttachable* const iattachable;
-	ControllerBase* GetController(CString controllerName);
+	ControllerBase* GetController(char const* controllerName);
 	ControllerBase* currentController;
 protected:
 	virtual ControllerBase* GetCurrentController();
 public:
 	SwitchingControllerManager(IAttachable* iattachable);
-	//void SwitchTo(CString controllerName);
+	//void SwitchTo(char const* controllerName);
 
 	virtual void NavigateTo(const char* controllerName, ObjectClass* data);
 	virtual void NavigateTo(const char* controllerName, ObjectClass* data, bool noTrail);
 	virtual bool NavigateBack();
 };
 
-class LIBAPI MVCApplicationBase: public UIApplicationBase, public StackingControllerManager
+class LIBAPI MVCApplicationBase:
+	public UIApplicationBase,
+	public StackingControllerManager
 {
 private:
-	CString mainController;
+	char const* mainController;
 public:
-	MVCApplicationBase(CString appPackage, CString mainController);
+	MVCApplicationBase(char const* appPackage, char const* mainController);
 	virtual bool OnBackButtonPressed() final;
 	virtual void OnApplicationCreated();
 	virtual ~MVCApplicationBase();
 };
 
-class LIBAPI ITitleProvider: virtual public PropertyClass
+class LIBAPI ITitleProvider: PropertyClass<ITitleProvider>
 {
 private:
 	std::string viewTitle;
 protected:
 	virtual void SetTitle(const std::string& value);
-	std::string& GetTitle();
+	std::string const& GetTitle() const;
 	ITitleProvider();
 public:
-	Property<ITitleProvider, std::string&>::GetSet<&ITitleProvider::GetTitle, &ITitleProvider::SetTitle> Title;
+	Property<std::string&>::GetSet<
+		&ITitleProvider::GetTitle,
+		&ITitleProvider::SetTitle> Title;
+
 	virtual ~ITitleProvider();
 };
 
@@ -528,7 +540,9 @@ public:
  * of this class can be attached into an IAttachable instance to display it to designated window
  * or placeholder.
  */
-class LIBAPI ViewBase: virtual public EventClass, public PropertyClass, virtual public ITitleProvider
+class LIBAPI ViewBase:
+	virtual public EventClass,
+	virtual public ITitleProvider
 {
 private:
 	Evas_Object* viewRoot;
@@ -552,27 +566,30 @@ protected:
 	virtual void SetTitle(const std::string& value);
 public:
 	INaviframeContent();
-	virtual Evas_Object* GetTitleLeftButton(CString* buttonPart) = 0;
-	virtual Evas_Object* GetTitleRightButton(CString* buttonPart) = 0;
-	virtual CString GetContentStyle() = 0;
+	virtual Evas_Object* GetTitleLeftButton(char const** buttonPart) = 0;
+	virtual Evas_Object* GetTitleRightButton(char const** buttonPart) = 0;
+	virtual char const* GetContentStyle() = 0;
 	void RaiseAfterNaviframePush(Elm_Object_Item* naviframeItem);
 	virtual ~INaviframeContent();
 };
 
-class LIBAPI IIndicatorStyle : virtual PropertyClass
+class LIBAPI IIndicatorStyle : PropertyClass<IIndicatorStyle>
 {
 public:
 	IIndicatorStyle();
 
+	//TODO Reimplement Auto Property
+	/*
 	Property<IIndicatorStyle, Color>::Auto::ReadWrite IndicatorColor;
 	Property<IIndicatorStyle, bool>::Auto::ReadWrite IndicatorVisible;
+	*/
 };
 
 
 class LIBAPI IndicatorStyler : public EventClass
 {
 private:
-	void OnPostNavigation(Event<ControllerManager*, ControllerBase*>* event, ControllerManager* manager, ControllerBase* controller);
+	void OnPostNavigation(EventOf(ControllerManager::NavigationProcessed)* event, ControllerManager* manager, ControllerBase* controller);
 	UIApplicationBase* app;
 	ControllerManager* manager;
 	Color defaultColor;

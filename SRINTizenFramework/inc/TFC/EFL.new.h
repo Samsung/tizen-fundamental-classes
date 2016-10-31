@@ -136,9 +136,26 @@ protected:
 	using EvasObjectEvent 			= EvasObjectEventObject;
 	using EdjeSignalEvent 			= EdjeSignalEventObject;
 	using ObjectItemEdjeSignalEvent = ObjectItemEdjeSignalEventObject;
+
+	template<typename T>
+	void InvokeLater(void (T::*func)(void));
 };
 
 }
+}
+
+template<typename T>
+void TFC::EFL::EFLProxyClass::InvokeLater(void (T::*func)(void))
+{
+	struct payload {
+		T* ptr;
+		void (T::*func)(void);
+	}* p = new payload({ static_cast<T*>(this), func });
+	ecore_job_add([] (void* data) {
+		auto p = reinterpret_cast<payload*>(data);
+		(p->ptr)->*(p->func)();
+		delete p;
+	}, p);
 }
 
 #endif /* EFL_NEW_H_ */

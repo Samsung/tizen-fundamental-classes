@@ -31,6 +31,9 @@ public:
 											 TObjectSource objSource,
 											 TEventData eventData);
 
+	typedef TObjectSource 	SourceType;
+	typedef TEventData		EventDataType;
+
 	class EventDelegate;
 
 	EventObject();
@@ -94,6 +97,10 @@ public:
 	void operator()(TObjectSource objSource, TEventData eventData) const;
 };
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// TEMPLATE IMPLEMENTATION
+///////////////////////////////////////////////////////////////////////////////////////////////////
 template<class TObjectSource, class TEventData>
 TFC::Core::EventObject<TObjectSource, TEventData>::EventObject() :
 	first(nullptr)

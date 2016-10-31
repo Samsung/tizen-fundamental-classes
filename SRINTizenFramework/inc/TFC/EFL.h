@@ -7,6 +7,11 @@
  *        Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
+#ifdef USE_TFC_CORE
+// For migratory purpose
+#include "TFC/EFL.new.h"
+#else
+
 #ifndef TFC_EFL_H_
 #define TFC_EFL_H_
 
@@ -50,3 +55,4 @@ namespace EFL
 
 
 #endif /* EFL_H_ */
+#endif

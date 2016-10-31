@@ -116,7 +116,7 @@ LIBAPI void StackingControllerManager::NavigateTo(const char* controllerName, Ob
 	EFL::QueueJob(this->eventPerformNavigation);
 }
 
-void StackingControllerManager::OnPerformNavigation(EFL::EcoreJobEvent* ev, void* u1, void* u2)
+void StackingControllerManager::OnPerformNavigation()
 {
 	if(this->pendingNavigation)
 	{

@@ -8,6 +8,11 @@
  *        Kevin Winata (k.winata@samsung.com)
  */
 
+#ifdef USE_TFC_CORE
+// For migratory purpose
+#include "TFC/Core.new.h"
+#else
+
 #ifndef CORE_H_
 #define CORE_H_
 
@@ -507,3 +512,5 @@ void SharedEvent<ObjectSourceType, EventDataType>:: operator()(ObjectSourceType 
 
 
 #endif /* CORE_H_ */
+
+#endif

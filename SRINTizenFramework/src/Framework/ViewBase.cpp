@@ -44,7 +44,7 @@ void TFC::Framework::ITitleProvider::SetTitle(const std::string& value)
 	dlog_print(DLOG_DEBUG, LOG_TAG, "Set title on ViewBase %s", value.c_str());
 }
 
-std::string& TFC::Framework::ITitleProvider::GetTitle()
+std::string const& TFC::Framework::ITitleProvider::GetTitle() const
 {
 	return this->viewTitle;
 }

@@ -110,6 +110,12 @@ private:
 	std::string msg;
 };
 
+struct Color
+{
+	uint8_t r, g, b, a;
+	static inline Color FromRGBA(uint32_t val) { return *(reinterpret_cast<Color*>(&val)); }
+};
+
 namespace Core {
 
 /**
@@ -145,6 +151,8 @@ struct PropertyGetterFunction;
 
 template<typename TDefining, typename TValue>
 struct PropertySetterFunction;
+
+
 
 }
 }
