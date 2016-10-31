@@ -8,9 +8,10 @@
 
 #include "TFC/Framework/Application.h"
 
+using namespace TFC;
 using namespace TFC::Framework;
 
-LIBAPI ControllerBase::ControllerBase(ControllerManager* m, ViewBase* v, CString c) :
+LIBAPI ControllerBase::ControllerBase(ControllerManager* m, ViewBase* v, char const* c) :
 	Manager(m), View(v), ControllerName(c)
 {
 

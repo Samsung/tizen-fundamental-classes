@@ -8,10 +8,13 @@
  *        Gilang M. Hamidy (g.hamidy@samsung.com)
  *        ib.putu (ib.putu@samsung.com)
  */
+#include <dlog.h>
 
 #include "TFC/Framework/Application.h"
 
 using namespace TFC::Framework;
+
+
 
 bool ApplicationBase_AppCreateHandler(void *data)
 {
@@ -81,14 +84,15 @@ void ui_app_low_memory(app_event_info_h event_info, void *data)
 	app->LowMemory(event_info);
 }
 
-
+/* REMOVE THIS KIND OF PROPERTY
 SimpleReadOnlyProperty<ApplicationBase, ApplicationBase*> ApplicationBase::CurrentInstance;
-SimpleReadOnlyProperty<ApplicationBase, CString> ApplicationBase::ResourcePath;
+SimpleReadOnlyProperty<ApplicationBase, char const*> ApplicationBase::ResourcePath;
+*/
 
 int ApplicationBase::Main(ApplicationBase* app, int argc, char* argv[])
 {
-	ApplicationBase::CurrentInstance = app;
-	ApplicationBase::ResourcePath = app_get_resource_path();
+	ApplicationBase::currentInstance = app;
+	ApplicationBase::resourcePath = app_get_resource_path();
 
 	ecore_thread_max_set(16);
 
@@ -117,7 +121,7 @@ int ApplicationBase::Main(ApplicationBase* app, int argc, char* argv[])
 	return ret;
 }
 
-LIBAPI ApplicationBase::ApplicationBase(CString packageName) :
+LIBAPI ApplicationBase::ApplicationBase(char const* packageName) :
 	packageName(packageName)
 {
 
@@ -171,9 +175,9 @@ LIBAPI ApplicationBase::~ApplicationBase()
 
 }
 
-std::string TFC::Framework::ApplicationBase::GetResourcePath(CString path)
+std::string TFC::Framework::ApplicationBase::GetResourcePath(char const* path)
 {
-	std::string ret = CString(ApplicationBase::ResourcePath);
+	std::string ret(ApplicationBase::resourcePath);
 	ret += path;
 	return ret;
 }
@@ -200,7 +204,7 @@ LIBAPI TFC::Framework::ITitleProvider::~ITitleProvider()
 {
 }
 
-LIBAPI TFC::Framework::HeadlessApplicationBase::HeadlessApplicationBase(CString packageName) :
+LIBAPI TFC::Framework::HeadlessApplicationBase::HeadlessApplicationBase(char const* packageName) :
 	ApplicationBase(packageName)
 {
 }

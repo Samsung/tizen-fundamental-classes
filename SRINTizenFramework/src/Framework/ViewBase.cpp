@@ -6,6 +6,7 @@
  *        Gilang M. Hamidy (g.hamidy@samsung.com)
  */
 
+#include <dlog.h>
 #include "TFC/Framework/Application.h"
 
 using namespace TFC::Framework;

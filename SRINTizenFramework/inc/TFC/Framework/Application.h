@@ -172,6 +172,10 @@ public:
 	*/
 
 	static std::string GetResourcePath(char const* path);
+
+private:
+	static char* resourcePath;
+	static ApplicationBase* currentInstance;
 };
 
 class LIBAPI HeadlessApplicationBase : public ApplicationBase
@@ -190,6 +194,7 @@ private:
 
 	bool haveEventBackPressed;
 	bool haveEventMorePressed;
+	UIApplicationBase* currentInstance;
 
 	struct BackButtonCallbackDelegate
 	{
@@ -446,7 +451,7 @@ public:
 	virtual void NavigateTo(const char* controllerName, ObjectClass* data) = 0;
 	virtual void NavigateTo(const char* controllerName, ObjectClass* data, bool noTrail) = 0;
 
-	Event<ControllerBase*> NavigationProcessed;
+	Event<ControllerBase*> eventNavigationProcessed;
 	Property<ControllerBase*>::Get<&ControllerManager::GetCurrentController> CurrentController;
 
 	/**
@@ -589,7 +594,7 @@ public:
 class LIBAPI IndicatorStyler : public EventClass
 {
 private:
-	void OnPostNavigation(EventOf(ControllerManager::NavigationProcessed)* event, ControllerManager* manager, ControllerBase* controller);
+	void OnPostNavigation(decltype(ControllerManager::eventNavigationProcessed)* event, ControllerManager* manager, ControllerBase* controller);
 	UIApplicationBase* app;
 	ControllerManager* manager;
 	Color defaultColor;

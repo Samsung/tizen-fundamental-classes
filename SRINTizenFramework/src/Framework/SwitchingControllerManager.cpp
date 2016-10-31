@@ -15,7 +15,7 @@ LIBAPI TFC::Framework::SwitchingControllerManager::SwitchingControllerManager(IA
 {
 }
 
-LIBAPI ControllerBase* SwitchingControllerManager::GetController(CString controllerName)
+LIBAPI ControllerBase* SwitchingControllerManager::GetController(char const* controllerName)
 {
 	auto entry = this->GetControllerFactoryEntry(controllerName);
 

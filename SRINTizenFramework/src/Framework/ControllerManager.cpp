@@ -146,7 +146,7 @@ void StackingControllerManager::OnPerformNavigation()
 
 			// Instantiated State, move to Running state
 			newInstance->Load(this->data);
-			NavigationProcessed(this, newInstance);
+			eventNavigationProcessed(this, newInstance);
 		}
 		else
 		{
@@ -158,7 +158,7 @@ void StackingControllerManager::OnPerformNavigation()
 			if (popResult)
 			{
 				this->chain->instance->Reload(returnedData);
-				NavigationProcessed(this, this->chain->instance);
+				eventNavigationProcessed(this, this->chain->instance);
 			}
 
 			// If pop result is false, it is the end of the controller

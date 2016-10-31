@@ -15,7 +15,9 @@
 #endif
 
 
-#include <type_traits>
+
+
+#include "SRIN/Core/Introspect.h"
 
 template<typename TClass>
 class TFC::PropertyClass
@@ -126,6 +128,8 @@ struct TFC::Core::PropertyObject
 		{
 			(reinterpret_cast<TDefining*>(this->instance)->*func)(val);
 		}
+
+
 	};
 
 	class Auto

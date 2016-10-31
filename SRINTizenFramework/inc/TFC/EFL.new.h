@@ -152,8 +152,10 @@ void TFC::EFL::EFLProxyClass::InvokeLater(void (T::*func)(void))
 		void (T::*func)(void);
 	}* p = new payload({ static_cast<T*>(this), func });
 	ecore_job_add([] (void* data) {
-		auto p = reinterpret_cast<payload*>(data);
-		(p->ptr)->*(p->func)();
+		auto p 		= reinterpret_cast<payload*>(data);
+		auto func 	= p->func;
+		auto ptr 	= p->ptr;
+		(ptr->*func)();
 		delete p;
 	}, p);
 }

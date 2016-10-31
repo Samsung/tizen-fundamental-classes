@@ -10,7 +10,7 @@
 
 using namespace TFC::Framework;
 
-LIBAPI MVCApplicationBase::MVCApplicationBase(CString appPackage, CString mainController) :
+LIBAPI MVCApplicationBase::MVCApplicationBase(char const* appPackage, char const* mainController) :
 	UIApplicationBase(appPackage), StackingControllerManager(this), mainController(mainController)
 {
 }

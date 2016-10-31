@@ -7,6 +7,8 @@
  *        Kevin Winata (k.winata@samsung.com)
  */
 
+
+#include <dlog.h>
 #include "TFC/Framework/Application.h"
 
 using namespace TFC::Framework;
@@ -29,9 +31,8 @@ void win_more_request_cb(void *data, Evas_Object *obj, void *event_info)
 	app->OnMoreButtonPressed();
 }
 
-SimpleReadOnlyProperty<UIApplicationBase, UIApplicationBase*> UIApplicationBase::CurrentInstance;
 
-LIBAPI TFC::Framework::UIApplicationBase::UIApplicationBase(CString packageName) :
+LIBAPI TFC::Framework::UIApplicationBase::UIApplicationBase(char const* packageName) :
 	ApplicationBase(packageName)
 {
 	this->rootFrame = this->win = this->conform = NULL;
@@ -56,7 +57,7 @@ LIBAPI void TFC::Framework::UIApplicationBase::SetIndicatorColor(Color color)
 
 LIBAPI bool UIApplicationBase::ApplicationCreate()
 {
-	CurrentInstance = this;
+	currentInstance = this;
 
 	elm_config_accel_preference_set("3d");
 
@@ -193,7 +194,7 @@ LIBAPI void UIApplicationBase::Attach(ViewBase* view)
 	{
 		auto naviframeContent = dynamic_cast<INaviframeContent*>(view);
 
-		CString naviframeStyle = nullptr;
+		char const* naviframeStyle = nullptr;
 
 		if (naviframeContent)
 			naviframeStyle = naviframeContent->GetContentStyle();
@@ -208,7 +209,7 @@ LIBAPI void UIApplicationBase::Attach(ViewBase* view)
 
 		if (naviframeContent)
 		{
-			CString buttonPart = "title_left_btn";
+			char const* buttonPart = "title_left_btn";
 			auto left = naviframeContent->GetTitleLeftButton(&buttonPart);
 			if (left)
 			{
@@ -292,7 +293,7 @@ LIBAPI void UIApplicationBase::EnableMoreButtonCallback(bool enable)
 	}
 }
 
-LIBAPI void TFC::Framework::IndicatorStyler::OnPostNavigation(Event<ControllerManager*, ControllerBase*>* event,
+LIBAPI void TFC::Framework::IndicatorStyler::OnPostNavigation(decltype(ControllerManager::eventNavigationProcessed)* event,
 	ControllerManager* manager, ControllerBase* controller)
 {
 	auto colorable = dynamic_cast<IIndicatorStyle*>(controller->View);
@@ -315,12 +316,12 @@ LIBAPI void TFC::Framework::IndicatorStyler::OnPostNavigation(Event<ControllerMa
 LIBAPI TFC::Framework::IndicatorStyler::IndicatorStyler(UIApplicationBase* app, ControllerManager* manager, Color defaultColor) :
 	app(app), manager(manager), defaultColor(defaultColor)
 {
-	manager->NavigationProcessed += { this, &IndicatorStyler::OnPostNavigation };
+	manager->eventNavigationProcessed += { this, &IndicatorStyler::OnPostNavigation };
 }
 
 LIBAPI TFC::Framework::IndicatorStyler::~IndicatorStyler()
 {
-	manager->NavigationProcessed -= { this, &IndicatorStyler::OnPostNavigation };
+	manager->eventNavigationProcessed -= { this, &IndicatorStyler::OnPostNavigation };
 }
 
 LIBAPI TFC::Framework::INaviframeContent::INaviframeContent() :
