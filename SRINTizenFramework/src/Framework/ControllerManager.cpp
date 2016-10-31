@@ -49,7 +49,6 @@ TFC::Framework::ControllerManager::~ControllerManager()
 LIBAPI StackingControllerManager::StackingControllerManager(IAttachable* app) :
 	app(app)
 {
-	this->eventPerformNavigation += AddEventHandler(StackingControllerManager::OnPerformNavigation);
 	this->chain = nullptr;
 }
 
@@ -63,8 +62,7 @@ LIBAPI void StackingControllerManager::NavigateTo(const char* controllerName, Ob
 	this->nextControllerName = controllerName;
 	this->data = data;
 	this->noTrail = false;
-	EFL::QueueJob(this->eventPerformNavigation);
-
+	InvokeLater(&StackingControllerManager::OnPerformNavigation);
 
 }
 
@@ -96,7 +94,7 @@ LIBAPI bool StackingControllerManager::NavigateBack()
 {
 	this->pendingNavigation = true;
 	this->navigateForward = false;
-	EFL::QueueJob(this->eventPerformNavigation);
+	InvokeLater(&StackingControllerManager::OnPerformNavigation);
 
 	// The new implementation should always return true
 	// as the codes might interpret False to exit the application
@@ -113,7 +111,8 @@ LIBAPI void StackingControllerManager::NavigateTo(const char* controllerName, Ob
 	this->nextControllerName = controllerName;
 	this->data = data;
 	this->noTrail = noTrail;
-	EFL::QueueJob(this->eventPerformNavigation);
+	InvokeLater(&StackingControllerManager::OnPerformNavigation);
+
 }
 
 void StackingControllerManager::OnPerformNavigation()
@@ -173,7 +172,7 @@ void StackingControllerManager::OnPerformNavigation()
 	}
 }
 
-LIBAPI ControllerFactory::ControllerFactory(CString controllerName, ControllerFactoryMethod factory) :
+LIBAPI ControllerFactory::ControllerFactory(char const* controllerName, ControllerFactoryMethod factory) :
 	controllerName(controllerName), factoryMethod(factory)
 {
 	attachedData = nullptr;
