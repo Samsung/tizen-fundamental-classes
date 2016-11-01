@@ -45,19 +45,7 @@ void TFC::EFL::EvasSmartEventObject::Unbind()
 	this->eventName = nullptr;
 }
 
-LIBAPI
-void TFC::EFL::EvasSmartEventObject::Callback(void* data,Evas_Object* obj, void* eventInfo)
-{
-	(*reinterpret_cast<EvasSmartEventObject*>(data))(obj, eventInfo);
-}
 
-LIBAPI
-void TFC::EFL::EvasSmartEventObject::Finalize(void *data, Evas *e, Evas_Object *obj, void *event_info)
-{
-	auto d = reinterpret_cast<EvasSmartEventObject*>(data);
-	d->boundObject = nullptr;
-	d->eventName = nullptr;
-}
 
 LIBAPI
 TFC::EFL::EvasObjectEventObject::EvasObjectEventObject() :
