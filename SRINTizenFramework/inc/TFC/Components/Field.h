@@ -19,8 +19,14 @@ namespace Components {
 /**
  * Component that can be used as an entry field in forms.
  */
-class LIBAPI Field: public ComponentBase
+class LIBAPI Field :
+		public ComponentBase,
+		EventEmitterClass<Field>,
+		PropertyClass<Field>
 {
+	using PropertyClass<Field>::Property;
+	using EventEmitterClass<Field>::Event;
+
 private:
 	std::string text;
 	bool multiline;
@@ -36,12 +42,12 @@ protected:
 	 * @return An Elm_Entry widget.
 	 */
 	virtual Evas_Object* CreateComponent(Evas_Object* root);
-	void SetText(const std::string& text);
-	std::string& GetText();
-	void SetMultiline(const bool& val);
-	bool GetMultiline();
-	void SetBottomBorderVisible(const bool& visible);
-	bool GetBottomBorderVisible();
+	void SetText(std::string const& text);
+	std::string GetText() const;
+	void SetMultiline(bool const& val);
+	bool GetMultiline() const;
+	void SetBottomBorderVisible(bool const& visible);
+	bool GetBottomBorderVisible() const;
 public:
 	/**
 	 * Constructor for Field component.
@@ -54,14 +60,14 @@ public:
 	 * @param disable If true, then the field will be disabled (can't be inputted to).
 	 * 				  If false, then the field will be restored to normal.
 	 */
-	void SetDisable(const bool& disable);
+	void SetDisable(bool const& disable);
 
 	/**
 	 * Set the field's hint text.
 	 *
 	 * @param hint The text that will be displayed as hint.
 	 */
-	void SetHint(const CString& hint);
+	void SetHint(char const* hint);
 
 	/**
 	 * Set the field's focused status.
@@ -69,7 +75,7 @@ public:
 	 * @param focus If true, then field will receive focus and show its input panel.
 	 * 				If false, then field will act as normal.
 	 */
-	void SetFocus(const bool& focus);
+	void SetFocus(bool const& focus);
 
 	/**
 	 * Set the field's font style.
@@ -78,7 +84,7 @@ public:
 	 * 				In general, the format is specified as format tag='property=value'
 	 * 				(i.e. DEFAULT='font=Sans font_size=60'hilight=' + font_weight=Bold').
 	 */
-	void SetFontStyle(const CString& style);
+	void SetFontStyle(char const* style);
 
 	/**
 	 * Set the field's return key type in the input panel.
@@ -86,7 +92,7 @@ public:
 	 * @param type Enumeration that defines the various return key type.
 	 * @see {Elm_Input_Panel_Return_Key_Type}
 	 */
-	void SetReturnKeyType(const Elm_Input_Panel_Return_Key_Type& type);
+	void SetReturnKeyType(Elm_Input_Panel_Return_Key_Type const& type);
 
 	/**
 	 * Set the input panel type.
@@ -94,7 +100,7 @@ public:
 	 * @param type Enumeration that defines the input panel type.
 	 * @see {Elm_Input_Panel_Layout}
 	 */
-	void SetKeyboardType(const Elm_Input_Panel_Layout& type);
+	void SetKeyboardType(Elm_Input_Panel_Layout const& type);
 
 	/**
 	 * Set the field as password field (the characters will not be visible).
@@ -104,30 +110,30 @@ public:
 	/**
 	 * Event that will be triggered when user input return key.
 	 */
-	EFL::EvasSmartEvent eventReturnKeyClick;
+	EvasSmartEvent eventReturnKeyClick;
 
 	/**
 	 * Event that will be triggered when text on the field changed.
 	 */
-	EFL::EvasSmartEvent eventTextChanged;
+	EvasSmartEvent eventTextChanged;
 
 	/**
 	 * Property that enables getting & setting text on the field.
 	 * The return/parameter type is string reference.
 	 */
-	Property<Field, std::string&>::GetSet<&Field::GetText, &Field::SetText> Text;
+	Property<std::string>::GetSet<&Field::GetText, &Field::SetText> Text;
 
 	/**
 	 * Property that enables getting & setting multiline mode of the field.
 	 * The return/parameter type is bool.
 	 */
-	Property<Field, bool>::GetSet<&Field::GetMultiline, &Field::SetMultiline> Multiline;
+	Property<bool>::GetSet<&Field::GetMultiline, &Field::SetMultiline> Multiline;
 
 	/**
 	 * Property that enables getting & setting bottom border visibility of the field.
 	 * The return/parameter type is bool.
 	 */
-	Property<Field, bool>::GetSet<&Field::GetBottomBorderVisible, &Field::SetBottomBorderVisible> BottomBorderVisible;
+	Property<bool>::GetSet<&Field::GetBottomBorderVisible, &Field::SetBottomBorderVisible> BottomBorderVisible;
 };
 }
 }

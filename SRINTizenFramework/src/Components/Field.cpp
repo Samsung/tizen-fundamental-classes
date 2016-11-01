@@ -51,12 +51,19 @@ LIBAPI Evas_Object* TFC::Components::Field::CreateComponent(Evas_Object* root)
 	}
 
 	elm_entry_editable_set(field, EINA_TRUE);
+
+	/*
 	evas_object_smart_callback_add(field, "activated", EFL::EvasSmartEventHandler, &eventReturnKeyClick);
 	evas_object_smart_callback_add(field, "changed", EFL::EvasSmartEventHandler, &eventTextChanged);
+	*/
+
+	eventReturnKeyClick.Bind(field, "activated");
+	eventTextChanged.Bind(field, "changed");
+
 	return box;
 }
 
-LIBAPI void TFC::Components::Field::SetText(const std::string& text)
+LIBAPI void TFC::Components::Field::SetText(std::string const& text)
 {
 	this->text = text;
 
@@ -64,18 +71,17 @@ LIBAPI void TFC::Components::Field::SetText(const std::string& text)
 		elm_object_text_set(this->field, this->text.c_str());
 }
 
-LIBAPI std::string& TFC::Components::Field::GetText()
+LIBAPI std::string TFC::Components::Field::GetText() const
 {
 	if (field)
 	{
-		auto textStr = elm_object_text_get(this->field);
-		this->text = textStr;
+		return elm_object_text_get(this->field);
 	}
 
 	return this->text;
 }
 
-LIBAPI void TFC::Components::Field::SetMultiline(const bool& val)
+LIBAPI void TFC::Components::Field::SetMultiline(bool const& val)
 {
 	this->multiline = val;
 	if (this->componentRoot)
@@ -94,17 +100,17 @@ LIBAPI void TFC::Components::Field::SetMultiline(const bool& val)
 	}
 }
 
-LIBAPI bool TFC::Components::Field::GetMultiline()
+LIBAPI bool TFC::Components::Field::GetMultiline() const
 {
 	return multiline;
 }
 
-LIBAPI void TFC::Components::Field::SetBottomBorderVisible(const bool& visible)
+LIBAPI void TFC::Components::Field::SetBottomBorderVisible(bool const& visible)
 {
 	bottomBorder = visible;
 }
 
-LIBAPI bool TFC::Components::Field::GetBottomBorderVisible()
+LIBAPI bool TFC::Components::Field::GetBottomBorderVisible() const
 {
 	return bottomBorder;
 }
@@ -115,7 +121,7 @@ LIBAPI TFC::Components::Field::Field() :
 {
 }
 
-LIBAPI void TFC::Components::Field::SetDisable(const bool& disable)
+LIBAPI void TFC::Components::Field::SetDisable(bool const& disable)
 {
 	if (disable)
 	{
@@ -127,12 +133,12 @@ LIBAPI void TFC::Components::Field::SetDisable(const bool& disable)
 	}
 }
 
-LIBAPI void TFC::Components::Field::SetHint(const CString& hint)
+LIBAPI void TFC::Components::Field::SetHint(char const* hint)
 {
 	elm_object_part_text_set(field, "guide", hint);
 }
 
-LIBAPI void TFC::Components::Field::SetFocus(const bool& disable)
+LIBAPI void TFC::Components::Field::SetFocus(bool const& disable)
 {
 	if (disable)
 	{
@@ -146,19 +152,19 @@ LIBAPI void TFC::Components::Field::SetFocus(const bool& disable)
 	}
 }
 
-LIBAPI void TFC::Components::Field::SetFontStyle(const CString& style)
+LIBAPI void TFC::Components::Field::SetFontStyle(char const* style)
 {
 	elm_entry_text_style_user_push(field, style);
 }
 
-void TFC::Components::Field::SetReturnKeyType(
-		const Elm_Input_Panel_Return_Key_Type& type) {
+void TFC::Components::Field::SetReturnKeyType(Elm_Input_Panel_Return_Key_Type const& type)
+{
 	elm_entry_input_panel_return_key_type_set(field, type);
 
 }
 
-void TFC::Components::Field::SetKeyboardType(
-		const Elm_Input_Panel_Layout& type) {
+void TFC::Components::Field::SetKeyboardType(Elm_Input_Panel_Layout const& type)
+{
 	elm_entry_input_panel_layout_set(field, type);
 }
 
