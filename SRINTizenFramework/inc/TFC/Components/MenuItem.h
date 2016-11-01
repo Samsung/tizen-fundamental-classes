@@ -35,7 +35,7 @@ public:
 	 *
 	 * @param style Name of the style.
 	 */
-	CustomMenuStyle(CString style);
+	CustomMenuStyle(char const* style);
 
 	/**
 	 * Destructor for CustomMenuStyle.
@@ -71,7 +71,10 @@ public:
  * Class that represents an item inside a tree menu.
  * @see TreeMenu
  */
-class LIBAPI MenuItem: public EventClass, public PropertyClass
+class LIBAPI MenuItem :
+	public virtual EventClass,
+	PropertyClass<MenuItem>,
+	EventEmitterClass<MenuItem>
 {
 private:
 	std::vector<MenuItem*> subMenus;
@@ -125,30 +128,32 @@ public:
 	 */
 	void SetParentMenu(MenuItem* parentMenu);
 
+	// TODO Reimplement using Property
+
 	/**
 	 * Property that enables getting & setting text of the menu item.
 	 * The return/parameter type is string.
 	 */
-	Property<MenuItem, std::string>::Auto::ReadOnly Text;
+	/*Property<MenuItem, std::string>::Auto::ReadOnly*/ std::string Text;
 
 	/**
 	 * Property that enables getting & setting icon path of the menu item.
 	 * The return/parameter type is string.
 	 */
-	Property<MenuItem, std::string>::Auto::ReadOnly MenuIcon;
+	/*Property<MenuItem, std::string>::Auto::ReadOnly*/ std::string MenuIcon;
 
 	/**
 	 * Property that enables getting & setting custom style of the menu item.
 	 * The return/parameter type is CustomMenuStyle.
 	 */
-	Property<MenuItem, CustomMenuStyle*>::Auto::ReadOnly CustomItemStyle;
+	/*Property<MenuItem, CustomMenuStyle*>::Auto::ReadOnly*/ CustomMenuStyle* CustomItemStyle;
 
 	template<class T>
 	T* GetItemData();
 	Elm_Object_Item* GetGenlistItem();
 
 	friend class TreeMenu;
-	Event<MenuItem*, Elm_Object_Item*> OnMenuItemClick;
+	Event<Elm_Object_Item*> OnMenuItemClick;
 };
 
 }
