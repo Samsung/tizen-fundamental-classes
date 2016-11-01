@@ -66,7 +66,7 @@ void ComponentBase::SetEnabled(const bool& enabled)
 		elm_object_disabled_set(componentRoot, !enabled);
 }
 
-bool ComponentBase::GetEnabled()
+bool ComponentBase::GetEnabled() const
 {
 	return this->enabled;
 }
@@ -83,7 +83,7 @@ void ComponentBase::SetVisible(const bool& visible)
 	}
 }
 
-bool ComponentBase::GetVisible()
+bool ComponentBase::GetVisible() const
 {
 	return this->visible;
 }
@@ -93,7 +93,7 @@ void ComponentBase::SetName(const std::string& name)
 	this->name = name;
 }
 
-std::string& ComponentBase::GetName()
+std::string const& ComponentBase::GetName() const
 {
 	return this->name;
 }

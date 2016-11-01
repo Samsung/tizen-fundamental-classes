@@ -29,7 +29,9 @@ namespace Components {
  * Object of this class can be directly casted to Evas_Object handle, which enables direct interfacing between this
  * class object and EFL functions.
  */
-class LIBAPI ComponentBase: virtual public EventClass, public PropertyClass
+class LIBAPI ComponentBase:
+		virtual public TFC::EventEmitterClass<ComponentBase>,
+		public TFC::PropertyClass<ComponentBase>
 {
 private:
 	bool created;
@@ -79,7 +81,7 @@ protected:
 	 *
 	 * @return State whether this control is enabled or not
 	 */
-	virtual LIBAPI bool GetEnabled();
+	virtual LIBAPI bool GetEnabled() const;
 
 	/**
 	 * Method that will be called when the user of this component sets Visible field. Override this method if the
@@ -98,10 +100,10 @@ protected:
 	 *
 	 * @return State whether this control is enabled or not
 	 */
-	virtual LIBAPI bool GetVisible();
+	virtual LIBAPI bool GetVisible() const;
 
 	virtual LIBAPI void SetName(const std::string& name);
-	virtual LIBAPI std::string& GetName();
+	virtual LIBAPI std::string const& GetName() const;
 public:
 	ComponentBase();
 	inline bool IsCreated()
@@ -110,9 +112,9 @@ public:
 	}
 	Evas_Object* LIBAPI Create(Evas_Object* root);
 
-	Property<ComponentBase, bool>::GetSet<&ComponentBase::GetEnabled, &ComponentBase::SetEnabled> Enabled;
-	Property<ComponentBase, bool>::GetSet<&ComponentBase::GetVisible, &ComponentBase::SetVisible> Visible;
-	Property<ComponentBase, std::string&>::GetSet<&ComponentBase::GetName, &ComponentBase::SetName> Name;
+	Property<bool>::GetSet<&ComponentBase::GetEnabled, &ComponentBase::SetEnabled> Enabled;
+	Property<bool>::GetSet<&ComponentBase::GetVisible, &ComponentBase::SetVisible> Visible;
+	Property<std::string const&>::GetSet<&ComponentBase::GetName, &ComponentBase::SetName> Name;
 
 	virtual LIBAPI ~ComponentBase();
 	LIBAPI operator Evas_Object*() const;
