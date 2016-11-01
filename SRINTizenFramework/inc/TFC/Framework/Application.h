@@ -588,6 +588,9 @@ public:
 	Property<IIndicatorStyle, Color>::Auto::ReadWrite IndicatorColor;
 	Property<IIndicatorStyle, bool>::Auto::ReadWrite IndicatorVisible;
 	*/
+
+	Color IndicatorColor;
+	bool IndicatorVisible;
 };
 
 

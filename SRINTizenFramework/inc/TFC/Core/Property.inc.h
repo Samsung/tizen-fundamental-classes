@@ -99,6 +99,7 @@ struct TFC::Core::PropertyObject
 {
 	typedef typename PropertyGetterFunction<TDefining, TValue>::Type 			GetFunc;
 	typedef typename PropertyGetterFunction<TDefining, TValue>::ReturnType 		GetFuncReturn;
+	typedef typename std::remove_reference<GetFuncReturn>::type					GetFuncReturnBare;
 	typedef typename PropertySetterFunction<TDefining, TValue>::Type 			SetFunc;
 	typedef typename PropertySetterFunction<TDefining, TValue>::OperatorParam 	SetFuncParam;
 
@@ -112,6 +113,11 @@ struct TFC::Core::PropertyObject
 		operator GetFuncReturn() const
 		{
 			return (reinterpret_cast<TDefining*>(instance)->*func)();
+		}
+
+		GetFuncReturnBare* operator->()
+		{
+			return &((reinterpret_cast<TDefining*>(instance)->*func)());
 		}
 
 		GetFuncReturn T() const;
