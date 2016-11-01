@@ -173,10 +173,14 @@ public:
 
 	static std::string GetResourcePath(char const* path);
 
+	static ApplicationBase* GetCurrentInstance();
 private:
 	static char* resourcePath;
 	static ApplicationBase* currentInstance;
 };
+
+inline ApplicationBase* ApplicationBase::GetCurrentInstance() { return currentInstance; }
+
 
 class LIBAPI HeadlessApplicationBase : public ApplicationBase
 {
