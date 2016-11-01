@@ -8,7 +8,7 @@
  *        Kevin Winata (k.winata@samsung.com)
  */
 
-#ifdef USE_TFC_CORE
+#ifndef USE_LEGACY_TFC_CORE
 // For migratory purpose
 #include "TFC/Core.new.h"
 #else
