@@ -24,21 +24,27 @@ namespace Components {
  * It uses adapter pattern for appending and removing items,
  * and its class can map texts, contents and data of an item in the dropdown.
  */
-class LIBAPI DropDown : public ComponentBase
+class LIBAPI DropDown :
+	public ComponentBase,
+	EventEmitterClass<DropDown>,
+	PropertyClass<DropDown>
 {
+	using EventEmitterClass<DropDown>::Event;
+	using PropertyClass<DropDown>::Property;
 private:
 	Evas_Object* parentComponent;
 	Evas_Object* dropdownComponent;
 	Adapter* dataSource;
 
-	EFL::EvasSmartEvent eventDropdownButtonClick;
-	EFL::EvasSmartEvent eventDropdownDismiss;
+	EvasSmartEvent eventDropdownButtonClick;
+	EvasSmartEvent eventDropdownDismiss;
+	EvasObjectEvent eventDropdownBack;
 
 	void SetDataSource(Adapter* adapter);
 	Adapter* GetDataSource();
 
 	void ShowDropdown();
-	void OnDropDownButtonClick(EFL::EvasSmartEvent* viewSource, Evas_Object* objSource, void* eventData);
+	void OnDropDownButtonClick(EvasSmartEvent::Type* viewSource, Evas_Object* objSource, void* eventData);
 protected:
 	/**
 	 * Method overriden from ComponentBase, creates the UI elements of the component.
@@ -65,19 +71,19 @@ public:
 	/**
 	 * Event that will be triggered when selected item in the dropdown changes.
 	 */
-	Event<DropDown*, void*> ItemSelectionChanged;
+	Event<void*> ItemSelectionChanged;
 
 	/**
 	 * Property that enables getting & setting the adapter of the dropdown.
 	 * The return/parameter type is Adapter.
 	 */
-	Property<DropDown, Adapter*>::GetSet<&DropDown::GetDataSource, &DropDown::SetDataSource> DataSource;
+	Property<Adapter*>::GetSet<&DropDown::GetDataSource, &DropDown::SetDataSource> DataSource;
 
 	/**
 	 * Property that enables reading of which item is selected in the dropdown.
 	 * The return type is void*.
 	 */
-	Property<DropDown, void*>::Auto::ReadOnly SelectedItem;
+	/*Property<void*>::Auto::ReadOnly*/void* SelectedItem;
 	std::string text;
 };
 
