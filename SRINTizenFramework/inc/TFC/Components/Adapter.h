@@ -115,7 +115,7 @@ public:
  * Class that contains a list of adapter items.
  * Provides basic list primitives such as adding items, removing items, and clearing the list.
  */
-class LIBAPI Adapter : public EventEmitterClass<Adapter>
+class LIBAPI Adapter : EventEmitterClass<Adapter>
 {
 public:
 	/**

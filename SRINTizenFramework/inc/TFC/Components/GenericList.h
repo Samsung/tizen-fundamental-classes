@@ -31,7 +31,7 @@ namespace Components {
 	private:
 		Elm_Genlist_Item_Class* itemClass;
 	protected:
-		GenericListItemClassBase(CString styleName, bool defaultEventClick = true);
+		GenericListItemClassBase(char const* styleName, bool defaultEventClick = true);
 		bool itemClickEnabled;
 	public:
 		/**
@@ -73,7 +73,7 @@ namespace Components {
 		 *
 		 * @param styleName Name of the style that will be used.
 		 */
-		GenericListItemClass(CString styleName);
+		GenericListItemClass(char const* styleName);
 	public:
 		/**
 		 * Destructor for GenericListItemClass.
@@ -135,7 +135,7 @@ namespace Components {
 		 *
 		 * @param styleName Name of the style that will be used.
 		 */
-		SimpleGenericListItemClass(CString styleName);
+		SimpleGenericListItemClass(char const* styleName);
 	public:
 		virtual std::string GetString(T* data, Evas_Object *obj, const char *part) final;
 
@@ -196,21 +196,29 @@ namespace Components {
 		int GetBackToTopThreshold();
 
 		void AppendItemToGenlist(Adapter::AdapterItem* data);
-		void OnItemAdd(Event<Adapter*, Adapter::AdapterItem*>* event, Adapter* adapter, Adapter::AdapterItem* data);
-		void OnItemRemove(Event<Adapter*, Adapter::AdapterItem*>* event, Adapter* adapter, Adapter::AdapterItem* data);
 
-		EFL::EvasSmartEvent eventScrolledInternal;
-		EFL::EvasSmartEvent eventScrolledDownInternal;
-		EFL::EvasSmartEvent eventScrolledUpInternal;
-		EFL::EvasSmartEvent eventScrolledBottomInternal;
-		EFL::EvasSmartEvent eventScrolledTopInternal;
-		EFL::EvasSmartEvent eventDummyRealized;
-		EFL::EvasSmartEvent eventItemClickedInternal;
-		EFL::EvasSmartEvent eventScrollingStartInternal;
-		EFL::EvasSmartEvent eventScrollingEndInternal;
-		EFL::EvasSmartEvent eventLongPressedInternal;
-		EFL::EvasSmartEvent eventItemUnrealized;
-		EFL::ObjectItemEdjeSignalEvent eventItemSignalInternal;
+		void OnItemAdd(
+				decltype(Adapter::eventItemAdd)* event,
+				Adapter* adapter,
+				Adapter::AdapterItem* data);
+
+		void OnItemRemove(
+				decltype(Adapter::eventItemRemove)* event,
+				Adapter* adapter,
+				Adapter::AdapterItem* data);
+
+		EvasSmartEvent eventScrolledInternal;
+		EvasSmartEvent eventScrolledDownInternal;
+		EvasSmartEvent eventScrolledUpInternal;
+		EvasSmartEvent eventScrolledBottomInternal;
+		EvasSmartEvent eventScrolledTopInternal;
+		EvasSmartEvent eventDummyRealized;
+		EvasSmartEvent eventItemClickedInternal;
+		EvasSmartEvent eventScrollingStartInternal;
+		EvasSmartEvent eventScrollingEndInternal;
+		EvasSmartEvent eventLongPressedInternal;
+		EvasSmartEvent eventItemUnrealized;
+		ObjectItemEdjeSignalEvent eventItemSignalInternal;
 
 		
 		void OnScrolledInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData);
@@ -346,14 +354,14 @@ namespace Components {
 }
 
 template<class T>
-TFC::Components::GenericListItemClass<T>::GenericListItemClass(CString styleName) : GenericListItemClassBase(styleName)
+TFC::Components::GenericListItemClass<T>::GenericListItemClass(char const* styleName) : GenericListItemClassBase(styleName)
 {
 
 }
 
 
 template<class T>
-TFC::Components::SimpleGenericListItemClass<T>::SimpleGenericListItemClass(CString styleName) :
+TFC::Components::SimpleGenericListItemClass<T>::SimpleGenericListItemClass(char const* styleName) :
 	GenericListItemClass<T>(styleName)
 {
 }
