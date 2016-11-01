@@ -8,6 +8,7 @@
  */
 
 #include "TFC/Components/BackButtonHandler.h"
+#include <dlog.h>
 
 bool TFC::Components::BackButtonHandler::BackButtonClickedInternal()
 {
@@ -25,7 +26,8 @@ void TFC::Components::BackButtonHandler::Acquire()
 	{
 		this->acquired = true;
 		this->obj = new Wrapper(this);
-		Framework::UIApplicationBase::CurrentInstance->AcquireExclusiveBackButtonPressed(this->obj, reinterpret_cast<Framework::BackButtonCallback>(&Wrapper::Call));
+		auto uiApplicationBase = dynamic_cast<Framework::UIApplicationBase*>(Framework::UIApplicationBase::GetCurrentInstance());
+		uiApplicationBase->AcquireExclusiveBackButtonPressed(this->obj, reinterpret_cast<Framework::BackButtonCallback>(&Wrapper::Call));
 	}
 
 }
@@ -35,7 +37,8 @@ void TFC::Components::BackButtonHandler::Release()
 	if(this->acquired)
 	{
 		this->acquired = false;
-		Framework::UIApplicationBase::CurrentInstance->ReleaseExclusiveBackButtonPressed(this->obj, reinterpret_cast<Framework::BackButtonCallback>(&Wrapper::Call));
+		auto uiApplicationBase = dynamic_cast<Framework::UIApplicationBase*>(Framework::UIApplicationBase::GetCurrentInstance());
+		uiApplicationBase->ReleaseExclusiveBackButtonPressed(this->obj, reinterpret_cast<Framework::BackButtonCallback>(&Wrapper::Call));
 
 		delete this->obj;
 		this->obj = nullptr;
