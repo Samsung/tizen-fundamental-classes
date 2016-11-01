@@ -25,34 +25,43 @@ namespace Components {
  * Internally, it uses Elm_Genlist, but it differs from GenericList component since it supports
  * item hierarchy (parent items with its sub menu items), and built-in item expand/contract mechanism.
  */
-class LIBAPI TreeMenu: virtual public ComponentBase
+class LIBAPI TreeMenu:
+	public ComponentBase,
+	EventEmitterClass<TreeMenu>,
+	PropertyClass<TreeMenu>
 {
+	using EventEmitterClass<TreeMenu>::Event;
+	using PropertyClass<TreeMenu>::Property;
 private:
 	Evas_Object* genlist;
 	Elm_Genlist_Item_Class* itemClass;
 	Elm_Genlist_Item_Class* submenuItemClass;
 	Elm_Object_Item* currentlySelected;
 	std::vector<MenuItem*> rootMenu;
+	std::string iconEdjeFile;
 
 	bool isScrolled;
 	bool autoExpand;
 
 	void GenerateRootMenu();
 	void GenerateSubMenu(MenuItem* subMenu);
-	const std::vector<MenuItem*>& GetMenuItems();
+	const std::vector<MenuItem*>& GetMenuItems() const;
 
-	bool GetAutoExpanded();
+	bool GetAutoExpanded() const;
 	void SetAutoExpanded(const bool& val);
 
-	typedef Event<Evas_Object*, Elm_Object_Item*> GenlistEvent;
+	std::string const& GetIconEdjeFile() const;
+	void SetIconEdjeFile(std::string const& val);
 
-	void MenuScrollInternal(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
-	void MenuPressedInternal(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
-	void MenuReleasedInternal(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
-	void MenuSelectedInternal(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
-	void MenuUnselectedInternal(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
-	void MenuExpanded(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
-	void MenuContracted(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
+	typedef EFL::EvasSmartEventObjectBase<Elm_Object_Item> GenlistEvent;
+
+	void MenuScrollInternal(GenlistEvent::Type* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
+	void MenuPressedInternal(GenlistEvent::Type* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
+	void MenuReleasedInternal(GenlistEvent::Type* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
+	void MenuSelectedInternal(GenlistEvent::Type* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
+	void MenuUnselectedInternal(GenlistEvent::Type* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
+	void MenuExpanded(GenlistEvent::Type* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
+	void MenuContracted(GenlistEvent::Type* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
 	void AppendMenuToGenlist(MenuItem* menu);
 
 	GenlistEvent eventMenuScrollInternal;
@@ -127,30 +136,32 @@ public:
 	 */
 	void ResetCurrentlySelectedItem();
 
-	typedef Event<TreeMenu*, MenuItem*> TreeMenuEvent;
 
+	// TODO Reimplement with correct Property declaration
 	/**
 	 * Property that can be filled to set the expand/contract icon edje file.
 	 * The return/parameter type is string.
 	 */
-	Property<TreeMenu, std::string>::Auto::ReadWrite IconEdjeFile;
+	Property<std::string const&>::GetSet<
+			&TreeMenu::GetIconEdjeFile,
+			&TreeMenu::SetIconEdjeFile> IconEdjeFile;
 
 	/**
 	 * Property that enables getting the menu items vector.
 	 * The return type is vector reference.
 	 */
-	Property<TreeMenu, const std::vector<MenuItem*>&>::Get<&TreeMenu::GetMenuItems> MenuItems;
+	Property<std::vector<MenuItem*> const&>::Get<&TreeMenu::GetMenuItems> MenuItems;
 
 	/**
 	 * Property that enables getting & setting auto expanding feature of the tree menu.
 	 * The return/parameter type is bool.
 	 */
-	Property<TreeMenu, bool>::GetSet<&TreeMenu::GetAutoExpanded, &TreeMenu::SetAutoExpanded> AutoExpanded;
+	Property<bool>::GetSet<&TreeMenu::GetAutoExpanded, &TreeMenu::SetAutoExpanded> AutoExpanded;
 
 	/**
 	 * Event that will be triggered when a menu item is selected.
 	 */
-	TreeMenuEvent OnMenuSelected;
+	Event<MenuItem*> OnMenuSelected;
 };
 
 }

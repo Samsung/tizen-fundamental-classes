@@ -11,6 +11,7 @@
 #include "TFC/Components/TreeMenu.h"
 #include "TFC/Components/MenuItem.h"
 
+#include <dlog.h>
 #include <algorithm>
 
 using namespace TFC::Components;
@@ -22,18 +23,20 @@ struct TreeMenuItemPackage
 	CustomMenuStyle* customMenuStyleRef;
 
 	TreeMenuItemPackage(MenuItem* menuItem, TreeMenu* treeMenu, CustomMenuStyle* customMenuStyle = nullptr) :
-		menuItemRef(menuItem), treeMenuRef(treeMenu), customMenuStyleRef(customMenuStyle)
+		menuItemRef(menuItem),
+		treeMenuRef(treeMenu),
+		customMenuStyleRef(customMenuStyle)
 	{
 
 	}
 };
 
-void TreeMenu::MenuScrollInternal(GenlistEvent* eventSource,
+void TreeMenu::MenuScrollInternal(GenlistEvent::Type* eventSource,
 		Evas_Object* objSource, Elm_Object_Item* genlistItem) {
 	isScrolled = true;
 }
 
-void TreeMenu::MenuPressedInternal(GenlistEvent* eventSource,
+void TreeMenu::MenuPressedInternal(GenlistEvent::Type* eventSource,
 		Evas_Object* objSource, Elm_Object_Item* genlistItem) {
 	if (!isClickPersist) {
 		auto icon = elm_object_item_part_content_get(genlistItem, "menu_icon");
@@ -41,7 +44,7 @@ void TreeMenu::MenuPressedInternal(GenlistEvent* eventSource,
 	}
 }
 
-void TreeMenu::MenuReleasedInternal(GenlistEvent* eventSource,
+void TreeMenu::MenuReleasedInternal(GenlistEvent::Type* eventSource,
 		Evas_Object* objSource, Elm_Object_Item* genlistItem) {
 	if (!isClickPersist) {
 		auto item = reinterpret_cast<TreeMenuItemPackage*>(elm_object_item_data_get(genlistItem));
@@ -57,7 +60,7 @@ void TreeMenu::MenuReleasedInternal(GenlistEvent* eventSource,
 	}
 }
 
-void TreeMenu::MenuSelectedInternal(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* genlistItem)
+void TreeMenu::MenuSelectedInternal(GenlistEvent::Type* eventSource, Evas_Object* objSource, Elm_Object_Item* genlistItem)
 {
 	if (isClickPersist) {
 		auto item = reinterpret_cast<TreeMenuItemPackage*>(elm_object_item_data_get(genlistItem));
@@ -76,12 +79,12 @@ void TreeMenu::MenuSelectedInternal(GenlistEvent* eventSource, Evas_Object* objS
 	}
 }
 
-void TreeMenu::MenuUnselectedInternal(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* genlistItem)
+void TreeMenu::MenuUnselectedInternal(GenlistEvent::Type* eventSource, Evas_Object* objSource, Elm_Object_Item* genlistItem)
 {
 
 }
 
-void TreeMenu::MenuExpanded(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* genlistItem)
+void TreeMenu::MenuExpanded(GenlistEvent::Type* eventSource, Evas_Object* objSource, Elm_Object_Item* genlistItem)
 {
 	auto item = reinterpret_cast<TreeMenuItemPackage*>(elm_object_item_data_get(genlistItem));
 	GenerateSubMenu(item->menuItemRef);
@@ -89,7 +92,7 @@ void TreeMenu::MenuExpanded(GenlistEvent* eventSource, Evas_Object* objSource, E
 	elm_genlist_item_fields_update(genlistItem, "elm.swallow.end", ELM_GENLIST_ITEM_FIELD_CONTENT);
 }
 
-void TreeMenu::MenuContracted(GenlistEvent* eventSource, Evas_Object* objSource, Elm_Object_Item* genlistItem)
+void TreeMenu::MenuContracted(GenlistEvent::Type* eventSource, Evas_Object* objSource, Elm_Object_Item* genlistItem)
 {
 	auto item = reinterpret_cast<TreeMenuItemPackage*>(elm_object_item_data_get(genlistItem));
 	elm_genlist_item_subitems_clear(genlistItem);
@@ -111,6 +114,7 @@ Evas_Object* TreeMenu::CreateComponent(Evas_Object* root)
 
 		if (!strcmp("elm.text", part))
 		{
+			// TODO Caution when reverting Text to use property object
 			auto text = item->menuItemRef->Text->c_str();
 			return strdup(text);
 		}
@@ -234,17 +238,23 @@ Evas_Object* TreeMenu::CreateComponent(Evas_Object* root)
 	elm_genlist_block_count_set(genlist, 14);
 	elm_genlist_mode_set(genlist, ELM_LIST_COMPRESS);
 	elm_genlist_homogeneous_set(genlist, EINA_TRUE);
-
+	/*
 	evas_object_smart_callback_add(genlist, "scroll", EFL::EvasSmartEventHandler, &eventMenuScrollInternal);
-
 	evas_object_smart_callback_add(genlist, "pressed", EFL::EvasSmartEventHandler, &eventMenuPressedInternal);
 	evas_object_smart_callback_add(genlist, "released", EFL::EvasSmartEventHandler, &eventMenuReleasedInternal);
-
 	evas_object_smart_callback_add(genlist, "selected", EFL::EvasSmartEventHandler, &eventMenuSelectedInternal);
 	evas_object_smart_callback_add(genlist, "unselected", EFL::EvasSmartEventHandler, &eventMenuUnselectedInternal);
-
 	evas_object_smart_callback_add(genlist, "expanded", EFL::EvasSmartEventHandler, &eventMenuExpanded);
 	evas_object_smart_callback_add(genlist, "contracted", EFL::EvasSmartEventHandler, &eventMenuContracted);
+	*/
+
+	eventMenuScrollInternal.Bind(genlist, "scroll");
+	eventMenuPressedInternal.Bind(genlist, "pressed");
+	eventMenuReleasedInternal.Bind(genlist, "released");
+	eventMenuSelectedInternal.Bind(genlist, "selected");
+	eventMenuUnselectedInternal.Bind(genlist, "unselected");
+	eventMenuExpanded.Bind(genlist, "expanded");
+	eventMenuContracted.Bind(genlist, "contracted");
 
 	GenerateRootMenu();
 
@@ -262,7 +272,8 @@ void TreeMenu::GenerateRootMenu()
 TreeMenu::TreeMenu() :
 	genlist(nullptr), itemClass(nullptr), submenuItemClass(nullptr),
 	currentlySelected(nullptr), autoExpand(false),
-	MenuItems(this), AutoExpanded(this)
+	MenuItems(this), AutoExpanded(this),
+	IconEdjeFile(this)
 
 {
 	eventMenuScrollInternal +=  EventHandler(TreeMenu::MenuScrollInternal);
@@ -367,7 +378,7 @@ void TFC::Components::TreeMenu::AddMenu(const std::vector<MenuItem*>& listOfMenu
 
 }
 
-TFC::Components::CustomMenuStyle::CustomMenuStyle(CString style)
+TFC::Components::CustomMenuStyle::CustomMenuStyle(char const* style)
 {
 	this->customStyle = elm_genlist_item_class_new();
 	this->customStyle->item_style = style;
@@ -401,7 +412,7 @@ TFC::Components::CustomMenuStyle::~CustomMenuStyle()
 	elm_genlist_item_class_free(this->customStyle);
 }
 
-const std::vector<MenuItem*>& TFC::Components::TreeMenu::GetMenuItems()
+std::vector<MenuItem*> const& TFC::Components::TreeMenu::GetMenuItems() const
 {
 	return this->rootMenu;
 }
@@ -433,7 +444,7 @@ void TFC::Components::TreeMenu::AddMenuAt(int index, MenuItem* menu)
 	}
 }
 
-bool TFC::Components::TreeMenu::GetAutoExpanded()
+bool TFC::Components::TreeMenu::GetAutoExpanded() const
 {
 	return autoExpand;
 }
@@ -453,4 +464,12 @@ void TFC::Components::TreeMenu::RemoveMenu(MenuItem* menu)
 void TFC::Components::TreeMenu::ResetCurrentlySelectedItem()
 {
 	currentlySelected = nullptr;
+}
+
+const std::string& TFC::Components::TreeMenu::GetIconEdjeFile() const {
+	return this->iconEdjeFile;
+}
+
+void TFC::Components::TreeMenu::SetIconEdjeFile(const std::string& val) {
+	this->iconEdjeFile = val;
 }
