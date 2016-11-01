@@ -30,7 +30,8 @@ namespace Components {
  * class object and EFL functions.
  */
 class LIBAPI ComponentBase:
-		virtual public TFC::EventEmitterClass<ComponentBase>,
+		TFC::EventEmitterClass<ComponentBase>,
+		virtual protected EFL::EFLProxyClass,
 		public TFC::PropertyClass<ComponentBase>
 {
 private:
