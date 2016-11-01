@@ -29,22 +29,23 @@ struct EvasEventSourceInfo
 	Evas_Object* obj;
 };
 
-class EvasSmartEventObject : Core::EventObject<Evas_Object*, void*>
+template<typename TEventData = void>
+class EvasSmartEventObjectBase : Core::EventObject<Evas_Object*, TEventData*>
 {
 public:
-	typedef Core::EventObject<Evas_Object*, void*> Type;
+	typedef Core::EventObject<Evas_Object*, TEventData*> Type;
 
-	EvasSmartEventObject();
-	~EvasSmartEventObject();
+	EvasSmartEventObjectBase();
+	~EvasSmartEventObjectBase();
 
 	void Bind(Evas_Object* obj, char const* eventName);
 	void Unbind();
 
 
-	using Core::EventObject<Evas_Object*, void*>::operator +=;
-	using Core::EventObject<Evas_Object*, void*>::operator -=;
+	using Core::EventObject<Evas_Object*, TEventData*>::operator +=;
+	using Core::EventObject<Evas_Object*, TEventData*>::operator -=;
 private:
-	using Core::EventObject<Evas_Object*, void*>::operator ();
+	using Core::EventObject<Evas_Object*, TEventData*>::operator ();
 
 	static void Callback(void* data, Evas_Object* obj, void* eventInfo);
 	static void Finalize(void* data, Evas* e, Evas_Object* obj, void* event_info);
@@ -52,6 +53,8 @@ private:
 	char const* eventName;
 	Evas_Object* boundObject;
 };
+
+typedef EvasSmartEventObjectBase<> EvasSmartEventObject;
 
 class EvasObjectEventObject : Core::EventObject<EvasEventSourceInfo, void*>
 {
@@ -158,6 +161,20 @@ void TFC::EFL::EFLProxyClass::InvokeLater(void (T::*func)(void))
 		(ptr->*func)();
 		delete p;
 	}, p);
+}
+
+template<typename T>
+void TFC::EFL::EvasSmartEventObjectBase<T>::Callback(void* data,Evas_Object* obj, void* eventInfo)
+{
+	(*reinterpret_cast<EvasSmartEventObject*>(data))(obj, reinterpret_cast<T*>(eventInfo));
+}
+
+template<typename T>
+void TFC::EFL::EvasSmartEventObjectBase<T>::Finalize(void *data, Evas *e, Evas_Object *obj, void *event_info)
+{
+	auto d = reinterpret_cast<EvasSmartEventObject*>(data);
+	d->boundObject = nullptr;
+	d->eventName = nullptr;
 }
 
 #endif /* EFL_NEW_H_ */
