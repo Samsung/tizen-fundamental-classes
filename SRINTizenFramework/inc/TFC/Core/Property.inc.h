@@ -17,7 +17,7 @@
 
 
 
-#include "SRIN/Core/Introspect.h"
+#include "TFC/Core/Introspect.h"
 
 template<typename TClass>
 class TFC::PropertyClass
