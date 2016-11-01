@@ -115,7 +115,7 @@ public:
  * Class that contains a list of adapter items.
  * Provides basic list primitives such as adding items, removing items, and clearing the list.
  */
-class LIBAPI Adapter
+class LIBAPI Adapter : public EventEmitterClass<Adapter>
 {
 public:
 	/**
@@ -187,12 +187,12 @@ public:
 	/**
 	 * Event that will be triggered when an item is added to the list.
 	 */
-	Event<Adapter*, AdapterItem*> eventItemAdd;
+	Event<AdapterItem*> eventItemAdd;
 
 	/**
 	 * Event that will be triggered when items are removed from the list.
 	 */
-	Event<Adapter*, AdapterItem*> eventItemRemove;
+	Event<AdapterItem*> eventItemRemove;
 
 protected:
 	void AddItemInternal(void* data, AdapterItemClassBase* itemClass);
