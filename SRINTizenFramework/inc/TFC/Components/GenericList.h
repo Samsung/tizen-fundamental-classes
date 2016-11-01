@@ -57,7 +57,7 @@ namespace Components {
 		/**
 		 * Method to get whether the item is clickable or not.
 		 */
-		bool IsItemClickEnabled();
+		bool IsItemClickEnabled() const;
 	};
 
 	/**
@@ -162,8 +162,106 @@ namespace Components {
 	 * showing back to top indicator after certain amount of scroll, and longpressing items.
 	 * It uses adapter pattern for appending and removing items.
 	 */
-	class LIBAPI GenericList : public ComponentBase
+	class LIBAPI GenericList :
+		public ComponentBase,
+		EventEmitterClass<GenericList>,
+		PropertyClass<GenericList>
 	{
+		using EventEmitterClass<GenericList>::Event;
+		using PropertyClass<GenericList>::Property;
+	public:
+		struct ItemSignalEventInfo;
+
+		/**
+		 * Constructor for GenericList.
+		 */
+		GenericList();
+
+		~GenericList();
+
+
+		/**
+		 * Method to reset scroll position to top.
+		 *
+		 * @param animated If true, the resetting procedure will be animated.
+		 */
+		void ResetScroll(bool animated);
+
+		/**
+		 * Event that will be triggered when the list is scrolled.
+		 */
+		Event<void*> eventScrolled;
+
+		/**
+		 * Event that will be triggered when the list is scrolled down.
+		 */
+		Event<void*> eventScrolledDown;
+
+		/**
+		 * Event that will be triggered when the list is scrolled up.
+		 */
+		Event<void*> eventScrolledUp;
+
+		/**
+		 * Event that will be triggered when the list is scrolled to the bottom of the list.
+		 */
+		Event<void*> eventScrolledBottom;
+
+		/**
+		 * Event that will be triggered when the list is scrolled to the top of the list.
+		 */
+		Event<void*> eventScrolledTop;
+
+		/**
+		 * Event that will be triggered when the dummy bottom-most item on the list is realized.
+		 */
+		Event<void*> eventReachingBottom;
+
+		/**
+		 * Event that will be triggered when an item on the list is clicked.
+		 */
+		Event<void*> eventItemClicked;
+
+		/**
+		 * Event that will be triggered when an item on the list is longpressed.
+		 */
+		Event<void*> eventItemLongClicked;
+
+		/**
+		 * Event that will be triggered when the list is starting to scroll.
+		 */
+		Event<void*> eventScrollingStart;
+
+		/**
+		 * Event that will be triggered when the list is ending its scroll.
+		 */
+		Event<void*> eventScrollingEnd;
+
+		/**
+		 * Event that will be triggered when the back to top scroll threshold is passed (so it will be appropriate to enable the back to top action).
+		 */
+		Event<bool*> eventShowBackToTop;
+
+		/**
+		 * Event that can be used to customize the dummy bottom-most item on the list by assigning an Evas_Object to its event data.
+		 */
+		Event<Evas_Object**> eventDummyBottomContent;
+
+		Event<Evas_Object**> eventDummyTopContent;
+		Event<void*> eventUnderscrolled;
+
+		Event<ItemSignalEventInfo> eventItemSignal;
+
+	protected:
+		/**
+		 * Method overriden from ComponentBase, creates the UI elements of the component.
+		 *
+		 * @param root The root/parent given for this component.
+		 *
+		 * @return An Elm_Genlist widget.
+		 */
+		virtual Evas_Object* CreateComponent(Evas_Object* root);
+
 	private:
 		Evas_Object* genlist;
 		Elm_Object_Item* dummyBottom;
@@ -184,16 +282,16 @@ namespace Components {
 		Adapter* GetDataSource();
 
 		void SetOverscroll(bool const& o);
-		bool GetOverscroll();
+		bool GetOverscroll() const;
 
 		void SetUnderscroll(bool const& o);
-		bool GetUnderscroll();
+		bool GetUnderscroll() const;
 
 		void SetLongClicked(bool const& o);
-		bool GetLongClicked();
+		bool GetLongClicked() const;
 
 		void SetBackToTopThreshold(int const& o);
-		int GetBackToTopThreshold();
+		int GetBackToTopThreshold() const;
 
 		void AppendItemToGenlist(Adapter::AdapterItem* data);
 
@@ -220,138 +318,58 @@ namespace Components {
 		EvasSmartEvent eventItemUnrealized;
 		ObjectItemEdjeSignalEvent eventItemSignalInternal;
 
-		
-		void OnScrolledInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData);
-		void OnScrolledDownInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData);
-		void OnScrolledUpInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData);
-		void OnScrolledBottomInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData);
-		void OnScrolledTopInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData);
-		void OnDummyRealized(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData);
-		void OnScrollingStart(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData);
-		void OnScrollingEnd(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData);
-		void OnLongPressedInternal(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData);
-		void OnItemSignalEmit(EFL::ObjectItemEdjeSignalEvent* event, Elm_Object_Item* obj, EFL::EdjeSignalInfo eventData);
-		void OnItemUnrealized(EFL::EvasSmartEvent* event, Evas_Object* obj, void* eventData);
-		
-	protected:
-		/**
-		 * Method overriden from ComponentBase, creates the UI elements of the component.
-		 *
-		 * @param root The root/parent given for this component.
-		 *
-		 * @return An Elm_Genlist widget.
-		 */
-		virtual Evas_Object* CreateComponent(Evas_Object* root);
+
+		void OnScrolledInternal(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData);
+		void OnScrolledDownInternal(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData);
+		void OnScrolledUpInternal(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData);
+		void OnScrolledBottomInternal(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData);
+		void OnScrolledTopInternal(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData);
+		void OnDummyRealized(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData);
+		void OnScrollingStart(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData);
+		void OnScrollingEnd(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData);
+		void OnLongPressedInternal(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData);
+		void OnItemSignalEmit(ObjectItemEdjeSignalEvent::Type* event, Elm_Object_Item* obj, EFL::EdjeSignalInfo eventData);
+		void OnItemUnrealized(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData);
+
+
 	public:
-		/**
-		 * Constructor for GenericList.
-		 */
-		GenericList();
-
-		~GenericList();
-
-
-		/**
-		 * Method to reset scroll position to top.
-		 *
-		 * @param animated If true, the resetting procedure will be animated.
-		 */
-		void ResetScroll(bool animated);
-
+		// Property Declaration
 		/**
 		 * Property that enables getting & setting the adapter of genlist.
 		 * The return/parameter type is Adapter.
 		 */
-		Property<GenericList, Adapter*>::GetSet<&GenericList::GetDataSource, &GenericList::SetDataSource> DataSource;
+		Property<Adapter*>::GetSet<&GenericList::GetDataSource, &GenericList::SetDataSource> DataSource;
 
 		/**
 		 * Property that enables getting & setting whether overscrolling (end of list action) is enabled or not.
 		 * The return/parameter type is bool.
 		 */
-		Property<GenericList, bool>::GetSet<&GenericList::GetOverscroll, &GenericList::SetOverscroll> Overscroll;
+		Property<bool>::GetSet<&GenericList::GetOverscroll, &GenericList::SetOverscroll> Overscroll;
 
-		Property<GenericList, bool>::GetSet<&GenericList::GetUnderscroll, &GenericList::SetUnderscroll> Underscroll;
+		Property<bool>::GetSet<&GenericList::GetUnderscroll, &GenericList::SetUnderscroll> Underscroll;
 
 
 		/**
 		 * Property that enables getting & setting whether longpressing item is enabled or not.
 		 * The return/parameter type is bool.
 		 */
-		Property<GenericList, bool>::GetSet<&GenericList::GetLongClicked, &GenericList::SetLongClicked> IsLongClicked;
+		Property<bool>::GetSet<&GenericList::GetLongClicked, &GenericList::SetLongClicked> IsLongClicked;
 
 		/**
 		 * Property that enables getting & setting the threshold for showing back to top action.
 		 * The return/parameter type is int.
 		 */
-		Property<GenericList, int>::GetSet<&GenericList::GetBackToTopThreshold, &GenericList::SetBackToTopThreshold> BackToTopThreshold;
-
-		/**
-		 * Event that will be triggered when the list is scrolled.
-		 */
-		Event<GenericList*, void*> eventScrolled;
-
-		/**
-		 * Event that will be triggered when the list is scrolled down.
-		 */
-		Event<GenericList*, void*> eventScrolledDown;
-
-		/**
-		 * Event that will be triggered when the list is scrolled up.
-		 */
-		Event<GenericList*, void*> eventScrolledUp;
-
-		/**
-		 * Event that will be triggered when the list is scrolled to the bottom of the list.
-		 */
-		Event<GenericList*, void*> eventScrolledBottom;
-
-		/**
-		 * Event that will be triggered when the list is scrolled to the top of the list.
-		 */
-		Event<GenericList*, void*> eventScrolledTop;
-
-		/**
-		 * Event that will be triggered when the dummy bottom-most item on the list is realized.
-		 */
-		Event<GenericList*, void*> eventReachingBottom;
-
-		/**
-		 * Event that will be triggered when an item on the list is clicked.
-		 */
-		Event<GenericList*, void*> eventItemClicked;
-
-		/**
-		 * Event that will be triggered when an item on the list is longpressed.
-		 */
-		Event<GenericList*, void*> eventItemLongClicked;
-
-		/**
-		 * Event that will be triggered when the list is starting to scroll.
-		 */
-		Event<GenericList*, void*> eventScrollingStart;
-
-		/**
-		 * Event that will be triggered when the list is ending its scroll.
-		 */
-		Event<GenericList*, void*> eventScrollingEnd;
-
-		/**
-		 * Event that will be triggered when the back to top scroll threshold is passed (so it will be appropriate to enable the back to top action).
-		 */
-		Event<GenericList*, bool*> eventShowBackToTop;
-
-		/**
-		 * Event that can be used to customize the dummy bottom-most item on the list by assigning an Evas_Object to its event data.
-		 */
-		Event<GenericList*, Evas_Object**> eventDummyBottomContent;
-
-		Event<GenericList*, Evas_Object**> eventDummyTopContent;
-		Event<GenericList*, void*> eventUnderscrolled;
-
-		Event<Adapter::AdapterItem*, EFL::EdjeSignalInfo> eventItemSignal;
+		Property<int>::GetSet<&GenericList::GetBackToTopThreshold, &GenericList::SetBackToTopThreshold> BackToTopThreshold;
 	};
 }
 }
+
+struct TFC::Components::GenericList::ItemSignalEventInfo
+{
+	TFC::Components::Adapter::AdapterItem* adapterItem;
+	TFC::EFL::EdjeSignalInfo edjeSignalInfo;
+};
+
 
 template<class T>
 TFC::Components::GenericListItemClass<T>::GenericListItemClass(char const* styleName) : GenericListItemClassBase(styleName)

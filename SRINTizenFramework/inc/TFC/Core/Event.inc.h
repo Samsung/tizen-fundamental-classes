@@ -240,4 +240,7 @@ void TFC::Core::SharedEventObject<TObjectSource, TEventData>:: operator()(
 	this->get()->operator ()(objSource, eventData);
 }
 
+#define EventHandler(EVENT_METHOD) { this, & EVENT_METHOD }
+
+
 #endif

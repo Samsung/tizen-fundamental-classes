@@ -129,7 +129,7 @@ private:
  * oriented infrastructure when using EFL event functionality directly. EFL proxy objects overcome
  * this limitation by wrapping EFL event with TFC's Core Event Handling infrastructure.
  */
-class EFLProxyClass : public TFC::EventClass
+class EFLProxyClass : public virtual TFC::EventClass
 {
 protected:
 	using EvasSmartEvent 			= EvasSmartEventObject;
