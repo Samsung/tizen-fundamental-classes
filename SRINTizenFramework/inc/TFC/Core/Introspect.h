@@ -30,17 +30,7 @@ public:
 	static constexpr bool Value = sizeof(Test<T>(0)) == sizeof(Correct);
 };
 
-template<typename T, typename = void>
-class MemberAccessOperator
-{
 
-};
-
-template<typename T>
-class MemberAccessOperator<T, std::enable_if<HasMemberAccessOperator<T>::Value, T>::type>
-{
-
-};
 
 }}}
 
