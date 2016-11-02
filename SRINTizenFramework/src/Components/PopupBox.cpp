@@ -18,24 +18,29 @@ LIBAPI Evas_Object* TFC::Components::PopupBox::CreateComponent(Evas_Object* root
 	return nullptr;
 }
 
-LIBAPI Evas_Object* TFC::Components::PopupBox::CreateContent(Evas_Object* root) {
+LIBAPI Evas_Object* TFC::Components::PopupBox::CreateContent(Evas_Object* root)
+{
 	return nullptr;
 }
 
-LIBAPI void TFC::Components::PopupBox::SetTitle(const std::string& text) {
+LIBAPI void TFC::Components::PopupBox::SetTitle(std::string const& text)
+{
 	this->title = text;
 	elm_object_part_text_set(this->popup, "title,text", this->title.c_str());
 }
 
-LIBAPI std::string& TFC::Components::PopupBox::GetTitle() {
+LIBAPI std::string const& TFC::Components::PopupBox::GetTitle() const
+{
 	return this->title;
 }
 
-LIBAPI void TFC::Components::PopupBox::SetMessage(const std::string& text) {
+LIBAPI void TFC::Components::PopupBox::SetMessage(std::string const& text)
+{
 	this->message = text;
 }
 
-LIBAPI std::string& TFC::Components::PopupBox::GetMessageString() {
+LIBAPI std::string const& TFC::Components::PopupBox::GetMessageString() const
+{
 	return this->message;
 }
 
@@ -81,7 +86,8 @@ LIBAPI void TFC::Components::PopupBox::Show() {
 		elm_object_style_set(btn, "popup");
 		elm_object_text_set(btn, buttonOneText.c_str());
 		elm_object_part_content_set(popup, "button1", btn);
-		evas_object_smart_callback_add(btn, "clicked", EFL::EvasSmartEventHandler, &eventButtonOneClick);
+		//evas_object_smart_callback_add(btn, "clicked", EFL::EvasSmartEventHandler, &eventButtonOneClick);
+		eventButtonOneClick.Bind(btn, "clicked");
 
 		if(buttonOneImage.size() > 0)
 		{
@@ -101,7 +107,8 @@ LIBAPI void TFC::Components::PopupBox::Show() {
 		elm_object_style_set(btn, "popup");
 		elm_object_text_set(btn, buttonTwoText.c_str());
 		elm_object_part_content_set(popup, "button2", btn);
-		evas_object_smart_callback_add(btn, "clicked", EFL::EvasSmartEventHandler, &eventButtonTwoClick);
+		//evas_object_smart_callback_add(btn, "clicked", EFL::EvasSmartEventHandler, &eventButtonTwoClick);
+		eventButtonTwoClick.Bind(btn, "clicked");
 
 		if(buttonTwoImage.size() > 0)
 		{
@@ -123,7 +130,8 @@ LIBAPI void TFC::Components::PopupBox::Show() {
 		elm_object_style_set(btn, "popup");
 		elm_object_text_set(btn, buttonThreeText.c_str());
 		elm_object_part_content_set(popup, "button3", btn);
-		evas_object_smart_callback_add(btn, "clicked", EFL::EvasSmartEventHandler, &eventButtonThreeClick);
+		//evas_object_smart_callback_add(btn, "clicked", EFL::EvasSmartEventHandler, &eventButtonThreeClick);
+		eventButtonThreeClick.Bind(btn, "clicked");
 
 		if(buttonThreeImage.size() > 0)
 		{
@@ -153,17 +161,17 @@ LIBAPI void TFC::Components::PopupBox::Dismiss() {
 
 }
 
-void TFC::Components::PopupBox::SetOrientation(const Elm_Popup_Orient& orientation) {
+void TFC::Components::PopupBox::SetOrientation(Elm_Popup_Orient const& orientation) {
 	this->orientation   = orientation;
 }
 
-Elm_Popup_Orient& TFC::Components::PopupBox::GetOrientation() {
+Elm_Popup_Orient const& TFC::Components::PopupBox::GetOrientation() const{
 	return this->orientation;
 }
 
 LIBAPI bool TFC::Components::PopupBox::BackButtonClicked()
 {
-	dlog_print(DLOG_DEBUG, LOG_TAG, "Dismiss via back button");
+	//dlog_print(DLOG_DEBUG, LOG_TAG, "Dismiss via back button");
 	Dismiss();
 	return false;
 }
