@@ -175,7 +175,7 @@ public:
 
 	static ApplicationBase* GetCurrentInstance();
 private:
-	static char* resourcePath;
+	static char const* resourcePath;
 	static ApplicationBase* currentInstance;
 };
 

@@ -7,43 +7,7 @@
 
 #include "TFC/EFL.new.h"
 
-LIBAPI
-TFC::EFL::EvasSmartEventObject::EvasSmartEventObject() : eventName(nullptr), boundObject(nullptr)
-{
 
-}
-
-LIBAPI
-TFC::EFL::EvasSmartEventObject::~EvasSmartEventObject()
-{
-	this->Unbind();
-}
-
-LIBAPI
-void TFC::EFL::EvasSmartEventObject::Bind(Evas_Object* obj,const char* eventName)
-{
-	if(this->boundObject != nullptr)
-		throw EventBoundException();
-
-	evas_object_smart_callback_add(obj, eventName, Callback, this);
-	evas_object_event_callback_add(obj, EVAS_CALLBACK_DEL, Finalize, this);
-
-	this->boundObject = obj;
-	this->eventName = eventName;
-}
-
-LIBAPI
-void TFC::EFL::EvasSmartEventObject::Unbind()
-{
-	if(this->boundObject == nullptr)
-		return;
-
-	evas_object_smart_callback_del_full(boundObject, eventName, Callback, this);
-	evas_object_event_callback_del_full(boundObject, EVAS_CALLBACK_DEL, Finalize, this);
-
-	this->boundObject = nullptr;
-	this->eventName = nullptr;
-}
 
 
 

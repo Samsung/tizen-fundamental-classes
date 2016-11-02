@@ -40,7 +40,7 @@ void TFC::Framework::ServiceApplicationBase::LowMemory(
 }
 
 TFC::Framework::ServiceApplicationBase::ServiceApplicationBase(
-		CString packageName) {
+		char const* packageName) {
 }
 
 TFC::Framework::ServiceApplicationBase::~ServiceApplicationBase() {

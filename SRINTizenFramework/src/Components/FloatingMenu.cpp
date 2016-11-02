@@ -120,14 +120,14 @@ void TFC::Components::FloatingMenu::ShowMenu()
 	for(auto item : rootMenu)
 	{
 		Evas_Object* img = nullptr;
-		if(item->MenuIcon.length())
+		if(item->MenuIcon->length())
 		{
 			img = elm_image_add(contextMenu);
-			elm_image_file_set(img, Framework::ApplicationBase::GetResourcePath(item->MenuIcon.c_str()).c_str(), nullptr);
+			elm_image_file_set(img, Framework::ApplicationBase::GetResourcePath(item->MenuIcon->c_str()).c_str(), nullptr);
 		}
 		auto itemPackage = new ContextMenuPackage({this, item});
 		this->currentItemPackages.push_back(itemPackage);
-		elm_ctxpopup_item_append(contextMenu, item->Text.c_str(), img, FloatingMenu_ItemClickHandler, itemPackage);
+		elm_ctxpopup_item_append(contextMenu, item->Text->c_str(), img, FloatingMenu_ItemClickHandler, itemPackage);
 	}
 
 	Evas_Coord x, y, w , h;

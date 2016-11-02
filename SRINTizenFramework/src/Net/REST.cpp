@@ -19,10 +19,11 @@
 #include <istream>
 #include <sstream>
 #include <vector>
+#include <dlog.h>
 
 using namespace TFC::Net;
 
-void RESTServiceTemplateBase::RegisterParameter(ParameterType paramType, CString key, IServiceParameter* ref)
+void RESTServiceTemplateBase::RegisterParameter(ParameterType paramType, char const* key, IServiceParameter* ref)
 {
 	if (paramType == ParameterType::Header)
 	{

@@ -167,15 +167,53 @@ void TFC::EFL::EFLProxyClass::InvokeLater(void (T::*func)(void))
 template<typename T>
 void TFC::EFL::EvasSmartEventObjectBase<T>::Callback(void* data,Evas_Object* obj, void* eventInfo)
 {
-	(*reinterpret_cast<EvasSmartEventObject*>(data))(obj, reinterpret_cast<T*>(eventInfo));
+	(*reinterpret_cast<EvasSmartEventObjectBase<T>*>(data))(obj, reinterpret_cast<T*>(eventInfo));
 }
 
 template<typename T>
 void TFC::EFL::EvasSmartEventObjectBase<T>::Finalize(void *data, Evas *e, Evas_Object *obj, void *event_info)
 {
-	auto d = reinterpret_cast<EvasSmartEventObject*>(data);
+	auto d = reinterpret_cast<EvasSmartEventObjectBase<T>*>(data);
 	d->boundObject = nullptr;
 	d->eventName = nullptr;
+}
+
+template<typename T>
+TFC::EFL::EvasSmartEventObjectBase<T>::EvasSmartEventObjectBase() : eventName(nullptr), boundObject(nullptr)
+{
+
+}
+
+template<typename T>
+TFC::EFL::EvasSmartEventObjectBase<T>::~EvasSmartEventObjectBase()
+{
+	this->Unbind();
+}
+
+template<typename T>
+void TFC::EFL::EvasSmartEventObjectBase<T>::Bind(Evas_Object* obj,const char* eventName)
+{
+	if(this->boundObject != nullptr)
+		throw EventBoundException();
+
+	evas_object_smart_callback_add(obj, eventName, Callback, this);
+	evas_object_event_callback_add(obj, EVAS_CALLBACK_DEL, Finalize, this);
+
+	this->boundObject = obj;
+	this->eventName = eventName;
+}
+
+template<typename T>
+void TFC::EFL::EvasSmartEventObjectBase<T>::Unbind()
+{
+	if(this->boundObject == nullptr)
+		return;
+
+	evas_object_smart_callback_del_full(boundObject, eventName, Callback, this);
+	evas_object_event_callback_del_full(boundObject, EVAS_CALLBACK_DEL, Finalize, this);
+
+	this->boundObject = nullptr;
+	this->eventName = nullptr;
 }
 
 #endif /* EFL_NEW_H_ */

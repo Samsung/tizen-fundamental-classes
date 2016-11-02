@@ -89,6 +89,9 @@ SimpleReadOnlyProperty<ApplicationBase, ApplicationBase*> ApplicationBase::Curre
 SimpleReadOnlyProperty<ApplicationBase, char const*> ApplicationBase::ResourcePath;
 */
 
+ApplicationBase* ApplicationBase::currentInstance = nullptr;
+char const*		 ApplicationBase::resourcePath = nullptr;
+
 int ApplicationBase::Main(ApplicationBase* app, int argc, char* argv[])
 {
 	ApplicationBase::currentInstance = app;

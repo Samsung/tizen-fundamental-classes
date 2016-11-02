@@ -14,12 +14,12 @@
 namespace TFC {
 namespace Infrastructures {
 
-class LIBAPI ScheduledEvent : public ScheduledTask, public EventClass
+class LIBAPI ScheduledEvent : public ScheduledTask, public EventEmitterClass<ScheduledEvent>
 {
 protected:
 	virtual void Run();
 public:
-	Event<ScheduledEvent*, void*> eventRunTask;
+	Event<void*> eventRunTask;
 };
 
 }

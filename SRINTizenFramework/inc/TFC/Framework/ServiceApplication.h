@@ -53,7 +53,7 @@ namespace TFC { namespace Framework {
 		 */
 		virtual void LowMemory(app_event_info_h event_info);
 	public:
-		ServiceApplicationBase(CString packageName);
+		ServiceApplicationBase(char const* packageName);
 		virtual ~ServiceApplicationBase();
 
 		static int Main(ServiceApplicationBase* appObj, int argc, char* argv[]);

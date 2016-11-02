@@ -135,9 +135,10 @@ public:
  * Template class that uses its template argument to provide type for responseObj.
  */
 template<class T>
-class RESTResult: public RESTResultBase, public PropertyClass
+class RESTResult: public RESTResultBase, public PropertyClass<RESTResult<T>>
 {
-
+	template<typename TP>
+	using Property = typename PropertyClass<RESTResult<T>>::template Property<TP>;
 private:
 	T* GetResponse()
 	{
@@ -199,7 +200,7 @@ public:
 	/**
 	 * Property that enable getting pointer to responseObj.
 	 */
-	typename Property<RESTResult, T*>::template Get<&RESTResult::GetResponse> Response;
+	typename Property<T*>::template Get<&RESTResult::GetResponse> Response;
 
 };
 
@@ -222,7 +223,7 @@ public:
 	{
 	private:
 		RESTServiceTemplateBase* instance;
-		CString key;
+		char const* key;
 	public:
 		/**
 		 * Constructor for Parameter class. It will register the parameter to REST Service,
@@ -231,7 +232,7 @@ public:
 		 * @param instance REST Service object pointer that owns the parameter.
 		 * @param key Constant string that will be copied as key of the parameter.
 		 */
-		Parameter(RESTServiceTemplateBase* instance, CString key) :
+		Parameter(RESTServiceTemplateBase* instance, char const* key) :
 			key(key), instance(instance)
 		{
 			this->isSet = false;
@@ -271,7 +272,7 @@ private:
 		return nullptr;
 	}
 	RESTResultBase PerformCall();
-	void RegisterParameter(ParameterType paramType, CString key, IServiceParameter* ref);
+	void RegisterParameter(ParameterType paramType, char const* key, IServiceParameter* ref);
 
 	bool working;
 	HTTPMode httpMode;
@@ -279,8 +280,8 @@ private:
 	struct curl_slist* PrepareHeader();
 	void PrepareUrl();
 
-	std::vector<std::pair<CString, IServiceParameter*>> queryStringParam;
-	std::vector<std::pair<CString, IServiceParameter*>> headerParam;
+	std::vector<std::pair<char const*, IServiceParameter*>> queryStringParam;
+	std::vector<std::pair<char const*, IServiceParameter*>> headerParam;
 	std::unordered_map<std::string, IServiceParameter*> urlParam;
 	std::unordered_map<std::string, IServiceParameter*> postDataParam;
 };

@@ -65,7 +65,7 @@ struct MemberFunction<TReturn (TClass::*)(TArgs...)>
 	typedef TClass	DeclaringType;
 
 	template<size_t idx>
-	using Args = std::tuple_element<idx, std::tuple<TArgs...>>::type;
+	using Args = typename std::tuple_element<idx, std::tuple<TArgs...>>::type;
 };
 
 }}}

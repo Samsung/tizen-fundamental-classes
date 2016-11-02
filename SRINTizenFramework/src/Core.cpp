@@ -10,19 +10,6 @@
 #include "TFC/Core.new.h"
 #include <pthread.h>
 
-
-
-LIBAPI PropertyClass::PropertyBase::PropertyBase(void* instance)
-{
-	// Get current instance from thread specific storage
-	this->instance = instance;
-}
-
-LIBAPI ObjectClass::~ObjectClass()
-{
-
-}
-
 LIBAPI TFC::Core::PropertyObjectBase::PropertyObjectBase(void* instance) : instance(instance)
 {
 

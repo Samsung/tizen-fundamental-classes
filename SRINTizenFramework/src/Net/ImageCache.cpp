@@ -18,6 +18,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <chrono>
+#include <dlog.h>
 
 #define DBNAME "ImageCache.db"
 
@@ -27,14 +28,14 @@ bool staticInitialized = false;
 std::string storagePath;
 std::string dbPath;
 sqlite3* db;
-CString tableDdl = "CREATE TABLE IF NOT EXISTS ImageCache ("
+char const* tableDdl = "CREATE TABLE IF NOT EXISTS ImageCache ("
 						"id INTEGER PRIMARY KEY,"
 						"url TEXT UNIQUE,"
 						"filename TEXT"
 					")";
 
-CString queryImage = "SELECT id, filename FROM ImageCache WHERE url = ?";
-CString queryInsert = "INSERT INTO ImageCache(url, filename) VALUES (?, ?)";
+char const* queryImage = "SELECT id, filename FROM ImageCache WHERE url = ?";
+char const* queryInsert = "INSERT INTO ImageCache(url, filename) VALUES (?, ?)";
 
 bool cacheInitFailed = false;
 
@@ -222,7 +223,7 @@ bool LIBAPI TFC::Net::ImageCache::RequireDownloading(const std::string& url, std
 	else if(queryResult == SQLITE_ROW)
 	{
 		filePath = storagePath;
-		filePath.append((CString)sqlite3_column_text(statement, 1));
+		filePath.append((char const*)sqlite3_column_text(statement, 1));
 		returnValue = false;
 	}
 
