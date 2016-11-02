@@ -20,8 +20,10 @@ LIBAPI Evas_Object* TFC::Components::Pager::CreateComponent(Evas_Object* root)
 
 	evas_object_size_hint_weight_set(this->pagerTop, EVAS_HINT_EXPAND, 0);
 	evas_object_size_hint_align_set(this->pagerTop, EVAS_HINT_FILL, EVAS_HINT_FILL);
-	elm_object_signal_callback_add(this->pagerTop, "elm,action,click,next", "", EFL::EdjeSignalEventHandler, &eventClickSignal);
-	elm_object_signal_callback_add(this->pagerTop, "elm,action,click,prev", "", EFL::EdjeSignalEventHandler, &eventClickSignal);
+	//elm_object_signal_callback_add(this->pagerTop, "elm,action,click,next", "", EFL::EdjeSignalEventHandler, &eventClickSignal);
+	//elm_object_signal_callback_add(this->pagerTop, "elm,action,click,prev", "", EFL::EdjeSignalEventHandler, &eventClickSignal);
+	eventClickSignal.Bind(this->pagerTop, "elm,action,click,next", "");
+	eventClickSignal.Bind(this->pagerTop, "elm,action,click,prev", "");
 	evas_object_show(this->pagerTop);
 
 	elm_box_pack_start(this->pagerBox, this->pagerTop);
@@ -33,8 +35,10 @@ LIBAPI Evas_Object* TFC::Components::Pager::CreateComponent(Evas_Object* root)
 
 	evas_object_size_hint_weight_set(this->pagerBottom, EVAS_HINT_EXPAND, 0);
 	evas_object_size_hint_align_set(this->pagerBottom, EVAS_HINT_FILL, EVAS_HINT_FILL);
-	elm_object_signal_callback_add(this->pagerBottom, "elm,action,click,next", "", EFL::EdjeSignalEventHandler, &eventClickSignal);
-	elm_object_signal_callback_add(this->pagerBottom, "elm,action,click,prev", "", EFL::EdjeSignalEventHandler, &eventClickSignal);
+	//elm_object_signal_callback_add(this->pagerBottom, "elm,action,click,next", "", EFL::EdjeSignalEventHandler, &eventClickSignal);
+	//elm_object_signal_callback_add(this->pagerBottom, "elm,action,click,prev", "", EFL::EdjeSignalEventHandler, &eventClickSignal);
+	eventClickSignal.Bind(this->pagerBottom, "elm,action,click,next", "");
+	eventClickSignal.Bind(this->pagerBottom, "elm,action,click,prev", "");
 	evas_object_show(this->pagerBottom);
 
 	elm_box_pack_end(this->pagerBox, this->pagerBottom);
@@ -72,9 +76,9 @@ LIBAPI Evas_Object* TFC::Components::Pager::CreateComponent(Evas_Object* root)
 
 	if(!this->UnderflowEnable)
 	{
-		this->CurrentIndex = 1;
+		this->currentIndex = 1;
 
-		int currentIndex = this->CurrentIndex;
+		int currentIndex = this->currentIndex;
 		int maxIndex = this->MaxIndex;
 
 		std::string txt(std::to_string(currentIndex));
@@ -95,31 +99,108 @@ LIBAPI Evas_Object* TFC::Components::Pager::CreateComponent(Evas_Object* root)
 		elm_object_signal_emit(this->pagerBottom, "disable_prev", "TFC");
 		elm_object_part_text_set(this->pagerTop, "page_info", this->UnderflowString->c_str());
 		elm_object_part_text_set(this->pagerBottom, "page_info", this->UnderflowString->c_str());
-		this->CurrentIndex = 0;
+		this->currentIndex = 0;
 		eventUnderflow(this, nullptr);
 	}
 
 	return this->pagerBox;
 }
 
-LIBAPI TFC::Components::Pager::Pager()
+Evas_Object* TFC::Components::Pager::GetPagerContent()
+{
+	return pagerContent;
+}
+
+int TFC::Components::Pager::GetCurrentIndex() const
+{
+	return currentIndex;
+}
+
+int TFC::Components::Pager::GetMaxIndex() const
+{
+	return maxIndex;
+}
+
+bool TFC::Components::Pager::GetUnderflowEnable() const
+{
+	return underflowEnable;
+}
+
+bool TFC::Components::Pager::GetOverflowEnable() const
+{
+	return overflowEnable;
+}
+
+const std::string& TFC::Components::Pager::GetUnderflowString() const
+{
+	return underflowString;
+}
+
+const std::string& TFC::Components::Pager::GetOverflowString() const
+{
+	return overflowString;
+}
+
+void TFC::Components::Pager::SetPagerContent(Evas_Object* content)
+{
+	this->pagerContent = content;
+}
+
+void TFC::Components::Pager::SetMaxIndex(const int& maxIndex)
+{
+	this->maxIndex = maxIndex;
+}
+
+void TFC::Components::Pager::SetUnderflowEnable(const bool& underflow)
+{
+	this->underflowEnable = underflow;
+}
+
+void TFC::Components::Pager::SetOverflowEnable(const bool& overflow)
+{
+	this->overflowEnable = overflow;
+}
+
+void TFC::Components::Pager::SetUnderflowString(const std::string& str)
+{
+	this->underflowString = str;
+}
+
+void TFC::Components::Pager::SetOverflowString(const std::string& str)
+{
+	this->overflowString = str;
+}
+
+LIBAPI TFC::Components::Pager::Pager() :
+		pagerContent(nullptr),
+		currentIndex(1),
+		maxIndex(1),
+		underflowEnable(true),
+		overflowEnable(true),
+		PagerContent(this),
+		CurrentIndex(this),
+		MaxIndex(this),
+		UnderflowEnable(this),
+		OverflowEnable(this),
+		UnderflowString(this),
+		OverflowString(this)
 {
 	this->pagerTop = nullptr;
 	this->pagerBottom = nullptr;
 	this->pagerBox = nullptr;
+	/*
 	this->PagerContent = nullptr;
-
 	this->MaxIndex = 1;
 	this->CurrentIndex = 1;
 	this->UnderflowEnable = true;
 	this->OverflowEnable = true;
-
+	*/
 	this->eventClickSignal += EventHandler(Pager::OnClickSignal);
 }
 
-void TFC::Components::Pager::OnClickSignal(EFL::EdjeSignalEvent* event, Evas_Object* source, EFL::EdjeSignalInfo signalInfo)
+void TFC::Components::Pager::OnClickSignal(EdjeSignalEvent::Type* event, Evas_Object* source, EFL::EdjeSignalInfo signalInfo)
 {
-	dlog_print(DLOG_DEBUG, LOG_TAG, "Pager event! %s", signalInfo.emission);
+	//dlog_print(DLOG_DEBUG, LOG_TAG, "Pager event! %s", signalInfo.emission);
 
 	if(!strcmp(signalInfo.emission, "elm,action,click,next"))
 	{
@@ -133,22 +214,22 @@ void TFC::Components::Pager::OnClickSignal(EFL::EdjeSignalEvent* event, Evas_Obj
 
 void TFC::Components::Pager::NextPage()
 {
-	int currentIndex = this->CurrentIndex;
+	int index = this->currentIndex;
 	int maxIndex = this->MaxIndex;
 
-	if(currentIndex <= maxIndex)
+	if(index <= maxIndex)
 	{
 		elm_object_signal_emit(this->pagerTop, "elm,state,default", "elm");
 		elm_object_signal_emit(this->pagerBottom, "elm,state,default", "elm");
 
-		std::string txt(std::to_string(currentIndex + 1));
+		std::string txt(std::to_string(index + 1));
 		txt.append("/");
 		txt.append(std::to_string(maxIndex));
 
 		elm_object_part_text_set(this->pagerTop, "page_info", txt.c_str());
 		elm_object_part_text_set(this->pagerBottom, "page_info", txt.c_str());
 
-		if(currentIndex == maxIndex)
+		if(index == maxIndex)
 		{
 			// This is entering overflow
 			elm_object_signal_emit(this->pagerTop, "disable_next", "TFC");
@@ -157,37 +238,37 @@ void TFC::Components::Pager::NextPage()
 			elm_object_part_text_set(this->pagerBottom, "page_info", this->OverflowString->c_str());
 			eventOverflow(this, nullptr);
 		}
-		else if(currentIndex == maxIndex - 1 && !this->OverflowEnable)
+		else if(index == maxIndex - 1 && !this->OverflowEnable)
 		{
 			// This is entering end of page
 			elm_object_signal_emit(this->pagerTop, "disable_next_noalign", "TFC");
 			elm_object_signal_emit(this->pagerBottom, "disable_next_noalign", "TFC");
-			eventNavigate(this, currentIndex + 1);
+			eventNavigate(this, index + 1);
 		}
 		else
-			eventNavigate(this, currentIndex + 1);
-		this->CurrentIndex = currentIndex + 1;
+			eventNavigate(this, index + 1);
+		this->currentIndex = index + 1;
 	}
 }
 
 void TFC::Components::Pager::PrevPage()
 {
-	int currentIndex = this->CurrentIndex;
+	int index = this->CurrentIndex;
 	int maxIndex = this->MaxIndex;
 
-	if(currentIndex > 0)
+	if(index > 0)
 	{
 		elm_object_signal_emit(this->pagerTop, "elm,state,default", "elm");
 		elm_object_signal_emit(this->pagerBottom, "elm,state,default", "elm");
 
-		std::string txt(std::to_string(currentIndex - 1));
+		std::string txt(std::to_string(index - 1));
 		txt.append("/");
 		txt.append(std::to_string(maxIndex));
 
 		elm_object_part_text_set(this->pagerTop, "page_info", txt.c_str());
 		elm_object_part_text_set(this->pagerBottom, "page_info", txt.c_str());
 
-		if(currentIndex == 1)
+		if(index == 1)
 		{
 			// This is entering underflow
 			elm_object_signal_emit(this->pagerTop, "disable_prev", "TFC");
@@ -196,17 +277,17 @@ void TFC::Components::Pager::PrevPage()
 			elm_object_part_text_set(this->pagerBottom, "page_info", this->UnderflowString->c_str());
 			eventUnderflow(this, nullptr);
 		}
-		else if(currentIndex == 2 && !this->UnderflowEnable)
+		else if(index == 2 && !this->UnderflowEnable)
 		{
 			// This is entering end of page
 			elm_object_signal_emit(this->pagerTop, "disable_prev_noalign", "TFC");
 			elm_object_signal_emit(this->pagerBottom, "disable_prev_noalign", "TFC");
-			eventNavigate(this, currentIndex - 1);
+			eventNavigate(this, index - 1);
 		}
 		else
-			eventNavigate(this, currentIndex - 1);
+			eventNavigate(this, index - 1);
 
 
-		this->CurrentIndex = currentIndex - 1;
+		this->currentIndex = index - 1;
 	}
 }

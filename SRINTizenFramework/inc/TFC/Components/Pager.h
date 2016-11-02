@@ -20,8 +20,15 @@ namespace Components {
  * It also provides an event that will indicate navigation, and
  * can be used to attach callback that implements the actual content changes.
  */
-class LIBAPI Pager: public ComponentBase
+class LIBAPI Pager:
+		public ComponentBase,
+		public EFL::EFLProxyClass,
+		EventEmitterClass<Pager>,
+		PropertyClass<Pager>
 {
+	using PropertyClass<Pager>::Property;
+	using EventEmitterClass<Pager>::Event;
+
 private:
 	std::string buttonPrevStyle;
 	std::string buttonNextStyle;
@@ -30,11 +37,19 @@ private:
 	Evas_Object* pagerTop;
 	Evas_Object* pagerBottom;
 
-	EFL::EdjeSignalEvent eventClickSignal;
+	EdjeSignalEvent eventClickSignal;
 
-	void OnClickSignal(EFL::EdjeSignalEvent* event, Evas_Object* source, EFL::EdjeSignalInfo signalInfo);
+	void OnClickSignal(EdjeSignalEvent::Type* event, Evas_Object* source, EFL::EdjeSignalInfo signalInfo);
 	void NextPage();
 	void PrevPage();
+
+	Evas_Object* pagerContent;
+	int currentIndex;
+	int maxIndex;
+	bool underflowEnable;
+	bool overflowEnable;
+	std::string underflowString;
+	std::string overflowString;
 protected:
 	/**
 	 * Method overriden from ComponentBase, creates the UI elements of the component.
@@ -45,6 +60,20 @@ protected:
 	 */
 	virtual Evas_Object* CreateComponent(Evas_Object* root);
 
+	Evas_Object* GetPagerContent();
+	int GetCurrentIndex() const;
+	int GetMaxIndex() const;
+	bool GetUnderflowEnable() const;
+	bool GetOverflowEnable() const;
+	std::string const& GetUnderflowString() const;
+	std::string const& GetOverflowString() const;
+
+	void SetPagerContent(Evas_Object* content);
+	void SetMaxIndex(int const& maxIndex);
+	void SetUnderflowEnable(bool const& underflow);
+	void SetOverflowEnable(bool const& overflow);
+	void SetUnderflowString(std::string const& str);
+	void SetOverflowString(std::string const& str);
 public:
 	/**
 	 * Constructor for Pager component.
@@ -55,19 +84,19 @@ public:
 	 * Event that will be triggered when next or previous button is clicked.
 	 * It will contain an integer that indicates which page that has to be displayed.
 	 */
-	Event<Pager*, int> eventNavigate;
+	Event<int> eventNavigate;
 
 	/**
 	 * Event that will be triggered when user click previous button while on the first page.
 	 * This will only happen when UnderflowEnable is true.
 	 */
-	Event<Pager*> eventUnderflow;
+	Event<void*> eventUnderflow;
 
 	/**
 	 * Event that will be triggered when user click next button while on the last page.
 	 * This will only happen when OverflowEnable is true.
 	 */
-	Event<Pager*> eventOverflow;
+	Event<void*> eventOverflow;
 
 	/**
 	 * Contents that want to be paginated.
@@ -76,41 +105,41 @@ public:
 	 * 		 You will have to implement how the content between pages change on Navigate event
 	 * 		 by changing what's inside the Evas_Object that PagerContent points to.
 	 */
-	Property<Pager, Evas_Object*>::Auto::ReadWrite PagerContent;
+	Property<Evas_Object*>::GetSet<&Pager::GetPagerContent, &Pager::SetPagerContent> PagerContent;
 
 	/**
 	 * Current page.
 	 */
-	Property<Pager, int>::Auto::ReadOnly CurrentIndex;
+	Property<int>::Get<&Pager::GetCurrentIndex> CurrentIndex;
 
 	/**
 	 * Number of pages.
 	 */
-	Property<Pager, int>::Auto::ReadWrite MaxIndex;
+	Property<int>::GetSet<&Pager::GetMaxIndex, &Pager::SetMaxIndex> MaxIndex;
 
 	/**
 	 * True if you want to display some content before the first page.
 	 * False if you don't want to display anything and simply disables previous navigation in the first page.
 	 */
-	Property<Pager, bool>::Auto::ReadWrite UnderflowEnable;
+	Property<bool>::GetSet<&Pager::GetUnderflowEnable, &Pager::SetUnderflowEnable> UnderflowEnable;
 
 	/**
 	 * True if you want to display some content after the last page.
 	 * False if you don't want to display anything and simply disables next navigation in the last page.
 	 */
-	Property<Pager, bool>::Auto::ReadWrite OverflowEnable;
+	Property<bool>::GetSet<&Pager::GetOverflowEnable, &Pager::SetOverflowEnable> OverflowEnable;
 
 	/**
 	 * Text that will be displayed in-between buttons before the first page.
 	 * Replaces page indicator.
 	 */
-	Property<Pager, std::string>::Auto::ReadWrite UnderflowString;
+	Property<std::string const&>::GetSet<&Pager::GetUnderflowString, &Pager::SetUnderflowString> UnderflowString;
 
 	/**
 	 * Text that will be displayed in-between buttons after the last page.
 	 * Replaces page indicator.
 	 */
-	Property<Pager, std::string>::Auto::ReadWrite OverflowString;
+	Property<std::string const&>::GetSet<&Pager::GetOverflowString, &Pager::SetOverflowString> OverflowString;
 };
 }
 }
