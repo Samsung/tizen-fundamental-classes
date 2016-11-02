@@ -12,11 +12,18 @@
 using namespace TFC::Components;
 
 MenuItem::MenuItem(std::string menuText, std::string menuIcon, void* itemData, CustomMenuStyle* customStyle) :
-	parentMenu(nullptr), itemData(itemData), genlistItem(nullptr), expanded(false)
+	parentMenu(nullptr),
+	itemData(itemData),
+	genlistItem(nullptr),
+	expanded(false),
+	menuText(menuText),
+	menuIcon(menuIcon),
+	customStyle(customStyle),
+	Text(this),
+	MenuIcon(this),
+	CustomItemStyle(this)
 {
-	Text = menuText;
-	MenuIcon = menuIcon;
-	CustomItemStyle = customStyle;
+
 }
 
 void MenuItem::AddSubMenu(MenuItem* subMenu)
