@@ -17,175 +17,181 @@
 #include <ctime>
 
 namespace TFC {
-	namespace Components {
-		/**
-		 * Inner component of DatePickerPopup to create popup when date picker button was selected.
-		 * Don't using this class in your tizen project, instead please use DatePickerPopup.
-		 */
-		class LIBAPI DatePickerPopupMenu : public PopupBox {
-		private:
-			bool 			classicTheme;
-			Evas_Object* 	dateTime;
-			std::tm      	selectedDate;
-			std::string		strDate;
-		protected:
-			/**
-			 * Method that can be overriden to create custom date picker PopupBox.
-			 *
-			 * @param root The root/parent given for this component.
-			 *
-			 * @return Evas_Object that contains the custom content.
-			 */
-			virtual Evas_Object* CreateContent(Evas_Object* root);
-		public:
-			/**
-			 * Constructor of the DatePickerPopupMenu class.
-			 */
-			DatePickerPopupMenu();
+namespace Components {
 
-			/**
-			 * Method that return selected date.
-			 *
-			 * @return std::tm& tm struct of selected date/time.
-			 */
-			std::tm& 		GetSelectedDate();
+/**
+ * Inner component of DatePickerPopup to create popup when date picker button was selected.
+ * Don't using this class in your tizen project, instead please use DatePickerPopup.
+ */
+class LIBAPI DatePickerPopupMenu : public PopupBox {
+private:
+	bool 			classicTheme;
+	Evas_Object* 	dateTime;
+	std::tm      	selectedDate;
+	std::string		strDate;
+protected:
+	/**
+	 * Method that can be overriden to create custom date picker PopupBox.
+	 *
+	 * @param root The root/parent given for this component.
+	 *
+	 * @return Evas_Object that contains the custom content.
+	 */
+	virtual Evas_Object* CreateContent(Evas_Object* root);
+public:
+	/**
+	 * Constructor of the DatePickerPopupMenu class.
+	 */
+	DatePickerPopupMenu();
 
-			/**
-			 * Method that return string of selected date.
-			 *
-			 * @return std::string& string of selected date/time.
-			 */
-			std::string& 	GetFormatedSelectedDate();
+	/**
+	 * Method that return selected date.
+	 *
+	 * @return std::tm& tm struct of selected date/time.
+	 */
+	std::tm const& GetSelectedDate();
 
-			/**
-			 * Method that change UI of Date Picker.
-			 *
-			 * @param classic true if use classic (DatePicker) UI, or false to use modern (Calendar) UI.
-			 */
-			void UseClassicTheme(const bool& classic);
+	/**
+	 * Method that return string of selected date.
+	 *
+	 * @return std::string& string of selected date/time.
+	 */
+	std::string const& GetFormatedSelectedDate();
 
-			/**
-			 * Method that change init date value of datepicker
-			 *
-			 * @param date tm struct of selected date/time.
-			 */
-			void SetSelectedDate(const std::tm& date);
+	/**
+	 * Method that change UI of Date Picker.
+	 *
+	 * @param classic true if use classic (DatePicker) UI, or false to use modern (Calendar) UI.
+	 */
+	void UseClassicTheme(bool const& classic);
 
-			/**
-			 * Method that change init date value of datepicker.
-			 * format: YYYY-MM-DD
-			 *
-			 * @param date The string of date.
-			 */
-			void SetFormatedSelectedDate(const std::string& date);
+	/**
+	 * Method that change init date value of datepicker
+	 *
+	 * @param date tm struct of selected date/time.
+	 */
+	void SetSelectedDate(std::tm const& date);
 
-			/**
-			 * Event that will triggered when date changed.
-			 *
-			 */
-			EFL::EvasSmartEvent eventDateChanged;
-		};
+	/**
+	 * Method that change init date value of datepicker.
+	 * format: YYYY-MM-DD
+	 *
+	 * @param date The string of date.
+	 */
+	void SetFormatedSelectedDate(std::string const& date);
 
-		/**
-		 * Component that provides date picker popup.
-		 * This component provide "classic" date picker popup using date picker UI, or
-		 * modern date picker using calendar UI.
-		 */
-		class LIBAPI DatePickerPopup : public ComponentBase {
-		private:
-			Evas_Object* 	buttonRoot;
+	/**
+	 * Event that will triggered when date changed.
+	 *
+	 */
+	EvasSmartEvent eventDateChanged;
+};
 
-			DatePickerPopupMenu datePopupMenu;
-			std::tm      		selectedDate;
+/**
+ * Component that provides date picker popup.
+ * This component provide "classic" date picker popup using date picker UI, or
+ * modern date picker using calendar UI.
+ */
+class LIBAPI DatePickerPopup :
+		public ComponentBase,
+		public EFL::EFLProxyClass,
+		PropertyClass<DatePickerPopup>
+{
+	using PropertyClass<DatePickerPopup>::Property;
+private:
+	Evas_Object* 	buttonRoot;
 
-			std::string 	 buttonText, formatedDate;
+	DatePickerPopupMenu datePopupMenu;
+	std::tm      		selectedDate;
 
-			EFL::EvasSmartEvent  eventButtonClick;
+	std::string 	 buttonText, formatedDate;
 
-			void DatePickerButtonClick(EFL::EvasSmartEvent* viewSource, Evas_Object* objSource, void* eventData);
-			void DatePickerPopupOkButtonClick(EFL::EvasSmartEvent* viewSource, Evas_Object* objSource, void* eventData);
-			void DatePickerPopupCancelButtonClick(EFL::EvasSmartEvent* viewSource, Evas_Object* objSource, void* eventData);
-			void OnDateChangedCb(EFL::EvasSmartEvent* viewSource, Evas_Object* objSource, void* eventData);
-		protected:
-			/**
-			 * Method that can be overriden to create custom date picker PopupBox.
-			 *
-			 * @param root The root/parent given for this component.
-			 *
-			 * @return Evas_Object that contains the custom content.
-			 */
-			virtual Evas_Object* CreateComponent(Evas_Object* root) override;
+	EvasSmartEvent  eventButtonClick;
 
-			void SetTitle(const std::string& text);
-			std::string& GetTitle();
+	void DatePickerButtonClick(EvasSmartEvent::Type* viewSource, Evas_Object* objSource, void* eventData);
+	void DatePickerPopupOkButtonClick(EvasSmartEvent::Type* viewSource, Evas_Object* objSource, void* eventData);
+	void DatePickerPopupCancelButtonClick(EvasSmartEvent::Type* viewSource, Evas_Object* objSource, void* eventData);
+	void OnDateChangedCb(EvasSmartEvent::Type* viewSource, Evas_Object* objSource, void* eventData);
+protected:
+	/**
+	 * Method that can be overriden to create custom date picker PopupBox.
+	 *
+	 * @param root The root/parent given for this component.
+	 *
+	 * @return Evas_Object that contains the custom content.
+	 */
+	virtual Evas_Object* CreateComponent(Evas_Object* root) override;
 
-			void SetHint(const std::string& text);
-			std::string& GetHint();
+	void SetTitle(std::string const& text);
+	std::string const& GetTitle() const;
 
-			void SetOrientation(const Elm_Popup_Orient& orientation);
-			Elm_Popup_Orient& GetOrientation();
-		public:
-			/**
-			 * Constructor of the DatePickerPopup Component.
-			 */
-			DatePickerPopup();
+	void SetHint(std::string const& text);
+	std::string const& GetHint() const;
 
-			/**
-			 * Property that enables getting & setting popup title.
-			 * The return/parameter type is string.
-			 */
-			Property<DatePickerPopup, std::string&>::GetSet<&DatePickerPopup::GetTitle, &DatePickerPopup::SetTitle> Title;
+	void SetOrientation(Elm_Popup_Orient const& orientation);
+	Elm_Popup_Orient const& GetOrientation() const;
+public:
+	/**
+	 * Constructor of the DatePickerPopup Component.
+	 */
+	DatePickerPopup();
 
-			/**
-			 * Property that enables getting & setting popup hint.
-			 * The return/parameter type is string.
-			 */
-			Property<DatePickerPopup, std::string&>::GetSet<&DatePickerPopup::GetHint, &DatePickerPopup::SetHint> Hint;
+	/**
+	 * Property that enables getting & setting popup title.
+	 * The return/parameter type is string.
+	 */
+	Property<std::string const&>::GetSet<&DatePickerPopup::GetTitle, &DatePickerPopup::SetTitle> Title;
 
-			/**
-			 * Property that enables getting & setting popup orientation.
-			 * The return/parameter type is Elm_Popup_Orient.
-			 * @see {Elm_Popup_Orient}
-			 */
-			Property<DatePickerPopup, Elm_Popup_Orient&>::GetSet<&DatePickerPopup::GetOrientation, &DatePickerPopup::SetOrientation> Orientation;
+	/**
+	 * Property that enables getting & setting popup hint.
+	 * The return/parameter type is string.
+	 */
+	Property<std::string const&>::GetSet<&DatePickerPopup::GetHint, &DatePickerPopup::SetHint> Hint;
 
-			/**
-			 * Method that return selected date.
-			 *
-			 * @return std::tm& tm struct of selected date/time.
-			 */
-			std::tm& 		GetSelectedDate();
+	/**
+	 * Property that enables getting & setting popup orientation.
+	 * The return/parameter type is Elm_Popup_Orient.
+	 * @see {Elm_Popup_Orient}
+	 */
+	Property<Elm_Popup_Orient const&>::GetSet<&DatePickerPopup::GetOrientation, &DatePickerPopup::SetOrientation> Orientation;
 
-			/**
-			 * Method that return string of selected date.
-			 *
-			 * @return std::string& string of selected date/time.
-			 */
-			std::string& 	GetFormatedSelectedDate();
+	/**
+	 * Method that return selected date.
+	 *
+	 * @return std::tm& tm struct of selected date/time.
+	 */
+	std::tm const& GetSelectedDate() const;
 
-			/**
-			 * Method that change UI of Date Picker.
-			 *
-			 * @param classic true if use classic (DatePicker) UI, or false to use modern (Calendar) UI.
-			 */
-			void UseClassicTheme(const bool& classic);
+	/**
+	 * Method that return string of selected date.
+	 *
+	 * @return std::string& string of selected date/time.
+	 */
+	std::string const& GetFormatedSelectedDate() const;
 
-			/**
-			 * Method that change init date value of datepicker
-			 *
-			 * @param date tm struct of selected date/time.
-			 */
-			void SetSelectedDate(const std::tm& date);
+	/**
+	 * Method that change UI of Date Picker.
+	 *
+	 * @param classic true if use classic (DatePicker) UI, or false to use modern (Calendar) UI.
+	 */
+	void UseClassicTheme(bool const& classic);
 
-			/**
-			 * Method that change init date value of datepicker.
-			 * format: YYYY-MM-DD
-			 *
-			 * @param date The string of date.
-			 */
-			void SetFormatedSelectedDate(const std::string& date);
-		};
-	}
-}
+	/**
+	 * Method that change init date value of datepicker
+	 *
+	 * @param date tm struct of selected date/time.
+	 */
+	void SetSelectedDate(std::tm const& date);
+
+	/**
+	 * Method that change init date value of datepicker.
+	 * format: YYYY-MM-DD
+	 *
+	 * @param date The string of date.
+	 */
+	void SetFormatedSelectedDate(std::string const& date);
+};
+
+}}
 
 #endif /* DATEPICKERPOPUP_H_ */

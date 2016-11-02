@@ -17,7 +17,7 @@ TFC::Components::DatePickerPopupMenu::DatePickerPopupMenu() : PopupBox() {
 	dateTime		= nullptr;
 }
 
-std::tm& TFC::Components::DatePickerPopupMenu::GetSelectedDate() {
+std::tm const& TFC::Components::DatePickerPopupMenu::GetSelectedDate() {
 	if (classicTheme) {
 		elm_datetime_value_get(dateTime, &selectedDate);
 	} else {
@@ -27,7 +27,7 @@ std::tm& TFC::Components::DatePickerPopupMenu::GetSelectedDate() {
 	return selectedDate;
 }
 
-std::string& TFC::Components::DatePickerPopupMenu::GetFormatedSelectedDate() {
+std::string const& TFC::Components::DatePickerPopupMenu::GetFormatedSelectedDate() {
 	char buffer[20];
 
 	if (classicTheme) {
@@ -42,18 +42,18 @@ std::string& TFC::Components::DatePickerPopupMenu::GetFormatedSelectedDate() {
 }
 
 void TFC::Components::DatePickerPopupMenu::UseClassicTheme(
-		const bool& classic) {
+		bool const& classic) {
 	this->classicTheme = classic;
 }
 
 void TFC::Components::DatePickerPopupMenu::SetSelectedDate(
-		const std::tm& date) {
+		std::tm const& date) {
 
 	selectedDate = date;
 }
 
 void TFC::Components::DatePickerPopupMenu::SetFormatedSelectedDate(
-		const std::string& date) {
+		std::string const& date) {
 
 	if (date.size() > 0) {
 		int yearValue;
@@ -86,12 +86,14 @@ Evas_Object* TFC::Components::DatePickerPopupMenu::CreateContent(
 		elm_datetime_format_set(dateTime, "%F");
 		elm_datetime_value_set(dateTime, &selectedDate);
 
-		evas_object_smart_callback_add(dateTime, "changed", &EFL::EvasSmartEventHandler, &eventDateChanged);
+		//evas_object_smart_callback_add(dateTime, "changed", &EFL::EvasSmartEventHandler, &eventDateChanged);
+		eventDateChanged.Bind(dateTime, "changed");
 		evas_object_show(dateTime);
 	} else {
 		dateTime = elm_calendar_add(root);
 		elm_calendar_selected_time_set(dateTime, &selectedDate);
-		evas_object_smart_callback_add(dateTime, "changed", &EFL::EvasSmartEventHandler, &eventDateChanged);
+		//evas_object_smart_callback_add(dateTime, "changed", &EFL::EvasSmartEventHandler, &eventDateChanged);
+		eventDateChanged.Bind(dateTime, "changed");
 		evas_object_show(dateTime);
 	}
 
@@ -101,14 +103,16 @@ Evas_Object* TFC::Components::DatePickerPopupMenu::CreateContent(
 /** ============================================================================ **/
 
 void TFC::Components::DatePickerPopup::DatePickerButtonClick(
-		EFL::EvasSmartEvent* viewSource, Evas_Object* objSource,
-		void* eventData) {
+		EvasSmartEvent::Type* viewSource, Evas_Object* objSource,
+		void* eventData)
+{
 	datePopupMenu.Show();
 }
 
 void TFC::Components::DatePickerPopup::DatePickerPopupOkButtonClick(
-		EFL::EvasSmartEvent* viewSource, Evas_Object* objSource,
-		void* eventData) {
+		EvasSmartEvent::Type* viewSource, Evas_Object* objSource,
+		void* eventData)
+{
 	formatedDate = datePopupMenu.GetFormatedSelectedDate();
 	selectedDate = datePopupMenu.GetSelectedDate();
 	elm_object_text_set(buttonRoot, formatedDate.c_str());
@@ -116,13 +120,14 @@ void TFC::Components::DatePickerPopup::DatePickerPopupOkButtonClick(
 }
 
 void TFC::Components::DatePickerPopup::DatePickerPopupCancelButtonClick(
-		EFL::EvasSmartEvent* viewSource, Evas_Object* objSource,
-		void* eventData) {
+		EvasSmartEvent::Type* viewSource, Evas_Object* objSource,
+		void* eventData)
+{
 	datePopupMenu.Dismiss();
 }
 
 void TFC::Components::DatePickerPopup::OnDateChangedCb(
-	EFL::EvasSmartEvent* viewSource, Evas_Object* objSource, void* eventData) {
+	EvasSmartEvent::Type* viewSource, Evas_Object* objSource, void* eventData) {
 
 }
 
@@ -130,7 +135,8 @@ Evas_Object* TFC::Components::DatePickerPopup::CreateComponent(
 		Evas_Object* root) {
 	buttonRoot = elm_button_add(root);
 	elm_object_text_set(buttonRoot, buttonText.c_str());
-	evas_object_smart_callback_add(buttonRoot, "clicked", &EFL::EvasSmartEventHandler, &eventButtonClick);
+	//evas_object_smart_callback_add(buttonRoot, "clicked", &EFL::EvasSmartEventHandler, &eventButtonClick);
+	eventButtonClick.Bind(buttonRoot, "clicked");
 	evas_object_show(this->buttonRoot);
 
 	datePopupMenu.Create(root);
@@ -138,11 +144,11 @@ Evas_Object* TFC::Components::DatePickerPopup::CreateComponent(
 	return buttonRoot;
 }
 
-void TFC::Components::DatePickerPopup::SetTitle(const std::string& text) {
+void TFC::Components::DatePickerPopup::SetTitle(std::string const& text) {
 	datePopupMenu.Title = text;
 }
 
-std::string& TFC::Components::DatePickerPopup::GetTitle() {
+std::string const& TFC::Components::DatePickerPopup::GetTitle() const {
 	return datePopupMenu.Title;
 }
 
@@ -167,40 +173,40 @@ TFC::Components::DatePickerPopup::DatePickerPopup() : Title(this), Hint(this), O
 
 }
 
-std::tm& TFC::Components::DatePickerPopup::GetSelectedDate() {
+std::tm const& TFC::Components::DatePickerPopup::GetSelectedDate() const {
 	return selectedDate;
 }
 
-std::string& TFC::Components::DatePickerPopup::GetFormatedSelectedDate() {
+std::string const& TFC::Components::DatePickerPopup::GetFormatedSelectedDate() const {
 	return formatedDate;
 }
 
-void TFC::Components::DatePickerPopup::SetSelectedDate(const std::tm& date) {
+void TFC::Components::DatePickerPopup::SetSelectedDate(std::tm const& date) {
 	datePopupMenu.SetSelectedDate(date);
 }
 
-void TFC::Components::DatePickerPopup::SetFormatedSelectedDate(const std::string& date) {
+void TFC::Components::DatePickerPopup::SetFormatedSelectedDate(std::string const& date) {
 	datePopupMenu.SetFormatedSelectedDate(date);
 	//formatedDate = datePopupMenu.GetFormatedSelectedDate();
 	//selectedDate = datePopupMenu.GetSelectedDate();
 }
 
-void TFC::Components::DatePickerPopup::UseClassicTheme(const bool& classic) {
+void TFC::Components::DatePickerPopup::UseClassicTheme(bool const& classic) {
 	datePopupMenu.UseClassicTheme(classic);
 }
 
-void TFC::Components::DatePickerPopup::SetOrientation(const Elm_Popup_Orient& orientation) {
+void TFC::Components::DatePickerPopup::SetOrientation(Elm_Popup_Orient const& orientation) {
 	datePopupMenu.Orientation = orientation;
 }
 
-Elm_Popup_Orient& TFC::Components::DatePickerPopup::GetOrientation() {
+Elm_Popup_Orient const& TFC::Components::DatePickerPopup::GetOrientation() const {
 	return datePopupMenu.Orientation;
 }
 
-void TFC::Components::DatePickerPopup::SetHint(const std::string& text) {
+void TFC::Components::DatePickerPopup::SetHint(std::string const& text) {
 	this->buttonText = text;
 }
 
-std::string& TFC::Components::DatePickerPopup::GetHint() {
+std::string const& TFC::Components::DatePickerPopup::GetHint() const {
 	return buttonText;
 }
