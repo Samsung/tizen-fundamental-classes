@@ -42,20 +42,15 @@ public:
 	static constexpr bool Value = sizeof(Test<T>(0)) == sizeof(Correct);
 };
 
+
+
 template<typename TFuncType>
-struct MemberFunction;
-
-template<typename T, bool = HasCallOperator<T>::Value>
-struct CallableObject
+struct MemberFunction
 {
-	typedef std::false_type Callable;
+
 };
 
-template<typename T>
-struct CallableObject<T, true> : MemberFunction<decltype(&T::operator())>
-{
-	typedef std::true_type Callable;
-};
+
 
 template<typename TClass, typename TReturn, typename... TArgs>
 struct MemberFunction<TReturn (TClass::*)(TArgs...)>
@@ -66,6 +61,18 @@ struct MemberFunction<TReturn (TClass::*)(TArgs...)>
 
 	template<size_t idx>
 	using Args = typename std::tuple_element<idx, std::tuple<TArgs...>>::type;
+};
+
+template<typename T, bool = HasCallOperator<T>::Value || std::is_function<T>::value>
+struct CallableObject
+{
+	static constexpr bool Callable = false; // Fallback
+};
+
+template<typename T>
+struct CallableObject<T, true> : MemberFunction<decltype(&T::operator())>
+{
+	static constexpr bool Callable = true;
 };
 
 }}}
