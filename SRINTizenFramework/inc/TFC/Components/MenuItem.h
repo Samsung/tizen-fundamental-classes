@@ -77,11 +77,19 @@ class LIBAPI MenuItem :
 	EventEmitterClass<MenuItem>
 {
 private:
-	std::vector<MenuItem*> subMenus;
-	MenuItem* parentMenu;
-	void* itemData;
-	Elm_Object_Item* genlistItem;
-	bool expanded;
+	std::vector<MenuItem*>	subMenus;
+	std::string 			menuText;
+	std::string 			menuIcon;
+
+	MenuItem* 				parentMenu;
+	void* 					itemData;
+	Elm_Object_Item* 		genlistItem;
+	CustomMenuStyle*		customStyle;
+	bool 					expanded;
+
+	std::string const&		GetText() const 		{ return this->menuText; }
+	std::string const&		GetMenuIcon() const		{ return this->menuIcon; }
+	CustomMenuStyle*		GetCustomItemStyle()	{ return this->customStyle; }
 public:
 	/**
 	 * Constructor of MenuItem.
@@ -134,19 +142,19 @@ public:
 	 * Property that enables getting & setting text of the menu item.
 	 * The return/parameter type is string.
 	 */
-	/*Property<MenuItem, std::string>::Auto::ReadOnly*/ std::string Text;
+	Property<std::string const&>::Get<&MenuItem::GetText> Text;
 
 	/**
 	 * Property that enables getting & setting icon path of the menu item.
 	 * The return/parameter type is string.
 	 */
-	/*Property<MenuItem, std::string>::Auto::ReadOnly*/ std::string MenuIcon;
+	Property<std::string const&>::Get<&MenuItem::GetMenuIcon> MenuIcon;
 
 	/**
 	 * Property that enables getting & setting custom style of the menu item.
 	 * The return/parameter type is CustomMenuStyle.
 	 */
-	/*Property<MenuItem, CustomMenuStyle*>::Auto::ReadOnly*/ CustomMenuStyle* CustomItemStyle;
+	Property<CustomMenuStyle*>::Get<&MenuItem::GetCustomItemStyle> CustomItemStyle;
 
 	template<class T>
 	T* GetItemData();
