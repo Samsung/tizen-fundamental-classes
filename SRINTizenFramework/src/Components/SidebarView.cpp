@@ -36,7 +36,8 @@ LIBAPI Evas_Object* SidebarView::CreateView(Evas_Object* root)
 	elm_panel_scrollable_set(leftPanel, EINA_TRUE);
 	elm_panel_orient_set(leftPanel, ELM_PANEL_ORIENT_LEFT);
 	elm_panel_hidden_set(leftPanel, EINA_TRUE);
-	evas_object_smart_callback_add(leftPanel, "scroll", EFL::EvasSmartEventHandler, &drawerScroll);
+	//evas_object_smart_callback_add(leftPanel, "scroll", EFL::EvasSmartEventHandler, &drawerScroll);
+	drawerScroll.Bind(leftPanel, "scroll");
 
 	bg = evas_object_rectangle_add(evas_object_evas_get(layout));
 	evas_object_color_set(bg, 0, 0, 0, 0);
@@ -74,22 +75,23 @@ LIBAPI void SidebarView::Detach()
 	currentContent = nullptr;
 }
 
-LIBAPI Evas_Object* SidebarView::GetTitleLeftButton(CString* buttonPart)
+LIBAPI Evas_Object* SidebarView::GetTitleLeftButton(char const* buttonPart)
 {
 	auto btn = elm_button_add(layout);
-	evas_object_smart_callback_add(btn, "clicked", EFL::EvasSmartEventHandler, &drawerButtonClick);
+	//evas_object_smart_callback_add(btn, "clicked", EFL::EvasSmartEventHandler, &drawerButtonClick);
+	drawerButtonClick.Bind(btn, "clicked");
 
 	DrawerButtonStyle(btn);
 	//*buttonPart = "drawers";
 	return btn;
 }
 
-LIBAPI void SidebarView::OnDrawerButtonClick(EFL::EvasSmartEvent* eventSource, Evas_Object* objSource, void* eventData)
+LIBAPI void SidebarView::OnDrawerButtonClick(EvasSmartEvent::Type* eventSource, Evas_Object* objSource, void* eventData)
 {
 	ToggleSidebar();
 }
 
-LIBAPI void SidebarView::OnDrawerScrolling(EFL::EvasSmartEvent* eventSource, Evas_Object* objSource, void* eventData)
+LIBAPI void SidebarView::OnDrawerScrolling(EvasSmartEvent::Type* eventSource, Evas_Object* objSource, void* eventData)
 {
 	auto ev = reinterpret_cast<Elm_Panel_Scroll_Info*>(eventData);
 	int col = 127 * ev->rel_x;
@@ -107,22 +109,22 @@ LIBAPI void SidebarView::OnDrawerScrolling(EFL::EvasSmartEvent* eventSource, Eva
 	}
 }
 
-void SidebarView::OnDrawerOpened(Event<SidebarView*, void*>* event, SidebarView* sidebarView, void* unused)
+void SidebarView::OnDrawerOpened(decltype(SidebarView::DrawerOpened)* event, SidebarView* sidebarView, void* unused)
 {
 	BackButtonHandler::Acquire();
 }
 
-void SidebarView::OnDrawerClosed(Event<SidebarView*, void*>* event, SidebarView* sidebarView, void* unused)
+void SidebarView::OnDrawerClosed(decltype(SidebarView::DrawerClosed)* event, SidebarView* sidebarView, void* unused)
 {
 	BackButtonHandler::Release();
 }
 
-Evas_Object* SidebarView::GetTitleRightButton(CString* buttonPart)
+Evas_Object* SidebarView::GetTitleRightButton(char const* buttonPart)
 {
 	return nullptr;
 }
 
-LIBAPI CString TFC::Components::SidebarView::GetContentStyle()
+LIBAPI char const* TFC::Components::SidebarView::GetContentStyle()
 {
 	return nullptr; //"drawers";
 }

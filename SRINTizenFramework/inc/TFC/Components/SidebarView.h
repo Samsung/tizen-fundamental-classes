@@ -25,8 +25,16 @@ namespace Components {
  * to add, remove or switch the screen content.
  * It also provides customizable button on the naviframe that can be used to open or close the sidebar panel.
  */
-class LIBAPI SidebarView: public Framework::ViewBase, public Framework::IAttachable, public Framework::INaviframeContent, public BackButtonHandler
+class LIBAPI SidebarView:
+		public BackButtonHandler,
+		public EFL::EFLProxyClass,
+		EventEmitterClass<SidebarView>,
+		public Framework::IAttachable,
+		public Framework::INaviframeContent,
+		public Framework::ViewBase
 {
+	using EventEmitterClass<SidebarView>::Event;
+
 private:
 
 	Evas_Object* leftPanel;
@@ -35,13 +43,11 @@ private:
 	Evas_Object* bg;
 	Evas_Object* contentWrapper;
 
-	EFL::EvasSmartEvent drawerButtonClick;
-	EFL::EvasSmartEvent drawerScroll;
+	EvasSmartEvent drawerButtonClick;
+	EvasSmartEvent drawerScroll;
 
-	void OnDrawerButtonClick(EFL::EvasSmartEvent* eventSource, Evas_Object* objSource, void* eventData);
-	void OnDrawerScrolling(EFL::EvasSmartEvent* eventSource, Evas_Object* objSource, void* eventData);
-	void OnDrawerOpened(Event<SidebarView*, void*>* event, SidebarView* sidebarView, void* unused);
-	void OnDrawerClosed(Event<SidebarView*, void*>* event, SidebarView* sidebarView, void* unused);
+	void OnDrawerButtonClick(EvasSmartEvent::Type* eventSource, Evas_Object* objSource, void* eventData);
+	void OnDrawerScrolling(EvasSmartEvent::Type* eventSource, Evas_Object* objSource, void* eventData);
 protected:
 	/**
 	 * Layout of the view, created as child of the view root.
@@ -108,21 +114,21 @@ public:
 	 */
 	void ToggleSidebar(bool show);
 
-	virtual Evas_Object* GetTitleLeftButton(CString* buttonPart);
-	virtual Evas_Object* GetTitleRightButton(CString* buttonPart);
-	virtual CString GetContentStyle();
+	virtual Evas_Object* GetTitleLeftButton(char const* buttonPart);
+	virtual Evas_Object* GetTitleRightButton(char const* buttonPart);
+	virtual char const* GetContentStyle();
 
 	typedef void (*DrawerButtonStyleFunc)(Evas_Object* btn);
 
 	/**
 	 * Event that will be triggered when the sidebar panel is opened.
 	 */
-	Event<SidebarView*, void*> DrawerOpened;
+	Event<void*> DrawerOpened;
 
 	/**
 	 * Event that will be triggered when the sidebar panel is closed.
 	 */
-	Event<SidebarView*, void*> DrawerClosed;
+	Event<void*> DrawerClosed;
 
 	/**
 	 * Method to get whether the sidebar panel is opened or closed.
@@ -130,6 +136,10 @@ public:
 	 * @return EINA_TRUE if opened, EINA_FALSE if closed.
 	 */
 	Eina_Bool IsDrawerOpened();
+
+private:
+	void OnDrawerOpened(decltype(SidebarView::DrawerOpened)* event, SidebarView* sidebarView, void* unused);
+	void OnDrawerClosed(decltype(SidebarView::DrawerClosed)* event, SidebarView* sidebarView, void* unused);
 };
 
 
