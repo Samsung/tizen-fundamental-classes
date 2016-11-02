@@ -7,6 +7,7 @@
  *        Kevin Winata (k.winata@samsung.com)
  */
 
+#include <dlog.h>
 #include "TFC/Components/TabbarViewController.h"
 
 #define FILE_EDC_CONTENT "TFC/edc/Content.edj"
@@ -18,7 +19,8 @@ LIBAPI Evas_Object* TFC::Components::TabbarViewController::CreateView(
 	auto layout = elm_layout_add(root);
 	elm_layout_theme_set(layout, "layout", "application", "toolbar-content");
 
-	evas_object_event_callback_add(layout, EVAS_CALLBACK_RESIZE, EFL::EvasObjectEventHandler, &eventLayoutResize);
+	//evas_object_event_callback_add(layout, EVAS_CALLBACK_RESIZE, EFL::EvasObjectEventHandler, &eventLayoutResize);
+	eventLayoutResize.Bind(layout, EVAS_CALLBACK_RESIZE);
 
 	auto itemLayout = elm_object_item_part_content_get(layout, NULL);
 	auto obj = edje_object_part_object_get(itemLayout, "tabbar_top_divider");
@@ -43,7 +45,8 @@ LIBAPI Evas_Object* TFC::Components::TabbarViewController::CreateView(
 	evas_object_size_hint_weight_set(this->scroller, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
 	evas_object_size_hint_align_set(this->scroller, EVAS_HINT_FILL, EVAS_HINT_FILL);
 	evas_object_show(this->scroller);
-	evas_object_smart_callback_add(this->scroller, "scroll,page,changed", EFL::EvasSmartEventHandler, &this->eventTabContentScrolled);
+	//evas_object_smart_callback_add(this->scroller, "scroll,page,changed", EFL::EvasSmartEventHandler, &this->eventTabContentScrolled);
+	eventTabContentScrolled.Bind(this->scroller, "scroll,page,changed");
 
 	elm_object_text_set(layout, "Test");
 
@@ -76,7 +79,8 @@ LIBAPI Evas_Object* TFC::Components::TabbarViewController::CreateView(
 		evas_object_show(content);
 		elm_box_pack_end(this->box, content);
 
-		tab.objectItem = elm_toolbar_item_append(tabbar, nullptr, tab.tabText.length() ? tab.tabText.c_str() : nullptr, EFL::EvasSmartEventHandler, &this->eventTabbarButtonClicked);
+		//tab.objectItem = elm_toolbar_item_append(tabbar, nullptr, tab.tabText.length() ? tab.tabText.c_str() : nullptr, EFL::EvasSmartEventHandler, &this->eventTabbarButtonClicked);
+		tab.objectItem = elm_toolbar_item_append(tabbar, nullptr, tab.tabText.length() ? tab.tabText.c_str() : nullptr, &TabbarViewController::OnTabbarButtonClicked, this);
 		tab.tabNumber = num;
 		tab.content = content;
 
@@ -92,24 +96,24 @@ LIBAPI Evas_Object* TFC::Components::TabbarViewController::CreateView(
 	return layout;
 }
 
-LIBAPI TFC::Components::TabbarViewController::TabbarViewController(TFC::Framework::ControllerManager* m, CString controllerName) :
+LIBAPI TFC::Components::TabbarViewController::TabbarViewController(TFC::Framework::ControllerManager* m, char const* controllerName) :
 		TFC::Framework::ControllerBase(m, this, controllerName),
 		scroller(nullptr), box(nullptr), tabbar(nullptr)
 {
 	this->disableChangeTabByScroll = false;
 	this->currentTab = 0;
 	this->eventLayoutResize += EventHandler(TabbarViewController::OnLayoutResize);
-	this->eventTabbarButtonClicked += EventHandler(TabbarViewController::OnTabbarButtonClicked);
 	this->eventTabContentScrolled += EventHandler(TabbarViewController::OnTabContentScrolled);
+	//this->eventTabbarButtonClicked += EventHandler(TabbarViewController::OnTabbarButtonClicked);
 }
 
 void TFC::Components::TabbarViewController::OnLayoutResize(
-		EFL::EvasObjectEvent* event, EFL::EvasEventSourceInfo* objSource, void* event_data) {
+		EvasObjectEvent::Type* event, EFL::EvasEventSourceInfo objSource, void* event_data) {
 	Evas_Coord w, h;
 
 	dlog_print(DLOG_DEBUG, LOG_TAG, "Tabbar Layout Resize");
 
-	evas_object_geometry_get(objSource->obj, NULL, NULL, &w, &h);
+	evas_object_geometry_get(objSource.obj, NULL, NULL, &w, &h);
 
 	Evas_Coord tabW, tabH;
 	evas_object_geometry_get(this->tabbar, NULL, NULL, &tabW, &tabH);
@@ -135,11 +139,25 @@ LIBAPI void TFC::Components::TabbarViewController::AddTab(
 	this->tabs.push_back(entry);
 }
 
+/*
 void TFC::Components::TabbarViewController::OnTabbarButtonClicked(
-		EFL::EvasSmartEvent* event, Evas_Object* source, void* event_data) {
+		EvasSmartEvent::Type* event, Evas_Object* source, void* event_data) {
 	auto item = reinterpret_cast<Elm_Object_Item*>(event_data);
 
 	this->LookupAndBringContent(item);
+
+	//elm_scroller_page_show(this->scroller, tabItem->tabNumber, 0);
+
+	dlog_print(DLOG_DEBUG, LOG_TAG, "Tabbar button click %d %d", source, event_data);
+}
+*/
+
+void TFC::Components::TabbarViewController::OnTabbarButtonClicked(void *data, Evas_Object *source, void *event_data)
+{
+	auto tabbarVC = reinterpret_cast<TabbarViewController*>(data);
+	auto item = reinterpret_cast<Elm_Object_Item*>(event_data);
+
+	tabbarVC->LookupAndBringContent(item);
 
 	//elm_scroller_page_show(this->scroller, tabItem->tabNumber, 0);
 
@@ -170,7 +188,7 @@ void TFC::Components::TabbarViewController::LookupAndBringContent(
 }
 
 void TFC::Components::TabbarViewController::OnTabContentScrolled(
-		EFL::EvasSmartEvent* event, Evas_Object* source, void* event_data) {
+		EvasSmartEvent::Type* event, Evas_Object* source, void* event_data) {
 
 
 

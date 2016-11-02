@@ -27,6 +27,7 @@ struct TabEntry
 
 class LIBAPI TabbarViewController:
 		public Framework::ControllerBase,
+		public EFL::EFLProxyClass,
 		public Framework::ViewBase
 {
 private:
@@ -38,20 +39,23 @@ private:
 	Evas_Object* box;
 	Evas_Object* tabbar;
 
-	EFL::EvasObjectEvent eventLayoutResize;
-	EFL::EvasSmartEvent eventTabbarButtonClicked;
-	EFL::EvasSmartEvent eventTabContentScrolled;
+	EvasObjectEvent eventLayoutResize;
+	EvasSmartEvent eventTabContentScrolled;
 
-	void OnLayoutResize(EFL::EvasObjectEvent* event, EFL::EvasEventSourceInfo* objSource, void* event_data);
-	void OnTabbarButtonClicked(EFL::EvasSmartEvent* event, Evas_Object* source, void* event_data);
-	void OnTabContentScrolled(EFL::EvasSmartEvent* event, Evas_Object* source, void* event_data);
+	void OnLayoutResize(EvasObjectEvent::Type* event, EFL::EvasEventSourceInfo objSource, void* event_data);
+	void OnTabContentScrolled(EvasSmartEvent::Type* event, Evas_Object* source, void* event_data);
 	void LookupAndBringContent(Elm_Object_Item* tabItem);
+
+	//EvasSmartEvent eventTabbarButtonClicked;
+	//void OnTabbarButtonClicked(EvasSmartEvent::Type* event, Evas_Object* source, void* event_data);
+	static void OnTabbarButtonClicked(void *data, Evas_Object *source, void *event_data);
+
 protected:
 	void AddTab(std::string text, Framework::ControllerBase& controller);
 	virtual Evas_Object* CreateView(Evas_Object* root) final;
 
 public:
-	TabbarViewController(TFC::Framework::ControllerManager* m, CString controllerName);
+	TabbarViewController(TFC::Framework::ControllerManager* m, char const* controllerName);
 };
 }
 }
