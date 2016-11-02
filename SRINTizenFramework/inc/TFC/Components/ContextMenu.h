@@ -24,8 +24,13 @@ namespace Components {
 /**
  * Component that provides context menu on the naviframe.
  */
-class LIBAPI ContextMenu: public ComponentBase, BackButtonHandler
+class LIBAPI ContextMenu:
+		public BackButtonHandler,
+		public ComponentBase,
+		public EFL::EFLProxyClass,
+		PropertyClass<ContextMenu>
 {
+	using PropertyClass<ContextMenu>::Property;
 public:
 	struct ContextMenuPackage
 	{
@@ -44,14 +49,14 @@ private:
 	Evas_Object* button;
 	Evas_Object* contextMenu;
 
-	EFL::EvasSmartEvent eventContextMenuButtonClicked;
-	EFL::EvasSmartEvent eventContextMenuDismissed;
+	EvasSmartEvent eventContextMenuButtonClicked;
+	EvasSmartEvent eventContextMenuDismissed;
 
 	bool menuShown;
 	std::vector<MenuItem*> rootMenu;
 
-	void OnContextMenuButtonClicked(EFL::EvasSmartEvent* ev, Evas_Object* obj, void* eventData);
-	void OnContextMenuDismissed(EFL::EvasSmartEvent* ev, Evas_Object* obj, void* eventData);
+	void OnContextMenuButtonClicked(EvasSmartEvent::Type* ev, Evas_Object* obj, void* eventData);
+	void OnContextMenuDismissed(EvasSmartEvent::Type* ev, Evas_Object* obj, void* eventData);
 	bool BackButtonClicked();
 	void ShowMenu();
 	void HideMenu();
@@ -67,8 +72,8 @@ protected:
 	 * @return The context menu button on the naviframe.
 	 */
 	virtual Evas_Object* CreateComponent(Evas_Object* root);
-	void SetText(const std::string& text);
-	std::string& GetText();
+	void SetText(std::string const& text);
+	std::string const& GetText() const;
 
 public:
 	/**
@@ -117,11 +122,10 @@ public:
 	 */
 	virtual ~ContextMenu();
 
-	Property<ContextMenu, std::string&>::GetSet<&ContextMenu::GetText, &ContextMenu::SetText> Text;
+	Property<std::string const&>::GetSet<&ContextMenu::GetText, &ContextMenu::SetText> Text;
 };
 
-}
-}
+}}
 
 
 

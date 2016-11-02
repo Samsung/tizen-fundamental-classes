@@ -15,7 +15,8 @@ Evas_Object* TFC::Components::ContextMenu::CreateComponent(Evas_Object* root)
 {
 	naviframe = root;
 	button = elm_button_add(root);
-	evas_object_smart_callback_add(button, "clicked", EFL::EvasSmartEventHandler, &eventContextMenuButtonClicked);
+	//evas_object_smart_callback_add(button, "clicked", EFL::EvasSmartEventHandler, &eventContextMenuButtonClicked);
+	eventContextMenuButtonClicked.Bind(button, "clicked");
 	elm_object_style_set(button, "naviframe/more/default");
 	return button;
 }
@@ -26,12 +27,12 @@ void ContextMenu_ItemClickHandler(void* data, Evas_Object* obj, void* eventData)
 	pkg->RaiseEvent();
 }
 
-void TFC::Components::ContextMenu::SetText(const std::string& text)
+void TFC::Components::ContextMenu::SetText(std::string const& text)
 {
 	this->text = text;
 }
 
-std::string& TFC::Components::ContextMenu::GetText()
+std::string const& TFC::Components::ContextMenu::GetText() const
 {
 	return text;
 }
@@ -82,7 +83,7 @@ void TFC::Components::ContextMenu::SetMenu(const std::vector<MenuItem*>& listOfM
 	rootMenu = listOfMenus;
 }
 
-void TFC::Components::ContextMenu::OnContextMenuButtonClicked(EFL::EvasSmartEvent* ev, Evas_Object* obj, void* eventData)
+void TFC::Components::ContextMenu::OnContextMenuButtonClicked(EvasSmartEvent::Type* ev, Evas_Object* obj, void* eventData)
 {
 	if(not this->menuShown)
 		this->ShowMenu();
@@ -95,7 +96,8 @@ void TFC::Components::ContextMenu::ShowMenu()
 	BackButtonHandler::Acquire();
 
 	auto contextMenu = elm_ctxpopup_add(this->naviframe);
-	evas_object_smart_callback_add(contextMenu, "dismissed", EFL::EvasSmartEventHandler, &eventContextMenuDismissed);
+	//evas_object_smart_callback_add(contextMenu, "dismissed", EFL::EvasSmartEventHandler, &eventContextMenuDismissed);
+	eventContextMenuDismissed.Bind(contextMenu, "dismissed");
 	elm_object_style_set(contextMenu, "dropdown/label");
 
 	this->contextMenu = contextMenu;
@@ -104,14 +106,14 @@ void TFC::Components::ContextMenu::ShowMenu()
 	for(auto item : rootMenu)
 	{
 		Evas_Object* img = nullptr;
-		if(item->MenuIcon->length())
+		if(item->MenuIcon.length())
 		{
 			img = elm_image_add(contextMenu);
-			elm_image_file_set(img, Framework::ApplicationBase::GetResourcePath(item->MenuIcon->c_str()).c_str(), nullptr);
+			elm_image_file_set(img, Framework::ApplicationBase::GetResourcePath(item->MenuIcon.c_str()).c_str(), nullptr);
 		}
 		auto itemPackage = new ContextMenuPackage({this, item});
 		this->currentItemPackages.push_back(itemPackage);
-		elm_ctxpopup_item_append(contextMenu, item->Text->c_str(), img, ContextMenu_ItemClickHandler, itemPackage);
+		elm_ctxpopup_item_append(contextMenu, item->Text.c_str(), img, ContextMenu_ItemClickHandler, itemPackage);
 	}
 
 	Evas_Coord x, y, w , h;
@@ -155,7 +157,7 @@ TFC::Components::ContextMenu::~ContextMenu()
 	HideMenu();
 }
 
-void TFC::Components::ContextMenu::OnContextMenuDismissed(EFL::EvasSmartEvent* ev,
+void TFC::Components::ContextMenu::OnContextMenuDismissed(EvasSmartEvent::Type* ev,
 		Evas_Object* obj, void* eventData) {
 	HideMenu();
 }
