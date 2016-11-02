@@ -14,12 +14,12 @@
 #define FILE_EDC_SLIDEPRESENTER "TFC/edc/SlidePresenter.edj"
 
 void TFC::Components::SlidePresenter::OnLayoutResize(
-		EFL::EvasObjectEvent* event, EFL::EvasEventSourceInfo* objSource,
+		EvasObjectEvent::Type* event, EFL::EvasEventSourceInfo objSource,
 		void* event_data) {
 
 	Evas_Coord w, h;
 
-	evas_object_geometry_get(objSource->obj, NULL, NULL, &w, &h);
+	evas_object_geometry_get(objSource.obj, NULL, NULL, &w, &h);
 
 	for(auto page : this->pageList)
 	{
@@ -31,7 +31,7 @@ void TFC::Components::SlidePresenter::OnLayoutResize(
 }
 
 void TFC::Components::SlidePresenter::OnPageScrolled(
-		EFL::EvasSmartEvent* event, Evas_Object* source, void* event_data) {
+		EvasSmartEvent::Type* event, Evas_Object* source, void* event_data) {
 	int pageH, pageV;
 	elm_scroller_current_page_get(source, &pageH, &pageV);
 
@@ -47,7 +47,8 @@ Evas_Object* TFC::Components::SlidePresenter::CreateComponent(
 	evas_object_size_hint_weight_set(layout, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
 	evas_object_size_hint_align_set(layout, EVAS_HINT_FILL, EVAS_HINT_FILL);
 
-	evas_object_event_callback_add(layout, EVAS_CALLBACK_RESIZE, EFL::EvasObjectEventHandler, &this->eventLayoutResize);
+	//evas_object_event_callback_add(layout, EVAS_CALLBACK_RESIZE, EFL::EvasObjectEventHandler, &this->eventLayoutResize);
+	eventLayoutResize.Bind(layout, EVAS_CALLBACK_RESIZE);
 
 	this->scroller = elm_scroller_add(layout);
 	elm_scroller_loop_set(this->scroller, EINA_FALSE, EINA_FALSE);
@@ -60,7 +61,8 @@ Evas_Object* TFC::Components::SlidePresenter::CreateComponent(
 	evas_object_size_hint_weight_set(this->scroller, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
 	evas_object_size_hint_align_set(this->scroller, EVAS_HINT_FILL, EVAS_HINT_FILL);
 	evas_object_show(this->scroller);
-	evas_object_smart_callback_add(this->scroller, "scroll,page,changed", EFL::EvasSmartEventHandler, &this->eventPageScrolled);
+	//evas_object_smart_callback_add(this->scroller, "scroll,page,changed", EFL::EvasSmartEventHandler, &this->eventPageScrolled);
+	eventPageScrolled.Bind(this->scroller, "scroll,page,changed");
 
 	elm_object_part_content_set(layout, "scroller", this->scroller);
 
@@ -81,7 +83,8 @@ Evas_Object* TFC::Components::SlidePresenter::CreateComponent(
 	elm_index_horizontal_set(this->index, EINA_TRUE);
 	elm_index_autohide_disabled_set(this->index, EINA_TRUE);
 	elm_object_part_content_set(layout, "index", this->index);
-	evas_object_smart_callback_add(this->index, "changed", EFL::EvasSmartEventHandler, &this->eventIndexSelected);
+	//evas_object_smart_callback_add(this->index, "changed", EFL::EvasSmartEventHandler, &this->eventIndexSelected);
+	eventIndexSelected.Bind(this->index, "changed");
 
 	return layout;
 }
@@ -135,7 +138,7 @@ void TFC::Components::SlidePresenter::Remove(int index) {
 }
 
 void TFC::Components::SlidePresenter::OnIndexSelected(
-		EFL::EvasSmartEvent* event, Evas_Object* source, void* event_data) {
+		EvasSmartEvent::Type* event, Evas_Object* source, void* event_data) {
 
 	auto page = elm_object_item_data_get((Elm_Object_Item*)event_data);
 	auto it = std::find(this->pageList.begin(), this->pageList.end(), page);

@@ -16,7 +16,9 @@
 namespace TFC {
 namespace Components {
 
-class LIBAPI SlidePresenter : public ComponentBase
+class LIBAPI SlidePresenter :
+		public ComponentBase,
+		public EFL::EFLProxyClass
 {
 private:
 	std::vector<Evas_Object*> pageList;
@@ -25,14 +27,14 @@ private:
 	Evas_Object* scroller;
 	Evas_Object* index;
 
-	EFL::EvasObjectEvent eventLayoutResize;
-	EFL::EvasSmartEvent eventPageScrolled;
-	EFL::EvasSmartEvent eventIndexSelected;
+	EvasObjectEvent eventLayoutResize;
+	EvasSmartEvent eventPageScrolled;
+	EvasSmartEvent eventIndexSelected;
 
 
-	void OnLayoutResize(EFL::EvasObjectEvent* event, EFL::EvasEventSourceInfo* objSource, void* event_data);
-	void OnPageScrolled(EFL::EvasSmartEvent* event, Evas_Object* source, void* event_data);
-	void OnIndexSelected(EFL::EvasSmartEvent* event, Evas_Object* source, void* event_data);
+	void OnLayoutResize(EvasObjectEvent::Type* event, EFL::EvasEventSourceInfo objSource, void* event_data);
+	void OnPageScrolled(EvasSmartEvent::Type* event, Evas_Object* source, void* event_data);
+	void OnIndexSelected(EvasSmartEvent::Type* event, Evas_Object* source, void* event_data);
 
 protected:
 	virtual Evas_Object* CreateComponent(Evas_Object* root);
