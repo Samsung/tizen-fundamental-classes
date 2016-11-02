@@ -24,7 +24,7 @@
 #endif
 
 namespace TFC {
-
+namespace Async {
 
 
 /**
@@ -213,12 +213,12 @@ DispatchAsyncBuilder<typename function_traits<Lambda>::result_type> operator>>(L
 
 bool IsAborting();
 
-#define s_async TFC::AsyncBuilder() &
-#define s_async_priority TFC::PriorityBuilder() &
-#define s_await TFC::AwaitBuilder() &
-#define s_abort_return if(TFC::IsAborting()) return
-#define s_abort_async TFC::AbortBuilderNoBlock() &
-#define s_abort_await TFC::AbortBuilder() &
+#define s_async 			TFC::Async::AsyncBuilder() &
+#define s_async_priority 	TFC::Async::PriorityBuilder() &
+#define s_await 			TFC::Async::AwaitBuilder() &
+#define s_abort_return 		if(TFC::Async::IsAborting()) return
+#define s_abort_async 		TFC::Async::AbortBuilderNoBlock() &
+#define s_abort_await 		TFC::Async::AbortBuilder() &
 
 
 
@@ -245,7 +245,7 @@ void dwait(AsyncTask<R>* task, Event<AsyncTask<R>*, R>& eventTarget)
 	});
 }
 
-}
+}}
 
 // Cancelling function trait for type DispatchAsyncBuilder so the overload can call correct function
 template<class Lambda>

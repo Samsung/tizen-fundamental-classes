@@ -5,6 +5,8 @@
  *      Author: Gilang M. Hamidy
  */
 
+#pragma once
+
 #ifndef CORE_NEW_H_
 #define CORE_NEW_H_
 

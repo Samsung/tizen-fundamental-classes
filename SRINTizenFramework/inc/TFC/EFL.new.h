@@ -4,6 +4,7 @@
  *  Created on: Oct 26, 2016
  *      Author: Gilang M. Hamidy
  */
+#pragma once
 
 #ifndef EFL_NEW_H_
 #define EFL_NEW_H_
