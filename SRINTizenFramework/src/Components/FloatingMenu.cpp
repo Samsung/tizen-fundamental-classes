@@ -32,7 +32,8 @@ Evas_Object* TFC::Components::FloatingMenu::CreateComponent(Evas_Object* root)
 
 	button = elm_button_add(floatingLayout);
 	elm_object_part_content_set(floatingLayout, "button1", button);
-	evas_object_smart_callback_add(button, "clicked", &EFL::EvasSmartEventHandler, &eventButtonClicked);
+	//evas_object_smart_callback_add(button, "clicked", &EFL::EvasSmartEventHandler, &eventButtonClicked);
+	eventButtonClicked.Bind(button, "clicked");
 
 	if (buttonImage.size() > 0) {
 		auto image = elm_image_add(floatingLayout);
@@ -91,7 +92,7 @@ bool TFC::Components::FloatingMenu::BackButtonClicked()
 	return false;
 }
 
-void TFC::Components::FloatingMenu::OnButtonClicked(EFL::EvasSmartEvent* ev, Evas_Object* obj, void* eventData)
+void TFC::Components::FloatingMenu::OnButtonClicked(EvasSmartEvent::Type* ev, Evas_Object* obj, void* eventData)
 {
 	if(not this->menuShown)
 		this->ShowMenu();
@@ -99,7 +100,7 @@ void TFC::Components::FloatingMenu::OnButtonClicked(EFL::EvasSmartEvent* ev, Eva
 		this->HideMenu();
 }
 
-void TFC::Components::FloatingMenu::OnContextMenuDismissed(EFL::EvasSmartEvent* ev, Evas_Object* obj, void* eventData)
+void TFC::Components::FloatingMenu::OnContextMenuDismissed(EvasSmartEvent::Type* ev, Evas_Object* obj, void* eventData)
 {
 	HideMenu();
 }
@@ -109,7 +110,8 @@ void TFC::Components::FloatingMenu::ShowMenu()
 	BackButtonHandler::Acquire();
 
 	auto contextMenu = elm_ctxpopup_add(this->naviframe);
-	evas_object_smart_callback_add(contextMenu, "dismissed", EFL::EvasSmartEventHandler, &eventContextMenuDismissed);
+	//evas_object_smart_callback_add(contextMenu, "dismissed", EFL::EvasSmartEventHandler, &eventContextMenuDismissed);
+	eventContextMenuDismissed.Bind(contextMenu, "dismissed");
 	elm_object_style_set(contextMenu, "dropdown/label");
 
 	this->contextMenu = contextMenu;
@@ -118,14 +120,14 @@ void TFC::Components::FloatingMenu::ShowMenu()
 	for(auto item : rootMenu)
 	{
 		Evas_Object* img = nullptr;
-		if(item->MenuIcon->length())
+		if(item->MenuIcon.length())
 		{
 			img = elm_image_add(contextMenu);
-			elm_image_file_set(img, Framework::ApplicationBase::GetResourcePath(item->MenuIcon->c_str()).c_str(), nullptr);
+			elm_image_file_set(img, Framework::ApplicationBase::GetResourcePath(item->MenuIcon.c_str()).c_str(), nullptr);
 		}
 		auto itemPackage = new ContextMenuPackage({this, item});
 		this->currentItemPackages.push_back(itemPackage);
-		elm_ctxpopup_item_append(contextMenu, item->Text->c_str(), img, FloatingMenu_ItemClickHandler, itemPackage);
+		elm_ctxpopup_item_append(contextMenu, item->Text.c_str(), img, FloatingMenu_ItemClickHandler, itemPackage);
 	}
 
 	Evas_Coord x, y, w , h;

@@ -21,103 +21,108 @@
  * Similar to FloatingButton, it uses Eext_FloatingButton.
  */
 namespace TFC {
-	namespace Components {
-		class LIBAPI FloatingMenu : public ComponentBase, BackButtonHandler {
-		public:
-			struct ContextMenuPackage
-			{
-				FloatingMenu* thisRef;
-				MenuItem* menuItemRef;
-				void RaiseEvent();
-			};
-		private:
-			Evas_Object* naviframe;
-			Evas_Object* floatingLayout;
-			Evas_Object* button;
-			Evas_Object* contextMenu;
+namespace Components {
 
-			EFL::EvasSmartEvent eventButtonClicked;
-			EFL::EvasSmartEvent eventContextMenuDismissed;
+class LIBAPI FloatingMenu :
+		public BackButtonHandler,
+		public ComponentBase,
+		public EFL::EFLProxyClass
+{
+public:
+	struct ContextMenuPackage
+	{
+		FloatingMenu* thisRef;
+		MenuItem* menuItemRef;
+		void RaiseEvent();
+	};
+private:
+	Evas_Object* naviframe;
+	Evas_Object* floatingLayout;
+	Evas_Object* button;
+	Evas_Object* contextMenu;
 
-			friend struct ContextMenuPackage;
-			std::vector<ContextMenuPackage*> currentItemPackages;
+	EvasSmartEvent eventButtonClicked;
+	EvasSmartEvent eventContextMenuDismissed;
 
-			bool menuShown;
-			std::vector<MenuItem*> rootMenu;
+	friend struct ContextMenuPackage;
+	std::vector<ContextMenuPackage*> currentItemPackages;
 
-			void OnButtonClicked(EFL::EvasSmartEvent* ev, Evas_Object* obj, void* eventData);
-			void OnContextMenuDismissed(EFL::EvasSmartEvent* ev, Evas_Object* obj, void* eventData);
-			bool BackButtonClicked();
-			void ShowMenu();
-			void HideMenu();
+	bool menuShown;
+	std::vector<MenuItem*> rootMenu;
 
-			void RaiseOnClickEvent(MenuItem* menuItemRef);
-		protected:
-			/**
-			 * Method overriden from ComponentBase, creates the UI elements of the component.
-			 *
-			 * @param root The root/parent given for this component.
-			 *
-			 * @return An Eext_FloatingButton widget.
-			 */
-			virtual Evas_Object* CreateComponent(Evas_Object* root) final;
-		public:
-			/**
-			 * Constructor of FloatingMenu.
-			 *
-			 * @note This component requires a swallow named "elm.swallow.floatingbutton"
-			 * 		 that must be present in the layout of views that use it.
-			 */
-			FloatingMenu();
+	void OnButtonClicked(EvasSmartEvent::Type* ev, Evas_Object* obj, void* eventData);
+	void OnContextMenuDismissed(EvasSmartEvent::Type* ev, Evas_Object* obj, void* eventData);
+	bool BackButtonClicked();
+	void ShowMenu();
+	void HideMenu();
 
-			/**
-			 * Destructor of FloatingMenu.
-			 */
-			virtual ~FloatingMenu();
+	void RaiseOnClickEvent(MenuItem* menuItemRef);
+protected:
+	/**
+	 * Method overriden from ComponentBase, creates the UI elements of the component.
+	 *
+	 * @param root The root/parent given for this component.
+	 *
+	 * @return An Eext_FloatingButton widget.
+	 */
+	virtual Evas_Object* CreateComponent(Evas_Object* root) final;
+public:
+	/**
+	 * Constructor of FloatingMenu.
+	 *
+	 * @note This component requires a swallow named "elm.swallow.floatingbutton"
+	 * 		 that must be present in the layout of views that use it.
+	 */
+	FloatingMenu();
 
-			/**
-			 * String that will be used as path of the floating button's image.
-			 */
-			std::string buttonImage;
+	/**
+	 * Destructor of FloatingMenu.
+	 */
+	virtual ~FloatingMenu();
 
-			/**
-			 * Method to add MenuItem to the floating menu.
-			 *
-			 * @param menu MenuItem that will be added.
-			 */
-			void AddMenu(MenuItem* menu);
+	/**
+	 * String that will be used as path of the floating button's image.
+	 */
+	std::string buttonImage;
 
-			/**
-			 * Method to add MenuItem at a specific position to the floating menu.
-			 *
-			 * @param index Index that indicates where the item will be placed.
-			 * @param menu MenuItem that will be added.
-			 */
-			void AddMenuAt(int index, MenuItem* menu);
+	/**
+	 * Method to add MenuItem to the floating menu.
+	 *
+	 * @param menu MenuItem that will be added.
+	 */
+	void AddMenu(MenuItem* menu);
 
-			/**
-			 * Method to remove a particular MenuItem from the floating menu.
-			 *
-			 * @param menu MenuItem that will be removed.
-			 */
-			void RemoveMenu(MenuItem* menu);
+	/**
+	 * Method to add MenuItem at a specific position to the floating menu.
+	 *
+	 * @param index Index that indicates where the item will be placed.
+	 * @param menu MenuItem that will be added.
+	 */
+	void AddMenuAt(int index, MenuItem* menu);
 
-			/**
-			 * Method to bulk-add MenuItems to the floating menu.
-			 *
-			 * @param listOfMenus Vector that contains MenuItems that will be added.
-			 */
-			void AddMenu(const std::vector<MenuItem*>& listOfMenus);
+	/**
+	 * Method to remove a particular MenuItem from the floating menu.
+	 *
+	 * @param menu MenuItem that will be removed.
+	 */
+	void RemoveMenu(MenuItem* menu);
 
-			/**
-			 * Method to set list of MenuItems as menus.
-			 *
-			 * @param listOfMenus Vector that contains MenuItems that will be set.
-			 */
-			void SetMenu(const std::vector<MenuItem*>& listOfMenus);
-		};
-	}
-}
+	/**
+	 * Method to bulk-add MenuItems to the floating menu.
+	 *
+	 * @param listOfMenus Vector that contains MenuItems that will be added.
+	 */
+	void AddMenu(const std::vector<MenuItem*>& listOfMenus);
+
+	/**
+	 * Method to set list of MenuItems as menus.
+	 *
+	 * @param listOfMenus Vector that contains MenuItems that will be set.
+	 */
+	void SetMenu(const std::vector<MenuItem*>& listOfMenus);
+};
+
+}}
 
 
 
