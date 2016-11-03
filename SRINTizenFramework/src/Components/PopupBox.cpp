@@ -45,9 +45,21 @@ LIBAPI std::string const& TFC::Components::PopupBox::GetMessageString() const
 }
 
 LIBAPI TFC::Components::PopupBox::PopupBox() :
-		shown(false), popup(nullptr), popupLayout(nullptr), root(nullptr),
+		shown(false),
+		popup(nullptr),
+		popupLayout(nullptr),
+		root(nullptr),
 		orientation(Elm_Popup_Orient::ELM_POPUP_ORIENT_BOTTOM),
-		Title(this), Message(this), Orientation(this), IsShown(shown)
+		Title(this),
+		Message(this),
+		Orientation(this),
+		IsShown(shown),
+		ButtonOneText(this),
+		ButtonTwoText(this),
+		ButtonThreeText(this),
+		ButtonOneImage(this),
+		ButtonTwoImage(this),
+		ButtonThreeImage(this)
 {
 	Visible = false;
 	title = "";

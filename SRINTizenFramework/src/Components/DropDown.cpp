@@ -49,7 +49,8 @@ LIBAPI TFC::Components::DropDown::DropDown() :
 	parentComponent(nullptr),
 	dropdownComponent(nullptr),
 	dataSource(nullptr),
-	DataSource(this)
+	DataSource(this),
+	Text(this)
 {
 	eventDropdownButtonClick += EventHandler(DropDown::OnDropDownButtonClick);
 	SelectedItem = nullptr;

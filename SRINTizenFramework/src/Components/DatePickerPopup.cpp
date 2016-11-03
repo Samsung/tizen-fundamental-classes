@@ -158,8 +158,8 @@ TFC::Components::DatePickerPopup::DatePickerPopup() : Title(this), Hint(this), O
 	std::time_t time	= std::time(nullptr);
 	std::tm* time_tm	= std::localtime(&time);
 
-	datePopupMenu.buttonOneText	= "OK";
-	datePopupMenu.buttonTwoText = "Cancel";
+	datePopupMenu.ButtonOneText	= "OK";
+	datePopupMenu.ButtonTwoText = "Cancel";
 	datePopupMenu.Orientation 	= Elm_Popup_Orient::ELM_POPUP_ORIENT_BOTTOM;
 	datePopupMenu.UseClassicTheme(false);
 	datePopupMenu.SetSelectedDate(*time_tm);

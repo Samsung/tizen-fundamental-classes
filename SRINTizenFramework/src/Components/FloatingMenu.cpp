@@ -17,7 +17,8 @@ TFC::Components::FloatingMenu::FloatingMenu() :
 	button(nullptr),
 	contextMenu(nullptr),
 	menuShown(false),
-	buttonImage("")
+	buttonImage(""),
+	ButtonImage(this)
 {
 	eventButtonClicked += EventHandler(FloatingMenu::OnButtonClicked);
 	eventContextMenuDismissed += EventHandler(FloatingMenu::OnContextMenuDismissed);

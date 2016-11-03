@@ -21,7 +21,11 @@ LIBAPI FloatingButton::FloatingButton() :
 		buttonLeftImage(""),
 		buttonRightImage(""),
 		doubleButton(false),
-		movementBlock(false)
+		movementBlock(false),
+		ButtonLeftImage(this),
+		ButtonRightImage(this),
+		DoubleButton(this),
+		MovementBlock(this)
 {
 
 }

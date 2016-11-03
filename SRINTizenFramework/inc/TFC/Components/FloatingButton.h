@@ -21,13 +21,32 @@ namespace Components {
 */
 class LIBAPI FloatingButton :
 		public ComponentBase,
-		public EFL::EFLProxyClass
+		public EFL::EFLProxyClass,
+		PropertyClass<FloatingButton>
 {
+	using PropertyClass<FloatingButton>::Property;
+
 private:
+	std::string buttonLeftImage;
+	std::string buttonRightImage;
+
 	Evas_Object* naviframe;
 	Evas_Object* floatingButton;
 	Evas_Object* buttonLeft;
 	Evas_Object* buttonRight;
+
+	bool doubleButton;
+	bool movementBlock;
+
+	std::string const& GetButtonLeftImage() const { return this->buttonLeftImage; }
+	std::string const& GetButtonRightImage() const { return this->buttonRightImage; }
+	bool GetDoubleButton() const { return this->doubleButton; }
+	bool GetMovementBlock() const { return this->movementBlock; }
+
+	void SetButtonLeftImage(std::string const& image) { this->buttonLeftImage = image; }
+	void SetButtonRightImage(std::string const& image) { this->buttonRightImage = image; }
+	void SetDoubleButton(bool const& doubleButton) { this->doubleButton = doubleButton; }
+	void SetMovementBlock(bool const& movementBlock) { this->movementBlock = movementBlock; }
 protected:
 	/**
 	 * Method overriden from ComponentBase, creates the UI elements of the component.
@@ -50,13 +69,14 @@ public:
 	 * String that will be used as path of the leftmost button's image.
 	 * If this is empty, leftmost button will not be shown.
 	 */
-	std::string buttonLeftImage;
+	Property<std::string const&>::GetSet<&FloatingButton::GetButtonLeftImage, &FloatingButton::SetButtonLeftImage> ButtonLeftImage;
 
 	/**
 	 * String that will be used as path of the rightmost button's image.
 	 * If this is empty or doubleButton is false, rightmost button will not be shown.
 	 */
-	std::string buttonRightImage;
+	Property<std::string const&>::GetSet<&FloatingButton::GetButtonRightImage, &FloatingButton::SetButtonRightImage> ButtonRightImage;
+
 
 	/**
 	 * Event that will be triggered when the leftmost button is clicked.
@@ -72,13 +92,13 @@ public:
 	 * Boolean that will set the number of buttons on FloatingButton.
 	 * If true, then it will enable double button mode. If false, then it will only have one button.
 	 */
-	bool doubleButton;
+	Property<bool>::GetSet<&FloatingButton::GetDoubleButton, &FloatingButton::SetDoubleButton> DoubleButton;
 
 	/**
 	 * Boolean that will set whether the FloatingButton can be moved or not.
 	 * If true, then it will be static. If false, then it will be movable.
 	 */
-	bool movementBlock;
+	Property<bool>::GetSet<&FloatingButton::GetMovementBlock, &FloatingButton::SetMovementBlock> MovementBlock;
 
 	/**
 	 * Method that can be used to set an alternative, white styled FloatingButton.

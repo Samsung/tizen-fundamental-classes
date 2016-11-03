@@ -26,8 +26,10 @@ namespace Components {
 class LIBAPI FloatingMenu :
 		public BackButtonHandler,
 		public ComponentBase,
-		public EFL::EFLProxyClass
+		public EFL::EFLProxyClass,
+		PropertyClass<FloatingMenu>
 {
+	using PropertyClass<FloatingMenu>::Property;
 public:
 	struct ContextMenuPackage
 	{
@@ -36,6 +38,8 @@ public:
 		void RaiseEvent();
 	};
 private:
+	std::string buttonImage;
+
 	Evas_Object* naviframe;
 	Evas_Object* floatingLayout;
 	Evas_Object* button;
@@ -57,6 +61,9 @@ private:
 	void HideMenu();
 
 	void RaiseOnClickEvent(MenuItem* menuItemRef);
+
+	std::string const& GetButtonImage() const { return buttonImage; }
+	void SetButtonImage(std::string const& str) { buttonImage = str; }
 protected:
 	/**
 	 * Method overriden from ComponentBase, creates the UI elements of the component.
@@ -81,9 +88,9 @@ public:
 	virtual ~FloatingMenu();
 
 	/**
-	 * String that will be used as path of the floating button's image.
+	 * Property string that will be used as path of the floating button's image.
 	 */
-	std::string buttonImage;
+	Property<std::string const&>::GetSet<&FloatingMenu::GetButtonImage, &FloatingMenu::SetButtonImage> ButtonImage;
 
 	/**
 	 * Method to add MenuItem to the floating menu.

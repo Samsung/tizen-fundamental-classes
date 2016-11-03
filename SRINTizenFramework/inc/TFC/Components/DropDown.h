@@ -32,6 +32,8 @@ class LIBAPI DropDown :
 	using EventEmitterClass<DropDown>::Event;
 	using PropertyClass<DropDown>::Property;
 private:
+	std::string text;
+
 	Evas_Object* parentComponent;
 	Evas_Object* dropdownComponent;
 	Adapter* dataSource;
@@ -45,6 +47,8 @@ private:
 
 	void ShowDropdown();
 	void OnDropDownButtonClick(EvasSmartEvent::Type* viewSource, Evas_Object* objSource, void* eventData);
+
+	std::string const& GetText() const { return this->text; }
 protected:
 	/**
 	 * Method overriden from ComponentBase, creates the UI elements of the component.
@@ -84,7 +88,10 @@ public:
 	 * The return type is void*.
 	 */
 	/*Property<void*>::Auto::ReadOnly*/void* SelectedItem;
-	std::string text;
+
+	Property<std::string const&>::Get<&DropDown::GetText> Text;
+
+	//TODO : Add empty text setting property
 };
 
 /**

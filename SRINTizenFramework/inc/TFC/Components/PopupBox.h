@@ -33,12 +33,37 @@ class LIBAPI PopupBox :
 private:
 	std::string  title;
 	std::string  message;
+
+	std::string buttonOneText;
+	std::string buttonTwoText;
+	std::string buttonThreeText;
+
+	std::string buttonOneImage;
+	std::string buttonTwoImage;
+	std::string buttonThreeImage;
+
 	bool shown;
 
 	Evas_Object* popup;
 	Evas_Object* popupLayout;
 	Evas_Object* root;
 	Elm_Popup_Orient orientation;
+
+	std::string const& GetButtonOneText() const { return this->buttonOneText; }
+	std::string const& GetButtonTwoText() const { return this->buttonTwoText; }
+	std::string const& GetButtonThreeText() const { return this->buttonThreeText; }
+
+	std::string const& GetButtonOneImage() const { return this->buttonOneImage; }
+	std::string const& GetButtonTwoImage() const { return this->buttonTwoImage; }
+	std::string const& GetButtonThreeImage() const { return this->buttonThreeImage; }
+
+	void SetButtonOneText(std::string const& text) { this->buttonOneText = text; }
+	void SetButtonTwoText(std::string const& text) { this->buttonTwoText = text; }
+	void SetButtonThreeText(std::string const& text) { this->buttonThreeText = text; }
+
+	void SetButtonOneImage(std::string const& image) { this->buttonOneImage = image; }
+	void SetButtonTwoImage(std::string const& image) { this->buttonTwoImage = image; }
+	void SetButtonThreeImage(std::string const& image) { this->buttonThreeImage = image; }
 protected:
 	/**
 	 * Method overriden from ComponentBase, creates the UI elements of the component.
@@ -128,30 +153,30 @@ public:
 	 * String that will be used as the leftmost button's text.
 	 * If this and buttonOneImage is empty, leftmost button will not be shown.
 	 */
-	std::string buttonOneText;
+	Property<std::string const&>::GetSet<&PopupBox::GetButtonOneText, &PopupBox::SetButtonOneText> ButtonOneText;
 	/**
 	 * String that will be used as the center (or right, if there's no third button) button's text.
 	 * If this and buttonTwoImage is empty, center button will not be shown.
 	 */
-	std::string buttonTwoText;
+	Property<std::string const&>::GetSet<&PopupBox::GetButtonTwoText, &PopupBox::SetButtonTwoText> ButtonTwoText;
 	/**
 	 * String that will be used as the rightmost button's text.
 	 * If this and buttonThreeImage is empty, rightmost button will not be shown.
 	 */
-	std::string buttonThreeText;
+	Property<std::string const&>::GetSet<&PopupBox::GetButtonThreeText, &PopupBox::SetButtonThreeText> ButtonThreeText;
 
 	/**
 	 * String that will be used as path of the leftmost button's image.
 	 */
-	std::string buttonOneImage;
+	Property<std::string const&>::GetSet<&PopupBox::GetButtonOneImage, &PopupBox::SetButtonOneImage> ButtonOneImage;
 	/**
 	 * String that will be used as path of the center (or right, if there's no third button) button's image.
 	 */
-	std::string buttonTwoImage;
+	Property<std::string const&>::GetSet<&PopupBox::GetButtonTwoImage, &PopupBox::SetButtonTwoImage> ButtonTwoImage;
 	/**
 	 * String that will be used as path of the rightmost button's image.
 	 */
-	std::string buttonThreeImage;
+	Property<std::string const&>::GetSet<&PopupBox::GetButtonThreeImage, &PopupBox::SetButtonOneImage> ButtonThreeImage;
 
 	/**
 	 * Method that initialize the popup's content and show it.
