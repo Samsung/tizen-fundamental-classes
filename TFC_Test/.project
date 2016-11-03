@@ -30,7 +30,7 @@
 		<link>
 			<name>SRINTizenFramework&apos;s inc</name>
 			<type>2</type>
-			<location>/home/gilang/git-temp/srin-framework/SRINTizenFramework/inc</location>
+			<locationURI>PARENT-1-PARENT_LOC/SRINTizenFramework/inc</locationURI>
 		</link>
 	</linkedResources>
 	<filteredResources>
