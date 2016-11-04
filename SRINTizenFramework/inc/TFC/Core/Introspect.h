@@ -50,8 +50,6 @@ struct MemberFunction
 
 };
 
-
-
 template<typename TClass, typename TReturn, typename... TArgs>
 struct MemberFunction<TReturn (TClass::*)(TArgs...)>
 {
@@ -63,8 +61,51 @@ struct MemberFunction<TReturn (TClass::*)(TArgs...)>
 	using Args = typename std::tuple_element<idx, std::tuple<TArgs...>>::type;
 };
 
-template<typename T, bool = HasCallOperator<T>::Value || std::is_function<T>::value>
-struct CallableObject
+template<typename TClass, typename TReturn, typename... TArgs>
+struct MemberFunction<TReturn (TClass::*)(TArgs...) const> : MemberFunction<TReturn (TClass::*)(TArgs...)>
+{
+	static constexpr auto Arity = sizeof...(TArgs);
+	typedef TReturn ReturnType;
+	typedef TClass	DeclaringType;
+
+	template<size_t idx>
+	using Args = typename std::tuple_element<idx, std::tuple<TArgs...>>::type;
+};
+
+template<typename T>
+struct StaticFunction
+{
+
+};
+
+template<typename TRet, typename... TArgs>
+struct StaticFunction<TRet(TArgs...)>
+{
+	static constexpr auto Arity = sizeof...(TArgs);
+	typedef TRet ReturnType;
+
+	template<size_t idx>
+	using Args = typename std::tuple_element<idx, std::tuple<TArgs...>>::type;
+};
+
+template<typename T>
+struct IsFunctionPointer
+{
+	static constexpr bool Value = false;
+};
+
+template<typename TRet, typename... TArgs>
+struct IsFunctionPointer<TRet(*)(TArgs...)>
+{
+	static constexpr bool Value = true;
+};
+
+template<typename T, bool = HasCallOperator<T>::Value || std::is_function<typename std::remove_pointer<T>::type>::value>
+struct CallableObject;
+
+
+template<typename T>
+struct CallableObject<T, false>
 {
 	static constexpr bool Callable = false; // Fallback
 };
@@ -73,7 +114,17 @@ template<typename T>
 struct CallableObject<T, true> : MemberFunction<decltype(&T::operator())>
 {
 	static constexpr bool Callable = true;
+	typedef typename MemberFunction<decltype(&T::operator())>::ReturnType ReturnType;
 };
+
+template<typename TRet, typename... TArgs>
+struct CallableObject<TRet(*)(TArgs...), true> : StaticFunction<TRet(TArgs...)>
+{
+	static constexpr bool Callable = true;
+	typedef typename StaticFunction<TRet(TArgs...)>::ReturnType ReturnType;
+};
+
+
 
 }}}
 

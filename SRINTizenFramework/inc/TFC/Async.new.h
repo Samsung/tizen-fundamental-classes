@@ -136,12 +136,30 @@ struct AsyncPackage
 	AsyncResult<T> result;
 	SharedEventObject<AsyncTask<T>*, typename AsyncTypeSelector<T>::EventDataType> event;
 	std::function<T(void)> function;
+	void* taskHandle;
+	bool awaitable;
+
+	AsyncPackage() : taskHandle(nullptr), awaitable(true) { };
 };
 
 template<typename TReturnValue, typename TEvent>
-AsyncPackage<TReturnValue>* PackOperand(AsyncOperand<TReturnValue, TEvent> operand)
+auto PackOperand(AsyncOperand<TReturnValue, TEvent> operand)
+	-> typename std::enable_if<!std::is_void<TEvent>::value, AsyncPackage<TReturnValue>*>::type
 {
+	AsyncPackage<TReturnValue>* ret = new AsyncPackage<TReturnValue>;
+	ret->function = operand.asyncFunc;
+	ret->event = operand.eventRef;
+	ret->awaitable = false;
+	return ret;
+}
 
+template<typename TReturnValue>
+auto PackOperand(AsyncOperand<TReturnValue, void> operand)
+	-> AsyncPackage<TReturnValue>*
+{
+	AsyncPackage<TReturnValue>* ret = new AsyncPackage<TReturnValue>;
+	ret->function = operand.asyncFunc;
+	return ret;
 }
 
 template<typename T>
@@ -161,13 +179,16 @@ inline void AsyncWorker<void>(void* package)
 template<typename T>
 void AsyncCompleteHandler(void* package)
 {
-	std::unique_ptr<AsyncPackage<T>> ptr(reinterpret_cast<AsyncPackage<T>*>(package));
+	AsyncPackage<T>* ptr = reinterpret_cast<AsyncPackage<T>*>(package);
+	ptr->event(reinterpret_cast<AsyncTask<T>*>(ptr->taskHandle), ptr->result.value);
 }
 
 template<>
 void AsyncCompleteHandler<void>(void* package)
 {
-	std::unique_ptr<AsyncPackage<void>> ptr(reinterpret_cast<AsyncPackage<void>*>(package));
+	AsyncPackage<void>* ptr = reinterpret_cast<AsyncPackage<void>*>(package);
+	ptr->event(reinterpret_cast<AsyncTask<void>*>(ptr->taskHandle), nullptr);
+
 }
 
 template<typename T>
@@ -180,18 +201,17 @@ void AsyncFinalizeHandler(void* package)
 struct AsyncHandlerPayload
 {
 	typedef void(*FunctionType)(void*);
-
 	FunctionType taskFunc;
 	FunctionType completeFunc;
 	FunctionType finalizeFunc;
 	void*		 internalData;
+	void**		 taskHandleRef;
+	bool		 awaitable;
 };
 
 void* RunAsyncTask(AsyncHandlerPayload payload);
 
-void* RunAsyncTask(void(*task)(void*), void(*complete)(void*), void* package);
-
-void AwaitAsyncTask(void* handle, void** package);
+void AwaitAsyncTask(void* handle, void*& package, bool& doFinalize);
 
 struct AwaitBuilder
 {
@@ -199,13 +219,32 @@ struct AwaitBuilder
 	TReturnValue operator&(AsyncTask<TReturnValue>* taskHandle)
 	{
 		void* packagePtr = nullptr;
-		AwaitAsyncTask(taskHandle, &packagePtr);
-		return reinterpret_cast<AsyncPackage<TReturnValue>*>(packagePtr)->result.value;
+		bool doFinalize = false;
+		AwaitAsyncTask(taskHandle, packagePtr, doFinalize);
+
+		if(doFinalize)
+		{
+			auto package = reinterpret_cast<AsyncPackage<TReturnValue>*>(packagePtr);
+			TReturnValue ret = package->result.value;
+			delete package;
+			return ret;
+		}
+		else
+		{
+			return reinterpret_cast<AsyncPackage<TReturnValue>*>(packagePtr)->result.value;
+		}
 	}
 
 	void operator&(AsyncTask<void>* taskHandle)
 	{
-		AwaitAsyncTask(taskHandle, nullptr);
+		bool doFinalize = false;
+		void* packagePtr = nullptr;
+		AwaitAsyncTask(taskHandle, packagePtr, doFinalize);
+
+		if(doFinalize)
+		{
+			delete reinterpret_cast<AsyncPackage<void>*>(packagePtr);
+		}
 	}
 };
 
@@ -215,9 +254,17 @@ struct AsyncBuilder
 	auto operator& (AsyncOperand<TReturnValue, TEvent> operand)
 		-> AsyncTask<TReturnValue>*
 	{
-		return reinterpret_cast<AsyncTask<TReturnValue>*>(
-										RunAsyncTask(AsyncWorker<TReturnValue>,
-													 AsyncCompleteHandler<TReturnValue>));
+		auto packed = PackOperand(operand);
+
+		AsyncHandlerPayload payload = {
+			AsyncWorker<TReturnValue>,
+			AsyncCompleteHandler<TReturnValue>,
+			AsyncFinalizeHandler<TReturnValue>,
+			packed,
+			&packed->taskHandle,
+			packed->awaitable
+		};
+		return reinterpret_cast<AsyncTask<TReturnValue>*>(RunAsyncTask(payload));
 	}
 
 	template<typename TLambda,
@@ -251,14 +298,14 @@ struct TFC::Async
 															  void*,
 															  TReturnValue>::type
 									> Event;
+	typedef typename Event::Type BaseEvent;
 
 };
 
-inline void TFC::Core::Async::AwaitAsyncTask(void* handle, void** package) {
-}
 
-#define tfc_async
-#define tfc_await
+
+#define tfc_async TFC::Core::Async::AsyncBuilder() &
+#define tfc_await TFC::Core::Async::AwaitBuilder() &
 #define tfc_if_abort_return
 
 #endif /* ASYNC_NEW_H_ */

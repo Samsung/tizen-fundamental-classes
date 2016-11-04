@@ -6,8 +6,12 @@
  */
 
 #include "TFC/Async.new.h"
+#include "TFC_Test.h"
 
 #include <gtest/gtest.h>
+#include <mutex>
+#include <chrono>
+#include <thread>
 
 class AsyncTest : public testing::Test
 {
@@ -58,4 +62,95 @@ TEST_F(AsyncTest, LambdaToAsyncOperand)
 	TFC::Core::Async::AsyncOperand<void> operand([] { int a = 12 + 15; });
 
 	auto tmp = TFC::Core::Async::AsyncBuilder() & [] { return 5; };
+}
+
+class AsyncTestClass : public TFC::EventClass
+{
+public:
+	int testCase;
+	int result;
+	TFC::Async<int>::Event eventAsyncCompleted;
+	std::timed_mutex mutexAsync;
+
+	void OnAsyncCompleted(decltype(eventAsyncCompleted)::Type* ev, TFC::Async<int>::Task* task, int ret)
+	{
+		result = ret;
+		mutexAsync.unlock();
+	}
+
+	AsyncTestClass()
+	{
+		result = 0;
+		testCase = rand();
+		eventAsyncCompleted += EventHandler(AsyncTestClass::OnAsyncCompleted);
+	}
+
+	void StartAsync()
+	{
+		mutexAsync.lock();
+
+		tfc_async [this] {
+			return this->testCase;
+		} >> eventAsyncCompleted;
+	}
+};
+
+TEST_F(AsyncTest, CompleteAsync)
+{
+	using namespace TFC;
+	using Ms = std::chrono::milliseconds;
+	AsyncTestClass tc;
+
+	EFL_BLOCK_BEGIN;
+		EFL_SYNC_BEGIN(tc);
+
+			tc.StartAsync();
+
+		EFL_SYNC_END;
+	EFL_BLOCK_END;
+
+	bool success = tc.mutexAsync.try_lock_for(Ms(1000));
+
+	ASSERT_TRUE(success) << "Asynchronous wait timeout";
+
+	if(success)
+	{
+		EXPECT_EQ(tc.testCase, tc.result) << "Asynchronous completed but result is wrong";
+	}
+}
+
+TEST_F(AsyncTest, AsyncWithAwait)
+{
+	using namespace TFC;
+	using Ms = std::chrono::milliseconds;
+
+	int tc1 = rand();
+	int result = 0;
+
+	EFL_BLOCK_BEGIN;
+		struct {
+			int tc1;
+			int& result;
+		} data = {
+			tc1,
+			result
+		};
+
+		EFL_SYNC_BEGIN(data);
+
+			int tmp = data.tc1;
+
+			auto task = tfc_async [tmp] {
+				std::this_thread::sleep_for(Ms(2000));
+				return tmp + 12345;
+			};
+
+			data.result = tfc_await task;
+
+			std::cout << "Result here: " << data.result << std::endl;
+
+		EFL_SYNC_END;
+	EFL_BLOCK_END;
+
+	EXPECT_EQ(tc1 + 12345, result) << "Asynchronous completed but result is wrong";
 }

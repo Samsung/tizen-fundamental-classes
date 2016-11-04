@@ -14,26 +14,7 @@
 
 #include "TFC_Test.h"
 
-#define EFL_BLOCK_BEGIN \
-{\
-	std::mutex tfc__mtx;\
-	tfc__mtx.lock();\
 
-#define EFL_SYNC_BEGIN(SHARED_DATA) \
-struct tfc__sharedStruct { std::mutex& mtx; decltype(SHARED_DATA)& shared; } \
-tfc__sharedInst = { tfc__mtx, SHARED_DATA };	\
-sync_thread([] (void* tfc__data) {\
-	typedef decltype(SHARED_DATA) tfc__sharedType;\
-	tfc__sharedStruct* tfc__sharedData = reinterpret_cast<tfc__sharedStruct*>(tfc__data);\
-	tfc__sharedType& SHARED_DATA = tfc__sharedData->shared;
-
-#define EFL_SYNC_END \
-	tfc__sharedData->mtx.unlock();\
-}, &tfc__sharedInst);\
-std::lock_guard<std::mutex> tfc__guard(tfc__mtx);
-
-#define EFL_BLOCK_END \
-}
 
 class EFLSmartEventTest : public testing::Test
 {

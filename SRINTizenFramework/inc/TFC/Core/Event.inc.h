@@ -47,7 +47,7 @@ private:
 	struct EventNode;
 	EventNode* first;
 
-	void* operator new(size_t size);
+	void* operator new(size_t size) { return ::operator new(size); };
 
 	template<typename, typename>
 	friend class TFC::Core::SharedEventObject;
@@ -91,6 +91,7 @@ template<typename TObjectSource, typename TEventData>
 class TFC::Core::SharedEventObject : protected std::shared_ptr<TFC::Core::EventObject<TObjectSource, TEventData>>
 {
 public:
+	typedef TFC::Core::EventObject<TObjectSource, TEventData> Type;
 	SharedEventObject();
 	void operator+=(const typename TFC::Core::EventObject<TObjectSource, TEventData>::EventDelegate& other);
 	void operator-=(const typename TFC::Core::EventObject<TObjectSource, TEventData>::EventDelegate& other);
