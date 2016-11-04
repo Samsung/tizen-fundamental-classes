@@ -1,0 +1,84 @@
+/*
+ * Async.cpp
+ *
+ *  Created on: Nov 3, 2016
+ *      Author: Gilang M. Hamidy
+ */
+
+
+#include "TFC/Async.new.h";
+
+#include <Elementary.h>
+#include <mutex>
+#include <map>
+
+namespace {
+
+using namespace TFC::Core::Async;
+
+
+struct AsyncContext
+{
+	AsyncHandlerPayload payload;
+	std::mutex contextLock;
+	std::mutex runningLock;
+
+	bool running;
+
+	AsyncContext()
+	{
+		running = false;
+	}
+};
+
+void Async_Thread(void* data, Ecore_Thread* thd)
+{
+	auto ctx = reinterpret_cast<AsyncContext*>(data);
+
+	// Acquire running lock
+	std::lock_guard<std::mutex>(ctx->runningLock);
+
+	{
+		// Update context
+		std::lock_guard<std::mutex> lock(ctx->contextLock);
+		ctx->running = true;
+	}
+
+	// Run the task
+	auto taskFunc = ctx->payload.taskFunc;
+	taskFunc(ctx->payload.internalData);
+
+	{
+		// Update context
+		std::lock_guard<std::mutex> lock(ctx->contextLock);
+		ctx->running = false;
+	}
+}
+
+void Async_Cancel(void* data, Ecore_Thread* thd)
+{
+	auto ctx = reinterpret_cast<AsyncContext*>(data);
+}
+
+void Async_Complete(void* data, Ecore_Thread* thd)
+{
+	auto ctx = reinterpret_cast<AsyncContext*>(data);
+}
+
+void Async_Notify(void* data, Ecore_Thread* thd, void* notifData)
+{
+	auto ctx = reinterpret_cast<AsyncContext*>(data);
+}
+
+}
+
+void* TFC::Core::Async::RunAsyncTask(AsyncHandlerPayload payload)
+{
+	AsyncContext* ctx = new AsyncContext;
+
+	ecore_thread_feedback_run(Async_Thread, Async_Notify, Async_Complete, Async_Cancel, ctx, EINA_FALSE);
+
+
+	return ctx;
+}
+
