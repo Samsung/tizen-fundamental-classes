@@ -47,6 +47,8 @@ struct AsyncOperand
 	{ }
 };
 
+
+
 template<>
 struct AsyncOperand<void, void>
 {
@@ -94,6 +96,35 @@ struct AsyncOperand<TReturnValue, SharedEventObject<AsyncTask<TReturnValue>*, TR
 	{ }
 };
 
+template<typename TLambda,
+		 typename TIntrospect = Introspect::CallableObject<TLambda>,
+		 typename TEnable 	  = typename std::enable_if<TIntrospect::Arity == 1>::type>
+struct AsyncFinallyOperand
+{
+	typedef typename Introspect::CallableObject<TLambda>::template Args<0> ArgumentType;
+	static constexpr bool Valid = true;
+
+	std::function<void(ArgumentType)> finallyLambda;
+
+	explicit AsyncFinallyOperand(std::function<void(ArgumentType)>&& finallyLambda) :
+			finallyLambda(finallyLambda)
+	{
+
+	}
+};
+
+template<typename TReturnValue, typename TLambdaFinally>
+struct AsyncOperand<TReturnValue, AsyncFinallyOperand<TLambdaFinally>> :
+		AsyncOperand<TReturnValue, void>
+{
+	std::function<void(TReturnValue)> funcFinally;
+
+	AsyncOperand(std::function<TReturnValue(void)>&& func, std::function<void(TReturnValue)>&& funcFinally) :
+		AsyncOperand<TReturnValue, void>(std::move(func)),
+		funcFinally(funcFinally)
+	{ }
+};
+
 struct AsyncTypeTag
 {
 	struct AsyncVoid 	{ };
@@ -105,6 +136,7 @@ struct AsyncTypeSelector
 {
 	typedef AsyncTypeTag::AsyncNonVoid Tag;
 	typedef T EventDataType;
+	typedef std::function<void(T)> FinallyFunction;
 };
 
 template<>
@@ -112,6 +144,7 @@ struct AsyncTypeSelector<void>
 {
 	typedef AsyncTypeTag::AsyncVoid Tag;
 	typedef void* EventDataType;
+	typedef std::function<void()> FinallyFunction;
 };
 
 template<typename T>
@@ -129,38 +162,25 @@ struct AsyncResult<void>
 
 };
 
-
 template<typename T>
 struct AsyncPackage
 {
-	AsyncResult<T> result;
-	SharedEventObject<AsyncTask<T>*, typename AsyncTypeSelector<T>::EventDataType> event;
 	std::function<T(void)> function;
+
+	SharedEventObject<AsyncTask<T>*, typename AsyncTypeSelector<T>::EventDataType> event;
+	typename AsyncTypeSelector<T>::FinallyFunction funcFinally;
+
+
+	void(*completeFunc)(void*);
+	AsyncResult<T> result;
 	void* taskHandle;
 	bool awaitable;
 
-	AsyncPackage() : taskHandle(nullptr), awaitable(true) { };
+	AsyncPackage() : taskHandle(nullptr), awaitable(true), completeFunc(nullptr) { };
 };
 
-template<typename TReturnValue, typename TEvent>
-auto PackOperand(AsyncOperand<TReturnValue, TEvent> operand)
-	-> typename std::enable_if<!std::is_void<TEvent>::value, AsyncPackage<TReturnValue>*>::type
-{
-	AsyncPackage<TReturnValue>* ret = new AsyncPackage<TReturnValue>;
-	ret->function = operand.asyncFunc;
-	ret->event = operand.eventRef;
-	ret->awaitable = false;
-	return ret;
-}
 
-template<typename TReturnValue>
-auto PackOperand(AsyncOperand<TReturnValue, void> operand)
-	-> AsyncPackage<TReturnValue>*
-{
-	AsyncPackage<TReturnValue>* ret = new AsyncPackage<TReturnValue>;
-	ret->function = operand.asyncFunc;
-	return ret;
-}
+
 
 template<typename T>
 void AsyncWorker(void* package)
@@ -192,10 +212,58 @@ void AsyncCompleteHandler<void>(void* package)
 }
 
 template<typename T>
+void AsyncCompleteHandlerFinally(void* package)
+{
+	AsyncPackage<T>* ptr = reinterpret_cast<AsyncPackage<T>*>(package);
+	ptr->funcFinally(ptr->result.value);
+}
+
+template<>
+void AsyncCompleteHandlerFinally<void>(void* package)
+{
+	AsyncPackage<void>* ptr = reinterpret_cast<AsyncPackage<void>*>(package);
+	ptr->funcFinally();
+}
+
+template<typename T>
 void AsyncFinalizeHandler(void* package)
 {
 	auto ptr = reinterpret_cast<AsyncPackage<T>*>(package);
 	delete ptr;
+}
+
+
+template<typename TReturnValue, typename TEvent>
+auto PackOperand(AsyncOperand<TReturnValue, TEvent> const& operand)
+	-> typename std::enable_if<!std::is_void<TEvent>::value, AsyncPackage<TReturnValue>*>::type
+{
+	AsyncPackage<TReturnValue>* ret = new AsyncPackage<TReturnValue>;
+	ret->function = operand.asyncFunc;
+	ret->event = operand.eventRef;
+	ret->completeFunc = AsyncCompleteHandler<TReturnValue>;
+	ret->awaitable = false;
+	return ret;
+}
+
+template<typename TReturnValue, typename TLambdaFinally>
+auto PackOperand(AsyncOperand<TReturnValue, AsyncFinallyOperand<TLambdaFinally>> const& operand)
+	-> AsyncPackage<TReturnValue>*
+{
+	AsyncPackage<TReturnValue>* ret = new AsyncPackage<TReturnValue>;
+	ret->function = operand.asyncFunc;
+	ret->funcFinally = operand.funcFinally;
+	ret->completeFunc = AsyncCompleteHandlerFinally<TReturnValue>;
+	ret->awaitable = false;
+	return ret;
+}
+
+template<typename TReturnValue>
+auto PackOperand(AsyncOperand<TReturnValue, void> const& operand)
+	-> AsyncPackage<TReturnValue>*
+{
+	AsyncPackage<TReturnValue>* ret = new AsyncPackage<TReturnValue>;
+	ret->function = operand.asyncFunc;
+	return ret;
 }
 
 struct AsyncHandlerPayload
@@ -258,7 +326,7 @@ struct AsyncBuilder
 
 		AsyncHandlerPayload payload = {
 			AsyncWorker<TReturnValue>,
-			AsyncCompleteHandler<TReturnValue>,
+			packed->completeFunc,
 			AsyncFinalizeHandler<TReturnValue>,
 			packed,
 			&packed->taskHandle,
@@ -276,6 +344,16 @@ struct AsyncBuilder
 	}
 };
 
+struct FinallyBuilder
+{
+	template<typename TLambda>
+	auto operator*(TLambda lambda)
+		-> AsyncFinallyOperand<TLambda>
+	{
+		return AsyncFinallyOperand<TLambda>(lambda);
+	}
+};
+
 template<typename TLambda,
 		 typename TIntrospect = Introspect::CallableObject<TLambda>,
 		 typename 			  = typename std::enable_if<TIntrospect::Arity == 0>::type>
@@ -283,6 +361,20 @@ auto operator>>(TLambda lambda, typename AsyncOperand<typename TIntrospect::Retu
 	-> AsyncOperand<typename TIntrospect::ReturnType, typename AsyncOperand<typename TIntrospect::ReturnType>::EventType>
 {
 	return { lambda, event };
+}
+
+template<typename TLambdaAsync,
+		 typename TLambdaAfter,
+		 typename TIntrospectAsync = Introspect::CallableObject<TLambdaAsync>,
+		 typename TIntrospectAfter = Introspect::CallableObject<TLambdaAfter>,
+		 typename				   = typename std::enable_if<TIntrospectAsync::Arity == 0
+		 	 	 	 	 	 	 	 	 	 	 	 	 	 && TIntrospectAfter::Arity == 1
+		 	 	 	 	 	 	 	 	 	 	 	 	 	 && std::is_same<typename TIntrospectAfter::template Args<0>,
+		 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 typename TIntrospectAsync::ReturnType>::value>>
+auto operator>>(TLambdaAsync async, AsyncFinallyOperand<TLambdaAfter> after)
+	-> AsyncOperand<typename TIntrospectAsync::ReturnType, AsyncFinallyOperand<TLambdaAfter>>
+{
+	return { async, std::move(after.finallyLambda) };
 }
 
 
@@ -304,8 +396,9 @@ struct TFC::Async
 
 
 
-#define tfc_async TFC::Core::Async::AsyncBuilder() &
+#define tfc_async TFC::Core::Async::AsyncBuilder() & [=] ()
 #define tfc_await TFC::Core::Async::AwaitBuilder() &
+#define tfc_async_finally >> TFC::Core::Async::FinallyBuilder() * [=]
 #define tfc_if_abort_return
 
 #endif /* ASYNC_NEW_H_ */

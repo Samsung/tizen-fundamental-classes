@@ -26,13 +26,6 @@
 		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 	</natures>
-	<linkedResources>
-		<link>
-			<name>SRINTizenFramework&apos;s inc</name>
-			<type>2</type>
-			<locationURI>PARENT-1-PARENT_LOC/SRINTizenFramework/inc</locationURI>
-		</link>
-	</linkedResources>
 	<filteredResources>
 		<filter>
 			<id>1477301142102</id>

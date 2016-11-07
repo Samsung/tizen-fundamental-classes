@@ -89,7 +89,7 @@ public:
 	{
 		mutexAsync.lock();
 
-		tfc_async [this] {
+		tfc_async {
 			return this->testCase;
 		} >> eventAsyncCompleted;
 	}
@@ -140,7 +140,7 @@ TEST_F(AsyncTest, AsyncWithAwait)
 
 			int tmp = data.tc1;
 
-			auto task = tfc_async [tmp] {
+			auto task = tfc_async {
 				std::this_thread::sleep_for(Ms(2000));
 				return tmp + 12345;
 			};
@@ -153,4 +153,43 @@ TEST_F(AsyncTest, AsyncWithAwait)
 	EFL_BLOCK_END;
 
 	EXPECT_EQ(tc1 + 12345, result) << "Asynchronous completed but result is wrong";
+}
+
+TEST_F(AsyncTest, AsyncWithFinally)
+{
+	using namespace TFC;
+	using Ms = std::chrono::milliseconds;
+	std::mutex mutexTest;
+	mutexTest.lock();
+	bool correct = false;
+
+	EFL_BLOCK_BEGIN;
+		struct {
+			bool& correct;
+			int tc;
+			std::mutex& mutexTest;
+		} data = {
+			correct,
+			rand(),
+			mutexTest
+		};
+
+		EFL_SYNC_BEGIN(data);
+			tfc_async
+			{
+				std::cout << "In async\n";
+				return data.tc + 54321;
+			}
+			tfc_async_finally(int result)
+			{
+				std::cout << "In finally\n";
+				data.correct = result == (data.tc + 54321);
+				data.mutexTest.unlock();
+			};
+		EFL_SYNC_END;
+	EFL_BLOCK_END;
+
+	mutexTest.lock();
+	ASSERT_TRUE(correct) << "Asynchronous operation with finally failed";
+
 }
