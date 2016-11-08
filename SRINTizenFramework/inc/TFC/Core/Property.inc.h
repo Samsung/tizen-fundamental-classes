@@ -10,8 +10,8 @@
 #ifndef TFC_CORE_PROPERTY_INC_H_
 #define TFC_CORE_PROPERTY_INC_H_
 
-#ifndef CORE_NEW_H_
-#include "TFC/Core.new.h"
+#ifndef TFC_CORE_H_
+#include "TFC/Core.h"
 #endif
 
 

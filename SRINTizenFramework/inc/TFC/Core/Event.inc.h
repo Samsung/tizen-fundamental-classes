@@ -5,8 +5,8 @@
 
 #include <memory>
 
-#ifndef CORE_NEW_H_
-#include "TFC/Core.new.h"
+#ifndef TFC_CORE_H_
+#include "TFC/Core.h"
 #endif
 
 

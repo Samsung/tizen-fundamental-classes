@@ -5,7 +5,7 @@
  *      Author: Gilang M. Hamidy
  */
 
-#include "TFC/Core.new.h"
+#include "TFC/Core.h"
 #include <string>
 #include <gtest/gtest.h>
 

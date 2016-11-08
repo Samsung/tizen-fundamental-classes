@@ -4,12 +4,13 @@
  *  Created on: Oct 31, 2016
  *      Author: Gilang M. Hamidy
  */
+#pragma once
 
 #ifndef TFC_CORE_INTROSPECT_H_
 #define TFC_CORE_INTROSPECT_H_
 
 #include <type_traits>
-#include "TFC/Core.new.h"
+#include "TFC/Core.h"
 
 namespace TFC {
 namespace Core {

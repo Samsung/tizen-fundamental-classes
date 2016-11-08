@@ -5,7 +5,7 @@
  *      Author: Gilang M. Hamidy
  */
 
-#include "TFC/Core.new.h"
+#include "TFC/Core.h"
 #include "TFC/Core/Introspect.h"
 
 #include <gtest/gtest.h>

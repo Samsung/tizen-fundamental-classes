@@ -7,7 +7,6 @@
  */
 
 #include "TFC/Core.h"
-#include "TFC/Core.new.h"
 #include <pthread.h>
 
 LIBAPI TFC::Core::PropertyObjectBase::PropertyObjectBase(void* instance) : instance(instance)

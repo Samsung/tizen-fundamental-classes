@@ -8,7 +8,7 @@
  *      Author: Gilang M. Hamidy (g.hamidy@gmail.com)
  */
 
-#include "TFC/Core.new.h"
+#include "TFC/Core.h"
 
 #include <gtest/gtest.h>
 

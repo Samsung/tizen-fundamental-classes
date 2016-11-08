@@ -1,75 +1,120 @@
 /*
  * Core.h
  *
- *  Created on: Feb 12, 2016
- *      Contributor:
- *        Gilang Mentari Hamidy (g.hamidy@samsung.com)
- *        g.kusuma (g.kusuma@samsung.com)
- *        Kevin Winata (k.winata@samsung.com)
+ *  Created on: Oct 25, 2016
+ *      Author: Gilang M. Hamidy
  */
 
-#ifndef USE_LEGACY_TFC_CORE
-// For migratory purpose
-#include "TFC/Core.new.h"
-#else
+#pragma once
 
-#ifndef CORE_H_
-#define CORE_H_
-
-#include <dlog.h>
-#include <functional>
-#include <memory>
+#ifndef TFC_CORE_H_
+#define TFC_CORE_H_
 
 #ifdef LIBBUILD
 #define LIBAPI __attribute__((__visibility__("default")))
 #ifdef LOG_TAG
 #undef LOG_TAG
 #endif
-#define LOG_TAG "SRINFW"
+#define LOG_TAG "TFC-Debug"
 #else
 #define LIBAPI
 #endif
 
-typedef const char* CString;
+#include <exception>
+#include <string>
 
-//extern thread_local void* currentConstruct;
+// Forward declaration of TFC Core Language Features
+namespace TFC {
 
-/*
- * http://stackoverflow.com/questions/7943525/is-it-possible-to-figure-out-the-parameter-type-and-return-type-of-a-lambda
+/**
+ * EventClass is an attribute class marking that the class inheriting this class may have
+ * a member function as an event handler. Member function with correct signature may be
+ * registered as event handler using event handler registration syntax as follow:
  */
-template<typename T>
-struct function_traits: public function_traits<decltype(&T::operator())>
+class EventClass;
+
+/**
+ * EventClass is an attribute class marking that the class inheriting this class may have
+ * polymorphic behavior which can be downcasted during the runtime. This class has virtual
+ * destructor which enables the polymorphic and RTTI feature on this class and subclass.
+ */
+class ObjectClass;
+
+/**
+ * PropertyClass is an attribute class marking that the class can implement Property object
+ * which is an accessor and mutator that can behaves like a normal field. PropertyClass should be
+ * inherited as private inheritance because it acts as mixin which introduces Property name inside
+ * the class scope.
+ * ```
+ *    class ClassA : TFC::PropertyClass<ClassA>
+ *    {
+ *    public:
+ *        int valA;
+ *
+ *        int GetA() const
+ *        {
+ *            return valA;
+ *        }
+ *
+ *        void SetA(int const& val)
+ *        {
+ *            this->valA = val;
+ *        }
+ *
+ *        Property<int>::GetSet<&ClassA::GetA, &ClassA::SetA> A;
+ *     };
+ * ```
+ * When using PropertyClass attribute alongside, with a base class that already declare
+ * PropertyClass attribute, Property name must be reintroduced in its subclass scope by calling
+ * `using TFC::PropertyClass<CLASS_NAME>::Property`.
+ *
+ * ```
+ *     class ClassB : public ClassA, TFC::PropertyClass<ClassB>
+ *     {
+ *         using TFC::PropertyClass<ClassB>::Property;
+ *     public:
+ *         int valB;
+ *         int GetB() const
+ *         {
+ *             return valB;
+ *         }
+ *
+ *         void SetB(int const& val)
+ *         {
+ *             this->valB = val;
+ *         }
+ *
+ *         Property<int>::GetSet<&ClassB::GetB, &ClassB::SetB> B;
+ *     };
+ * ```
+ *
+ * @tparam TClass The class itself
+ */
+template<typename TClass>
+class PropertyClass;
+
+/**
+ * EventEmitter is an attribute class marking that the class inheriting this class may has
+ * Event object declaration with this object as the source.
+ */
+template<typename TClass>
+class EventEmitterClass;
+
+class LIBAPI TFCException : public std::exception
 {
-	static_assert(not std::is_fundamental<T>::value, "Invalid usage of function_traits");
-};
+public:
+	explicit TFCException(char const* message);
+	explicit TFCException(std::string&& message);
+	explicit TFCException(std::string const& message);
+	virtual char const* what() const throw () final;
 
-template<>
-struct function_traits<int>
-{
-
-};
-
-template<typename ClassType, typename ReturnType, typename ... Args>
-struct function_traits<ReturnType (ClassType::*)(Args...) const>
-{
-	enum
-	{
-		arity = sizeof...(Args)
-	};
-
-	typedef ReturnType result_type;
-
-	template <size_t i>
-	struct arg
-	{
-		typedef typename std::tuple_element<i, std::tuple<Args...>>::type type;
-	};
+private:
+	std::string msg;
 };
 
 struct Color
 {
 	uint8_t r, g, b, a;
-
 	static inline Color FromRGBA(uint32_t val) { return *(reinterpret_cast<Color*>(&val)); }
 };
 
@@ -85,432 +130,73 @@ inline T* Coalesce(T* ptr, T* valueIfNull)
 	return IsNull(ptr) ? ptr : valueIfNull;
 }
 
+namespace Core {
 
-class PropertyClass
-{
-private:
+/**
+ * EventObject class is the core infrastructure implementing event handling mechanism within
+ * the Tizen Fundamental Classes library. It implements delegation internally which can direct
+ * event handling call to the registered event handler.
+ *
+ * It implements += operator to register handler to the event, and -= operator to unregister.
+ */
+template<typename = void*, typename = void*>
+class EventObject;
 
-	class PropertyBase
-	{
-	protected:
-		void* instance;
-		PropertyBase(void* instance);
-		PropertyBase(const PropertyBase&) = delete;
-	};
+/**
+ * SharedEventObject class is safe wrapper for EventObject class which lives outside of the
+ * instance of the object declares it. It uses std::shared_ptr internally to manages the
+ * instance by reference counting, thus making this EventObject is safe to be transferred
+ * across stack-frame and thread boundary.
+ *
+ * SharedEventObject is mostly used to implement asynchronous mechanism safely which the thread
+ * might not be finished when the initiator is destroyed. By using basic EventObject, it will
+ * create a possible fault because EventObject lifetime is tied to the object declares it.
+ */
+template<typename = void*, typename = void*>
+class SharedEventObject;
 
-public:
-	template<typename DefiningClass, typename ValueType>
-	struct Property
-	{
-		typedef ValueType (DefiningClass::*GetFunc)();
-		typedef void (DefiningClass::*SetFunc)(const ValueType&);
+class PropertyObjectBase;
 
-		template<GetFunc func>
-		class Get : protected PropertyBase
-		{
-		public:
-			typedef std::false_type Mutable;
-			typedef ValueType Type;
-			Get(DefiningClass* instance) : PropertyBase(instance) { }
-			operator ValueType() const
-			{
-				return (reinterpret_cast<DefiningClass*>(instance)->*func)();
-			}
-		};
+template<typename TDefining, typename TValue>
+struct PropertyObject;
 
-		template<GetFunc getFunc, SetFunc func>
-		class GetSet : public Get<getFunc>
-		{
-		public:
-			typedef std::true_type Mutable;
-			typedef ValueType Type;
-			GetSet(DefiningClass* instance) : Get<getFunc>(instance) { }
-			void operator=(const ValueType val)
-			{
-				(reinterpret_cast<DefiningClass*>(this->instance)->*func)(val);
-			}
-		};
+template<typename TDefining, typename TValue>
+struct PropertyGetterFunction;
 
-		class Auto
-		{
-		private:
-			ValueType data;
-		public:
-			class ReadOnly;
-			class ReadWrite;
-		};
-	};
+template<typename TDefining, typename TValue>
+struct PropertySetterFunction;
 
-	template<typename DefiningClass, typename ValueType>
-	struct Property<DefiningClass, ValueType&>
-	{
-		typedef ValueType& (DefiningClass::*GetFunc)();
-		typedef void (DefiningClass::*SetFunc)(const ValueType&);
 
-		template<GetFunc func>
-		class Get : protected PropertyBase
-		{
-		public:
-			typedef std::false_type Mutable;
-			typedef ValueType Type;
-			Get(DefiningClass* instance) : PropertyBase(instance) { }
-			operator ValueType&() const
-			{
-				return (reinterpret_cast<DefiningClass*>(this->instance)->*func)();
-			}
-			ValueType* operator->()
-			{
-				return &((reinterpret_cast<DefiningClass*>(this->instance)->*func)());
-			}
-		};
 
-		template<GetFunc getFunc, SetFunc func>
-		class GetSet : public Get<getFunc>
-		{
-		public:
-			typedef std::true_type Mutable;
-			typedef ValueType Type;
-			GetSet(DefiningClass* instance) : Get<getFunc>(instance) { }
-			void operator=(const ValueType& val)
-			{
-				(reinterpret_cast<DefiningClass*>(this->instance)->*func)(val);
-			}
-		};
-	};
-
-	template<typename DefiningClass, typename ValueType>
-	struct Property<DefiningClass, ValueType*>
-	{
-		typedef ValueType* (DefiningClass::*GetFunc)();
-		typedef void (DefiningClass::*SetFunc)(ValueType*);
-
-		template<GetFunc func>
-		class Get : protected PropertyBase
-		{
-		public:
-			typedef std::false_type Mutable;
-			typedef ValueType Type;
-			Get(DefiningClass* instance) : PropertyBase(instance) { }
-			operator ValueType*()
-			{
-				return (reinterpret_cast<DefiningClass*>(this->instance)->*func)();
-			}
-			ValueType* operator->()
-			{
-				return (reinterpret_cast<DefiningClass*>(this->instance)->*func)();
-			}
-		};
-
-		template<GetFunc getFunc, SetFunc func>
-		class GetSet : public Get<getFunc>
-		{
-		public:
-			typedef std::true_type Mutable;
-			typedef ValueType Type;
-			GetSet(DefiningClass* instance) : Get<getFunc>(instance) { }
-			void operator=(ValueType* val)
-			{
-				(reinterpret_cast<DefiningClass*>(this->instance)->*func)(val);
-			}
-		};
-
-		class Auto
-		{
-		private:
-			ValueType* data;
-		public:
-			class ReadOnly;
-			class ReadWrite;
-		};
-	};
-};
-
-template<typename DefiningClass, typename ValueType>
-class PropertyClass::Property<DefiningClass, ValueType>::Auto::ReadOnly : Auto
-{
-protected:
-	void operator=(const ValueType& val)
-	{
-		this->data = val;
-	}
-
-	friend DefiningClass;
-public:
-	typedef std::false_type Mutable;
-	typedef ValueType Type;
-	operator ValueType()
-	{
-		return this->data;
-	}
-	ValueType* operator->()
-	{
-		return &this->data;
-	}
-};
-
-template<typename DefiningClass, typename ValueType>
-class PropertyClass::Property<DefiningClass, ValueType>::Auto::ReadWrite : public ReadOnly
-{
-public:
-	typedef std::true_type Mutable;
-	typedef ValueType Type;
-	void operator=(const ValueType& val)
-	{
-		ReadOnly::operator =(val);
-	}
-};
-
-template<typename DefiningClass, typename ValueType>
-class PropertyClass::Property<DefiningClass, ValueType*>::Auto::ReadOnly : Auto
-{
-protected:
-	void operator=(ValueType* val)
-	{
-		this->data = val;
-	}
-
-	friend DefiningClass;
-public:
-	typedef std::false_type Mutable;
-	typedef ValueType Type;
-	operator ValueType*()
-	{
-		return this->data;
-	}
-	ValueType* operator->()
-	{
-		return this->data;
-	}
-};
-
-template<typename DefiningClass, typename ValueType>
-class PropertyClass::Property<DefiningClass, ValueType*>::Auto::ReadWrite : public ReadOnly
-{
-public:
-	typedef std::true_type Mutable;
-	typedef ValueType Type;
-	void operator=(ValueType* val)
-	{
-		ReadOnly::operator =(val);
-	}
-
-};
-
-/*
-template<class DefiningClass, class ValueType, ValueType& (DefiningClass::*GetFunc)(), void (DefiningClass::*SetFunc)(
-	const ValueType&)>
-class Property
-{
-private:
-	DefiningClass* instance;
-public:
-	Property(DefiningClass* inst) :
-		instance(inst)
-	{
-	}
-	operator ValueType()
-	{
-		return (instance->*GetFunc)();
-	}
-	void operator=(const ValueType& val)
-	{
-		(instance->*SetFunc)(val);
-	}
-	ValueType* operator->() const
-	{
-		auto ret = (instance->*GetFunc)();
-		return &ret;
-	}
-};
-
-template<class DefiningClass, class ValueType, ValueType DefiningClass::* LocalVar>
-class SimpleProperty
-{
-private:
-	DefiningClass* instance;
-public:
-	SimpleProperty(DefiningClass* inst) :
-		instance(inst)
-	{
-	}
-	operator ValueType()
-	{
-		return instance->*LocalVar;
-	}
-	void operator=(const ValueType& val)
-	{
-		instance->*LocalVar = (val);
-	}
-};
-
-template<class DefiningClass, class ValueType, ValueType (DefiningClass::*GetFunc)()>
-class ReadOnlyProperty
-{
-private:
-	DefiningClass* instance;
-public:
-	ReadOnlyProperty(DefiningClass* inst) :
-		instance(inst)
-	{
-	}
-	operator ValueType()
-	{
-		auto val = (instance->*GetFunc)();
-		return val;
-	}
-};
-*/
-
-template<class DefiningClass, class ValueType>
-class SimpleReadOnlyPropertyBase
-{
-protected:
-	ValueType value;
-public:
-	friend DefiningClass;
-	operator ValueType()
-	{
-		return value;
-	}
-	ValueType* operator->() const;
-};
-
-template<class DefiningClass, class ValueType>
-class SimpleReadOnlyProperty: public SimpleReadOnlyPropertyBase<DefiningClass, ValueType>
-{
-private:
-	void operator=(const ValueType& val)
-	{
-		this->value = (val);
-	}
-public:
-	friend DefiningClass;
-	const ValueType* operator->() const;
-	operator ValueType()
-	{
-		return this->value;
-	}
-};
-
-template<class DefiningClass, class ValueType>
-const ValueType* SimpleReadOnlyProperty<DefiningClass, ValueType>::operator->() const
-{
-	return &this->value;
+}
 }
 
-template<class DefiningClass, class ValueType>
-class SimpleReadOnlyProperty<DefiningClass, ValueType*> : public SimpleReadOnlyPropertyBase<DefiningClass, ValueType*>
-{
-private:
-	void operator=(ValueType* val)
-	{
-		this->value = (val);
-	}
-public:
-	friend DefiningClass;
-	ValueType* operator->() const;
-};
+#include "TFC/Core/Event.inc.h"
+#include "TFC/Core/Property.inc.h"
 
-template<class DefiningClass, class ValueType>
-ValueType* SimpleReadOnlyProperty<DefiningClass, ValueType*>::operator->() const
-{
-	return this->value;
-}
-
-
-
-class EventClass
-{
-};
-
-class LIBAPI ObjectClass : public EventClass
+class LIBAPI TFC::ObjectClass : public TFC::EventClass
 {
 public:
 	virtual ~ObjectClass();
 };
 
-template<class ObjectSourceType = void*, class EventDataType = void*>
-class Event
-{
-public:
-	typedef void (EventClass::*EventHandler)(const Event<ObjectSourceType, EventDataType>* eventSource,
-		ObjectSourceType objSource, EventDataType eventData);
-
-	class EventDelegate
-	{
-		EventClass* instance;
-		EventHandler eventHandler;
-	public:
-		template<class EventClassType>
-		EventDelegate(EventClassType* instance,
-				void (EventClassType::*eventHandler)(Event<ObjectSourceType, EventDataType>* eventSource,
-					ObjectSourceType objSource, EventDataType eventData));
-
-		friend class Event;
-	};
-
-	Event();
-	Event(bool logDelete);
-	~Event();
-	void operator+=(const EventDelegate& other);
-	void operator-=(const EventDelegate& other);
-	void operator()(ObjectSourceType objSource, EventDataType eventData) const;
-
-private:
-	struct EventNode
-	{
-		EventClass* instance;
-		EventHandler eventHandler;
-		EventNode* next;
-	};
-	EventNode* first;
-	bool logDelete;
-};
-
-template<class ObjectSourceType = void*, class EventDataType = void*>
-class SharedEvent : protected std::shared_ptr<Event<ObjectSourceType, EventDataType>>
-{
-public:
-	SharedEvent();
-	void operator+=(const typename Event<ObjectSourceType, EventDataType>::EventDelegate& other);
-	void operator-=(const typename Event<ObjectSourceType, EventDataType>::EventDelegate& other);
-	void operator()(ObjectSourceType objSource, EventDataType eventData) const;
-};
-
-template<class ObjectSourceType, class EventDataType>
-SharedEvent<ObjectSourceType, EventDataType>::SharedEvent() :
-	std::shared_ptr<Event<ObjectSourceType, EventDataType>>(new Event<ObjectSourceType, EventDataType>(true))
-{
-
+#define EXCEPTION_DECLARE(NAME, PARENT)\
+class NAME : public PARENT\
+{\
+public:\
+	explicit inline NAME(char const* message) : PARENT(message) { }\
+	explicit inline NAME(std::string&& message) : PARENT(message) { }\
+	explicit inline NAME(std::string const& message) : PARENT(message) { }\
 }
 
-template<class ObjectSourceType, class EventDataType>
-void SharedEvent<ObjectSourceType, EventDataType>::operator+=(const typename Event<ObjectSourceType, EventDataType>::EventDelegate& other)
-{
-	std::shared_ptr<Event<ObjectSourceType, EventDataType>>::operator->()->operator +=(other);
+#define EXCEPTION_DECLARE_MSG(NAME, PARENT, DEFAULT_MESSAGE)\
+class NAME : public PARENT\
+{\
+public:\
+	explicit inline NAME() : PARENT(DEFAULT_MESSAGE) { }\
+	explicit inline NAME(char const* message) : PARENT(message) { }\
+	explicit inline NAME(std::string&& message) : PARENT(message) { }\
+	explicit inline NAME(std::string const& message) : PARENT(message) { }\
 }
 
-template<class ObjectSourceType, class EventDataType>
-void SharedEvent<ObjectSourceType, EventDataType>::operator-=(const typename Event<ObjectSourceType, EventDataType>::EventDelegate& other)
-{
-	std::shared_ptr<Event<ObjectSourceType, EventDataType>>::operator->()->operator -=(other);
-}
-
-template<class ObjectSourceType, class EventDataType>
-void SharedEvent<ObjectSourceType, EventDataType>:: operator()(ObjectSourceType objSource, EventDataType eventData) const
-{
-	std::shared_ptr<Event<ObjectSourceType, EventDataType>>::operator->()->operator ()(objSource, eventData);
-}
-
-#include "TFC/Core.inc"
-
-#define EventHandler(EVENT_METHOD) { this, & EVENT_METHOD }
-
-// For compatibility
-#define AddEventHandler(EVENT_METHOD) { this, & EVENT_METHOD }
-
-
-
-#endif /* CORE_H_ */
-
-#endif
+#endif /* CORE_NEW_H_ */
