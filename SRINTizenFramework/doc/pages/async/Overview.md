@@ -127,9 +127,8 @@ will make the asynchronous try to call deleted object.
 @section tfc-async-handle Using Task Handle
 
 tfc_async returns a task handle which can be used to refer the running task. The task handle type
-is pointer to TFC::Core::Async::AsyncTask or TFC::Async::Task as template trait equivalence.
-Task handle is used to identify asynchronous type and will remain valid as long as the thread is
-running.
+is pointer to TFC::Async<TReturnValue>::Task. Task handle is used to identify asynchronous type and 
+will remain valid as long as the thread is running.
 
 Task handle can be used to perform blocking tfc_await or non-blocking tfc_try_await. Those operation 
 can only be performed if tfc_async is called without completion handler. Task handle can also useful 
@@ -137,19 +136,39 @@ to identify running task on event-based completion handler, if a handler is supp
 completion of multiple running task. Using `tfc_await` and `tfc_try_await` in a `tfc_async` with 
 completion handler will result in undefined behavior.
 
-Retrieving task handle on `tfc_async`:
+__Example 4: Using task handle on `tfc_async`:__
 ```{.cpp}
 class TheClass
 {
 private:
-    TFC::Async<int>::Task taskCompute;
+    TFC::Async<std::string>::Task taskCompute;
 public:
     void RunTask()
     {
         this->taskCompute = tfc_async {
-            int a = rand();
-            return a2;
+            return std::string("Result from task");
         };
     }
+    
+	void BlockIfNotCompleted()
+	{
+		// The statement below will block until result is ready
+		std::string result = tfc_await taskCompute;
+		
+		// At this point, result is ready and async operation is completed
+		evas_object_text_set(button, result.c_str());
+	}
 };
 ```
+
+Using `tfc_async` without `tfc_async_complete` clause will render the asynchronous operation to
+complete without cleaning up its infrastructure. Developers must explicitly call `tfc_await` or
+`tfc_try_await` for that task to explicitly acknowledge that asynchronous operation is completed.
+Developers should not spawn and discard asynchronous operation. Should you don't need completion
+operation, you must make empty `tfc_async_complete` clause instead to ensure the asynchronous
+infrastructure is cleaned up gracefully.
+
+Moreover, `tfc_await` is a blocking instruction, so calling it on main thread will block the entire
+thread. You should use `tfc_try_await` if you intended to use this mechanism in main thread as
+`tfc_await` is more suitable to be performed in another asynchronous block to join execution between
+thread.
