@@ -204,7 +204,7 @@ void AsyncCompleteHandler(void* package)
 }
 
 template<>
-void AsyncCompleteHandler<void>(void* package)
+inline void AsyncCompleteHandler<void>(void* package)
 {
 	AsyncPackage<void>* ptr = reinterpret_cast<AsyncPackage<void>*>(package);
 	ptr->event(reinterpret_cast<AsyncTask<void>*>(ptr->taskHandle), nullptr);
@@ -219,7 +219,7 @@ void AsyncCompleteHandlerComplete(void* package)
 }
 
 template<>
-void AsyncCompleteHandlerComplete<void>(void* package)
+inline void AsyncCompleteHandlerComplete<void>(void* package)
 {
 	AsyncPackage<void>* ptr = reinterpret_cast<AsyncPackage<void>*>(package);
 	ptr->funcComplete();
@@ -370,7 +370,7 @@ template<typename TLambdaAsync,
 		 typename				   = typename std::enable_if<TIntrospectAsync::Arity == 0
 		 	 	 	 	 	 	 	 	 	 	 	 	 	 && TIntrospectAfter::Arity == 1
 		 	 	 	 	 	 	 	 	 	 	 	 	 	 && std::is_same<typename TIntrospectAfter::template Args<0>,
-		 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 typename TIntrospectAsync::ReturnType>::value>>
+		 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 typename TIntrospectAsync::ReturnType>::value>::type>
 auto operator>>(TLambdaAsync async, AsyncCompleteOperand<TLambdaAfter> after)
 	-> AsyncOperand<typename TIntrospectAsync::ReturnType, AsyncCompleteOperand<TLambdaAfter>>
 {
