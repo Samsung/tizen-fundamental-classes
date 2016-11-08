@@ -5,7 +5,7 @@
  *      Author: Gilang M. Hamidy
  */
 
-#include "TFC/Async.new.h"
+#include "TFC/Async.h"
 #include "TFC_Test.h"
 
 #include <gtest/gtest.h>
@@ -180,7 +180,7 @@ TEST_F(AsyncTest, AsyncWithFinally)
 				std::cout << "In async\n";
 				return data.tc + 54321;
 			}
-			tfc_async_finally(int result)
+			tfc_async_complete(int result)
 			{
 				std::cout << "In finally\n";
 				data.correct = result == (data.tc + 54321);
