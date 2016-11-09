@@ -1,3 +1,5 @@
+[&uarr;<SUB>Back to top</SUB>](#top)
+
 @page tfc-async %TFC Asynchronous Library (TAL)
 @tableofcontents
 @section tfc-async-overview Overview
@@ -11,7 +13,63 @@ TAL introduces several keywords which can be used to introduce asynchronous bloc
 keyword utilizes C++ lambda closure to work then pass the closure to backend codes which utilizes
 EFL's Ecore threading functions. Developers does not need to know the entire mechanism how TAL
 works behind and can focus on writing application codes instead.
+[&uarr;<SUB>Back to top</SUB>](#top)
+@section tfc-async-syntax Syntax
 
+<table>
+	<tr>
+		<td> __tfc_async__ `{` *asynchronous-body* `}` __tfc_async_complete__ `{` *completion-body* `};`</td>
+		<td>(1)</td>
+	</tr>
+	<tr>
+		<td> *lvalue-assignment* <SUB>(optional)</SUB> __tfc_async__ `{` *asynchronous-body* `}` >> *shared-event-object*`;`</td>
+		<td>(2)</td>
+	</tr>
+	<tr>
+		<td> *lvalue-assignment* <SUB>(optional)</SUB> __tfc_async__ `{` *asynchronous-body* `};`</td>
+		<td>(3)</td>
+	</tr>
+</table>
+1. Asynchronous operation with completion block.
+2. Asynchronous operation with event-based completion callback.
+3. Asynchronous operation without automatic completion callback.
+@subsection tfc-async-syntax-explanation Explanation
+
+<table>
+	<tr>
+		<td class="col-expl-item">asynchronous-body</td>
+		<td class="col-expl-arrow">&rarr;</td>
+		<td class="col-expl-desc">
+			statements that will be executed asynchronously
+		</td>
+	</tr>
+	<tr>
+		<td class="col-expl-item">completion-body</td>
+		<td class="col-expl-arrow">&rarr;</td>
+		<td class="col-expl-desc">
+			statements that will be executed synchronously after *asynchronous-statements* execution
+			completes
+		</td>
+	</tr>
+	<tr>
+		<td class="col-expl-item">lvalue-assignment</td>
+		<td class="col-expl-arrow">&rarr;</td>
+		<td class="col-expl-desc">
+			assignment of __tfc_async__ result value to lvalue storage with type of pointer to 
+			TFC::Async<T>::Task
+		</td>
+	</tr>
+	<tr>
+		<td class="col-expl-item">shared-event-object</td>
+		<td class="col-expl-arrow">&rarr;</td>
+		<td class="col-expl-desc">
+			object of shared event which will the event will be raised after
+			*asynchronous-statements* execution completes
+		</td>
+	</tr>
+</table>
+
+[&uarr;<SUB>Back to top</SUB>](#top)
 @section tfc-async-basic Basic Usage
 
 To utilize TAL in code, developers can declare asynchronous block using `tfc_async` keyword. This
@@ -70,7 +128,7 @@ void ListController::PerformLongOperation()
    };
 }
 ```
-[Back to top](#top)
+[&uarr;<SUB>Back to top</SUB>](#top)
 @section tfc-async-event Notifying Completion via Event
 
 Developers can utilize event to receive completion notification of asynchronous operation. Program
@@ -78,8 +136,8 @@ can declare a function with specific signature which can be subscribe to event t
 asynchronous completion.
 
 TAL provides TFC::Async which is a template-helper class which declares necessary types related with
-asynchronous operation. Declare an event with TFC::Async<TReturnValue>::Event type where template
-parameter `TReturnValue` must be substituted with the return type from asynchronous block.
+asynchronous operation. Declare an event with TFC::Async<T>::Event type where template parameter `T`
+must be substituted with the return type from asynchronous block.
 
 The signature for event handler function must be as follow:
 ```{.cpp}
@@ -118,11 +176,12 @@ public:
 };
 ```
 
-TFC::Async::Event utilizes a std::shared_ptr as its backing to ensure that the event will live
+TFC::Async<T>::Event utilizes a std::shared_ptr as its backing to ensure that the event will live
 beyond the caller's lifetime, to address issues when using basic event type (i.e.
-TFC::EventEmitterClass::Event) which lives in the same allocation with the caller's object. This
+TFC::EventEmitterClass<T>::Event) which lives in the same allocation with the caller's object. This
 creates issues if the caller's object is deleted before the asynchronous process is completed, which
 will make the asynchronous try to call deleted object.
+[&uarr;<SUB>Back to top</SUB>](#top)
 
 @section tfc-async-handle Using Task Handle
 
@@ -168,7 +227,31 @@ Developers should not spawn and discard asynchronous operation. Should you don't
 operation, you must make empty `tfc_async_complete` clause instead to ensure the asynchronous
 infrastructure is cleaned up gracefully.
 
-Moreover, `tfc_await` is a blocking instruction, so calling it on main thread will block the entire
-thread. You should use `tfc_try_await` if you intended to use this mechanism in main thread as
-`tfc_await` is more suitable to be performed in another asynchronous block to join execution between
-thread.
+Moreover, `tfc_await` is a blocking instruction, so calling it on main thread will block it and
+makes the application unresponsive. You should use `tfc_try_await` if you intend to use this 
+mechanism in main thread. `tfc_await` is more suitable to be used in another asynchronous block to 
+join execution between thread.
+[&uarr;<SUB>Back to top</SUB>](#top)
+
+@section tfc-async-scope Scope Behavior
+
+TAL utilizes C++ lambda closure to provide its syntactic sugar in constructing asynchronous
+operation in codes. The closure block captures all variable in the enclosing block by value, thus
+it is recommended to keep the number of stack allocated object low to minimize copy operation from
+the enclosing block to the lambda closure.
+
+To utilize complex data (i.e. class object) efficiently, allocate the class in heap. It is not
+necessary but recommended to wrap the heap allocated data in automatic pointer std::shared_ptr to
+ensure the heap allocated object is properly destroyed when it is not used anymore.
+
+Allocating std::unique_ptr in enclosing block does not work because std::unique_ptr cannot be 
+copied,  instead it uses move semantics. It is okay to use std::unique_ptr inside asynchronous block
+by supplying pointer to object allocated in the enclosing block to ensure the dynamically allocated 
+object is properly destroyed after the control leaves asynchronous block.
+
+Statements after `tfc_async` clauses will be automatically executed after `tfc_async` clause
+completes registering the asyncrhonous operation internally. It will be executed asynchronously and
+may be in parallel with the execution of asynchronous block. Developers must not put assumption
+on which execution goes first and should use syncrhonization mechanism such as locking to prevent
+race condition. `tfc_await` provides indefinite locking until the asynchronous thread completes its
+entire execution (i.e. leave the asynchronous block).
