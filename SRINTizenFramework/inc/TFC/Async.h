@@ -363,18 +363,54 @@ auto operator>>(TLambda lambda, typename AsyncOperand<typename TIntrospect::Retu
 	return { lambda, event };
 }
 
+/*
+The following template form :
+	template<typename TLambdaAsync,
+			 typename TLambdaAfter,
+			 typename TIntrospectAsync = Introspect::CallableObject<TLambdaAsync>,
+			 typename TIntrospectAfter = Introspect::CallableObject<TLambdaAfter>,
+			 typename				   = typename std::enable_if<TIntrospectAsync::Arity == 0
+																 && TIntrospectAfter::Arity == 1
+																 && std::is_same<typename TIntrospectAfter::template Args<0>,
+																				 typename TIntrospectAsync::ReturnType>::value>::type>
+	auto operator>>(TLambdaAsync async, AsyncCompleteOperand<TLambdaAfter> after)
+		-> AsyncOperand<typename TIntrospectAsync::ReturnType, AsyncCompleteOperand<TLambdaAfter>>
+	{
+		return { async, std::move(after.CompleteLambda) };
+	}
+is not applicable if we want to use std::enable_if and will result in [template parameter redefines default argument] error.
+See : https://stackoverflow.com/questions/29502052/template-specialization-and-enable-if-problems
+*/
+
 template<typename TLambdaAsync,
 		 typename TLambdaAfter,
 		 typename TIntrospectAsync = Introspect::CallableObject<TLambdaAsync>,
 		 typename TIntrospectAfter = Introspect::CallableObject<TLambdaAfter>,
-		 typename				   = typename std::enable_if<TIntrospectAsync::Arity == 0
-		 	 	 	 	 	 	 	 	 	 	 	 	 	 && TIntrospectAfter::Arity == 1
-		 	 	 	 	 	 	 	 	 	 	 	 	 	 && std::is_same<typename TIntrospectAfter::template Args<0>,
-		 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 typename TIntrospectAsync::ReturnType>::value>::type>
+		 typename std::enable_if<TIntrospectAsync::Arity == 0
+		 	 	 	 	 	  && TIntrospectAfter::Arity == 1
+							  && std::is_same<typename TIntrospectAfter::template Args<0>,
+							  	  	  	  	  typename TIntrospectAsync::ReturnType>::value, int>::type* = nullptr>
 auto operator>>(TLambdaAsync async, AsyncCompleteOperand<TLambdaAfter> after)
 	-> AsyncOperand<typename TIntrospectAsync::ReturnType, AsyncCompleteOperand<TLambdaAfter>>
 {
 	return { async, std::move(after.CompleteLambda) };
+}
+
+// Assert that CompleteBuilder >> operator will receive lambda with appropriate parameter
+template<typename TLambdaAsync,
+		 typename TLambdaAfter,
+		 typename TIntrospectAsync = Introspect::CallableObject<TLambdaAsync>,
+		 typename TIntrospectAfter = Introspect::CallableObject<TLambdaAfter>,
+		 typename std::enable_if<TIntrospectAsync::Arity == 0
+		 	 	 	 	 	  && TIntrospectAfter::Arity == 1
+							  && !std::is_same<typename TIntrospectAfter::template Args<0>,
+							  	  	  	  	   typename TIntrospectAsync::ReturnType>::value, int>::type* = nullptr>
+auto operator>>(TLambdaAsync async, AsyncCompleteOperand<TLambdaAfter> after)
+	-> AsyncOperand<typename TIntrospectAsync::ReturnType, AsyncCompleteOperand<TLambdaAfter>>
+{
+	static_assert(std::is_same<typename TIntrospectAfter::template Args<0>, typename TIntrospectAsync::ReturnType>::value,
+			"Parameter for tfc_async_complete lambda must match with the return value from tfc_async.");
+	return { nullptr, nullptr };
 }
 
 
