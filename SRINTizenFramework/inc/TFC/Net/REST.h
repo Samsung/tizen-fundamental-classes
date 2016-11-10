@@ -150,7 +150,7 @@ public:
 	/**
 	 * Default constructor of RESTResult class.
 	 */
-	RESTResult()
+	RESTResult() : Response(this)
 	{
 
 	}
@@ -195,6 +195,18 @@ public:
 		httpCode = p.httpCode;
 		errorCode = p.errorCode;
 		errorMessage = std::move(p.errorMessage);
+	}
+
+	RESTResult& operator=(RESTResult p)
+	{
+		if (&p == this) return *this;
+
+		resultType = p.resultType;
+		responseObj = p.responseObj;
+		httpCode = p.httpCode;
+		errorCode = p.errorCode;
+		errorMessage = std::move(p.errorMessage);
+		return *this;
 	}
 
 	/**
