@@ -16,6 +16,7 @@
 #include <regex>
 #include <stack>
 #include <math.h>
+#include <dlog.h>
 
 /* Regular Expression for tokenizing HTML tag
  * Group 1: Matches the closing tag
@@ -367,22 +368,22 @@ TFC::Components::SimpleWebView::SimpleWebView() :
 	eventEwkLoadFinished += { this, &SimpleWebView::OnEwkLoadFinished };*/
 }
 
-void TFC::Components::SimpleWebView::SetFont(const std::string& font)
+void TFC::Components::SimpleWebView::SetFont(std::string const& font)
 {
 	this->font = font;
 }
 
-std::string& TFC::Components::SimpleWebView::GetFont()
+std::string const& TFC::Components::SimpleWebView::GetFont() const
 {
 	return font;
 }
 
-void TFC::Components::SimpleWebView::SetFontSize(const int& fontSize)
+void TFC::Components::SimpleWebView::SetFontSize(int const& fontSize)
 {
 	this->fontSize = fontSize;
 }
 
-int TFC::Components::SimpleWebView::GetFontSize()
+int TFC::Components::SimpleWebView::GetFontSize() const
 {
 	return fontSize;
 }
@@ -425,7 +426,7 @@ void TFC::Components::SimpleWebView::AddImage(std::string& url)
 
 		// Load image asynchrounously
 		dlog_print(DLOG_DEBUG, LOG_TAG, "WebView: Load image from URL");
-		s_async [placeholder, url] () -> ImageAsyncPackage { return { placeholder, Net::ImageCache::LoadImage(url) }; } >> eventImageDownloadCompleted;
+		tfc_async -> ImageAsyncPackage { return { placeholder, Net::ImageCache::LoadImage(url) }; } >> eventImageDownloadCompleted;
 	}
 	else
 	{

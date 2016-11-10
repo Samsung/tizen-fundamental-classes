@@ -27,8 +27,13 @@ namespace Components {
  * Supported tags include : br, img, strong, span, em, and p.
  * You can also add custom handling of unsupported HTML tags by attaching a callback.
  */
-class LIBAPI SimpleWebView: public ComponentBase
+class LIBAPI SimpleWebView:
+		public ComponentBase,
+		EventEmitterClass<SimpleWebView>,
+		PropertyClass<SimpleWebView>
 {
+	using EventEmitterClass<SimpleWebView>::Event;
+	using PropertyClass<SimpleWebView>::Property;
 private:
 	std::string data;
 	Evas_Object* box;
@@ -39,11 +44,11 @@ private:
 	std::string font;
 	int fontSize;
 
-	void SetFont(const std::string& font);
-	std::string& GetFont();
+	void SetFont(std::string const& font);
+	std::string const& GetFont() const;
 
-	void SetFontSize(const int& fontSize);
-	int GetFontSize();
+	void SetFontSize(int const& fontSize);
+	int GetFontSize() const;
 
 	void AddParagraph(Evas_Object* boxPage, std::string& paragraph);
 	void AddImage(std::string& url);
@@ -100,17 +105,17 @@ public:
 	 * You can attach a callback to this event to process the content yourself,
 	 * and call AddCustomComponent() to represent the content as a custom widget.
 	 */
-	Event<SimpleWebView*, std::string*> eventProcessingCustomTag;
+	Event<std::string*> eventProcessingCustomTag;
 
 	/**
 	 * Property that can be used to getting & setting the font family of the rendered text.
 	 */
-	Property<SimpleWebView, std::string&>::GetSet<&SimpleWebView::GetFont, &SimpleWebView::SetFont> Font;
+	Property<std::string const&>::GetSet<&SimpleWebView::GetFont, &SimpleWebView::SetFont> Font;
 
 	/**
 	 * Property that can be used to getting & setting the font size of the rendered text.
 	 */
-	Property<SimpleWebView, int>::GetSet<&SimpleWebView::GetFontSize, &SimpleWebView::SetFontSize> FontSize;
+	Property<int>::GetSet<&SimpleWebView::GetFontSize, &SimpleWebView::SetFontSize> FontSize;
 };
 
 
