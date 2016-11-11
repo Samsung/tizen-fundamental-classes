@@ -177,13 +177,48 @@ TEST_F(AsyncTest, AsyncWithFinally)
 		EFL_SYNC_BEGIN(data);
 			tfc_async
 			{
-				std::cout << "In async\n";
 				return data.tc + 54321;
 			}
 			tfc_async_complete(int result)
 			{
-				std::cout << "In finally\n";
 				data.correct = result == (data.tc + 54321);
+				data.mutexTest.unlock();
+			};
+		EFL_SYNC_END;
+	EFL_BLOCK_END;
+
+	mutexTest.lock();
+	ASSERT_TRUE(correct) << "Asynchronous operation with finally failed";
+
+}
+
+TEST_F(AsyncTest, AsyncWithFinallyVoid)
+{
+	using namespace TFC;
+	using Ms = std::chrono::milliseconds;
+	std::mutex mutexTest;
+	mutexTest.lock();
+	bool correct = false;
+
+	EFL_BLOCK_BEGIN;
+		struct {
+			bool& correct;
+			int tc;
+			std::mutex& mutexTest;
+		} data = {
+			correct,
+			rand(),
+			mutexTest
+		};
+
+		EFL_SYNC_BEGIN(data);
+			tfc_async
+			{
+				std::this_thread::sleep_for(Ms(2000));
+			}
+			tfc_async_complete
+			{
+				data.correct = true;
 				data.mutexTest.unlock();
 			};
 		EFL_SYNC_END;

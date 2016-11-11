@@ -27,6 +27,29 @@ namespace Async {
 template<typename TReturnValue>
 struct AsyncTask;
 
+struct AsyncTypeTag
+{
+	struct AsyncVoid 	{ };
+	struct AsyncNonVoid { };
+};
+
+template<typename T>
+struct AsyncTypeSelector
+{
+	typedef AsyncTypeTag::AsyncNonVoid Tag;
+	typedef T EventDataType;
+	typedef std::function<void(T)> CompleteFunction;
+};
+
+template<>
+struct AsyncTypeSelector<void>
+{
+	typedef AsyncTypeTag::AsyncVoid Tag;
+	typedef void* EventDataType;
+	typedef std::function<void()> CompleteFunction;
+};
+
+
 template<typename TReturnValue, typename TEventType = void>
 struct AsyncOperand
 {
@@ -98,53 +121,100 @@ struct AsyncOperand<TReturnValue, SharedEventObject<AsyncTask<TReturnValue>*, TR
 
 template<typename TLambda,
 		 typename TIntrospect = Introspect::CallableObject<TLambda>,
-		 typename TEnable 	  = typename std::enable_if<TIntrospect::Arity == 1>::type>
+		 bool TNonVoidParam   = TIntrospect::Arity == 1,
+		 bool TParamOneOrZero = TIntrospect::Arity <= 1>
 struct AsyncCompleteOperand
 {
 	typedef typename Introspect::CallableObject<TLambda>::template Args<0> ArgumentType;
 	static constexpr bool Valid = true;
+	static constexpr bool IsVoid = false;
 
-	std::function<void(ArgumentType)> CompleteLambda;
 
-	explicit AsyncCompleteOperand(std::function<void(ArgumentType)>&& CompleteLambda) :
+	typedef typename AsyncTypeSelector<ArgumentType>::CompleteFunction Function;
+	Function CompleteLambda;
+
+	AsyncCompleteOperand(Function&& CompleteLambda) :
 			CompleteLambda(CompleteLambda)
 	{
 
 	}
+
+	static AsyncCompleteOperand<TLambda> MakeOperand(TLambda&& lambda)
+	{
+		return { lambda };
+	}
+
+	template<typename TLambdaAsync,
+			 typename TIntrospectAsync = Introspect::CallableObject<TLambdaAsync>,
+			 bool 	  RuleValidation   = std::is_same<typename TIntrospect::template Args<0>,
+								  	  	  	  	  	  typename TIntrospectAsync::ReturnType>::value>
+	struct Match
+	{
+		static constexpr bool Valid = RuleValidation;
+	};
 };
+
+template<typename TLambda, typename TIntrospect>
+struct AsyncCompleteOperand<TLambda, TIntrospect, false, true>
+{
+	static constexpr bool Valid = true;
+	static constexpr bool IsVoid = true;
+
+
+	typedef typename AsyncTypeSelector<void>::CompleteFunction Function;
+	Function CompleteLambda;
+
+	AsyncCompleteOperand(Function&& CompleteLambda) :
+				CompleteLambda(CompleteLambda)
+	{
+
+	}
+
+	static AsyncCompleteOperand<TLambda> MakeOperand(TLambda&& lambda)
+	{
+		return { lambda };
+	}
+
+	template<typename TLambdaAsync,
+			 typename TIntrospectAsync = Introspect::CallableObject<TLambdaAsync>,
+			 bool 	  RuleValidation   = std::is_same<void,
+									  	  	  	  	  typename TIntrospectAsync::ReturnType>::value>
+	struct Match
+	{
+		static constexpr bool Valid = RuleValidation;
+	};
+};
+
+template<typename TLambda, typename TIntrospect>
+struct AsyncCompleteOperand<TLambda, TIntrospect, false, false>
+{
+	static constexpr bool Valid = false;
+
+	explicit AsyncCompleteOperand()
+	{
+
+	}
+
+	template<typename TAny>
+	static AsyncCompleteOperand<TLambda> MakeOperand(TAny lambda)
+	{
+		return AsyncCompleteOperand<TLambda>();
+	}
+};
+
+
 
 template<typename TReturnValue, typename TLambdaComplete>
 struct AsyncOperand<TReturnValue, AsyncCompleteOperand<TLambdaComplete>> :
 		AsyncOperand<TReturnValue, void>
 {
-	std::function<void(TReturnValue)> funcComplete;
+	typedef typename AsyncTypeSelector<TReturnValue>::CompleteFunction Function;
+	Function funcComplete;
 
-	AsyncOperand(std::function<TReturnValue(void)>&& func, std::function<void(TReturnValue)>&& funcComplete) :
+	AsyncOperand(std::function<TReturnValue(void)>&& func, Function&& funcComplete) :
 		AsyncOperand<TReturnValue, void>(std::move(func)),
 		funcComplete(funcComplete)
 	{ }
-};
-
-struct AsyncTypeTag
-{
-	struct AsyncVoid 	{ };
-	struct AsyncNonVoid { };
-};
-
-template<typename T>
-struct AsyncTypeSelector
-{
-	typedef AsyncTypeTag::AsyncNonVoid Tag;
-	typedef T EventDataType;
-	typedef std::function<void(T)> CompleteFunction;
-};
-
-template<>
-struct AsyncTypeSelector<void>
-{
-	typedef AsyncTypeTag::AsyncVoid Tag;
-	typedef void* EventDataType;
-	typedef std::function<void()> CompleteFunction;
 };
 
 template<typename T>
@@ -186,7 +256,7 @@ template<typename T>
 void AsyncWorker(void* package)
 {
 	auto ptr = reinterpret_cast<AsyncPackage<T>*>(package);
-	ptr->result.value = ptr->function();
+	ptr->result.value = std::move(ptr->function());
 }
 
 template<>
@@ -347,10 +417,11 @@ struct AsyncBuilder
 struct CompleteBuilder
 {
 	template<typename TLambda>
-	auto operator*(TLambda lambda)
+	auto operator*(TLambda&& lambda)
 		-> AsyncCompleteOperand<TLambda>
 	{
-		return AsyncCompleteOperand<TLambda>(lambda);
+		static_assert(AsyncCompleteOperand<TLambda>::Valid, "tfc_async_complete block has invalid result-capture declaration");
+		return AsyncCompleteOperand<TLambda>::MakeOperand(std::move(lambda));
 	}
 };
 
@@ -386,10 +457,7 @@ template<typename TLambdaAsync,
 		 typename TLambdaAfter,
 		 typename TIntrospectAsync = Introspect::CallableObject<TLambdaAsync>,
 		 typename TIntrospectAfter = Introspect::CallableObject<TLambdaAfter>,
-		 typename std::enable_if<TIntrospectAsync::Arity == 0
-		 	 	 	 	 	  && TIntrospectAfter::Arity == 1
-							  && std::is_same<typename TIntrospectAfter::template Args<0>,
-							  	  	  	  	  typename TIntrospectAsync::ReturnType>::value, int>::type* = nullptr>
+		 typename std::enable_if<AsyncCompleteOperand<TLambdaAfter>::template Match<TLambdaAsync>::Valid, int>::type* = nullptr>
 auto operator>>(TLambdaAsync async, AsyncCompleteOperand<TLambdaAfter> after)
 	-> AsyncOperand<typename TIntrospectAsync::ReturnType, AsyncCompleteOperand<TLambdaAfter>>
 {
@@ -401,10 +469,20 @@ template<typename TLambdaAsync,
 		 typename TLambdaAfter,
 		 typename TIntrospectAsync = Introspect::CallableObject<TLambdaAsync>,
 		 typename TIntrospectAfter = Introspect::CallableObject<TLambdaAfter>,
-		 typename std::enable_if<TIntrospectAsync::Arity == 0
-		 	 	 	 	 	  && TIntrospectAfter::Arity == 1
-							  && !std::is_same<typename TIntrospectAfter::template Args<0>,
-							  	  	  	  	   typename TIntrospectAsync::ReturnType>::value, int>::type* = nullptr>
+		 typename std::enable_if<!AsyncCompleteOperand<TLambdaAfter>::Valid, int>::type* = nullptr>
+auto operator>>(TLambdaAsync async, AsyncCompleteOperand<TLambdaAfter> after)
+	-> AsyncOperand<typename TIntrospectAsync::ReturnType, AsyncCompleteOperand<TLambdaAfter>>
+{
+
+	return { nullptr, nullptr };
+}
+
+
+template<typename TLambdaAsync,
+		 typename TLambdaAfter,
+		 typename TIntrospectAsync = Introspect::CallableObject<TLambdaAsync>,
+		 typename TIntrospectAfter = Introspect::CallableObject<TLambdaAfter>,
+		 typename std::enable_if<!AsyncCompleteOperand<TLambdaAfter>::template Match<TLambdaAsync>::Valid, int>::type* = nullptr>
 auto operator>>(TLambdaAsync async, AsyncCompleteOperand<TLambdaAfter> after)
 	-> AsyncOperand<typename TIntrospectAsync::ReturnType, AsyncCompleteOperand<TLambdaAfter>>
 {
