@@ -3,7 +3,7 @@
 	<name>TFC_Test</name>
 	<comment></comment>
 	<projects>
-		<project>SRINTizenFramework</project>
+		<project>TizenFundamentalClasses</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

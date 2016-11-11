@@ -201,7 +201,7 @@
 									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/wifi-direct&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/lib/dbus-1.0/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/lib/glib-2.0/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SRINTizenFramework/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TizenFundamentalClasses/inc}&quot;"/>
 								</option>
 								<option id="sbi.gnu.cpp.compiler.option.frameworks.core.598118717" name="Tizen-Frameworks" superClass="sbi.gnu.cpp.compiler.option.frameworks.core" valueType="userObjs">
 									<listOptionValue builtIn="false" value="Native_API"/>
@@ -399,18 +399,19 @@
 									<listOptionValue builtIn="false" value="${TC_LINKER_MISC}"/>
 									<listOptionValue builtIn="false" value="${RS_LINKER_MISC}"/>
 									<listOptionValue builtIn="false" value="-pie -lpthread "/>
+									<listOptionValue builtIn="false" value="-Xlinker -rpath=&quot;/home/developer/sdk_tools/lib&quot;"/>
 									<listOptionValue builtIn="false" value="--sysroot=&quot;${SBI_SYSROOT}&quot;"/>
 									<listOptionValue builtIn="false" value="-Xlinker --version-script=&quot;${PROJ_PATH}/.exportMap&quot;"/>
 									<listOptionValue builtIn="false" value="-L&quot;${SBI_SYSROOT}/usr/lib&quot;"/>
 									<listOptionValue builtIn="false" value="$(RS_LIBRARIES)"/>
 								</option>
 								<option id="gnu.cpp.link.option.paths.1099798965" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SRINTizenFramework/Debug}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${SDK_PATH}/library/gtest/x86/lib&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${SDK_PATH}/library/gtest/arm/lib&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SDK_INSTALL_PATH}/library/gtest/${SDK_ARCH}/lib&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TizenFundamentalClasses/build/${BUILD_CONFIG}/${SDK_ARCH}}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TFC_Test/lib}&quot;"/>
 								</option>
 								<option id="gnu.cpp.link.option.libs.457261837" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="srintizenfw"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="tfc"/>
 								</option>
 								<option id="gnu.cpp.link.option.flags.815996210" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="-Wl,-Bstatic -lgtest -Wl,-Bdynamic" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1276457794" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
@@ -460,7 +461,7 @@
 					<folderInfo id="org.tizen.nativecore.config.sbi.gcc45.app.release.1584192186." name="/" resourcePath="">
 						<toolChain id="org.tizen.nativecore.toolchain.sbi.gcc45.app.release.1308631628" name="Tizen Native Toolchain" superClass="org.tizen.nativecore.toolchain.sbi.gcc45.app.release">
 							<targetPlatform binaryParser="org.eclipse.cdt.core.ELF" id="org.tizen.nativeide.target.sbi.gnu.platform.base.1207794093" osList="linux,win32" superClass="org.tizen.nativeide.target.sbi.gnu.platform.base"/>
-							<builder buildPath="${workspace_loc:/TFC_Test}/Release" id="org.tizen.nativecore.target.sbi.gnu.builder.800731454" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Tizen Application Builder" superClass="org.tizen.nativecore.target.sbi.gnu.builder"/>
+							<builder buildPath="${workspace_loc:/TFC_Test}/Release" id="org.tizen.builder.make.unittest.1085559595" keepEnvironmentInBuildfile="false" name="Tizen TEST MAKE builder" superClass="org.tizen.builder.make.unittest"/>
 							<tool id="org.tizen.nativecore.tool.sbi.gnu.archiver.1833083554" name="Archiver" superClass="org.tizen.nativecore.tool.sbi.gnu.archiver"/>
 							<tool command="clang++" id="org.tizen.nativecore.tool.sbi.gnu.cpp.compiler.18147391" name="C++ Compiler" superClass="org.tizen.nativecore.tool.sbi.gnu.cpp.compiler">
 								<option id="gnu.cpp.compiler.option.optimization.level.387569229" name="Optimization Level" superClass="gnu.cpp.compiler.option.optimization.level" value="gnu.cpp.compiler.optimization.level.most" valueType="enumerated"/>
@@ -636,7 +637,7 @@
 									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/wifi-direct&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/lib/dbus-1.0/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/lib/glib-2.0/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SRINTizenFramework/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TizenFundamentalClasses/inc}&quot;"/>
 								</option>
 								<option id="sbi.gnu.cpp.compiler.option.frameworks.core.1650514808" name="Tizen-Frameworks" superClass="sbi.gnu.cpp.compiler.option.frameworks.core" valueType="userObjs">
 									<listOptionValue builtIn="false" value="Native_API"/>
@@ -754,6 +755,7 @@
 									<listOptionValue builtIn="false" value="${TC_LINKER_MISC}"/>
 									<listOptionValue builtIn="false" value="${RS_LINKER_MISC}"/>
 									<listOptionValue builtIn="false" value="-pie -lpthread "/>
+									<listOptionValue builtIn="false" value="-Xlinker -rpath=&quot;/home/developer/sdk_tools/lib&quot;"/>
 									<listOptionValue builtIn="false" value="--sysroot=&quot;${SBI_SYSROOT}&quot;"/>
 									<listOptionValue builtIn="false" value="-Xlinker --version-script=&quot;${PROJ_PATH}/.exportMap&quot;"/>
 									<listOptionValue builtIn="false" value="-L&quot;${SBI_SYSROOT}/usr/lib&quot;"/>
@@ -762,10 +764,8 @@
 								<option id="gnu.cpp.link.option.paths.1098503397" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/lib}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${SDK_INSTALL_PATH}/library/gtest/${SDK_ARCH}/lib&quot;"/>
-									<listOptionValue builtIn="false" value="/home/gilang/bin/tizen-sdk/library/gtest"/>
-									<listOptionValue builtIn="false" value="/home/gilang/bin/tizen-sdk/library/gtest/x86/lib"/>
-									<listOptionValue builtIn="false" value="/home/gilang/bin/tizen-sdk/library/gtest/arm/lib"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SRINTizenFramework/Debug}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TizenFundamentalClasses/build/${BUILD_CONFIG}/${SDK_ARCH}}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TFC_Test/lib}&quot;"/>
 								</option>
 								<option id="gnu.cpp.link.option.libs.40392510" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="&quot;srintizenfw&quot;"/>
@@ -802,15 +802,6 @@
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
 		<project id="TFC_Test.org.tizen.nativecore.target.sbi.gcc45.app.1858921347" name="Tizen Unit Test" projectType="org.tizen.nativecore.target.sbi.gcc45.unittest"/>
 	</storageModule>
-	<storageModule moduleId="scannerConfiguration">
-		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		<scannerConfigBuildInfo instanceId="org.tizen.nativecore.config.sbi.gcc45.app.debug.1623896935">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="org.tizen.nativecore.config.sbi.gcc45.app.release.1584192186">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		</scannerConfigBuildInfo>
-	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="refreshScope" versionNumber="2">
 		<configuration configurationName="Debug">
@@ -819,5 +810,17 @@
 		<configuration configurationName="Release">
 			<resource resourceType="PROJECT" workspacePath="/TFC_Test"/>
 		</configuration>
+	</storageModule>
+	<storageModule moduleId="scannerConfiguration">
+		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		<scannerConfigBuildInfo instanceId="org.tizen.nativecore.config.sbi.gcc45.app.debug.1623896935">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="org.tizen.nativecore.config.sbi.gcc45.app.release.1584192186">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="org.tizen.nativecore.config.sbi.gcc45.app.debug.1623896935.1181831319">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
 	</storageModule>
 </cproject>

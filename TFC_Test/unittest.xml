@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <tizen_unittest>
-<targetProject>SRINTizenFramework</targetProject>
+<targetProject>TizenFundamentalClasses</targetProject>
 </tizen_unittest>
