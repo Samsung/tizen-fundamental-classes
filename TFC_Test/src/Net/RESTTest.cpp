@@ -140,16 +140,19 @@ public:
 	void StartAsync()
 	{
 		mutexAsync.lock();
-		std::shared_ptr<GetService> gs;
+		std::shared_ptr<GetService> gs(new GetService());
 		gs->UserId = 1;
 		tfc_async {
+			std::cout << "Async\n";
 			return gs->Call();
 		}
 		tfc_async_complete(TFC::Net::RESTResult<std::string> res) {
+			std::cout << "Complete\n";
 			std::string* response = res.Response;
 			result = *response;
 			mutexAsync.unlock();
 			delete response;
+			std::cout << "complete complete\n";
 		};
 	}
 };
@@ -157,7 +160,9 @@ public:
 TEST_F(RESTTest, RESTAsyncTest)
 {
 	using Ms = std::chrono::milliseconds;
+	std::cout << "BeforeAsync\n";
 	RESTAsyncTestClass tc;
+
 
 	EFL_BLOCK_BEGIN;
 		EFL_SYNC_BEGIN(tc);

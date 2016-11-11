@@ -160,7 +160,7 @@ public:
 	 *
 	 * @param p Reference to a RESTResultBase object.
 	 */
-	RESTResult(RESTResultBase& p) : Response(this)
+	RESTResult(RESTResultBase&& p) : Response(this)
 	{
 		resultType = p.resultType;
 		responseObj = p.responseObj;
@@ -173,7 +173,7 @@ public:
 	 * Constructor of RESTResult that copy from RESTResultBase object.
 	 *
 	 * @param p Copy of a RESTResultBase object.
-	 */
+	 *//*
 	RESTResult(RESTResultBase p) : Response(this)
 	{
 		resultType = p.resultType;
@@ -181,23 +181,23 @@ public:
 		httpCode = p.httpCode;
 		errorCode = p.errorCode;
 		errorMessage = std::move(p.errorMessage);
-	}
+	}*/
 
 	/**
 	 * Copy constructor of RESTResult class.
 	 *
 	 * @param p Reference to a RESTResult object.
 	 */
-	RESTResult(RESTResult& p) : Response(this)
+	RESTResult(RESTResult const& p) : Response(this)
 	{
 		resultType = p.resultType;
 		responseObj = p.responseObj;
 		httpCode = p.httpCode;
 		errorCode = p.errorCode;
-		errorMessage = std::move(p.errorMessage);
+		errorMessage = p.errorMessage;
 	}
 
-	RESTResult& operator=(RESTResult p)
+	RESTResult& operator=(RESTResult&& p)
 	{
 		if (&p == this) return *this;
 
@@ -360,7 +360,7 @@ public:
 	 */
 	RESTResult<ResponseType> Call()
 	{
-		return RESTResult<ResponseType>(CallInternal());
+		return std::move(CallInternal());
 	}
 
 	/**
