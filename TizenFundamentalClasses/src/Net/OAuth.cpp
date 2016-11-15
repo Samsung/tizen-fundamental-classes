@@ -10,7 +10,8 @@
 #define OAUTH_DECLARE_ERROR_MSG(ERR_CODE, ERR_STR) \
 	template<> char const* TFC::Net::OAuth2ErrorSelector< ERR_CODE >::ErrorMessage = "OAuth2 Error: " ERR_STR
 
-
+#define OAUTH_OP_CHECK_INIT int result
+#define OAUTH_OP_CHECK_THROW(STATEMENT) result = STATEMENT; if (result != OAUTH2_ERROR_NONE) throw OAuth2Exception(result)
 
 TFC ::Net::OAuth2Exception::OAuth2Exception(int oauthErrorCode) :
 		TFCException(GetErrorMessage(oauthErrorCode)),
@@ -37,22 +38,50 @@ const char* TFC::Net::OAuth2Exception::GetErrorMessage(int code)
 	return "";
 }
 
-void TFC::Net::OAuth2ClientBase::PerformRequest() {
+void TFC::Net::OAuth2ClientBase::PerformRequest()
+{
+	PerformXAuthRequest("", "");
 }
 
 void TFC::Net::OAuth2ClientBase::PerformXAuthRequest(
-		const std::string& username, const std::string& password) {
+		const std::string& username, const std::string& password)
+{
+	if (paramPtr == nullptr) return;
+	OAUTH_OP_CHECK_INIT;
+
+	OAUTH_OP_CHECK_THROW(oauth2_request_set_auth_end_point_url(requestHandle, paramPtr->authUrl));
+	if (paramPtr->tokenUrl)
+	{
+		OAUTH_OP_CHECK_THROW(oauth2_request_set_token_end_point_url(requestHandle, paramPtr->tokenUrl));
+	}
+	OAUTH_OP_CHECK_THROW(oauth2_request_set_redirection_url(requestHandle, paramPtr->redirectionUrl));
+
+	OAUTH_OP_CHECK_THROW(oauth2_request_set_client_id(requestHandle, paramPtr->clientId));
+	if (paramPtr->clientSecret)
+	{
+		OAUTH_OP_CHECK_THROW(oauth2_request_set_client_secret(requestHandle, paramPtr->clientSecret));
+	}
+	OAUTH_OP_CHECK_THROW(oauth2_request_set_scope(requestHandle, paramPtr->clientScope));
+	OAUTH_OP_CHECK_THROW(oauth2_request_set_response_type(requestHandle, OAUTH2_RESPONSE_TYPE_CODE));
+
+	if (username.length() > 0 && password.length() > 0)
+	{
+		OAUTH_OP_CHECK_THROW(oauth2_request_set_user_name(requestHandle, username.c_str()));
+		OAUTH_OP_CHECK_THROW(oauth2_request_set_password(requestHandle, password.c_str()));
+	}
+	OAUTH_OP_CHECK_THROW(oauth2_manager_request_token(managerHandle, requestHandle, &RequestAuthorizationCallback, this));
 }
 
 void TFC::Net::OAuth2ClientBase::RefreshToken(std::string oldToken) {
 }
 
-TFC::Net::OAuth2ClientBase::OAuth2ClientBase(OAuthParam* param) : paramPtr(param)
+TFC::Net::OAuth2ClientBase::OAuth2ClientBase(OAuthParam* param) :
+		paramPtr(param),
+		busy(false)
 {
-	int result = oauth2_manager_create(&this->managerHandle);
-
-	if(result != OAUTH2_ERROR_NONE)
-		throw OAuth2Exception(result);
+	OAUTH_OP_CHECK_INIT;
+	OAUTH_OP_CHECK_THROW(oauth2_manager_create(&this->managerHandle));
+	OAUTH_OP_CHECK_THROW(oauth2_request_create(&this->requestHandle));
 }
 
 TFC::Net::OAuth2ClientBase::~OAuth2ClientBase() {
@@ -84,5 +113,12 @@ void TFC::Net::OAuth2ClientBase::CleanUpRequest() {
 }
 
 void TFC::Net::OAuth2ClientBase::RequestAuthorizationCallback(
-		oauth2_response_h response, void* thisObj) {
+		oauth2_response_h response, void* thisObj)
+{
+	char* token;
+	OAUTH_OP_CHECK_INIT;
+	OAUTH_OP_CHECK_THROW(oauth2_response_get_access_token(response, &token));
+
+	auto oAuth2ClientPtr = static_cast<OAuth2ClientBase*>(thisObj);
+	oAuth2ClientPtr->eventAccessTokenReceived(oAuth2ClientPtr, token);
 }
