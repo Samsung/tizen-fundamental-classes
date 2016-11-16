@@ -40,12 +40,28 @@ namespace {
 	{
 		static constexpr char const* authUrl = "https://www.facebook.com/dialog/oauth";
 		static constexpr char const* refreshTokenUrl = "https://www.facebook.com/dialog/oauth";
+		static constexpr char const* redirectionUrl = "http://galaxygift.id/";
 	};
 
 	struct FacebookAppClientProvider
 	{
 		static constexpr char const* clientId = "492256874254380";
 		static constexpr char const* clientScope = "public_profile, email";
+	};
+
+	struct GoogleOAuthProvider
+	{
+		static constexpr char const* authUrl = "https://accounts.google.com/o/oauth2/v2/auth";
+		static constexpr char const* tokenUrl = "https://accounts.google.com/o/oauth2/token";
+		static constexpr char const* refreshTokenUrl = "https://www.googleapis.com/oauth2/v3/token";
+		static constexpr char const* redirectionUrl = "http://galaxygift.id/";
+	};
+
+	struct GoogleAppClientProvider
+	{
+		static constexpr char const* clientId = "67642819282-s2bv056kr3thmmrd9cl2hs51hccevmlh.apps.googleusercontent.com";
+		static constexpr char const* clientScope = "email";
+		static constexpr char const* clientSecret = "GOUigRUJ54gl04Q19CYR1W4W";
 	};
 
 	struct InvalidOAuthProvider
@@ -80,8 +96,46 @@ TEST_F(OAuthTest, RetrieveAuthUrl)
 	EXPECT_EQ(nullptr, res3) << "Metaprogramming failed to retrieve value";
 }
 
+class OAuthTestClass : public TFC::EventClass
+{
+public:
+	typedef TFC::Net::OAuth2Client<GoogleOAuthProvider, GoogleAppClientProvider> FBClient;
+	FBClient client;
+	std::timed_mutex mutex;
+	std::string accessToken;
+
+	void OnAccessTokenReceived(decltype(FBClient::eventAccessTokenReceived)* ev, TFC::Net::OAuth2ClientBase* src, std::string token)
+	{
+		accessToken = token;
+		std::cout << "Access Token : " << accessToken << "\n";
+		mutex.unlock();
+	}
+
+	OAuthTestClass()
+	{
+		client.eventAccessTokenReceived += EventHandler(OAuthTestClass::OnAccessTokenReceived);
+	}
+
+	void PerformRequest()
+	{
+		mutex.lock();
+		client.PerformRequest();
+	}
+};
+
 TEST_F(OAuthTest, FullStackOAuth)
 {
-	typedef TFC::Net::OAuth2Client<FacebookOAuthProvider, FacebookAppClientProvider> FBClient;
-	FBClient client;
+	OAuthTestClass tc;
+
+	EFL_BLOCK_BEGIN;
+		EFL_SYNC_BEGIN(tc);
+			tc.PerformRequest();
+		EFL_SYNC_END;
+	EFL_BLOCK_END;
+
+	tc.mutex.lock();
+
+	//ASSERT_TRUE(success) << "OAuth request timeout";
+	//if(success)
+		EXPECT_NE(0, tc.accessToken.length()) << "OAuth token not received";
 }

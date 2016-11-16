@@ -6,6 +6,7 @@
  */
 
 #include "TFC/Net/OAuth.h"
+#include <iostream>
 
 #define OAUTH_DECLARE_ERROR_MSG(ERR_CODE, ERR_STR) \
 	template<> char const* TFC::Net::OAuth2ErrorSelector< ERR_CODE >::ErrorMessage = "OAuth2 Error: " ERR_STR
@@ -38,11 +39,13 @@ const char* TFC::Net::OAuth2Exception::GetErrorMessage(int code)
 	return "";
 }
 
+LIBAPI
 void TFC::Net::OAuth2ClientBase::PerformRequest()
 {
 	PerformXAuthRequest("", "");
 }
 
+LIBAPI
 void TFC::Net::OAuth2ClientBase::PerformXAuthRequest(
 		const std::string& username, const std::string& password)
 {
@@ -72,9 +75,11 @@ void TFC::Net::OAuth2ClientBase::PerformXAuthRequest(
 	OAUTH_OP_CHECK_THROW(oauth2_manager_request_token(managerHandle, requestHandle, &RequestAuthorizationCallback, this));
 }
 
+LIBAPI
 void TFC::Net::OAuth2ClientBase::RefreshToken(std::string oldToken) {
 }
 
+LIBAPI
 TFC::Net::OAuth2ClientBase::OAuth2ClientBase(OAuthParam* param) :
 		paramPtr(param),
 		busy(false)
@@ -84,6 +89,7 @@ TFC::Net::OAuth2ClientBase::OAuth2ClientBase(OAuthParam* param) :
 	OAUTH_OP_CHECK_THROW(oauth2_request_create(&this->requestHandle));
 }
 
+LIBAPI
 TFC::Net::OAuth2ClientBase::~OAuth2ClientBase() {
 
 
@@ -115,9 +121,20 @@ void TFC::Net::OAuth2ClientBase::CleanUpRequest() {
 void TFC::Net::OAuth2ClientBase::RequestAuthorizationCallback(
 		oauth2_response_h response, void* thisObj)
 {
+	oauth2_error_h err;
+	int serverErrorCode = 0, platformErrorCode = 0;
+	oauth2_response_get_error(response, &err);
+	oauth2_error_get_code(err, &serverErrorCode, &platformErrorCode);
+
+	if(serverErrorCode != 0 || platformErrorCode != 0)
+	{
+		char* errorDescription;
+		oauth2_error_get_description(err, &errorDescription);
+		std::cout << "Error : " << errorDescription << "\n";
+	}
+
 	char* token;
-	OAUTH_OP_CHECK_INIT;
-	OAUTH_OP_CHECK_THROW(oauth2_response_get_access_token(response, &token));
+	oauth2_response_get_access_token(response, &token);
 
 	auto oAuth2ClientPtr = static_cast<OAuth2ClientBase*>(thisObj);
 	oAuth2ClientPtr->eventAccessTokenReceived(oAuth2ClientPtr, token);
