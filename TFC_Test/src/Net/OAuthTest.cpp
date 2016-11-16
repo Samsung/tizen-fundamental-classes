@@ -8,6 +8,7 @@
 
 
 #include "TFC/Net/OAuth.h"
+#include "TFC/Net/REST.h"
 #include "TFC_Test.h"
 
 #include <gtest/gtest.h>
@@ -51,17 +52,17 @@ namespace {
 
 	struct GoogleOAuthProvider
 	{
-		static constexpr char const* authUrl = "https://accounts.google.com/o/oauth2/v2/auth";
+		static constexpr char const* authUrl = "https://accounts.google.com/o/oauth2/auth";
 		static constexpr char const* tokenUrl = "https://accounts.google.com/o/oauth2/token";
 		static constexpr char const* refreshTokenUrl = "https://www.googleapis.com/oauth2/v3/token";
-		static constexpr char const* redirectionUrl = "http://galaxygift.id/";
+		static constexpr char const* redirectionUrl = "http://heliosky.com";
 	};
 
 	struct GoogleAppClientProvider
 	{
-		static constexpr char const* clientId = "67642819282-s2bv056kr3thmmrd9cl2hs51hccevmlh.apps.googleusercontent.com";
+		static constexpr char const* clientId = "216020663022-qo7o09pun912281apcal6bfvco0m7d64.apps.googleusercontent.com";
 		static constexpr char const* clientScope = "email";
-		static constexpr char const* clientSecret = "GOUigRUJ54gl04Q19CYR1W4W";
+		static constexpr char const* clientSecret = "DEdQUn-QFbiitgpGyLd6dtoZ";
 	};
 
 	struct InvalidOAuthProvider
@@ -123,6 +124,23 @@ public:
 	}
 };
 
+class GoogleTokenVerify : public TFC::Net::RESTServiceBase<bool>
+{
+public:
+	Parameter<TFC::Net::ParameterType::Query, std::string> AccessToken;
+
+	GoogleTokenVerify() :
+		RESTServiceBase("https://www.googleapis.com/oauth2/v1/tokeninfo", TFC::Net::HTTPMode::Get),
+		AccessToken(this, "access_token")
+	{
+	}
+protected:
+	virtual bool* OnProcessResponse(int httpCode, const std::string& responseStr, int& errorCode, std::string& errorMessage)
+	{
+		return new bool(responseStr.find("invalid_token") == std::string::npos);
+	}
+};
+
 TEST_F(OAuthTest, FullStackOAuth)
 {
 	OAuthTestClass tc;
@@ -135,7 +153,10 @@ TEST_F(OAuthTest, FullStackOAuth)
 
 	tc.mutex.lock();
 
-	//ASSERT_TRUE(success) << "OAuth request timeout";
-	//if(success)
-		EXPECT_NE(0, tc.accessToken.length()) << "OAuth token not received";
+	EXPECT_LT(2, tc.accessToken.length()) << "OAuth token not received.";
+
+	GoogleTokenVerify verify;
+	verify.AccessToken = tc.accessToken;
+	auto result = verify.Call();
+	EXPECT_EQ(true, *(result.Response)) << "OAuth token is invalid.";
 }
