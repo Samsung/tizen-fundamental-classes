@@ -121,7 +121,7 @@ TFC::Core::EventObject<TObjectSource, TEventData>::EventObject(bool logDelete) :
 
 #if VERBOSE
 	if(logDelete)
-		dlog_print(DLOG_DEBUG, "SRINFW-Event", "Event created %d", this);
+		dlog_print(DLOG_DEBUG, "TFC-Event", "Event created %d", this);
 #endif
 }
 
@@ -130,7 +130,7 @@ TFC::Core::EventObject<TObjectSource, TEventData>::~EventObject()
 {
 #if VERBOSE
 	if(logDelete)
-		dlog_print(DLOG_DEBUG, "SRINFW-Event", "Event deleted %d", this);
+		dlog_print(DLOG_DEBUG, "TFC-Event", "Event deleted %d", this);
 #endif
 
 	auto current = this->first;
@@ -172,7 +172,7 @@ void TFC::Core::EventObject<TObjectSource, TEventData>::operator-=(const EventDe
 	{
 		if(current->instance == other.instance && current->eventHandler == other.eventHandler)
 		{
-			//dlog_print(DLOG_DEBUG, "SRINFW-Event", "Deleting %d %d", current->instance, current->eventHandler);
+			//dlog_print(DLOG_DEBUG, "TFC-Event", "Deleting %d %d", current->instance, current->eventHandler);
 			if(current == this->first)
 				this->first = current->next;
 
@@ -195,7 +195,7 @@ void TFC::Core::EventObject<TObjectSource, TEventData>::operator() (TObjectSourc
 {
 #if VERBOSE
 	if(logDelete)
-		dlog_print(DLOG_DEBUG, "SRINFW-Event", "Event raise %d", this);
+		dlog_print(DLOG_DEBUG, "TFC-Event", "Event raise %d", this);
 #endif
 
 	auto current = this->first;

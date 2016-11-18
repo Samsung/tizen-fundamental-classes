@@ -9,7 +9,7 @@
 #include "TFC/Components/ScrollablePuller.h"
 #include <dlog.h>
 
-#define FILE_EDC_CONTENT "SRIN/edc/Content.edj"
+#define FILE_EDC_CONTENT "TFC/edc/Content.edj"
 
 LIBAPI
 TFC::Components::ScrollablePuller::ScrollablePuller() :
