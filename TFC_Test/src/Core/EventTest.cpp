@@ -51,7 +51,7 @@ namespace {
 			obj.eventSomethingA += { this, &EventHandlerClass::OnSomethingA };
 		}
 
-		void OnSomethingA(EventEmitterA::Event<std::string>* ev, EventEmitterA* source, std::string data)
+		void OnSomethingA(EventEmitterA* source, std::string data)
 		{
 			result = data;
 		}

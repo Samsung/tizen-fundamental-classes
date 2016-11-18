@@ -27,9 +27,13 @@ template<typename TObjectSource, typename TEventData>
 class TFC::Core::EventObject
 {
 public:
-	typedef void (EventClass::*EventHandler)(const TFC::Core::EventObject<TObjectSource, TEventData>* eventSource,
-											 TObjectSource objSource,
-											 TEventData eventData);
+
+	template<typename TEventClass>
+	struct EventHandlerTrait {
+		typedef void (TEventClass::*Type)(TObjectSource objSource, TEventData eventData);
+	};
+
+	typedef typename EventHandlerTrait<EventClass>::Type EventHandler;
 
 	typedef TObjectSource 	SourceType;
 	typedef TEventData		EventDataType;
@@ -72,17 +76,12 @@ class TFC::Core::EventObject<TObjectSource, TEventData>::EventDelegate
 	EventClass* instance;
 	EventHandler eventHandler;
 
-	template<typename TEventClass>
-	struct EventHandlerFunc {
-		typedef void (TEventClass::*Type)(
-						TFC::Core::EventObject<TObjectSource, TEventData>* eventSource,
-						TObjectSource objSource,
-						TEventData eventData);
-	};
+
+
 
 public:
 	template<class TEventClass>
-	EventDelegate(TEventClass* instance, typename EventHandlerFunc<TEventClass>::Type eventHandler);
+	EventDelegate(TEventClass* instance, typename EventHandlerTrait<TEventClass>::Type eventHandler);
 	template<typename, typename>
 	friend class TFC::Core::EventObject;
 };
@@ -149,9 +148,9 @@ template<class TObjectSource, class TEventData>
 template<class TEventClass>
 TFC::Core::EventObject<TObjectSource, TEventData>::EventDelegate::EventDelegate(
 		TEventClass* instance,
-		typename  EventHandlerFunc<TEventClass>::Type eventHandler) :
+		typename  EventHandlerTrait<TEventClass>::Type eventHandler) :
 	instance(instance),
-	eventHandler(reinterpret_cast<TFC::Core::EventObject<TObjectSource, TEventData>::EventHandler>(eventHandler))
+	eventHandler(static_cast<EventHandler>(eventHandler))
 {
 }
 
@@ -203,7 +202,7 @@ void TFC::Core::EventObject<TObjectSource, TEventData>::operator() (TObjectSourc
 	while(current != nullptr)
 	{
 		if(current->instance && current->eventHandler)
-			(current->instance->*(current->eventHandler))(this, objSource, eventData);
+			(current->instance->*(current->eventHandler))(objSource, eventData);
 		current = current->next;
 	}
 }
