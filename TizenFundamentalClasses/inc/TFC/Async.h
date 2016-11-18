@@ -246,7 +246,7 @@ struct AsyncPackage
 	void* taskHandle;
 	bool awaitable;
 
-	AsyncPackage() : taskHandle(nullptr), awaitable(true), completeFunc(nullptr) { };
+	AsyncPackage() : completeFunc(nullptr), taskHandle(nullptr), awaitable(true) { };
 };
 
 
