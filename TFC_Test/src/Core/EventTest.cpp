@@ -48,7 +48,7 @@ namespace {
 
 		EventHandlerClass()
 		{
-			obj.eventSomethingA += { this, &EventHandlerClass::OnSomethingA };
+			obj.eventSomethingA += EventHandler(EventHandlerClass::OnSomethingA);//{ this, &EventHandlerClass::OnSomethingA };
 		}
 
 		void OnSomethingA(EventEmitterA* source, std::string data)
@@ -63,7 +63,7 @@ namespace {
 
 		void DetachEvent()
 		{
-			obj.eventSomethingA -= { this, &EventHandlerClass::OnSomethingA };
+			obj.eventSomethingA -= EventHandler(EventHandlerClass::OnSomethingA);
 		}
 	};
 

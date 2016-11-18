@@ -315,12 +315,12 @@ LIBAPI void TFC::Framework::IndicatorStyler::OnPostNavigation(ControllerManager*
 LIBAPI TFC::Framework::IndicatorStyler::IndicatorStyler(UIApplicationBase* app, ControllerManager* manager, Color defaultColor) :
 	app(app), manager(manager), defaultColor(defaultColor)
 {
-	manager->eventNavigationProcessed += { this, &IndicatorStyler::OnPostNavigation };
+	manager->eventNavigationProcessed += EventHandler(IndicatorStyler::OnPostNavigation);
 }
 
 LIBAPI TFC::Framework::IndicatorStyler::~IndicatorStyler()
 {
-	manager->eventNavigationProcessed -= { this, &IndicatorStyler::OnPostNavigation };
+	manager->eventNavigationProcessed -= EventHandler(IndicatorStyler::OnPostNavigation);
 }
 
 LIBAPI TFC::Framework::INaviframeContent::INaviframeContent() :

@@ -72,7 +72,7 @@ public:
 	TFC::Async<int>::Event eventAsyncCompleted;
 	std::timed_mutex mutexAsync;
 
-	void OnAsyncCompleted(decltype(eventAsyncCompleted)::Type* ev, TFC::Async<int>::Task* task, int ret)
+	void OnAsyncCompleted(TFC::Async<int>::Task* task, int ret)
 	{
 		result = ret;
 		mutexAsync.unlock();

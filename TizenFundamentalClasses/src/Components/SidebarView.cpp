@@ -18,11 +18,11 @@ LIBAPI SidebarView::SidebarView() :
 	contentWrapper(nullptr)
 {
 	layout = leftPanel = background = currentContent = nullptr;
-	drawerButtonClick += { this, &SidebarView::OnDrawerButtonClick };
-	drawerScroll += { this, &SidebarView::OnDrawerScrolling };
+	drawerButtonClick += EventHandler(SidebarView::OnDrawerButtonClick);
+	drawerScroll += EventHandler(SidebarView::OnDrawerScrolling);
 
-	DrawerOpened += { this, &SidebarView::OnDrawerOpened };
-	DrawerClosed += { this, &SidebarView::OnDrawerClosed };
+	DrawerOpened += EventHandler(SidebarView::OnDrawerOpened);
+	DrawerClosed += EventHandler(SidebarView::OnDrawerClosed);
 }
 
 LIBAPI Evas_Object* SidebarView::CreateView(Evas_Object* root)

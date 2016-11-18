@@ -359,13 +359,13 @@ TFC::Components::SimpleWebView::SimpleWebView() :
 		box(nullptr), boxPage(nullptr), isRendering(false),
 		Font(this), FontSize(this)
 {
-	eventImageDownloadCompleted += { this, &SimpleWebView::OnImageDownloadCompleted };
+	eventImageDownloadCompleted += EventHandler(SimpleWebView::OnImageDownloadCompleted);
 
 	font = "Tizen";
 	fontSize = SIMPLE_WEB_VIEW_FONT_SIZE;
 	// Experimental EWK
 	/*ewk_init();
-	eventEwkLoadFinished += { this, &SimpleWebView::OnEwkLoadFinished };*/
+	eventEwkLoadFinished += EventHandler(SimpleWebView::OnEwkLoadFinished);*/
 }
 
 void TFC::Components::SimpleWebView::SetFont(std::string const& font)
@@ -520,7 +520,7 @@ void TFC::Components::SimpleWebView::OnImageDownloadCompleted(Async<ImageAsyncPa
 
 TFC::Components::SimpleWebView::~SimpleWebView()
 {
-	eventImageDownloadCompleted -= { this, &SimpleWebView::OnImageDownloadCompleted };
+	eventImageDownloadCompleted -= EventHandler(SimpleWebView::OnImageDownloadCompleted);
 
 	// Experimental EWK
 	/*ewk_shutdown();*/

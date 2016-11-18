@@ -105,7 +105,7 @@ public:
 	std::timed_mutex mutex;
 	std::string accessToken;
 
-	void OnAccessTokenReceived(decltype(FBClient::eventAccessTokenReceived)* ev, TFC::Net::OAuth2ClientBase* src, std::string token)
+	void OnAccessTokenReceived(TFC::Net::OAuth2ClientBase* src, std::string token)
 	{
 		accessToken = token;
 		std::cout << "Access Token : " << accessToken << "\n";

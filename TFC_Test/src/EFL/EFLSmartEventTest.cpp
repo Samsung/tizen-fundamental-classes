@@ -54,7 +54,7 @@ namespace {
 	private:
 
 		EvasSmartEvent eventButtonClick;
-		void OnButtonClick(EvasSmartEvent::Type* ev, Evas_Object* src, void* data);
+		void OnButtonClick(Evas_Object* src, void* data);
 
 	};
 
@@ -65,7 +65,7 @@ namespace {
 		bindingCallback		(false),
 		exceptionHappened	(false)
 	{
-		eventButtonClick += { this, &SomeComponent::OnButtonClick };
+		eventButtonClick += EventHandler(SomeComponent::OnButtonClick);
 	}
 
 	SomeComponent::~SomeComponent()
@@ -169,8 +169,7 @@ namespace {
 		EFL_BLOCK_END;
 	}
 
-	void SomeComponent::OnButtonClick(EvasSmartEvent::Type* ev,
-			Evas_Object* src, void* data) {
+	void SomeComponent::OnButtonClick(Evas_Object* src, void* data) {
 		this->bindingCallback = true;
 	}
 }

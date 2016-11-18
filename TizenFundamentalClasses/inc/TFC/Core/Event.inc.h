@@ -4,6 +4,7 @@
 #define TFC_CORE_EVENT_INC_H
 
 #include <memory>
+#include "TFC/Core/Introspect.h"
 
 #ifndef TFC_CORE_H_
 #include "TFC/Core.h"
@@ -33,7 +34,9 @@ public:
 		typedef void (TEventClass::*Type)(TObjectSource objSource, TEventData eventData);
 	};
 
-	typedef typename EventHandlerTrait<EventClass>::Type EventHandler;
+	typedef void(*EventHandlerInvokerFunc)(void*, TObjectSource, TEventData);
+
+	//typedef typename EventHandlerTrait<EventClass>::Type EventHandler;
 
 	typedef TObjectSource 	SourceType;
 	typedef TEventData		EventDataType;
@@ -65,25 +68,30 @@ private:
 template<typename TObjectSource, typename TEventData>
 struct TFC::Core::EventObject<TObjectSource, TEventData>::EventNode
 {
-	EventClass* instance;
-	EventHandler eventHandler;
+	void* instance;
+	EventHandlerInvokerFunc eventHandlerInvoker;
 	EventNode* next;
 };
 
 template<typename TObjectSource, typename TEventData>
 class TFC::Core::EventObject<TObjectSource, TEventData>::EventDelegate
 {
-	EventClass* instance;
-	EventHandler eventHandler;
+	void* instance;
+	EventHandlerInvokerFunc eventHandlerInvoker;
 
-
-
+	EventDelegate(void* instance, EventHandlerInvokerFunc func) : instance(instance), eventHandlerInvoker(func) { }
 
 public:
-	template<class TEventClass>
-	EventDelegate(TEventClass* instance, typename EventHandlerTrait<TEventClass>::Type eventHandler);
+	template<class TEventClass, typename EventHandlerTrait<TEventClass>::Type funcPtr>
+	static EventDelegate PackEventHandler(TEventClass* thisPtr);
+
 	template<typename, typename>
 	friend class TFC::Core::EventObject;
+
+	template<typename TEventClass, typename EventHandlerTrait<TEventClass>::Type funcPtr>
+	static void EventHandlerInvoker(void*, TObjectSource source, TEventData data);
+
+
 };
 
 template<typename TObjectSource, typename TEventData>
@@ -96,6 +104,23 @@ public:
 	void operator-=(const typename TFC::Core::EventObject<TObjectSource, TEventData>::EventDelegate& other);
 	void operator()(TObjectSource objSource, TEventData eventData) const;
 };
+
+namespace TFC {
+namespace Core {
+
+template<typename TPtrMemFunc, // <- Unfortunately we have to know the type of pointer to member first before actually getting the pointer...
+		 TPtrMemFunc ptr,      // <- here
+		 typename TIntrospect	 = TFC::Core::Introspect::MemberFunction<TPtrMemFunc>, // <- Instantiate introspector object
+		 typename TDeclaringType = typename TIntrospect::DeclaringType,	   // <- Inferring declaring type of pointer to member via introspector
+		 typename TObjectSource  = typename TIntrospect::template Args<0>, // <- Inferring TObjectSource by parameter of function pointer
+		 typename TEventData 	 = typename TIntrospect::template Args<1>> // <- Inferring TEventData by parameter of function pointer
+auto EventHandlerFactory(TDeclaringType* thisPtr)
+	-> typename TFC::Core::EventObject<TObjectSource, TEventData>::EventDelegate
+{
+	return TFC::Core::EventObject<TObjectSource, TEventData>::EventDelegate::template PackEventHandler<TDeclaringType, ptr>(thisPtr);
+}
+
+}}
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -145,20 +170,18 @@ TFC::Core::EventObject<TObjectSource, TEventData>::~EventObject()
 
 
 template<class TObjectSource, class TEventData>
-template<class TEventClass>
-TFC::Core::EventObject<TObjectSource, TEventData>::EventDelegate::EventDelegate(
-		TEventClass* instance,
-		typename  EventHandlerTrait<TEventClass>::Type eventHandler) :
-	instance(instance),
-	eventHandler(reinterpret_cast<EventHandler>(eventHandler))
+template<class TEventClass, typename TFC::Core::EventObject<TObjectSource, TEventData>::template EventHandlerTrait<TEventClass>::Type funcPtr>
+auto TFC::Core::EventObject<TObjectSource, TEventData>::EventDelegate::PackEventHandler(TEventClass* thisPtr)
+	-> TFC::Core::EventObject<TObjectSource, TEventData>::EventDelegate
 {
+	return { thisPtr, EventHandlerInvoker<TEventClass, funcPtr> };
 }
 
 
 template<class TObjectSource, class TEventData>
 void TFC::Core::EventObject<TObjectSource, TEventData>::operator+=(const EventDelegate& other)
 {
-	auto newNode = new EventNode({ other.instance, other.eventHandler, this->first });
+	auto newNode = new EventNode({ other.instance, other.eventHandlerInvoker, this->first });
 	this->first = newNode;
 }
 
@@ -169,7 +192,7 @@ void TFC::Core::EventObject<TObjectSource, TEventData>::operator-=(const EventDe
 
 	while(current != nullptr)
 	{
-		if(current->instance == other.instance && current->eventHandler == other.eventHandler)
+		if(current->instance == other.instance && current->eventHandlerInvoker == other.eventHandlerInvoker)
 		{
 			//dlog_print(DLOG_DEBUG, "TFC-Event", "Deleting %d %d", current->instance, current->eventHandler);
 			if(current == this->first)
@@ -186,7 +209,13 @@ void TFC::Core::EventObject<TObjectSource, TEventData>::operator-=(const EventDe
 	}
 }
 
-
+template<typename TObjectSource, typename TEventData>
+template<typename TEventClass, typename TFC::Core::EventObject<TObjectSource, TEventData>::template EventHandlerTrait<TEventClass>::Type funcPtr>
+void TFC::Core::EventObject<TObjectSource, TEventData>::EventDelegate::EventHandlerInvoker(void* ptr, TObjectSource source, TEventData data)
+{
+	auto thiz = reinterpret_cast<TEventClass*>(ptr);
+	(thiz->*funcPtr)(source, data);
+}
 
 template<class TObjectSource, class TEventData>
 void TFC::Core::EventObject<TObjectSource, TEventData>::operator() (TObjectSource objSource,
@@ -201,8 +230,8 @@ void TFC::Core::EventObject<TObjectSource, TEventData>::operator() (TObjectSourc
 
 	while(current != nullptr)
 	{
-		if(current->instance && current->eventHandler)
-			(current->instance->*(current->eventHandler))(objSource, eventData);
+		if(current->instance && current->eventHandlerInvoker)
+			current->eventHandlerInvoker(current->instance, objSource, eventData);
 		current = current->next;
 	}
 }
@@ -240,7 +269,11 @@ void TFC::Core::SharedEventObject<TObjectSource, TEventData>:: operator()(
 	this->get()->operator ()(objSource, eventData);
 }
 
-#define EventHandler(EVENT_METHOD) { this, & EVENT_METHOD }
+
+
+#define EventHandler(EVENT_METHOD) TFC::Core::EventHandlerFactory<decltype(& EVENT_METHOD), & EVENT_METHOD>(this)
+//                                                                ^^^                        ^^^
+//                                                                Get the typeof ptr to mbr, then getting the value here
 
 
 #endif

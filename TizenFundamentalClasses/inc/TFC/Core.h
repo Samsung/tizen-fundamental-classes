@@ -23,6 +23,9 @@
 #include <exception>
 #include <string>
 
+
+
+
 // Forward declaration of TFC Core Language Features
 namespace TFC {
 
@@ -130,6 +133,15 @@ inline T* Coalesce(T* ptr, T* valueIfNull)
 	return IsNull(ptr) ? ptr : valueIfNull;
 }
 
+template<typename TExcept, typename T>
+inline T* ThrowIfNull(T* ptr)
+{
+	if(ptr == nullptr)
+		throw TExcept{};
+
+	return ptr;
+}
+
 namespace Core {
 
 /**
@@ -166,19 +178,8 @@ struct PropertyGetterFunction;
 template<typename TDefining, typename TValue>
 struct PropertySetterFunction;
 
-
-
 }
 }
-
-#include "TFC/Core/Event.inc.h"
-#include "TFC/Core/Property.inc.h"
-
-class LIBAPI TFC::ObjectClass : public TFC::EventClass
-{
-public:
-	virtual ~ObjectClass();
-};
 
 #define EXCEPTION_DECLARE(NAME, PARENT)\
 class NAME : public PARENT\
@@ -198,5 +199,16 @@ public:\
 	explicit inline NAME(std::string&& message) : PARENT(message) { }\
 	explicit inline NAME(std::string const& message) : PARENT(message) { }\
 }
+
+#include "TFC/Core/Event.inc.h"
+#include "TFC/Core/Property.inc.h"
+
+class LIBAPI TFC::ObjectClass : public TFC::EventClass
+{
+public:
+	virtual ~ObjectClass();
+};
+
+
 
 #endif /* CORE_NEW_H_ */
