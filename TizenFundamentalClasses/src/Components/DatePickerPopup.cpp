@@ -102,16 +102,12 @@ Evas_Object* TFC::Components::DatePickerPopupMenu::CreateContent(
 
 /** ============================================================================ **/
 
-void TFC::Components::DatePickerPopup::DatePickerButtonClick(
-		EvasSmartEvent::Type* viewSource, Evas_Object* objSource,
-		void* eventData)
+void TFC::Components::DatePickerPopup::DatePickerButtonClick(Evas_Object* objSource, void* eventData)
 {
 	datePopupMenu.Show();
 }
 
-void TFC::Components::DatePickerPopup::DatePickerPopupOkButtonClick(
-		EvasSmartEvent::Type* viewSource, Evas_Object* objSource,
-		void* eventData)
+void TFC::Components::DatePickerPopup::DatePickerPopupOkButtonClick(Evas_Object* objSource, void* eventData)
 {
 	formatedDate = datePopupMenu.GetFormatedSelectedDate();
 	selectedDate = datePopupMenu.GetSelectedDate();
@@ -119,15 +115,13 @@ void TFC::Components::DatePickerPopup::DatePickerPopupOkButtonClick(
 	datePopupMenu.Dismiss();
 }
 
-void TFC::Components::DatePickerPopup::DatePickerPopupCancelButtonClick(
-		EvasSmartEvent::Type* viewSource, Evas_Object* objSource,
-		void* eventData)
+void TFC::Components::DatePickerPopup::DatePickerPopupCancelButtonClick(Evas_Object* objSource, void* eventData)
 {
 	datePopupMenu.Dismiss();
 }
 
-void TFC::Components::DatePickerPopup::OnDateChangedCb(
-	EvasSmartEvent::Type* viewSource, Evas_Object* objSource, void* eventData) {
+void TFC::Components::DatePickerPopup::OnDateChangedCb(Evas_Object* objSource, void* eventData)
+{
 
 }
 

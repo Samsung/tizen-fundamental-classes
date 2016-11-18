@@ -293,8 +293,7 @@ LIBAPI void UIApplicationBase::EnableMoreButtonCallback(bool enable)
 	}
 }
 
-LIBAPI void TFC::Framework::IndicatorStyler::OnPostNavigation(decltype(ControllerManager::eventNavigationProcessed)* event,
-	ControllerManager* manager, ControllerBase* controller)
+LIBAPI void TFC::Framework::IndicatorStyler::OnPostNavigation(ControllerManager* manager, ControllerBase* controller)
 {
 	auto colorable = dynamic_cast<IIndicatorStyle*>(controller->View);
 	if(colorable)

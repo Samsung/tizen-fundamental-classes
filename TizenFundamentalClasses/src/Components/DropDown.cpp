@@ -96,8 +96,7 @@ LIBAPI void TFC::Components::DropDown::ShowDropdown()
 	evas_object_show(dropdownComponent);
 }
 
-LIBAPI void TFC::Components::DropDown::OnDropDownButtonClick(EvasSmartEvent::Type* viewSource, Evas_Object* objSource,
-	void* eventData)
+LIBAPI void TFC::Components::DropDown::OnDropDownButtonClick(Evas_Object* objSource, void* eventData)
 {
 	ShowDropdown();
 }

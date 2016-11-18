@@ -269,14 +269,12 @@ LIBAPI void TFC::Components::GenericList::AppendItemToGenlist(Adapter::AdapterIt
 	}, nullptr);
 }
 
-LIBAPI void TFC::Components::GenericList::OnItemAdd(decltype(Adapter::eventItemAdd)* event, Adapter* adapter,
-	Adapter::AdapterItem* data)
+LIBAPI void TFC::Components::GenericList::OnItemAdd(Adapter* adapter, Adapter::AdapterItem* data)
 {
 	AppendItemToGenlist(data);
 }
 
-LIBAPI void TFC::Components::GenericList::OnItemRemove(decltype(Adapter::eventItemRemove)* event, Adapter* adapter,
-	Adapter::AdapterItem* data)
+LIBAPI void TFC::Components::GenericList::OnItemRemove(Adapter* adapter, Adapter::AdapterItem* data)
 {
 	// BUG ON EFL: insert before dummy bottom will create UI render error if at some point dummy bottom is disabled
 	// so the workaround is to store the realbottom of the list. Tis part is replacing the realBottom if the item
@@ -341,7 +339,7 @@ LIBAPI TFC::Components::Adapter* TFC::Components::GenericList::GetDataSource()
 	return dataSource;
 }
 
-void TFC::Components::GenericList::OnScrolledInternal(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData)
+void TFC::Components::GenericList::OnScrolledInternal(Evas_Object* obj, void* eventData)
 {
 	int x, y, w, h;
 	elm_scroller_region_get(genlist, &x, &y, &w, &h);
@@ -357,27 +355,27 @@ void TFC::Components::GenericList::OnScrolledInternal(EvasSmartEvent::Type* even
 	eventScrolled(this, eventData);
 }
 
-void TFC::Components::GenericList::OnScrolledDownInternal(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData)
+void TFC::Components::GenericList::OnScrolledDownInternal(Evas_Object* obj, void* eventData)
 {
 	eventScrolledDown(this, eventData);
 }
 
-void TFC::Components::GenericList::OnScrolledUpInternal(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData)
+void TFC::Components::GenericList::OnScrolledUpInternal(Evas_Object* obj, void* eventData)
 {
 	eventScrolledUp(this, eventData);
 }
 
-void TFC::Components::GenericList::OnScrolledBottomInternal(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData)
+void TFC::Components::GenericList::OnScrolledBottomInternal(Evas_Object* obj, void* eventData)
 {
 	eventScrolledBottom(this, eventData);
 }
 
-void TFC::Components::GenericList::OnScrolledTopInternal(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData)
+void TFC::Components::GenericList::OnScrolledTopInternal(Evas_Object* obj, void* eventData)
 {
 
 }
 
-void TFC::Components::GenericList::OnDummyRealized(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData)
+void TFC::Components::GenericList::OnDummyRealized(Evas_Object* obj, void* eventData)
 {
 	if (firstRealize)
 	{
@@ -416,7 +414,7 @@ void TFC::Components::GenericList::OnDummyRealized(EvasSmartEvent::Type* event, 
 	}
 }
 
-void TFC::Components::GenericList::OnItemUnrealized(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData)
+void TFC::Components::GenericList::OnItemUnrealized(Evas_Object* obj, void* eventData)
 {
 	if(dummyTop && eventData == elm_genlist_item_next_get(dummyTop))
 	{
@@ -461,14 +459,14 @@ bool TFC::Components::GenericList::GetUnderscroll() const
 }
 
 
-void TFC::Components::GenericList::OnScrollingStart(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData)
+void TFC::Components::GenericList::OnScrollingStart(Evas_Object* obj, void* eventData)
 {
 	isScrolling   = true;
 	IsLongClicked = false;
 	eventScrollingStart(this, nullptr);
 }
 
-void TFC::Components::GenericList::OnScrollingEnd(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData)
+void TFC::Components::GenericList::OnScrollingEnd(Evas_Object* obj, void* eventData)
 {
 	if (underscroll && dummyTop)
 	{
@@ -491,8 +489,7 @@ void TFC::Components::GenericList::OnScrollingEnd(EvasSmartEvent::Type* event, E
 	eventScrollingEnd(this, nullptr);
 }
 
-void TFC::Components::GenericList::OnItemSignalEmit(ObjectItemEdjeSignalEvent::Type* event, Elm_Object_Item* obj,
-	EFL::EdjeSignalInfo eventData)
+void TFC::Components::GenericList::OnItemSignalEmit(Elm_Object_Item* obj, EFL::EdjeSignalInfo eventData)
 {
 	dlog_print(DLOG_DEBUG, LOG_TAG, "Signal %s", eventData.source);
 
@@ -512,7 +509,7 @@ bool TFC::Components::GenericList::GetLongClicked() const {
 }
 
 void TFC::Components::GenericList::OnLongPressedInternal(
-		EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData) {
+		Evas_Object* obj, void* eventData) {
 	if (isScrolling) {
 		IsLongClicked = false;
 	} else {

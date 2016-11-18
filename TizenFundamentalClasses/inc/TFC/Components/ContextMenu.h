@@ -55,8 +55,8 @@ private:
 	bool menuShown;
 	std::vector<MenuItem*> rootMenu;
 
-	void OnContextMenuButtonClicked(EvasSmartEvent::Type* ev, Evas_Object* obj, void* eventData);
-	void OnContextMenuDismissed(EvasSmartEvent::Type* ev, Evas_Object* obj, void* eventData);
+	void OnContextMenuButtonClicked(Evas_Object* obj, void* eventData);
+	void OnContextMenuDismissed(Evas_Object* obj, void* eventData);
 	bool BackButtonClicked();
 	void ShowMenu();
 	void HideMenu();

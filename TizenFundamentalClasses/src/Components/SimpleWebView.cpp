@@ -494,8 +494,7 @@ void TFC::Components::SimpleWebView::SetHTMLData(const std::string& data)
 	evas_object_size_hint_min_set(bg, NULL, (int)(std::round(optimumSize)));
 }*/
 
-void TFC::Components::SimpleWebView::OnImageDownloadCompleted(Async<ImageAsyncPackage>::BaseEvent* event,
-	Async<ImageAsyncPackage>::Task* asyncTask, ImageAsyncPackage result)
+void TFC::Components::SimpleWebView::OnImageDownloadCompleted(Async<ImageAsyncPackage>::Task* asyncTask, ImageAsyncPackage result)
 {
 	auto img = elm_image_add(result.placeholder);
 	elm_image_aspect_fixed_set(img, EINA_TRUE);

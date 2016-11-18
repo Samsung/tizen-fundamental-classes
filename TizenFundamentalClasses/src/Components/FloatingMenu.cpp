@@ -93,7 +93,7 @@ bool TFC::Components::FloatingMenu::BackButtonClicked()
 	return false;
 }
 
-void TFC::Components::FloatingMenu::OnButtonClicked(EvasSmartEvent::Type* ev, Evas_Object* obj, void* eventData)
+void TFC::Components::FloatingMenu::OnButtonClicked(Evas_Object* obj, void* eventData)
 {
 	if(not this->menuShown)
 		this->ShowMenu();
@@ -101,7 +101,7 @@ void TFC::Components::FloatingMenu::OnButtonClicked(EvasSmartEvent::Type* ev, Ev
 		this->HideMenu();
 }
 
-void TFC::Components::FloatingMenu::OnContextMenuDismissed(EvasSmartEvent::Type* ev, Evas_Object* obj, void* eventData)
+void TFC::Components::FloatingMenu::OnContextMenuDismissed(Evas_Object* obj, void* eventData)
 {
 	HideMenu();
 }

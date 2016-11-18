@@ -150,7 +150,7 @@ TFC::Core::EventObject<TObjectSource, TEventData>::EventDelegate::EventDelegate(
 		TEventClass* instance,
 		typename  EventHandlerTrait<TEventClass>::Type eventHandler) :
 	instance(instance),
-	eventHandler(static_cast<EventHandler>(eventHandler))
+	eventHandler(reinterpret_cast<EventHandler>(eventHandler))
 {
 }
 

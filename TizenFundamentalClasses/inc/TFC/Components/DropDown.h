@@ -46,7 +46,7 @@ private:
 	Adapter* GetDataSource();
 
 	void ShowDropdown();
-	void OnDropDownButtonClick(EvasSmartEvent::Type* viewSource, Evas_Object* objSource, void* eventData);
+	void OnDropDownButtonClick(Evas_Object* objSource, void* eventData);
 
 	std::string const& GetText() const { return this->text; }
 protected:

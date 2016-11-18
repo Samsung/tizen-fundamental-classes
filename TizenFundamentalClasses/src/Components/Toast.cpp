@@ -12,8 +12,8 @@
 
 TFC::Components::Toast toastObj;
 
-LIBAPI bool TFC::Components::Toast::BackButtonPressed(EvasSmartEvent::Type* event, Evas_Object* objSource, void* eventData) {
-	OnDismiss(event, objSource, eventData);
+LIBAPI bool TFC::Components::Toast::BackButtonPressed(Evas_Object* objSource, void* eventData) {
+	OnDismiss(objSource, eventData);
 	return false;
 }
 
@@ -26,7 +26,7 @@ LIBAPI void TFC::Components::Toast::Show(const std::string& message) {
 	Show(message, 2.0);
 }
 
-LIBAPI void TFC::Components::Toast::OnDismiss(EvasSmartEvent::Type* event, Evas_Object* objSource, void* eventData)
+LIBAPI void TFC::Components::Toast::OnDismiss(Evas_Object* objSource, void* eventData)
 {
 	evas_object_del(objSource);
 }

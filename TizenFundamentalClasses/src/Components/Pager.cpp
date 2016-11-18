@@ -198,7 +198,7 @@ LIBAPI TFC::Components::Pager::Pager() :
 	this->eventClickSignal += EventHandler(Pager::OnClickSignal);
 }
 
-void TFC::Components::Pager::OnClickSignal(EdjeSignalEvent::Type* event, Evas_Object* source, EFL::EdjeSignalInfo signalInfo)
+void TFC::Components::Pager::OnClickSignal(Evas_Object* source, EFL::EdjeSignalInfo signalInfo)
 {
 	//dlog_print(DLOG_DEBUG, LOG_TAG, "Pager event! %s", signalInfo.emission);
 

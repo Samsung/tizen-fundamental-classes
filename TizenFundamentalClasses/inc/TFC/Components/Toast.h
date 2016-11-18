@@ -24,8 +24,8 @@ namespace Components {
 class LIBAPI Toast : public EFL::EFLProxyClass
 {
 private:
-	void OnDismiss(EvasSmartEvent::Type* event, Evas_Object* objSource, void* eventData);
-	bool BackButtonPressed(EvasSmartEvent::Type* event, Evas_Object* objSource, void* eventData);
+	void OnDismiss(Evas_Object* objSource, void* eventData);
+	bool BackButtonPressed(Evas_Object* objSource, void* eventData);
 	EvasSmartEvent eventDismiss;
 public:
 	/**

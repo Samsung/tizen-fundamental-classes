@@ -31,21 +31,21 @@ struct TreeMenuItemPackage
 	}
 };
 
-void TreeMenu::MenuScrollInternal(GenlistEvent::Type* eventSource,
-		Evas_Object* objSource, Elm_Object_Item* genlistItem) {
+void TreeMenu::MenuScrollInternal(Evas_Object* objSource, Elm_Object_Item* genlistItem) 
+{
 	isScrolled = true;
 }
 
-void TreeMenu::MenuPressedInternal(GenlistEvent::Type* eventSource,
-		Evas_Object* objSource, Elm_Object_Item* genlistItem) {
+void TreeMenu::MenuPressedInternal(Evas_Object* objSource, Elm_Object_Item* genlistItem) 
+{
 	if (!isClickPersist) {
 		auto icon = elm_object_item_part_content_get(genlistItem, "menu_icon");
 		edje_object_signal_emit(icon, "elm,state,selected", "elm");
 	}
 }
 
-void TreeMenu::MenuReleasedInternal(GenlistEvent::Type* eventSource,
-		Evas_Object* objSource, Elm_Object_Item* genlistItem) {
+void TreeMenu::MenuReleasedInternal(Evas_Object* objSource, Elm_Object_Item* genlistItem) 
+{
 	if (!isClickPersist) {
 		auto item = reinterpret_cast<TreeMenuItemPackage*>(elm_object_item_data_get(genlistItem));
 
@@ -60,7 +60,7 @@ void TreeMenu::MenuReleasedInternal(GenlistEvent::Type* eventSource,
 	}
 }
 
-void TreeMenu::MenuSelectedInternal(GenlistEvent::Type* eventSource, Evas_Object* objSource, Elm_Object_Item* genlistItem)
+void TreeMenu::MenuSelectedInternal(Evas_Object* objSource, Elm_Object_Item* genlistItem)
 {
 	if (isClickPersist) {
 		auto item = reinterpret_cast<TreeMenuItemPackage*>(elm_object_item_data_get(genlistItem));
@@ -79,12 +79,12 @@ void TreeMenu::MenuSelectedInternal(GenlistEvent::Type* eventSource, Evas_Object
 	}
 }
 
-void TreeMenu::MenuUnselectedInternal(GenlistEvent::Type* eventSource, Evas_Object* objSource, Elm_Object_Item* genlistItem)
+void TreeMenu::MenuUnselectedInternal(Evas_Object* objSource, Elm_Object_Item* genlistItem)
 {
 
 }
 
-void TreeMenu::MenuExpanded(GenlistEvent::Type* eventSource, Evas_Object* objSource, Elm_Object_Item* genlistItem)
+void TreeMenu::MenuExpanded(Evas_Object* objSource, Elm_Object_Item* genlistItem)
 {
 	auto item = reinterpret_cast<TreeMenuItemPackage*>(elm_object_item_data_get(genlistItem));
 	GenerateSubMenu(item->menuItemRef);
@@ -92,7 +92,7 @@ void TreeMenu::MenuExpanded(GenlistEvent::Type* eventSource, Evas_Object* objSou
 	elm_genlist_item_fields_update(genlistItem, "elm.swallow.end", ELM_GENLIST_ITEM_FIELD_CONTENT);
 }
 
-void TreeMenu::MenuContracted(GenlistEvent::Type* eventSource, Evas_Object* objSource, Elm_Object_Item* genlistItem)
+void TreeMenu::MenuContracted(Evas_Object* objSource, Elm_Object_Item* genlistItem)
 {
 	auto item = reinterpret_cast<TreeMenuItemPackage*>(elm_object_item_data_get(genlistItem));
 	elm_genlist_item_subitems_clear(genlistItem);

@@ -86,12 +86,12 @@ LIBAPI Evas_Object* SidebarView::GetTitleLeftButton(char const* buttonPart)
 	return btn;
 }
 
-LIBAPI void SidebarView::OnDrawerButtonClick(EvasSmartEvent::Type* eventSource, Evas_Object* objSource, void* eventData)
+LIBAPI void SidebarView::OnDrawerButtonClick(Evas_Object* objSource, void* eventData)
 {
 	ToggleSidebar();
 }
 
-LIBAPI void SidebarView::OnDrawerScrolling(EvasSmartEvent::Type* eventSource, Evas_Object* objSource, void* eventData)
+LIBAPI void SidebarView::OnDrawerScrolling(Evas_Object* objSource, void* eventData)
 {
 	auto ev = reinterpret_cast<Elm_Panel_Scroll_Info*>(eventData);
 	int col = 127 * ev->rel_x;
@@ -109,12 +109,12 @@ LIBAPI void SidebarView::OnDrawerScrolling(EvasSmartEvent::Type* eventSource, Ev
 	}
 }
 
-void SidebarView::OnDrawerOpened(decltype(SidebarView::DrawerOpened)* event, SidebarView* sidebarView, void* unused)
+void SidebarView::OnDrawerOpened(SidebarView* sidebarView, void* unused)
 {
 	BackButtonHandler::Acquire();
 }
 
-void SidebarView::OnDrawerClosed(decltype(SidebarView::DrawerClosed)* event, SidebarView* sidebarView, void* unused)
+void SidebarView::OnDrawerClosed(SidebarView* sidebarView, void* unused)
 {
 	BackButtonHandler::Release();
 }

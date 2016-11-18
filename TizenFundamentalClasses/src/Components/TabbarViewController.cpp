@@ -107,8 +107,8 @@ LIBAPI TFC::Components::TabbarViewController::TabbarViewController(TFC::Framewor
 	//this->eventTabbarButtonClicked += EventHandler(TabbarViewController::OnTabbarButtonClicked);
 }
 
-void TFC::Components::TabbarViewController::OnLayoutResize(
-		EvasObjectEvent::Type* event, EFL::EvasEventSourceInfo objSource, void* event_data) {
+void TFC::Components::TabbarViewController::OnLayoutResize(EFL::EvasEventSourceInfo objSource, void* event_data)
+{
 	Evas_Coord w, h;
 
 	dlog_print(DLOG_DEBUG, LOG_TAG, "Tabbar Layout Resize");
@@ -188,7 +188,7 @@ void TFC::Components::TabbarViewController::LookupAndBringContent(
 }
 
 void TFC::Components::TabbarViewController::OnTabContentScrolled(
-		EvasSmartEvent::Type* event, Evas_Object* source, void* event_data) {
+		Evas_Object* source, void* event_data) {
 
 
 

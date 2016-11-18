@@ -55,13 +55,13 @@ private:
 
 	typedef EFL::EvasSmartEventObjectBase<Elm_Object_Item> GenlistEvent;
 
-	void MenuScrollInternal(GenlistEvent::Type* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
-	void MenuPressedInternal(GenlistEvent::Type* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
-	void MenuReleasedInternal(GenlistEvent::Type* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
-	void MenuSelectedInternal(GenlistEvent::Type* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
-	void MenuUnselectedInternal(GenlistEvent::Type* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
-	void MenuExpanded(GenlistEvent::Type* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
-	void MenuContracted(GenlistEvent::Type* eventSource, Evas_Object* objSource, Elm_Object_Item* eventData);
+	void MenuScrollInternal(Evas_Object* objSource, Elm_Object_Item* eventData);
+	void MenuPressedInternal(Evas_Object* objSource, Elm_Object_Item* eventData);
+	void MenuReleasedInternal(Evas_Object* objSource, Elm_Object_Item* eventData);
+	void MenuSelectedInternal(Evas_Object* objSource, Elm_Object_Item* eventData);
+	void MenuUnselectedInternal(Evas_Object* objSource, Elm_Object_Item* eventData);
+	void MenuExpanded(Evas_Object* objSource, Elm_Object_Item* eventData);
+	void MenuContracted(Evas_Object* objSource, Elm_Object_Item* eventData);
 	void AppendMenuToGenlist(MenuItem* menu);
 
 	GenlistEvent eventMenuScrollInternal;

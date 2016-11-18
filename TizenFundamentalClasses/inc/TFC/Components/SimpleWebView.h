@@ -61,7 +61,7 @@ private:
 
 	Async<ImageAsyncPackage>::Event eventImageDownloadCompleted;
 
-	void OnImageDownloadCompleted(Async<ImageAsyncPackage>::BaseEvent* event, Async<ImageAsyncPackage>::Task* asyncTask, ImageAsyncPackage result);
+	void OnImageDownloadCompleted(Async<ImageAsyncPackage>::Task* asyncTask, ImageAsyncPackage result);
 protected:
 	/**
 	 * Method overriden from ComponentBase, creates the UI elements of the component.

@@ -84,7 +84,7 @@ Evas_Object* TFC::Components::ScrollablePuller::CreateComponent(Evas_Object* roo
 	return puller;
 }
 
-void TFC::Components::ScrollablePuller::OnResize(EvasObjectEvent::Type* event, EFL::EvasEventSourceInfo objSource, void* event_data)
+void TFC::Components::ScrollablePuller::OnResize(EFL::EvasEventSourceInfo objSource, void* event_data)
 {
 	evas_object_show(puller);
 	elm_object_part_content_set(rootLayout, partName.c_str(), puller);
@@ -124,17 +124,17 @@ void TFC::Components::ScrollablePuller::OnResize(EvasObjectEvent::Type* event, E
 	elm_scroller_region_show(puller, width / 2, height + pullerSize - 1, 1, 1);
 }
 
-void TFC::Components::ScrollablePuller::OnScrollTop(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData)
+void TFC::Components::ScrollablePuller::OnScrollTop(Evas_Object* obj, void* eventData)
 {
 	TogglePuller(true);
 }
 
-void TFC::Components::ScrollablePuller::OnScrollDown(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData)
+void TFC::Components::ScrollablePuller::OnScrollDown(Evas_Object* obj, void* eventData)
 {
 	TogglePuller(false);
 }
 
-void TFC::Components::ScrollablePuller::OnPulledEnd(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData)
+void TFC::Components::ScrollablePuller::OnPulledEnd(Evas_Object* obj, void* eventData)
 {
 	Evas_Coord y;
 	elm_scroller_region_get(puller, nullptr, &y, nullptr, nullptr);
@@ -150,7 +150,7 @@ void TFC::Components::ScrollablePuller::OnPulledEnd(EvasSmartEvent::Type* event,
 	}, this);
 }
 
-void TFC::Components::ScrollablePuller::OnPullerScroll(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData)
+void TFC::Components::ScrollablePuller::OnPullerScroll(Evas_Object* obj, void* eventData)
 {
 	//dlog_print(DLOG_DEBUG, "PULLER", "Puller scroll");
 	Evas_Coord y;
@@ -160,7 +160,7 @@ void TFC::Components::ScrollablePuller::OnPullerScroll(EvasSmartEvent::Type* eve
 	evas_object_color_set(bgBottom, 0, 0, 0, alpha);
 }
 
-void TFC::Components::ScrollablePuller::OnPullerStop(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData)
+void TFC::Components::ScrollablePuller::OnPullerStop(Evas_Object* obj, void* eventData)
 {
 	ResetPuller();
 }

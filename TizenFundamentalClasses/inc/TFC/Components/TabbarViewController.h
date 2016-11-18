@@ -42,8 +42,8 @@ private:
 	EvasObjectEvent eventLayoutResize;
 	EvasSmartEvent eventTabContentScrolled;
 
-	void OnLayoutResize(EvasObjectEvent::Type* event, EFL::EvasEventSourceInfo objSource, void* event_data);
-	void OnTabContentScrolled(EvasSmartEvent::Type* event, Evas_Object* source, void* event_data);
+	void OnLayoutResize(EFL::EvasEventSourceInfo objSource, void* event_data);
+	void OnTabContentScrolled(Evas_Object* source, void* event_data);
 	void LookupAndBringContent(Elm_Object_Item* tabItem);
 
 	//EvasSmartEvent eventTabbarButtonClicked;

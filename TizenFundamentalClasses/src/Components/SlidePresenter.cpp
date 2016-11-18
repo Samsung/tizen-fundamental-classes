@@ -13,10 +13,8 @@
 
 #define FILE_EDC_SLIDEPRESENTER "TFC/edc/SlidePresenter.edj"
 
-void TFC::Components::SlidePresenter::OnLayoutResize(
-		EvasObjectEvent::Type* event, EFL::EvasEventSourceInfo objSource,
-		void* event_data) {
-
+void TFC::Components::SlidePresenter::OnLayoutResize(EFL::EvasEventSourceInfo objSource, void* event_data)
+{
 	Evas_Coord w, h;
 
 	evas_object_geometry_get(objSource.obj, NULL, NULL, &w, &h);
@@ -30,8 +28,8 @@ void TFC::Components::SlidePresenter::OnLayoutResize(
 	elm_scroller_page_size_set(this->scroller, w, h);
 }
 
-void TFC::Components::SlidePresenter::OnPageScrolled(
-		EvasSmartEvent::Type* event, Evas_Object* source, void* event_data) {
+void TFC::Components::SlidePresenter::OnPageScrolled(Evas_Object* source, void* event_data)
+{
 	int pageH, pageV;
 	elm_scroller_current_page_get(source, &pageH, &pageV);
 
@@ -137,9 +135,8 @@ void TFC::Components::SlidePresenter::Remove(int index) {
 	elm_box_recalculate(this->box);
 }
 
-void TFC::Components::SlidePresenter::OnIndexSelected(
-		EvasSmartEvent::Type* event, Evas_Object* source, void* event_data) {
-
+void TFC::Components::SlidePresenter::OnIndexSelected(Evas_Object* source, void* event_data)
+{
 	auto page = elm_object_item_data_get((Elm_Object_Item*)event_data);
 	auto it = std::find(this->pageList.begin(), this->pageList.end(), page);
 	if(it != this->pageList.end())

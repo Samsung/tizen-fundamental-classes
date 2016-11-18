@@ -54,12 +54,12 @@ private :
 	std::size_t GetPullerSize() const { return pullerSize; }
 	void SetPullerSize(std::size_t const& size) { pullerSize = size; }
 
-	void OnResize(EvasObjectEvent::Type* event, EFL::EvasEventSourceInfo objSource, void* event_data);
-	void OnScrollTop(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData);
-	void OnScrollDown(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData);
-	void OnPulledEnd(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData);
-	void OnPullerScroll(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData);
-	void OnPullerStop(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData);
+	void OnResize(EFL::EvasEventSourceInfo objSource, void* event_data);
+	void OnScrollTop(Evas_Object* obj, void* eventData);
+	void OnScrollDown(Evas_Object* obj, void* eventData);
+	void OnPulledEnd(Evas_Object* obj, void* eventData);
+	void OnPullerScroll(Evas_Object* obj, void* eventData);
+	void OnPullerStop(Evas_Object* obj, void* eventData);
 protected :
 	virtual Evas_Object* CreateComponent(Evas_Object* root);
 public :

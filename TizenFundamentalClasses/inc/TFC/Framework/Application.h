@@ -601,7 +601,7 @@ public:
 class LIBAPI IndicatorStyler : public EventClass
 {
 private:
-	void OnPostNavigation(decltype(ControllerManager::eventNavigationProcessed)* event, ControllerManager* manager, ControllerBase* controller);
+	void OnPostNavigation(ControllerManager* manager, ControllerBase* controller);
 	UIApplicationBase* app;
 	ControllerManager* manager;
 	Color defaultColor;

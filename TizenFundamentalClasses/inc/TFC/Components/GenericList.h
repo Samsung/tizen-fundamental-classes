@@ -296,12 +296,10 @@ namespace Components {
 		void AppendItemToGenlist(Adapter::AdapterItem* data);
 
 		void OnItemAdd(
-				decltype(Adapter::eventItemAdd)* event,
 				Adapter* adapter,
 				Adapter::AdapterItem* data);
 
 		void OnItemRemove(
-				decltype(Adapter::eventItemRemove)* event,
 				Adapter* adapter,
 				Adapter::AdapterItem* data);
 
@@ -319,17 +317,17 @@ namespace Components {
 		ObjectItemEdjeSignalEvent eventItemSignalInternal;
 
 
-		void OnScrolledInternal(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData);
-		void OnScrolledDownInternal(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData);
-		void OnScrolledUpInternal(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData);
-		void OnScrolledBottomInternal(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData);
-		void OnScrolledTopInternal(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData);
-		void OnDummyRealized(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData);
-		void OnScrollingStart(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData);
-		void OnScrollingEnd(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData);
-		void OnLongPressedInternal(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData);
-		void OnItemSignalEmit(ObjectItemEdjeSignalEvent::Type* event, Elm_Object_Item* obj, EFL::EdjeSignalInfo eventData);
-		void OnItemUnrealized(EvasSmartEvent::Type* event, Evas_Object* obj, void* eventData);
+		void OnScrolledInternal(Evas_Object* obj, void* eventData);
+		void OnScrolledDownInternal(Evas_Object* obj, void* eventData);
+		void OnScrolledUpInternal(Evas_Object* obj, void* eventData);
+		void OnScrolledBottomInternal(Evas_Object* obj, void* eventData);
+		void OnScrolledTopInternal(Evas_Object* obj, void* eventData);
+		void OnDummyRealized(Evas_Object* obj, void* eventData);
+		void OnScrollingStart(Evas_Object* obj, void* eventData);
+		void OnScrollingEnd(Evas_Object* obj, void* eventData);
+		void OnLongPressedInternal(Evas_Object* obj, void* eventData);
+		void OnItemSignalEmit(Elm_Object_Item* obj, EFL::EdjeSignalInfo eventData);
+		void OnItemUnrealized(Evas_Object* obj, void* eventData);
 
 
 	public:

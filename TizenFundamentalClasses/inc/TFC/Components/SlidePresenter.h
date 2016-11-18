@@ -32,9 +32,9 @@ private:
 	EvasSmartEvent eventIndexSelected;
 
 
-	void OnLayoutResize(EvasObjectEvent::Type* event, EFL::EvasEventSourceInfo objSource, void* event_data);
-	void OnPageScrolled(EvasSmartEvent::Type* event, Evas_Object* source, void* event_data);
-	void OnIndexSelected(EvasSmartEvent::Type* event, Evas_Object* source, void* event_data);
+	void OnLayoutResize(EFL::EvasEventSourceInfo objSource, void* event_data);
+	void OnPageScrolled(Evas_Object* source, void* event_data);
+	void OnIndexSelected(Evas_Object* source, void* event_data);
 
 protected:
 	virtual Evas_Object* CreateComponent(Evas_Object* root);

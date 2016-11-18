@@ -39,7 +39,7 @@ private:
 
 	EdjeSignalEvent eventClickSignal;
 
-	void OnClickSignal(EdjeSignalEvent::Type* event, Evas_Object* source, EFL::EdjeSignalInfo signalInfo);
+	void OnClickSignal(Evas_Object* source, EFL::EdjeSignalInfo signalInfo);
 	void NextPage();
 	void PrevPage();
 

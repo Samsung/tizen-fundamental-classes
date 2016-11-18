@@ -108,10 +108,10 @@ private:
 
 	EvasSmartEvent  eventButtonClick;
 
-	void DatePickerButtonClick(EvasSmartEvent::Type* viewSource, Evas_Object* objSource, void* eventData);
-	void DatePickerPopupOkButtonClick(EvasSmartEvent::Type* viewSource, Evas_Object* objSource, void* eventData);
-	void DatePickerPopupCancelButtonClick(EvasSmartEvent::Type* viewSource, Evas_Object* objSource, void* eventData);
-	void OnDateChangedCb(EvasSmartEvent::Type* viewSource, Evas_Object* objSource, void* eventData);
+	void DatePickerButtonClick(Evas_Object* objSource, void* eventData);
+	void DatePickerPopupOkButtonClick(Evas_Object* objSource, void* eventData);
+	void DatePickerPopupCancelButtonClick(Evas_Object* objSource, void* eventData);
+	void OnDateChangedCb(Evas_Object* objSource, void* eventData);
 protected:
 	/**
 	 * Method that can be overriden to create custom date picker PopupBox.

@@ -83,7 +83,7 @@ void TFC::Components::ContextMenu::SetMenu(const std::vector<MenuItem*>& listOfM
 	rootMenu = listOfMenus;
 }
 
-void TFC::Components::ContextMenu::OnContextMenuButtonClicked(EvasSmartEvent::Type* ev, Evas_Object* obj, void* eventData)
+void TFC::Components::ContextMenu::OnContextMenuButtonClicked(Evas_Object* obj, void* eventData)
 {
 	if(not this->menuShown)
 		this->ShowMenu();
@@ -157,8 +157,8 @@ TFC::Components::ContextMenu::~ContextMenu()
 	HideMenu();
 }
 
-void TFC::Components::ContextMenu::OnContextMenuDismissed(EvasSmartEvent::Type* ev,
-		Evas_Object* obj, void* eventData) {
+void TFC::Components::ContextMenu::OnContextMenuDismissed(Evas_Object* obj, void* eventData)
+{
 	HideMenu();
 }
 

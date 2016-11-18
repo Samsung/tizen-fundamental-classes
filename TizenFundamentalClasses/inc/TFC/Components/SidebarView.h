@@ -46,8 +46,8 @@ private:
 	EvasSmartEvent drawerButtonClick;
 	EvasSmartEvent drawerScroll;
 
-	void OnDrawerButtonClick(EvasSmartEvent::Type* eventSource, Evas_Object* objSource, void* eventData);
-	void OnDrawerScrolling(EvasSmartEvent::Type* eventSource, Evas_Object* objSource, void* eventData);
+	void OnDrawerButtonClick(Evas_Object* objSource, void* eventData);
+	void OnDrawerScrolling(Evas_Object* objSource, void* eventData);
 protected:
 	/**
 	 * Layout of the view, created as child of the view root.
@@ -138,8 +138,8 @@ public:
 	Eina_Bool IsDrawerOpened();
 
 private:
-	void OnDrawerOpened(decltype(SidebarView::DrawerOpened)* event, SidebarView* sidebarView, void* unused);
-	void OnDrawerClosed(decltype(SidebarView::DrawerClosed)* event, SidebarView* sidebarView, void* unused);
+	void OnDrawerOpened(SidebarView* sidebarView, void* unused);
+	void OnDrawerClosed(SidebarView* sidebarView, void* unused);
 };
 
 
