@@ -107,13 +107,15 @@ struct TFC::Core::PropertyObject
 	template<GetFunc func>
 	class Get : protected TFC::Core::PropertyObjectBase
 	{
+	private:
+		GetFuncReturn GetValue() const { return (reinterpret_cast<TDefining*>(instance)->*func)(); }
 	public:
 		typedef std::false_type Mutable;
 		Get(TDefining* instance) : PropertyObjectBase(instance) { }
 
 		operator GetFuncReturn() const
 		{
-			return (reinterpret_cast<TDefining*>(instance)->*func)();
+			return GetValue();
 		}
 
 		GetFuncReturnBare* operator->()
@@ -122,6 +124,13 @@ struct TFC::Core::PropertyObject
 		}
 
 		GetFuncReturn T() const;
+
+		template<typename TParam>
+		auto operator==(TParam param)
+			->decltype(GetValue() == param)
+		{
+			return GetValue() == param;
+		}
 
 		template<SetFunc setFunc>
 		class Set : public Get<func>
@@ -134,9 +143,6 @@ struct TFC::Core::PropertyObject
 			{
 				(reinterpret_cast<TDefining*>(this->instance)->*setFunc)(val);
 			}
-
-
-
 
 		};
 	};

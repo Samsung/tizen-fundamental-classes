@@ -38,6 +38,7 @@ namespace {
 		int valA;
 		int valB;
 
+
 		void MemberFunction(int val)
 		{
 			valA = val;
@@ -97,16 +98,30 @@ namespace {
 		Property<SomeData const*>::Get<
 			&PropertyComponent::GetDataPtrConst>::Set<&PropertyComponent::SetDataPtr> DataPtrConst;
 
+		std::string const& GetValC() const;
+		void SetValC(std::string const& valC);
+
+		Property<std::string&>::Get<&PropertyComponent::GetValC>::Set<&PropertyComponent::SetValC> ValC;
+
 		PropertyComponent();
 
 		int a;
 		int* aPtr;
 		SomeData data;
 		SomeData* dataPtr;
+		std::string valC;
 	};
 
+	const std::string& PropertyComponent::GetValC() const {
+		return this->valC;
+	}
+
+	void PropertyComponent::SetValC(const std::string& valC) {
+		this->valC = valC;
+	}
+
 	PropertyComponent::PropertyComponent() :
-		A(this), Data(this), DataRef(this), DataPtrConst(this), DataPtr(this), a(0), data({0, 0}), aPtr(nullptr), APtr(this)
+		A(this), Data(this), DataRef(this), DataPtrConst(this), DataPtr(this), a(0), data({0, 0}), aPtr(nullptr), APtr(this), ValC(this)
 	{
 
 	}
@@ -425,4 +440,19 @@ TEST_F(PropertyTest, PropertyMemberAccess)
 	constComp.DataPtr->ConstMemberFunction(); // Allowed
 
 
+}
+
+TEST_F(PropertyTest, StringPropertyType)
+{
+	PropertyComponent comp;
+
+	comp.ValC = "Test";
+
+	std::string tst = comp.ValC;
+
+	EXPECT_STREQ("Test", tst.c_str()) << "String via property is not equal";
+
+	bool comparison = comp.ValC == "Test";
+
+	ASSERT_TRUE(comparison) << "Comparison failed";
 }
