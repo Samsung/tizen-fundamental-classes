@@ -45,8 +45,9 @@ public:
 
 	using Core::EventObject<Evas_Object*, TEventData*>::operator +=;
 	using Core::EventObject<Evas_Object*, TEventData*>::operator -=;
-private:
 	using Core::EventObject<Evas_Object*, TEventData*>::operator ();
+private:
+
 
 	static void Callback(void* data, Evas_Object* obj, void* eventInfo);
 	static void Finalize(void* data, Evas* e, Evas_Object* obj, void* event_info);

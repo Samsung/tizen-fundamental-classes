@@ -75,7 +75,7 @@ LIBAPI void SidebarView::Detach()
 	currentContent = nullptr;
 }
 
-LIBAPI Evas_Object* SidebarView::GetTitleLeftButton(char const* buttonPart)
+LIBAPI Evas_Object* SidebarView::GetTitleLeftButton(char const** buttonPart)
 {
 	auto btn = elm_button_add(layout);
 	//evas_object_smart_callback_add(btn, "clicked", EFL::EvasSmartEventHandler, &drawerButtonClick);
@@ -119,7 +119,8 @@ void SidebarView::OnDrawerClosed(SidebarView* sidebarView, void* unused)
 	BackButtonHandler::Release();
 }
 
-Evas_Object* SidebarView::GetTitleRightButton(char const* buttonPart)
+LIBAPI
+Evas_Object* SidebarView::GetTitleRightButton(char const** buttonPart)
 {
 	return nullptr;
 }

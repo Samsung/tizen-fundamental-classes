@@ -466,7 +466,7 @@ public:
 	virtual ~ControllerManager();
 };
 
-class StackingControllerManager: public ControllerManager, public EFL::EFLProxyClass
+class LIBAPI StackingControllerManager: public ControllerManager, public EFL::EFLProxyClass
 {
 private:
 	ControllerChain* chain;
@@ -550,7 +550,8 @@ public:
  */
 class LIBAPI ViewBase:
 	virtual public EventClass,
-	virtual public ITitleProvider
+	virtual public ITitleProvider,
+	protected EFL::EFLProxyClass
 {
 private:
 	Evas_Object* viewRoot;

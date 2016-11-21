@@ -114,8 +114,8 @@ public:
 	 */
 	void ToggleSidebar(bool show);
 
-	virtual Evas_Object* GetTitleLeftButton(char const* buttonPart);
-	virtual Evas_Object* GetTitleRightButton(char const* buttonPart);
+	virtual Evas_Object* GetTitleLeftButton(char const** buttonPart) override;
+	virtual Evas_Object* GetTitleRightButton(char const** buttonPart) override;
 	virtual char const* GetContentStyle();
 
 	typedef void (*DrawerButtonStyleFunc)(Evas_Object* btn);

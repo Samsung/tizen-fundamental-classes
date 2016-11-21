@@ -49,6 +49,7 @@ private:
 	void OnDropDownButtonClick(Evas_Object* objSource, void* eventData);
 
 	std::string const& GetText() const { return this->text; }
+	void SetText(std::string const& text) { this->text = text; }
 protected:
 	/**
 	 * Method overriden from ComponentBase, creates the UI elements of the component.
@@ -89,7 +90,7 @@ public:
 	 */
 	/*Property<void*>::Auto::ReadOnly*/void* SelectedItem;
 
-	Property<std::string const&>::Get<&DropDown::GetText> Text;
+	Property<std::string const&>::Get<&DropDown::GetText>::Set<&DropDown::SetText> Text;
 
 	//TODO : Add empty text setting property
 };
