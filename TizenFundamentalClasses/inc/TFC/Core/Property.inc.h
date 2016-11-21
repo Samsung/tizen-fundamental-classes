@@ -18,6 +18,7 @@
 
 
 #include "TFC/Core/Introspect.h"
+#include <utility>
 
 template<typename TClass>
 class TFC::PropertyClass
@@ -77,7 +78,7 @@ template<typename TDefining, typename TValue>
 struct TFC::Core::PropertySetterFunction<TDefining, TValue&>
 {
 	typedef void (TDefining::*Type)(TValue const&);
-	typedef TValue& OperatorParam;
+	typedef TValue const& OperatorParam;
 };
 
 template<typename TDefining, typename TValue>
@@ -133,6 +134,8 @@ struct TFC::Core::PropertyObject
 			{
 				(reinterpret_cast<TDefining*>(this->instance)->*setFunc)(val);
 			}
+
+
 
 
 		};

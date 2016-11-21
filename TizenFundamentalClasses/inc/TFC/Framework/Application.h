@@ -534,8 +534,8 @@ protected:
 	std::string const& GetTitle() const;
 	ITitleProvider();
 public:
-	Property<std::string&>::Get<
-		&ITitleProvider::GetTitle>::Set<&ITitleProvider::SetTitle> Title;
+	Property<std::string&>::Get<&ITitleProvider::GetTitle>
+						  ::Set<&ITitleProvider::SetTitle> Title;
 
 	virtual ~ITitleProvider();
 };
