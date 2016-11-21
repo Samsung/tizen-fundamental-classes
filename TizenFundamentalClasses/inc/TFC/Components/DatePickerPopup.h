@@ -140,20 +140,20 @@ public:
 	 * Property that enables getting & setting popup title.
 	 * The return/parameter type is string.
 	 */
-	Property<std::string const&>::GetSet<&DatePickerPopup::GetTitle, &DatePickerPopup::SetTitle> Title;
+	Property<std::string const&>::Get<&DatePickerPopup::GetTitle>::Set<&DatePickerPopup::SetTitle> Title;
 
 	/**
 	 * Property that enables getting & setting popup hint.
 	 * The return/parameter type is string.
 	 */
-	Property<std::string const&>::GetSet<&DatePickerPopup::GetHint, &DatePickerPopup::SetHint> Hint;
+	Property<std::string const&>::Get<&DatePickerPopup::GetHint>::Set<&DatePickerPopup::SetHint> Hint;
 
 	/**
 	 * Property that enables getting & setting popup orientation.
 	 * The return/parameter type is Elm_Popup_Orient.
 	 * @see {Elm_Popup_Orient}
 	 */
-	Property<Elm_Popup_Orient const&>::GetSet<&DatePickerPopup::GetOrientation, &DatePickerPopup::SetOrientation> Orientation;
+	Property<Elm_Popup_Orient const&>::Get<&DatePickerPopup::GetOrientation>::Set<&DatePickerPopup::SetOrientation> Orientation;
 
 	/**
 	 * Method that return selected date.

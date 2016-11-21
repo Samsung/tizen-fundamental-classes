@@ -113,9 +113,9 @@ public:
 	}
 	Evas_Object* LIBAPI Create(Evas_Object* root);
 
-	Property<bool>::GetSet<&ComponentBase::GetEnabled, &ComponentBase::SetEnabled> Enabled;
-	Property<bool>::GetSet<&ComponentBase::GetVisible, &ComponentBase::SetVisible> Visible;
-	Property<std::string const&>::GetSet<&ComponentBase::GetName, &ComponentBase::SetName> Name;
+	Property<bool>::Get<&ComponentBase::GetEnabled>::Set<&ComponentBase::SetEnabled> Enabled;
+	Property<bool>::Get<&ComponentBase::GetVisible>::Set<&ComponentBase::SetVisible> Visible;
+	Property<std::string const&>::Get<&ComponentBase::GetName>::Set<&ComponentBase::SetName> Name;
 
 	virtual LIBAPI ~ComponentBase();
 	LIBAPI operator Evas_Object*() const;

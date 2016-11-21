@@ -69,9 +69,9 @@ public :
 	Event<void*> eventPull;
 	Event<Evas_Object**> eventPullerContentFill;
 
-	Property<Evas_Object*>::GetSet<&ScrollablePuller::GetScrollable, &ScrollablePuller::SetScrollable> Scrollable;
-	Property<std::string const&>::GetSet<&ScrollablePuller::GetPartName, &ScrollablePuller::SetPartName> PartName;
-	Property<std::size_t>::GetSet<&ScrollablePuller::GetPullerSize, &ScrollablePuller::SetPullerSize> PullerSize;
+	Property<Evas_Object*>::Get<&ScrollablePuller::GetScrollable>::Set<&ScrollablePuller::SetScrollable> Scrollable;
+	Property<std::string const&>::Get<&ScrollablePuller::GetPartName>::Set<&ScrollablePuller::SetPartName> PartName;
+	Property<std::size_t>::Get<&ScrollablePuller::GetPullerSize>::Set<&ScrollablePuller::SetPullerSize> PullerSize;
 
 	void ResetPuller();
 	void TogglePuller(bool enable);

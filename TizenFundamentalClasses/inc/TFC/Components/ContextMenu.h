@@ -122,7 +122,7 @@ public:
 	 */
 	virtual ~ContextMenu();
 
-	Property<std::string const&>::GetSet<&ContextMenu::GetText, &ContextMenu::SetText> Text;
+	Property<std::string const&>::Get<&ContextMenu::GetText>::Set<&ContextMenu::SetText> Text;
 };
 
 }}

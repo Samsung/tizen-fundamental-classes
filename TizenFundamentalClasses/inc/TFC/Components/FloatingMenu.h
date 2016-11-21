@@ -90,7 +90,7 @@ public:
 	/**
 	 * Property string that will be used as path of the floating button's image.
 	 */
-	Property<std::string const&>::GetSet<&FloatingMenu::GetButtonImage, &FloatingMenu::SetButtonImage> ButtonImage;
+	Property<std::string const&>::Get<&FloatingMenu::GetButtonImage>::Set<&FloatingMenu::SetButtonImage> ButtonImage;
 
 	/**
 	 * Method to add MenuItem to the floating menu.

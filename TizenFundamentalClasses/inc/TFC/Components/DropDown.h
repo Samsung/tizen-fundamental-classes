@@ -81,7 +81,7 @@ public:
 	 * Property that enables getting & setting the adapter of the dropdown.
 	 * The return/parameter type is Adapter.
 	 */
-	Property<Adapter*>::GetSet<&DropDown::GetDataSource, &DropDown::SetDataSource> DataSource;
+	Property<Adapter*>::Get<&DropDown::GetDataSource>::Set<&DropDown::SetDataSource> DataSource;
 
 	/**
 	 * Property that enables reading of which item is selected in the dropdown.

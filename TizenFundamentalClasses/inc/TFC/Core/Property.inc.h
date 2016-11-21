@@ -121,21 +121,21 @@ struct TFC::Core::PropertyObject
 		}
 
 		GetFuncReturn T() const;
-	};
 
-	template<GetFunc getFunc, SetFunc func>
-	class GetSet : public Get<getFunc>
-	{
-	public:
-		typedef std::true_type Mutable;
-		typedef TValue Type;
-		GetSet(TDefining* instance) : Get<getFunc>(instance) { }
-		void operator=(SetFuncParam val)
+		template<SetFunc setFunc>
+		class Set : public Get<func>
 		{
-			(reinterpret_cast<TDefining*>(this->instance)->*func)(val);
-		}
+		public:
+			typedef std::true_type Mutable;
+			typedef TValue Type;
+			Set(TDefining* instance) : Get<func>(instance) { }
+			void operator=(SetFuncParam val)
+			{
+				(reinterpret_cast<TDefining*>(this->instance)->*setFunc)(val);
+			}
 
 
+		};
 	};
 
 	class Auto
@@ -185,19 +185,19 @@ struct TFC::Core::PropertyObject<TDefining, TValue*>
 		}
 
 		GetFuncReturn T() const;
-	};
 
-	template<GetFunc getFunc, SetFunc func>
-	class GetSet : public Get<getFunc>
-	{
-	public:
-		typedef std::true_type Mutable;
-		typedef TValue Type;
-		GetSet(TDefining* instance) : Get<getFunc>(instance) { }
-		void operator=(SetFuncParam val)
+		template<SetFunc setFunc>
+		class Set : public Get<func>
 		{
-			(reinterpret_cast<TDefining*>(this->instance)->*func)(val);
-		}
+		public:
+			typedef std::true_type Mutable;
+			typedef TValue Type;
+			Set(TDefining* instance) : Get<func>(instance) { }
+			void operator=(SetFuncParam val)
+			{
+				(reinterpret_cast<TDefining*>(this->instance)->*setFunc)(val);
+			}
+		};
 	};
 };
 

@@ -112,19 +112,19 @@ public:
 	 * Property that enables getting & setting the title of popup.
 	 * The return/parameter type is string reference.
 	 */
-	Property<std::string const&>::GetSet<&PopupBox::GetTitle, &PopupBox::SetTitle> Title;
+	Property<std::string const&>::Get<&PopupBox::GetTitle>::Set<&PopupBox::SetTitle> Title;
 
 	/**
 	 * Property that enables getting & setting the message text of popup.
 	 * The return/parameter type is string reference.
 	 */
-	Property<std::string const&>::GetSet<&PopupBox::GetMessageString, &PopupBox::SetMessage> Message;
+	Property<std::string const&>::Get<&PopupBox::GetMessageString>::Set<&PopupBox::SetMessage> Message;
 
 	/**
 	 * Property that enables getting & setting the orientation of popup.
 	 * The return/parameter type is Elm_Popup_Orient reference.
 	 */
-	Property<Elm_Popup_Orient const&>::GetSet<&PopupBox::GetOrientation, &PopupBox::SetOrientation> Orientation;
+	Property<Elm_Popup_Orient const&>::Get<&PopupBox::GetOrientation>::Set<&PopupBox::SetOrientation> Orientation;
 
 
 	/**
@@ -153,30 +153,30 @@ public:
 	 * String that will be used as the leftmost button's text.
 	 * If this and buttonOneImage is empty, leftmost button will not be shown.
 	 */
-	Property<std::string const&>::GetSet<&PopupBox::GetButtonOneText, &PopupBox::SetButtonOneText> ButtonOneText;
+	Property<std::string const&>::Get<&PopupBox::GetButtonOneText>::Set<&PopupBox::SetButtonOneText> ButtonOneText;
 	/**
 	 * String that will be used as the center (or right, if there's no third button) button's text.
 	 * If this and buttonTwoImage is empty, center button will not be shown.
 	 */
-	Property<std::string const&>::GetSet<&PopupBox::GetButtonTwoText, &PopupBox::SetButtonTwoText> ButtonTwoText;
+	Property<std::string const&>::Get<&PopupBox::GetButtonTwoText>::Set<&PopupBox::SetButtonTwoText> ButtonTwoText;
 	/**
 	 * String that will be used as the rightmost button's text.
 	 * If this and buttonThreeImage is empty, rightmost button will not be shown.
 	 */
-	Property<std::string const&>::GetSet<&PopupBox::GetButtonThreeText, &PopupBox::SetButtonThreeText> ButtonThreeText;
+	Property<std::string const&>::Get<&PopupBox::GetButtonThreeText>::Set<&PopupBox::SetButtonThreeText> ButtonThreeText;
 
 	/**
 	 * String that will be used as path of the leftmost button's image.
 	 */
-	Property<std::string const&>::GetSet<&PopupBox::GetButtonOneImage, &PopupBox::SetButtonOneImage> ButtonOneImage;
+	Property<std::string const&>::Get<&PopupBox::GetButtonOneImage>::Set<&PopupBox::SetButtonOneImage> ButtonOneImage;
 	/**
 	 * String that will be used as path of the center (or right, if there's no third button) button's image.
 	 */
-	Property<std::string const&>::GetSet<&PopupBox::GetButtonTwoImage, &PopupBox::SetButtonTwoImage> ButtonTwoImage;
+	Property<std::string const&>::Get<&PopupBox::GetButtonTwoImage>::Set<&PopupBox::SetButtonTwoImage> ButtonTwoImage;
 	/**
 	 * String that will be used as path of the rightmost button's image.
 	 */
-	Property<std::string const&>::GetSet<&PopupBox::GetButtonThreeImage, &PopupBox::SetButtonOneImage> ButtonThreeImage;
+	Property<std::string const&>::Get<&PopupBox::GetButtonThreeImage>::Set<&PopupBox::SetButtonOneImage> ButtonThreeImage;
 
 	/**
 	 * Method that initialize the popup's content and show it.

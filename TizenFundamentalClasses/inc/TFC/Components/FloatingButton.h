@@ -69,13 +69,13 @@ public:
 	 * String that will be used as path of the leftmost button's image.
 	 * If this is empty, leftmost button will not be shown.
 	 */
-	Property<std::string const&>::GetSet<&FloatingButton::GetButtonLeftImage, &FloatingButton::SetButtonLeftImage> ButtonLeftImage;
+	Property<std::string const&>::Get<&FloatingButton::GetButtonLeftImage>::Set<&FloatingButton::SetButtonLeftImage> ButtonLeftImage;
 
 	/**
 	 * String that will be used as path of the rightmost button's image.
 	 * If this is empty or doubleButton is false, rightmost button will not be shown.
 	 */
-	Property<std::string const&>::GetSet<&FloatingButton::GetButtonRightImage, &FloatingButton::SetButtonRightImage> ButtonRightImage;
+	Property<std::string const&>::Get<&FloatingButton::GetButtonRightImage>::Set<&FloatingButton::SetButtonRightImage> ButtonRightImage;
 
 
 	/**
@@ -92,13 +92,13 @@ public:
 	 * Boolean that will set the number of buttons on FloatingButton.
 	 * If true, then it will enable double button mode. If false, then it will only have one button.
 	 */
-	Property<bool>::GetSet<&FloatingButton::GetDoubleButton, &FloatingButton::SetDoubleButton> DoubleButton;
+	Property<bool>::Get<&FloatingButton::GetDoubleButton>::Set<&FloatingButton::SetDoubleButton> DoubleButton;
 
 	/**
 	 * Boolean that will set whether the FloatingButton can be moved or not.
 	 * If true, then it will be static. If false, then it will be movable.
 	 */
-	Property<bool>::GetSet<&FloatingButton::GetMovementBlock, &FloatingButton::SetMovementBlock> MovementBlock;
+	Property<bool>::Get<&FloatingButton::GetMovementBlock>::Set<&FloatingButton::SetMovementBlock> MovementBlock;
 
 	/**
 	 * Method that can be used to set an alternative, white styled FloatingButton.

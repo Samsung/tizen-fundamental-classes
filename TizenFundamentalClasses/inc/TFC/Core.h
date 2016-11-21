@@ -64,7 +64,7 @@ class ObjectClass;
  *            this->valA = val;
  *        }
  *
- *        Property<int>::GetSet<&ClassA::GetA, &ClassA::SetA> A;
+ *        Property<int>::Get<&ClassA::GetA>::Set<&ClassA::SetA> A;
  *     };
  * ```
  * When using PropertyClass attribute alongside, with a base class that already declare
@@ -87,7 +87,7 @@ class ObjectClass;
  *             this->valB = val;
  *         }
  *
- *         Property<int>::GetSet<&ClassB::GetB, &ClassB::SetB> B;
+ *         Property<int>::Get<&ClassB::GetB>::Set<&ClassB::SetB> B;
  *     };
  * ```
  *

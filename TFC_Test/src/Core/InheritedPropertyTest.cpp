@@ -48,7 +48,7 @@ namespace {
 			this->valA = val;
 		}
 
-		Property<int>::GetSet<&ClassA::GetA, &ClassA::SetA> A;
+		Property<int>::Get<&ClassA::GetA>::Set<&ClassA::SetA> A;
 
 		ClassA() : A(this) { }
 	};
@@ -70,7 +70,7 @@ namespace {
 			this->valB = val;
 		}
 
-		Property<int>::GetSet<&ClassB::GetB, &ClassB::SetB> B;
+		Property<int>::Get<&ClassB::GetB>::Set<&ClassB::SetB> B;
 
 		ClassB() : B(this) { }
 	};
@@ -92,7 +92,7 @@ namespace {
 			this->valB = val;
 		}
 
-		Property<int>::GetSet<&ClassBV::GetB, &ClassBV::SetB> B;
+		Property<int>::Get<&ClassBV::GetB>::Set<&ClassBV::SetB> B;
 
 		ClassBV() : B(this) { }
 	};
@@ -114,7 +114,7 @@ namespace {
 			this->valC = val;
 		}
 
-		Property<int>::GetSet<&ClassC::GetC, &ClassC::SetC> C;
+		Property<int>::Get<&ClassC::GetC>::Set<&ClassC::SetC> C;
 
 		ClassC() : C(this) { }
 	};
@@ -138,7 +138,7 @@ namespace {
 			this->valD = val;
 		}
 
-		Property<int>::GetSet<&ClassD::GetD, &ClassD::SetD> D;
+		Property<int>::Get<&ClassD::GetD>::Set<&ClassD::SetD> D;
 
 		ClassD() : D(this) { }
 	};
@@ -159,7 +159,7 @@ namespace {
 			this->valE = val;
 		}
 
-		Property<int>::GetSet<&ClassE::GetE, &ClassE::SetE> E;
+		Property<int>::Get<&ClassE::GetE>::Set<&ClassE::SetE> E;
 
 		ClassE() : E(this) { }
 	};

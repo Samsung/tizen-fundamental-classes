@@ -105,7 +105,7 @@ public:
 	 * 		 You will have to implement how the content between pages change on Navigate event
 	 * 		 by changing what's inside the Evas_Object that PagerContent points to.
 	 */
-	Property<Evas_Object*>::GetSet<&Pager::GetPagerContent, &Pager::SetPagerContent> PagerContent;
+	Property<Evas_Object*>::Get<&Pager::GetPagerContent>::Set<&Pager::SetPagerContent> PagerContent;
 
 	/**
 	 * Current page.
@@ -115,31 +115,31 @@ public:
 	/**
 	 * Number of pages.
 	 */
-	Property<int>::GetSet<&Pager::GetMaxIndex, &Pager::SetMaxIndex> MaxIndex;
+	Property<int>::Get<&Pager::GetMaxIndex>::Set<&Pager::SetMaxIndex> MaxIndex;
 
 	/**
 	 * True if you want to display some content before the first page.
 	 * False if you don't want to display anything and simply disables previous navigation in the first page.
 	 */
-	Property<bool>::GetSet<&Pager::GetUnderflowEnable, &Pager::SetUnderflowEnable> UnderflowEnable;
+	Property<bool>::Get<&Pager::GetUnderflowEnable>::Set<&Pager::SetUnderflowEnable> UnderflowEnable;
 
 	/**
 	 * True if you want to display some content after the last page.
 	 * False if you don't want to display anything and simply disables next navigation in the last page.
 	 */
-	Property<bool>::GetSet<&Pager::GetOverflowEnable, &Pager::SetOverflowEnable> OverflowEnable;
+	Property<bool>::Get<&Pager::GetOverflowEnable>::Set<&Pager::SetOverflowEnable> OverflowEnable;
 
 	/**
 	 * Text that will be displayed in-between buttons before the first page.
 	 * Replaces page indicator.
 	 */
-	Property<std::string const&>::GetSet<&Pager::GetUnderflowString, &Pager::SetUnderflowString> UnderflowString;
+	Property<std::string const&>::Get<&Pager::GetUnderflowString>::Set<&Pager::SetUnderflowString> UnderflowString;
 
 	/**
 	 * Text that will be displayed in-between buttons after the last page.
 	 * Replaces page indicator.
 	 */
-	Property<std::string const&>::GetSet<&Pager::GetOverflowString, &Pager::SetOverflowString> OverflowString;
+	Property<std::string const&>::Get<&Pager::GetOverflowString>::Set<&Pager::SetOverflowString> OverflowString;
 };
 }
 }

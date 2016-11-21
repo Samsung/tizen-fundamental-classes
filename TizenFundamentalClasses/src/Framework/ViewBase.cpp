@@ -23,7 +23,6 @@ LIBAPI Evas_Object* ViewBase::Create(Evas_Object* root)
 	return viewRoot;
 }
 
-
 LIBAPI bool ViewBase::IsCreated()
 {
 	return viewRoot != nullptr;

@@ -110,12 +110,12 @@ public:
 	/**
 	 * Property that can be used to getting & setting the font family of the rendered text.
 	 */
-	Property<std::string const&>::GetSet<&SimpleWebView::GetFont, &SimpleWebView::SetFont> Font;
+	Property<std::string const&>::Get<&SimpleWebView::GetFont>::Set<&SimpleWebView::SetFont> Font;
 
 	/**
 	 * Property that can be used to getting & setting the font size of the rendered text.
 	 */
-	Property<int>::GetSet<&SimpleWebView::GetFontSize, &SimpleWebView::SetFontSize> FontSize;
+	Property<int>::Get<&SimpleWebView::GetFontSize>::Set<&SimpleWebView::SetFontSize> FontSize;
 };
 
 

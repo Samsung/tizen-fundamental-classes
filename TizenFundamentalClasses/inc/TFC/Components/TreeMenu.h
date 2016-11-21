@@ -142,9 +142,8 @@ public:
 	 * Property that can be filled to set the expand/contract icon edje file.
 	 * The return/parameter type is string.
 	 */
-	Property<std::string const&>::GetSet<
-			&TreeMenu::GetIconEdjeFile,
-			&TreeMenu::SetIconEdjeFile> IconEdjeFile;
+	Property<std::string const&>::Get<
+			&TreeMenu::GetIconEdjeFile>::Set<&TreeMenu::SetIconEdjeFile> IconEdjeFile;
 
 	/**
 	 * Property that enables getting the menu items vector.
@@ -156,7 +155,7 @@ public:
 	 * Property that enables getting & setting auto expanding feature of the tree menu.
 	 * The return/parameter type is bool.
 	 */
-	Property<bool>::GetSet<&TreeMenu::GetAutoExpanded, &TreeMenu::SetAutoExpanded> AutoExpanded;
+	Property<bool>::Get<&TreeMenu::GetAutoExpanded>::Set<&TreeMenu::SetAutoExpanded> AutoExpanded;
 
 	/**
 	 * Event that will be triggered when a menu item is selected.

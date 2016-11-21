@@ -79,29 +79,23 @@ namespace {
 		int* GetAPtr();
 		void SetAPtr(int* ptr);
 
-		Property<int>::GetSet<
-			&PropertyComponent::GetA,
-			&PropertyComponent::SetA> A;
+		Property<int>::Get<
+			&PropertyComponent::GetA>::Set<&PropertyComponent::SetA> A;
 
-		Property<int*>::GetSet<
-			&PropertyComponent::GetAPtr,
-			&PropertyComponent::SetAPtr> APtr;
+		Property<int*>::Get<
+			&PropertyComponent::GetAPtr>::Set<&PropertyComponent::SetAPtr> APtr;
 
-		Property<SomeData>::GetSet<
-			&PropertyComponent::GetData,
-			&PropertyComponent::SetData> Data;
+		Property<SomeData>::Get<
+			&PropertyComponent::GetData>::Set<&PropertyComponent::SetData> Data;
 
-		Property<SomeData&>::GetSet<
-			&PropertyComponent::GetDataRef,
-			&PropertyComponent::SetDataRef> DataRef;
+		Property<SomeData&>::Get<
+			&PropertyComponent::GetDataRef>::Set<&PropertyComponent::SetDataRef> DataRef;
 
-		Property<SomeData*>::GetSet<
-			&PropertyComponent::GetDataPtr,
-			&PropertyComponent::SetDataPtr> DataPtr;
+		Property<SomeData*>::Get<&PropertyComponent::GetDataPtr>
+						   ::Set<&PropertyComponent::SetDataPtr> DataPtr;
 
-		Property<SomeData const*>::GetSet<
-			&PropertyComponent::GetDataPtrConst,
-			&PropertyComponent::SetDataPtr> DataPtrConst;
+		Property<SomeData const*>::Get<
+			&PropertyComponent::GetDataPtrConst>::Set<&PropertyComponent::SetDataPtr> DataPtrConst;
 
 		PropertyComponent();
 
