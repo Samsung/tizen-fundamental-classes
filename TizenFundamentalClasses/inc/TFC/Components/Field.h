@@ -28,7 +28,7 @@ class LIBAPI Field :
 	using EventEmitterClass<Field>::Event;
 
 private:
-	std::string text;
+	mutable std::string text;
 	bool multiline;
 	bool bottomBorder;
 
@@ -43,7 +43,7 @@ protected:
 	 */
 	virtual Evas_Object* CreateComponent(Evas_Object* root);
 	void SetText(std::string const& text);
-	std::string GetText() const;
+	std::string const& GetText() const;
 	void SetMultiline(bool const& val);
 	bool GetMultiline() const;
 	void SetBottomBorderVisible(bool const& visible);
@@ -121,7 +121,7 @@ public:
 	 * Property that enables getting & setting text on the field.
 	 * The return/parameter type is string reference.
 	 */
-	Property<std::string>::Get<&Field::GetText>::Set<&Field::SetText> Text;
+	Property<std::string&>::Get<&Field::GetText>::Set<&Field::SetText> Text;
 
 	/**
 	 * Property that enables getting & setting multiline mode of the field.

@@ -71,11 +71,12 @@ LIBAPI void TFC::Components::Field::SetText(std::string const& text)
 		elm_object_text_set(this->field, this->text.c_str());
 }
 
-LIBAPI std::string TFC::Components::Field::GetText() const
+LIBAPI std::string const& TFC::Components::Field::GetText() const
 {
 	if (field)
 	{
-		return elm_object_text_get(this->field);
+		auto textStr = elm_object_text_get(this->field);
+		this->text = textStr;
 	}
 
 	return this->text;
