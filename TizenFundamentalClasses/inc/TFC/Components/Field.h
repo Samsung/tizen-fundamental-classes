@@ -121,7 +121,7 @@ public:
 	 * Property that enables getting & setting text on the field.
 	 * The return/parameter type is string reference.
 	 */
-	Property<std::string&>::Get<&Field::GetText>::Set<&Field::SetText> Text;
+	Property<std::string const&>::Get<&Field::GetText>::Set<&Field::SetText> Text;
 
 	/**
 	 * Property that enables getting & setting multiline mode of the field.

@@ -42,21 +42,12 @@ TFC::Framework::ControllerManager::~ControllerManager()
 LIBAPI StackingControllerManager::StackingControllerManager(IAttachable* app) :
 	app(app)
 {
-	this->chain = nullptr;
+
 }
 
 LIBAPI void StackingControllerManager::NavigateTo(const char* controllerName, ObjectClass* data)
 {
-	if(this->pendingNavigation)
-		return; // TODO change this to exception
-
-	this->pendingNavigation = true;
-	this->navigateForward = true;
-	this->nextControllerName = controllerName;
-	this->data = data;
-	this->noTrail = false;
-	InvokeLater(&StackingControllerManager::OnPerformNavigation);
-
+	NavigateTo(controllerName, data, false);
 }
 
 void StackingControllerManager::PushController(ControllerBase* controller)
@@ -94,8 +85,7 @@ bool StackingControllerManager::PopController()
 LIBAPI bool StackingControllerManager::NavigateBack()
 {
 	this->pendingNavigation = true;
-	this->navigateForward = false;
-	InvokeLater(&StackingControllerManager::OnPerformNavigation);
+	InvokeLater(&StackingControllerManager::DoNavigateBackward);
 
 	// The new implementation should always return true
 	// as the codes might interpret False to exit the application
@@ -108,44 +98,17 @@ LIBAPI void StackingControllerManager::NavigateTo(const char* controllerName, Ob
 		return; // TODO change this to exception
 
 	this->pendingNavigation = true;
-	this->navigateForward = true;
-	this->nextControllerName = controllerName;
-	this->data = data;
-	this->noTrail = noTrail;
-	InvokeLater(&StackingControllerManager::OnPerformNavigation);
+	//this->navigateForward = true;
+	//this->nextControllerName = controllerName;
+	//this->data = data;
+	//this->noTrail = noTrail;
+	InvokeLater(&StackingControllerManager::DoNavigateForward, controllerName, data, noTrail);
 
 }
 
 void StackingControllerManager::OnPerformNavigation()
 {
-	if(this->pendingNavigation)
-	{
-		if(this->navigateForward)
-		{
 
-		}
-		else
-		{
-			// Navigate back
-			ObjectClass* returnedData = this->chain->instance->Unload();
-			app->Detach();
-			bool popResult = PopController();
-
-			if (popResult)
-			{
-				this->chain->instance->Reload(returnedData);
-				eventNavigationProcessed(this, this->chain->instance);
-			}
-
-			// If pop result is false, it is the end of the controller
-			// It should end the application
-			// TODO: Add this as event instead
-			if(!popResult)
-				ui_app_exit();
-		}
-
-		this->pendingNavigation = false;
-	}
 }
 
 LIBAPI ControllerFactory::ControllerFactory(char const* controllerName, ControllerFactoryMethod factory) :
@@ -162,6 +125,26 @@ LIBAPI ControllerBase& TFC::Framework::StackingControllerManager::GetCurrentCont
 LIBAPI
 void TFC::Framework::StackingControllerManager::DoNavigateBackward()
 {
+	// Navigate back
+	ObjectClass* returnedData = this->CurrentController->Unload();
+	app->Detach();
+	bool popResult = PopController();
+
+	if (popResult)
+	{
+
+		ControllerBase& current = this->CurrentController;
+		current.Reload(returnedData);
+		eventNavigationProcessed(this, &current);
+	}
+
+	this->pendingNavigation = false;
+
+	// If pop result is false, it is the end of the controller
+	// It should end the application
+	// TODO: Add this as event instead
+	if(!popResult)
+		ui_app_exit();
 }
 
 LIBAPI
@@ -169,7 +152,7 @@ void TFC::Framework::StackingControllerManager::DoNavigateForward(const char* ta
 {
 	if(this->noTrail)
 	{
-		this->chain->instance->Unload();
+		this->CurrentController->Unload();
 		app->Detach();
 		PopController();
 	}
@@ -178,8 +161,8 @@ void TFC::Framework::StackingControllerManager::DoNavigateForward(const char* ta
 	ControllerBase* newInstance = this->Instantiate(targetControllerName);
 
 	// Perform OnLeave on previous controller
-	if(this->chain != nullptr)
-		this->chain->instance->Leave();
+	if(!this->controllerStack.empty())
+		this->CurrentController->Leave();
 
 	PushController(newInstance);
 	app->Attach(newInstance->View);
@@ -187,6 +170,8 @@ void TFC::Framework::StackingControllerManager::DoNavigateForward(const char* ta
 	// Instantiated State, move to Running state
 	newInstance->Load(data);
 	eventNavigationProcessed(this, newInstance);
+
+	this->pendingNavigation = false;
 }
 
 LIBAPI

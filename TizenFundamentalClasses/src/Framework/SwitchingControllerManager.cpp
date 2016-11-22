@@ -53,7 +53,7 @@ bool SwitchingControllerManager::NavigateBack()
 LIBAPI
 ControllerBase& TFC::Framework::SwitchingControllerManager::GetCurrentController() const
 {
-	return this->currentController;
+	return *(this->currentController);
 }
 
 

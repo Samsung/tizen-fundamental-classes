@@ -47,6 +47,13 @@ struct TFC::Core::PropertyGetterFunction
 template<typename TDefining, typename TValue>
 struct TFC::Core::PropertyGetterFunction<TDefining, TValue&>
 {
+	typedef TValue& (TDefining::*Type)() const;
+	typedef TValue& ReturnType;
+};
+
+template<typename TDefining, typename TValue>
+struct TFC::Core::PropertyGetterFunction<TDefining, TValue const&>
+{
 	typedef TValue const& (TDefining::*Type)() const;
 	typedef TValue const& ReturnType;
 };
@@ -76,6 +83,14 @@ struct TFC::Core::PropertySetterFunction
 
 template<typename TDefining, typename TValue>
 struct TFC::Core::PropertySetterFunction<TDefining, TValue&>
+{
+	typedef void (TDefining::*Type)(TValue*);
+	typedef TValue* OperatorParam;
+};
+
+
+template<typename TDefining, typename TValue>
+struct TFC::Core::PropertySetterFunction<TDefining, TValue const&>
 {
 	typedef void (TDefining::*Type)(TValue const&);
 	typedef TValue const& OperatorParam;
@@ -143,8 +158,9 @@ struct TFC::Core::PropertyObject
 			{
 				(reinterpret_cast<TDefining*>(this->instance)->*setFunc)(val);
 			}
-
 		};
+
+
 	};
 
 	class Auto
