@@ -10,6 +10,7 @@
  */
 #include <dlog.h>
 
+
 #include "TFC/Framework/Application.h"
 
 using namespace TFC::Framework;
@@ -222,4 +223,7 @@ LIBAPI void TFC::Framework::HeadlessApplicationBase::ApplicationControl(app_cont
 	OnReceiveAppControlMessage(app_control);
 	Exit();
 }
+
+
+
 

@@ -274,6 +274,7 @@ void TFC::Core::SharedEventObject<TObjectSource, TEventData>:: operator()(
 #define EventHandler(EVENT_METHOD) TFC::Core::EventHandlerFactory<decltype(& EVENT_METHOD), & EVENT_METHOD>(this)
 //                                                                ^^^                        ^^^
 //                                                                Get the typeof ptr to mbr, then getting the value here
+//                                                                This mechanism will be obsolete when C++17 implements auto in template parameter
 
 
 #endif

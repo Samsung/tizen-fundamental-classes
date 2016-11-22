@@ -17,12 +17,14 @@ LIBAPI TFC::Framework::SwitchingControllerManager::SwitchingControllerManager(IA
 
 LIBAPI ControllerBase* SwitchingControllerManager::GetController(char const* controllerName)
 {
+	//TODO Reimplement SwitchingControllerBase with localized storage of controller instance
+	/*
 	auto entry = this->GetControllerFactoryEntry(controllerName);
 
 	if (entry->attachedData == nullptr)
-		entry->attachedData = entry->factoryMethod(this);
-
-	return static_cast<ControllerBase*>(entry->attachedData);
+		entry->attachedData = this->Instantiate(this);
+	 */
+	return nullptr;//static_cast<ControllerBase*>(entry->attachedData);
 }
 
 void SwitchingControllerManager::NavigateTo(const char* controllerName, ObjectClass* data)
@@ -48,6 +50,15 @@ bool SwitchingControllerManager::NavigateBack()
 }
 
 
-LIBAPI ControllerBase* TFC::Framework::SwitchingControllerManager::GetCurrentController() {
+LIBAPI
+ControllerBase& TFC::Framework::SwitchingControllerManager::GetCurrentController() const
+{
 	return this->currentController;
+}
+
+
+LIBAPI
+void TFC::Framework::SwitchingControllerManager::ClearNavigationHistory()
+{
+	// TODO implement this on Switching Controller Manager
 }

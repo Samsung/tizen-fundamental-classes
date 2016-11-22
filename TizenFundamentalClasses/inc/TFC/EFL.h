@@ -11,6 +11,7 @@
 
 #include "TFC/Core.h"
 #include <Elementary.h>
+#include <memory>
 
 namespace TFC {
 namespace EFL {
@@ -144,9 +145,27 @@ protected:
 
 	template<typename T>
 	void InvokeLater(void (T::*func)(void));
+
+	template<typename T, typename... TArgs>
+	void InvokeLater(void (T::*func)(TArgs...), TArgs ...);
 };
 
 }
+}
+
+template<typename T, typename... TArgs>
+void TFC::EFL::EFLProxyClass::InvokeLater(void (T::*func)(TArgs...), TArgs ... args)
+{
+	struct payload {
+		std::function<void()> invoker;
+	}* p = new payload({ [this, func, args...] {
+		auto thisAsT = static_cast<T*>(this);
+		(thisAsT->*func)(args...);
+	}});
+	ecore_job_add([] (void* data) {
+		std::unique_ptr<payload> p(reinterpret_cast<payload*>(data));
+		p->invoker();
+	}, p);
 }
 
 template<typename T>

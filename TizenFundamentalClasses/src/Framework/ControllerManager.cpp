@@ -7,7 +7,8 @@
  */
 
 #include "TFC/Framework/Application.h"
-
+#include <memory>
+#include <sstream>
 using namespace TFC::Framework;
 
 void ControllerManager_FreeFactory(void* data)
@@ -19,27 +20,19 @@ void ControllerManager_FreeFactory(void* data)
 TFC::Framework::ControllerManager::ControllerManager() :
 	CurrentController(this)
 {
-	this->controllerTable = eina_hash_string_superfast_new(ControllerManager_FreeFactory);
+
 }
 
-LIBAPI void ControllerManager::RegisterControllerFactory(ControllerFactory* controller)
+LIBAPI void ControllerManager::RegisterControllerFactory(ControllerFactory* ptr)
 {
-	void* entry = eina_hash_find(this->controllerTable, controller->controllerName);
-	if (entry != 0)
+	std::unique_ptr<ControllerFactory> controller(ptr);
+	auto iter = this->controllerTable.find(controller->controllerName);
+	if(iter == this->controllerTable.end())
 	{
-		abort();
+		this->controllerTable[controller->controllerName] = controller->factoryMethod;
 	}
 	else
-	{
-		eina_hash_add(this->controllerTable, controller->controllerName, controller);
-	}
-}
-
-LIBAPI ControllerFactory* ControllerManager::GetControllerFactoryEntry(const char* controllerName)
-{
-	void* entry = eina_hash_find(this->controllerTable, controllerName);
-
-	return static_cast<ControllerFactory*>(entry);
+		throw TFCException("Controller already registered");
 }
 
 TFC::Framework::ControllerManager::~ControllerManager()
@@ -68,14 +61,19 @@ LIBAPI void StackingControllerManager::NavigateTo(const char* controllerName, Ob
 
 void StackingControllerManager::PushController(ControllerBase* controller)
 {
+	this->controllerStack.emplace_back(controller);
+
+	/*
 	ControllerChain* newChain = new ControllerChain();
 	newChain->instance = controller;
 	newChain->next = this->chain;
 	this->chain = newChain;
+	*/
 }
 
 bool StackingControllerManager::PopController()
 {
+	/*
 	if (this->chain != nullptr)
 	{
 		ControllerChain* oldChain = this->chain;
@@ -83,8 +81,11 @@ bool StackingControllerManager::PopController()
 		delete oldChain->instance;
 		delete oldChain;
 	}
+	*/
 
-	if (this->chain)
+	this->controllerStack.pop_back();
+
+	if (!this->controllerStack.empty())
 		return true;
 	else
 		return false;
@@ -121,32 +122,7 @@ void StackingControllerManager::OnPerformNavigation()
 	{
 		if(this->navigateForward)
 		{
-			// Navigate forward
-			ControllerFactory* factory = GetControllerFactoryEntry(this->nextControllerName);
-			if(factory == nullptr)
-				return;
 
-			if(this->noTrail)
-			{
-				this->chain->instance->Unload();
-				app->Detach();
-				PopController();
-			}
-
-
-			// Instantiate controller
-			ControllerBase* newInstance = factory->factoryMethod(this);
-
-			// Perform OnLeave on previous controller
-			if(this->chain != nullptr)
-				this->chain->instance->Leave();
-
-			PushController(newInstance);
-			app->Attach(newInstance->View);
-
-			// Instantiated State, move to Running state
-			newInstance->Load(this->data);
-			eventNavigationProcessed(this, newInstance);
 		}
 		else
 		{
@@ -178,7 +154,66 @@ LIBAPI ControllerFactory::ControllerFactory(char const* controllerName, Controll
 	attachedData = nullptr;
 }
 
-LIBAPI ControllerBase* TFC::Framework::StackingControllerManager::GetCurrentController() {
-	return this->chain->instance;
+LIBAPI ControllerBase& TFC::Framework::StackingControllerManager::GetCurrentController() const
+{
+	return *(this->controllerStack.back().get());
 }
 
+LIBAPI
+void TFC::Framework::StackingControllerManager::DoNavigateBackward()
+{
+}
+
+LIBAPI
+void TFC::Framework::StackingControllerManager::DoNavigateForward(const char* targetControllerName, ObjectClass* data, bool noTrail)
+{
+	if(this->noTrail)
+	{
+		this->chain->instance->Unload();
+		app->Detach();
+		PopController();
+	}
+
+	// Instantiate controller
+	ControllerBase* newInstance = this->Instantiate(targetControllerName);
+
+	// Perform OnLeave on previous controller
+	if(this->chain != nullptr)
+		this->chain->instance->Leave();
+
+	PushController(newInstance);
+	app->Attach(newInstance->View);
+
+	// Instantiated State, move to Running state
+	newInstance->Load(data);
+	eventNavigationProcessed(this, newInstance);
+}
+
+LIBAPI
+void TFC::Framework::StackingControllerManager::ClearNavigationHistory()
+{
+	while(this->controllerStack.size() != 1)
+	{
+		this->controllerStack.pop_front();
+	}
+}
+
+ControllerBase* TFC::Framework::ControllerFactory::Instantiate(
+		ControllerManager* mgr) {
+	return this->factoryMethod(mgr);
+}
+
+ControllerBase* TFC::Framework::ControllerManager::Instantiate(
+		const char* controllerName) {
+	try
+	{
+		auto method = this->controllerTable.at(controllerName);
+		return method(this);
+	}
+	catch(std::out_of_range& ex)
+	{
+		std::stringstream errBuilder;
+		errBuilder << "Unknown controller identifier: " << controllerName;
+		throw TFCException(errBuilder.str());
+	}
+}

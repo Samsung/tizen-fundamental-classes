@@ -456,3 +456,11 @@ TEST_F(PropertyTest, StringPropertyType)
 
 	ASSERT_TRUE(comparison) << "Comparison failed";
 }
+
+TEST_F(PropertyTest, IntComparisonProperty)
+{
+	PropertyComponent comp;
+	comp.A = 12345;
+
+	ASSERT_TRUE(comp.A == 12345) << "Comparison using property and literal is failed";
+}

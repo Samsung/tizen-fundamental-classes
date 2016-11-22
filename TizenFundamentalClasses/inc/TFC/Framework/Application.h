@@ -18,9 +18,11 @@
 
 #include <system_settings.h>
 #include <efl_extension.h>
-#include <stack>
+#include <deque>
 #include <string>
 #include <vector>
+#include <memory>
+#include <unordered_map>
 
 #include "TFC/Core.h"
 #include "TFC/Core/Introspect.h"
@@ -32,10 +34,12 @@
  * @param CONTROLLER_NAME name of the controller to identify this controller
  * @param CONTROLLER_TYPE the class or typensme of the controller to register
  */
+
 #define RegisterController(CONTROLLER_NAME, CONTROLLER_TYPE) \
 	RegisterControllerFactory(new TFC::Framework::ControllerFactory(CONTROLLER_NAME, \
 	[] (TFC::Framework::ControllerManager* m) -> \
 	TFC::Framework::ControllerBase* { return new CONTROLLER_TYPE (m); }))
+
 
 namespace TFC {
 namespace Framework {
@@ -419,10 +423,15 @@ public:
 	 * @param factory Factory method which will instantiate the controller
 	 */
 	ControllerFactory(char const* controllerName, ControllerFactoryMethod factory);
+	void* attachedData;
 
+	ControllerBase* Instantiate(ControllerManager* mgr);
+
+	friend class TFC::Framework::ControllerManager;
+
+private:
 	char const* const controllerName;
 	ControllerFactoryMethod const factoryMethod;
-	void* attachedData;
 };
 
 /**
@@ -433,6 +442,7 @@ class ControllerChain
 public:
 	ControllerBase* instance;
 	ControllerChain* next;
+
 };
 
 /**
@@ -444,32 +454,34 @@ class LIBAPI ControllerManager :
 	PropertyClass<ControllerManager>
 {
 private:
-	Eina_Hash* controllerTable;
+	//Eina_Hash* controllerTable;
+	std::unordered_map<std::string, ControllerFactoryMethod> controllerTable;
 protected:
-	ControllerFactory* GetControllerFactoryEntry(const char* controllerName);
-	virtual ControllerBase* GetCurrentController() = 0;
+	virtual ControllerBase& GetCurrentController() const = 0;
+	ControllerBase* Instantiate(char const* controllerName);
 public:
-
 	ControllerManager();
+	virtual void ClearNavigationHistory() = 0;
 	virtual bool NavigateBack() = 0;
-	virtual void NavigateTo(const char* controllerName, ObjectClass* data) = 0;
-	virtual void NavigateTo(const char* controllerName, ObjectClass* data, bool noTrail) = 0;
+	virtual void NavigateTo(char const* controllerName, ObjectClass* data) = 0;
+	virtual void NavigateTo(char const* controllerName, ObjectClass* data, bool noTrail) = 0;
 
 	Event<ControllerBase*> eventNavigationProcessed;
-	Property<ControllerBase*>::Get<&ControllerManager::GetCurrentController> CurrentController;
+	Property<ControllerBase&>::Get<&ControllerManager::GetCurrentController> CurrentController;
 
 	/**
 	 * Method to register ControllerFactory to this manager so this manager can recognize
 	 * the controller and instantiate it when needed
 	 */
 	void RegisterControllerFactory(ControllerFactory* controller);
+
 	virtual ~ControllerManager();
 };
 
 class LIBAPI StackingControllerManager: public ControllerManager, public EFL::EFLProxyClass
 {
 private:
-	ControllerChain* chain;
+	std::deque<std::unique_ptr<ControllerBase>> controllerStack;
 	IAttachable* const app;
 	void PushController(ControllerBase* controller);
 	bool PopController();
@@ -480,8 +492,11 @@ private:
 	ObjectClass* data;
 	bool noTrail;
 	void OnPerformNavigation();
+
+	void DoNavigateBackward();
+	void DoNavigateForward(char const* targetControllerName, ObjectClass* data, bool noTrail);
 protected:
-	virtual ControllerBase* GetCurrentController();
+	virtual ControllerBase& GetCurrentController() const override;
 public:
 	/**
 	 * Constructor of NAvigatingControllerManager
@@ -489,10 +504,10 @@ public:
 	 * @param app IAttachable which this controller manager will attach the underlying view
 	 */
 	StackingControllerManager(IAttachable* app);
-
-	virtual void NavigateTo(const char* controllerName, ObjectClass* data);
-	virtual void NavigateTo(const char* controllerName, ObjectClass* data, bool noTrail);
-	virtual bool NavigateBack();
+	virtual void ClearNavigationHistory() override;
+	virtual void NavigateTo(const char* controllerName, ObjectClass* data) override;
+	virtual void NavigateTo(const char* controllerName, ObjectClass* data, bool noTrail) override;
+	virtual bool NavigateBack() override;
 };
 
 class SwitchingControllerManager: public ControllerManager
@@ -502,14 +517,14 @@ private:
 	ControllerBase* GetController(char const* controllerName);
 	ControllerBase* currentController;
 protected:
-	virtual ControllerBase* GetCurrentController();
+	virtual ControllerBase& GetCurrentController() const override;
 public:
 	SwitchingControllerManager(IAttachable* iattachable);
 	//void SwitchTo(char const* controllerName);
-
-	virtual void NavigateTo(const char* controllerName, ObjectClass* data);
-	virtual void NavigateTo(const char* controllerName, ObjectClass* data, bool noTrail);
-	virtual bool NavigateBack();
+	virtual void ClearNavigationHistory() override;
+	virtual void NavigateTo(const char* controllerName, ObjectClass* data) override;
+	virtual void NavigateTo(const char* controllerName, ObjectClass* data, bool noTrail) override;
+	virtual bool NavigateBack() override;
 };
 
 class LIBAPI MVCApplicationBase:
