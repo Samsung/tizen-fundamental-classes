@@ -487,10 +487,6 @@ private:
 	bool PopController();
 
 	bool pendingNavigation;
-	bool navigateForward;
-	char const* nextControllerName;
-	ObjectClass* data;
-	bool noTrail;
 	void OnPerformNavigation();
 
 	void DoNavigateBackward();

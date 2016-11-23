@@ -150,7 +150,7 @@ void TFC::Framework::StackingControllerManager::DoNavigateBackward()
 LIBAPI
 void TFC::Framework::StackingControllerManager::DoNavigateForward(const char* targetControllerName, ObjectClass* data, bool noTrail)
 {
-	if(this->noTrail)
+	if(noTrail)
 	{
 		this->CurrentController->Unload();
 		app->Detach();
