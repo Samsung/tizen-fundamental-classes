@@ -92,6 +92,20 @@ void TFC::EFL::EdjeSignalEventObject::Bind(Evas_Object* obj, const char* emissio
 }
 
 LIBAPI
+void TFC::EFL::EdjeSignalEventObject::BindLayout(Elm_Layout* obj, const char* emission, const char* source)
+{
+	if(this->boundObject != nullptr)
+		throw EventBoundException();
+
+	elm_layout_signal_callback_add(obj, emission, source, Callback, this);
+	evas_object_event_callback_add(obj, EVAS_CALLBACK_DEL, Finalize, this);
+
+	this->boundObject = obj;
+	this->emission = emission;
+	this->source = source;
+}
+
+LIBAPI
 void TFC::EFL::EdjeSignalEventObject::Unbind()
 {
 	if(this->boundObject == nullptr)

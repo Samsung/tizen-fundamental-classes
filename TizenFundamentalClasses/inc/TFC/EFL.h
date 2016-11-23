@@ -89,6 +89,7 @@ public:
 	~EdjeSignalEventObject();
 
 	void Bind(Evas_Object* obj, char const* emission, char const* source);
+	void BindLayout(Elm_Layout* obj, char const* emission, char const* source);
 	void Unbind();
 
 	using Core::EventObject<Evas_Object*, EdjeSignalInfo>::operator +=;

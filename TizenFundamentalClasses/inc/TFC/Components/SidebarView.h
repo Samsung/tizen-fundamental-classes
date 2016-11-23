@@ -116,7 +116,7 @@ public:
 
 	virtual Evas_Object* GetTitleLeftButton(char const** buttonPart) override;
 	virtual Evas_Object* GetTitleRightButton(char const** buttonPart) override;
-	virtual char const* GetContentStyle();
+	virtual char const* GetContentStyle() override;
 
 	typedef void (*DrawerButtonStyleFunc)(Evas_Object* btn);
 
