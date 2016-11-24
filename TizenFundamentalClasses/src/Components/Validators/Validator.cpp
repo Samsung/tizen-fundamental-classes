@@ -7,12 +7,19 @@
 
 #include "TFC/Components/Validators/Validator.h"
 
+using namespace TFC::Components::Validators;
+
+int const Validator::ERROR_NONE = -1;
+int const Validator::ERROR_INVALID_COMPONENT = 0;
+
 LIBAPI
 TFC::Components::Validators::Validator::Validator(ComponentBase* component) :
 	component(component),
+	validationResult(Validator::ERROR_NONE),
 	ErrorMessage(errorMessage)
 {
-
+	errorDictionary[Validator::ERROR_NONE] = "No error found.";
+	errorDictionary[Validator::ERROR_INVALID_COMPONENT] = "Component is not valid / created yet.";
 }
 
 LIBAPI
@@ -21,18 +28,24 @@ TFC::Components::Validators::Validator::~Validator()
 }
 
 LIBAPI
-bool TFC::Components::Validators::Validator::Validate()
+int TFC::Components::Validators::Validator::Validate()
 {
 	if (component->IsCreated())
-		validationResult = ValidateInternal();
-	return validationResult;
+		return validationResult = ValidateInternal();
+	else
+		return validationResult = Validator::ERROR_INVALID_COMPONENT;
+}
+
+LIBAPI void TFC::Components::Validators::Validator::SetErrorMessageFormat(int error, std::string const& message)
+{
+	errorDictionary[error] = message;
 }
 
 LIBAPI
 TFC::Components::Validators::ValidatorList::ValidatorList() :
 	LastValidationMessage(lastValidationMessage)
 {
-	lastValidationResult = true;
+	lastValidationResult = Validator::ERROR_NONE;
 }
 
 LIBAPI
@@ -53,9 +66,9 @@ bool TFC::Components::Validators::ValidatorList::ValidateAll()
 {
 	for (auto validator : validators)
 	{
-		if (!validator->Validate())
+		if (auto result = validator->Validate() != Validator::ERROR_NONE)
 		{
-			lastValidationResult = false;
+			lastValidationResult = result;
 			lastValidationMessage = validator->ErrorMessage;
 			return false;
 		}

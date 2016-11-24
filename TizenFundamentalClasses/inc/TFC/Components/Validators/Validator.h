@@ -10,6 +10,7 @@
 
 #include "TFC/Components/ComponentBase.h"
 #include <vector>
+#include <unordered_map>
 
 namespace TFC {
 namespace Components {
@@ -19,12 +20,17 @@ class Validator {
 public:
 	Validator(ComponentBase* component);
 	virtual ~Validator();
-	bool Validate();
+	int Validate();
 	std::string const& ErrorMessage;
+
+	static int const ERROR_NONE;
+	static int const ERROR_INVALID_COMPONENT;
+	void SetErrorMessageFormat(int error, std::string const& message);
 protected:
 	ComponentBase* const component;
-	bool validationResult;
-	virtual bool ValidateInternal() = 0;
+	int validationResult;
+	virtual int ValidateInternal() = 0;
+	std::unordered_map<int, std::string> errorDictionary;
 private:
 	std::string errorMessage;
 };
@@ -38,7 +44,7 @@ public:
 	const std::string& LastValidationMessage;
 private:
 	std::vector<Validator*> validators;
-	bool lastValidationResult;
+	int lastValidationResult;
 	std::string lastValidationMessage;
 };
 

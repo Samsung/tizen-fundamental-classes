@@ -17,38 +17,42 @@ namespace Validators {
 
 class FieldValidator : public Validator
 {
-protected:
-	Field* const field;
-	bool ValidateInternal() final;
-	virtual bool ValidateText(std::string const& str) = 0;
 public:
 	FieldValidator(Field* field);
+protected:
+	Field* const field;
+	int ValidateInternal() final;
+	virtual int ValidateText(std::string const& str) = 0;
 };
 
 class LengthValidator : public FieldValidator
 {
-private:
-	size_t min, max;
-protected:
-	bool ValidateText(std::string const& str);
 public:
 	LengthValidator(Field* field, size_t min, size_t max);
+	static int const ERROR_LENGTH_LESS;
+	static int const ERROR_LENGTH_MORE;
+protected:
+	int ValidateText(std::string const& str);
+private:
+	size_t min, max;
 };
 
 class NumberValidator : public FieldValidator
 {
-protected:
-	bool ValidateText(std::string const& str);
 public:
 	NumberValidator(Field* field);
+	static int const ERROR_NOT_NUMBER;
+protected:
+	int ValidateText(std::string const& str);
 };
 
 class EmailValidator : public FieldValidator
 {
-protected:
-	bool ValidateText(std::string const& str);
 public:
 	EmailValidator(Field* field);
+	static int const ERROR_INVALID_EMAIL;
+protected:
+	int ValidateText(std::string const& str);
 };
 
 }

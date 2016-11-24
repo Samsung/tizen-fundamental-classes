@@ -9,68 +9,83 @@
 #include <regex>
 #include <sstream>
 
+using namespace TFC::Components::Validators;
+
 LIBAPI
 TFC::Components::Validators::FieldValidator::FieldValidator(Field* field) :
 	Validator(field),
 	field(field)
 {
+	errorDictionary[FieldValidator::ERROR_INVALID_COMPONENT] = "Field is not valid / created yet.";
 }
 
-bool TFC::Components::Validators::FieldValidator::ValidateInternal()
+int TFC::Components::Validators::FieldValidator::ValidateInternal()
 {
 	if(field)
 		return ValidateText(field->Text);
 
-	return false;
+	return FieldValidator::ERROR_INVALID_COMPONENT;
 }
 
+
+
+int const LengthValidator::ERROR_LENGTH_LESS = 1;
+int const LengthValidator::ERROR_LENGTH_MORE = 2;
 LIBAPI
 TFC::Components::Validators::LengthValidator::LengthValidator(Field* field, size_t min, size_t max) :
 	FieldValidator(field),
 	min(min),
 	max(max)
 {
+	errorDictionary[LengthValidator::ERROR_LENGTH_LESS] = "Field text is less than required.";
+	errorDictionary[LengthValidator::ERROR_LENGTH_MORE] = "Field text is more than required.";
 }
 
-bool TFC::Components::Validators::LengthValidator::ValidateText(std::string const& str)
+int TFC::Components::Validators::LengthValidator::ValidateText(std::string const& str)
 {
 	auto strlen = str.length();
-	return (strlen >= min && strlen <= max);
+	if (strlen < min) return LengthValidator::ERROR_LENGTH_LESS;
+	if (strlen > max) return LengthValidator::ERROR_LENGTH_MORE;
+	return LengthValidator::ERROR_NONE;
 }
 
+
+
+int const NumberValidator::ERROR_NOT_NUMBER = 1;
 LIBAPI
 TFC::Components::Validators::NumberValidator::NumberValidator(Field* field) :
 	FieldValidator(field)
 {
+	errorDictionary[NumberValidator::ERROR_NOT_NUMBER] = "Field text is not a number.";
 }
 
-bool TFC::Components::Validators::NumberValidator::ValidateText(std::string const& str)
+int TFC::Components::Validators::NumberValidator::ValidateText(std::string const& str)
 {
-	if (str.length() <= 0)
-		return true;
+	if (!str.empty() && std::find_if_not(str.begin(), str.end(), (int(*)(int))std::isdigit) != str.end())
+		return NumberValidator::ERROR_NOT_NUMBER;
 
-	if (std::find_if_not(str.begin(), str.end(), (int(*)(int))std::isdigit) != str.end())
-		return false;
-
-	return true;
+	return NumberValidator::ERROR_NONE;
 }
 
+
+
+int const EmailValidator::ERROR_INVALID_EMAIL = 1;
 LIBAPI
 TFC::Components::Validators::EmailValidator::EmailValidator(Field* field) :
 	FieldValidator(field)
 {
+	errorDictionary[EmailValidator::ERROR_INVALID_EMAIL] = "Field text is not a valid email.";
 }
 
-bool TFC::Components::Validators::EmailValidator::ValidateText(std::string const& str)
+int TFC::Components::Validators::EmailValidator::ValidateText(std::string const& str)
 {
-	if (str.length() <= 0)
-		return true;
+	if (str.empty()) return EmailValidator::ERROR_NONE;
 
 	std::regex email_regex("^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
 
 	int res = std::regex_match(str, email_regex);
 	if (res == 0)
-		return false;
+		return EmailValidator::ERROR_INVALID_EMAIL;
 
-	return true;
+	return EmailValidator::ERROR_NONE;
 }
