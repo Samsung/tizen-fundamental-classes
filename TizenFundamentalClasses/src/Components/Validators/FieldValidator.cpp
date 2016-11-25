@@ -28,6 +28,24 @@ int TFC::Components::Validators::FieldValidator::ValidateInternal()
 
 
 
+int const EmptyFieldValidator::ERROR_EMPTY_FIELD = 1;
+LIBAPI
+TFC::Components::Validators::EmptyFieldValidator::EmptyFieldValidator(Field* field) :
+	FieldValidator(field)
+{
+	errorDictionary[EmptyFieldValidator::ERROR_EMPTY_FIELD] = "Field %0 cannot be empty.";
+}
+
+int TFC::Components::Validators::EmptyFieldValidator::ValidateText(std::string const& str)
+{
+	if (str.empty())
+		return EmptyFieldValidator::ERROR_EMPTY_FIELD;
+
+	return EmptyFieldValidator::ERROR_NONE;
+}
+
+
+
 int const LengthValidator::ERROR_LENGTH_LESS = 1;
 int const LengthValidator::ERROR_LENGTH_MORE = 2;
 LIBAPI
@@ -46,8 +64,13 @@ TFC::Components::Validators::LengthValidator::LengthValidator(Field* field, size
 int TFC::Components::Validators::LengthValidator::ValidateText(std::string const& str)
 {
 	auto strlen = str.length();
-	if (strlen < min) return LengthValidator::ERROR_LENGTH_LESS;
-	if (strlen > max) return LengthValidator::ERROR_LENGTH_MORE;
+
+	if (strlen < min)
+		return LengthValidator::ERROR_LENGTH_LESS;
+
+	if (strlen > max)
+		return LengthValidator::ERROR_LENGTH_MORE;
+
 	return LengthValidator::ERROR_NONE;
 }
 
@@ -81,7 +104,8 @@ TFC::Components::Validators::EmailValidator::EmailValidator(Field* field) :
 
 int TFC::Components::Validators::EmailValidator::ValidateText(std::string const& str)
 {
-	if (str.empty()) return EmailValidator::ERROR_NONE;
+	if (str.empty())
+		return EmailValidator::ERROR_NONE;
 
 	std::regex email_regex("^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
 

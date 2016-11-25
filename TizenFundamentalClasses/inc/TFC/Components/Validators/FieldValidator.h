@@ -25,6 +25,15 @@ protected:
 	virtual int ValidateText(std::string const& str) = 0;
 };
 
+class EmptyFieldValidator : public FieldValidator
+{
+public:
+	EmptyFieldValidator(Field* field);
+	static int const ERROR_EMPTY_FIELD;
+protected:
+	int ValidateText(std::string const& str);
+};
+
 class LengthValidator : public FieldValidator
 {
 public:
