@@ -11,6 +11,8 @@
 #include "TFC/Components/ComponentBase.h"
 #include <vector>
 #include <unordered_map>
+#include <regex>
+#include <functional>
 
 namespace TFC {
 namespace Components {
@@ -30,9 +32,12 @@ protected:
 	ComponentBase* const component;
 	int validationResult;
 	virtual int ValidateInternal() = 0;
+
 	std::unordered_map<int, std::string> errorDictionary;
+	std::vector<std::function<char const*()>> formatFunctions;
 private:
 	std::string errorMessage;
+	void GenerateErrorMessage();
 };
 
 class ValidatorList {

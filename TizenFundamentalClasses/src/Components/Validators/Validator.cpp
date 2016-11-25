@@ -18,8 +18,10 @@ TFC::Components::Validators::Validator::Validator(ComponentBase* component) :
 	validationResult(Validator::ERROR_NONE),
 	ErrorMessage(errorMessage)
 {
-	errorDictionary[Validator::ERROR_NONE] = "No error found.";
-	errorDictionary[Validator::ERROR_INVALID_COMPONENT] = "Component is not valid / created yet.";
+	errorDictionary[Validator::ERROR_NONE] = "No error found in component %0.";
+	errorDictionary[Validator::ERROR_INVALID_COMPONENT] = "Component %0 is not valid / created yet.";
+
+	formatFunctions.push_back([&] () { std::string n = component->Name; return n.c_str(); });
 }
 
 LIBAPI
@@ -31,14 +33,27 @@ LIBAPI
 int TFC::Components::Validators::Validator::Validate()
 {
 	if (component->IsCreated())
-		return validationResult = ValidateInternal();
+		validationResult = ValidateInternal();
 	else
-		return validationResult = Validator::ERROR_INVALID_COMPONENT;
+		validationResult = Validator::ERROR_INVALID_COMPONENT;
+
+	GenerateErrorMessage();
+	return validationResult;
 }
 
 LIBAPI void TFC::Components::Validators::Validator::SetErrorMessageFormat(int error, std::string const& message)
 {
 	errorDictionary[error] = message;
+}
+
+void TFC::Components::Validators::Validator::GenerateErrorMessage()
+{
+	for (std::size_t i = 0; i < formatFunctions.size(); i++)
+	{
+		std::regex rgx("\%" + std::to_string(i));
+		auto const& func = formatFunctions[i];
+		errorMessage = std::regex_replace(errorDictionary[validationResult], rgx, func());
+	}
 }
 
 LIBAPI

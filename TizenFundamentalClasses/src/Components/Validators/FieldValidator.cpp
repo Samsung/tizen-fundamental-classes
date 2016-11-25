@@ -6,7 +6,6 @@
  */
 
 #include "TFC/Components/Validators/FieldValidator.h"
-#include <regex>
 #include <sstream>
 
 using namespace TFC::Components::Validators;
@@ -16,7 +15,7 @@ TFC::Components::Validators::FieldValidator::FieldValidator(Field* field) :
 	Validator(field),
 	field(field)
 {
-	errorDictionary[FieldValidator::ERROR_INVALID_COMPONENT] = "Field is not valid / created yet.";
+	errorDictionary[FieldValidator::ERROR_INVALID_COMPONENT] = "Field %0 is not valid / created yet.";
 }
 
 int TFC::Components::Validators::FieldValidator::ValidateInternal()
@@ -37,8 +36,11 @@ TFC::Components::Validators::LengthValidator::LengthValidator(Field* field, size
 	min(min),
 	max(max)
 {
-	errorDictionary[LengthValidator::ERROR_LENGTH_LESS] = "Field text is less than required.";
-	errorDictionary[LengthValidator::ERROR_LENGTH_MORE] = "Field text is more than required.";
+	errorDictionary[LengthValidator::ERROR_LENGTH_LESS] = "Field %0 needs more than %1 characters.";
+	errorDictionary[LengthValidator::ERROR_LENGTH_MORE] = "Field %0 cannot be more than %2 characters.";
+
+	formatFunctions.push_back([&] () { return std::to_string(min).c_str(); });
+	formatFunctions.push_back([&] () { return std::to_string(max).c_str(); });
 }
 
 int TFC::Components::Validators::LengthValidator::ValidateText(std::string const& str)
@@ -56,7 +58,7 @@ LIBAPI
 TFC::Components::Validators::NumberValidator::NumberValidator(Field* field) :
 	FieldValidator(field)
 {
-	errorDictionary[NumberValidator::ERROR_NOT_NUMBER] = "Field text is not a number.";
+	errorDictionary[NumberValidator::ERROR_NOT_NUMBER] = "Field %0 is not a number.";
 }
 
 int TFC::Components::Validators::NumberValidator::ValidateText(std::string const& str)
@@ -74,7 +76,7 @@ LIBAPI
 TFC::Components::Validators::EmailValidator::EmailValidator(Field* field) :
 	FieldValidator(field)
 {
-	errorDictionary[EmailValidator::ERROR_INVALID_EMAIL] = "Field text is not a valid email.";
+	errorDictionary[EmailValidator::ERROR_INVALID_EMAIL] = "Field %0 is not a valid email.";
 }
 
 int TFC::Components::Validators::EmailValidator::ValidateText(std::string const& str)
