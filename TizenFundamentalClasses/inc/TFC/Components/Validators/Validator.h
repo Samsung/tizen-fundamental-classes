@@ -34,7 +34,7 @@ protected:
 	virtual int ValidateInternal() = 0;
 
 	std::unordered_map<int, std::string> errorDictionary;
-	std::vector<std::function<char const*()>> formatFunctions;
+	std::vector<std::function<std::string()>> formatFunctions;
 private:
 	std::string errorMessage;
 	void GenerateErrorMessage();

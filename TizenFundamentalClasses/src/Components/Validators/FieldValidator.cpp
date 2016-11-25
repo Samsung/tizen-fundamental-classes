@@ -57,8 +57,8 @@ TFC::Components::Validators::LengthValidator::LengthValidator(Field* field, size
 	errorDictionary[LengthValidator::ERROR_LENGTH_LESS] = "Field %0 needs more than %1 characters.";
 	errorDictionary[LengthValidator::ERROR_LENGTH_MORE] = "Field %0 cannot be more than %2 characters.";
 
-	formatFunctions.push_back([&] () { return std::to_string(min).c_str(); });
-	formatFunctions.push_back([&] () { return std::to_string(max).c_str(); });
+	formatFunctions.push_back([min] () { return std::to_string(min); });
+	formatFunctions.push_back([max] () { return std::to_string(max); });
 }
 
 int TFC::Components::Validators::LengthValidator::ValidateText(std::string const& str)
