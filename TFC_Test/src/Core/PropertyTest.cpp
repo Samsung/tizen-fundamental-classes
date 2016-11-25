@@ -89,7 +89,7 @@ namespace {
 		Property<SomeData>::Get<
 			&PropertyComponent::GetData>::Set<&PropertyComponent::SetData> Data;
 
-		Property<SomeData&>::Get<
+		Property<SomeData const&>::Get<
 			&PropertyComponent::GetDataRef>::Set<&PropertyComponent::SetDataRef> DataRef;
 
 		Property<SomeData*>::Get<&PropertyComponent::GetDataPtr>
@@ -101,7 +101,7 @@ namespace {
 		std::string const& GetValC() const;
 		void SetValC(std::string const& valC);
 
-		Property<std::string&>::Get<&PropertyComponent::GetValC>::Set<&PropertyComponent::SetValC> ValC;
+		Property<std::string const&>::Get<&PropertyComponent::GetValC>::Set<&PropertyComponent::SetValC> ValC;
 
 		PropertyComponent();
 
