@@ -181,7 +181,10 @@ LIBAPI ApplicationBase::~ApplicationBase()
 
 std::string TFC::Framework::ApplicationBase::GetResourcePath(char const* path)
 {
-	std::string ret(ApplicationBase::resourcePath);
+	if (ApplicationBase::resourcePath == nullptr)
+		ApplicationBase::resourcePath = app_get_resource_path(); // make sure cache exist without calling main
+
+	std::string ret(ApplicationBase::resourcePath); // note: will give logic_error if app_get_resource_path() failed
 	ret += path;
 	return ret;
 }
