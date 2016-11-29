@@ -274,7 +274,7 @@ protected:
 	virtual void OnBeforePrepareRequest() {}
 	virtual std::string PreparePostData(const std::unordered_map<std::string, IServiceParameter*>& postDataParam);
 	virtual void OnAfterUrlReady(std::string& url) {}
-	virtual void OnAfterPostDataReady(std::string& postData) {}
+	virtual void OnAfterPOSTDataReady(std::string& postData) {}
 
 	std::string UserAgent, Url, FinalUrl;
 	RESTResultBase CallInternal();

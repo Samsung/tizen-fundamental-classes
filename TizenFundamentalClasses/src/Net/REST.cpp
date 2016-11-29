@@ -370,7 +370,7 @@ RESTResultBase TFC::Net::RESTServiceTemplateBase::PerformCall()
 			curl_easy_setopt(curlHandle, CURLOPT_CUSTOMREQUEST, "PUT");
 
 			HTTP_PreparePostData: postData = PreparePostData(postDataParam);
-			OnAfterPostDataReady(postData);
+			OnAfterPOSTDataReady(postData);
 			curl_easy_setopt(curlHandle, CURLOPT_POSTFIELDSIZE, postData.size());
 			curl_easy_setopt(curlHandle, CURLOPT_POSTFIELDS, postData.c_str());
 			break;
