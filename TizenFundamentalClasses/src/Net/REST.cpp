@@ -61,7 +61,7 @@ std::string RESTServiceTemplateBase::PreparePostData(const std::unordered_map<st
 	}
 
 	std::string postData = postDataStream.str();
-	PreprocessPostData(postData);
+
 
 	return postData;
 }
@@ -186,7 +186,7 @@ TFC::Net::RESTServiceTemplateBase::RESTServiceTemplateBase(std::string url, HTTP
 {
 }
 
-void TFC::Net::RESTServiceTemplateBase::PrepareUrl()
+std::string TFC::Net::RESTServiceTemplateBase::PrepareUrl()
 {
 	// Construct query string
 	std::stringstream urlBuffer;
@@ -230,6 +230,12 @@ void TFC::Net::RESTServiceTemplateBase::PrepareUrl()
 	// Flush remaining url to buffer
 	urlBuffer << std::string(lastToken, text.cend());
 
+	std::string ret = urlBuffer.str();
+	OnAfterUrlReady(ret);
+	return ret;
+
+	/*
+
 	if (queryStringParam.size())
 	{
 		urlBuffer << "?";
@@ -252,8 +258,36 @@ void TFC::Net::RESTServiceTemplateBase::PrepareUrl()
 			urlBuffer << queryString.first << "=" << val;
 		}
 	}
-	FinalUrl = urlBuffer.str();
-	dlog_print(DLOG_DEBUG, LOG_TAG, "Final url: %s", FinalUrl.c_str());
+	*/
+
+}
+
+std::string TFC::Net::RESTServiceTemplateBase::PrepareQueryString()
+{
+	std::stringstream queryBuf;
+
+	if (queryStringParam.size())
+	{
+		bool first = true;
+		for (auto queryString : queryStringParam)
+		{
+			dlog_print(DLOG_DEBUG, LOG_TAG, "Param: %s", queryString.first);
+
+			if (!queryString.second->isSet)
+				continue;
+
+			if (first)
+				first = false;
+			else
+				queryBuf << "&";
+
+			auto val = queryString.second->GetEncodedValue();
+
+			queryBuf << queryString.first << "=" << val;
+		}
+	}
+
+	return queryBuf.str();
 }
 
 class VectorWrapper: public std::streambuf
@@ -306,7 +340,19 @@ RESTResultBase TFC::Net::RESTServiceTemplateBase::PerformCall()
 		dlog_print(DLOG_DEBUG, LOG_TAG, "Prepare URL");
 
 		// Construct query string
-		PrepareUrl();
+		std::string url = PrepareUrl();
+		std::string query = PrepareQueryString();
+
+		FinalUrl = url;
+
+		if(query.length())
+		{
+			FinalUrl += "?";
+			FinalUrl += query;
+		}
+
+		dlog_print(DLOG_DEBUG, LOG_TAG, "Final url: %s", FinalUrl.c_str());
+
 		curl_easy_setopt(curlHandle, CURLOPT_URL, FinalUrl.c_str());
 
 		dlog_print(DLOG_DEBUG, LOG_TAG, "Prepare Post Data");
@@ -324,7 +370,7 @@ RESTResultBase TFC::Net::RESTServiceTemplateBase::PerformCall()
 			curl_easy_setopt(curlHandle, CURLOPT_CUSTOMREQUEST, "PUT");
 
 			HTTP_PreparePostData: postData = PreparePostData(postDataParam);
-
+			OnAfterPostDataReady(postData);
 			curl_easy_setopt(curlHandle, CURLOPT_POSTFIELDSIZE, postData.size());
 			curl_easy_setopt(curlHandle, CURLOPT_POSTFIELDS, postData.c_str());
 			break;

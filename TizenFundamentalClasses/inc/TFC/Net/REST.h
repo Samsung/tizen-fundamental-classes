@@ -271,8 +271,10 @@ public:
 protected:
 	RESTServiceTemplateBase(std::string url, HTTPMode httpMode);
 
+	virtual void OnBeforePrepareRequest() {}
 	virtual std::string PreparePostData(const std::unordered_map<std::string, IServiceParameter*>& postDataParam);
-	virtual void PreprocessPostData(std::string& postData) {}
+	virtual void OnAfterUrlReady(std::string& url) {}
+	virtual void OnAfterPostDataReady(std::string& postData) {}
 
 	std::string UserAgent, Url, FinalUrl;
 	RESTResultBase CallInternal();
@@ -290,7 +292,8 @@ private:
 	HTTPMode httpMode;
 
 	struct curl_slist* PrepareHeader();
-	void PrepareUrl();
+	std::string PrepareUrl();
+	std::string PrepareQueryString();
 
 	std::vector<std::pair<char const*, IServiceParameter*>> queryStringParam;
 	std::vector<std::pair<char const*, IServiceParameter*>> headerParam;
