@@ -8,7 +8,6 @@
 #include "TFC/Net/OAuthREST.h"
 #include "TFC/Net/Util.h"
 #include <chrono>
-#include <map>
 #include <algorithm>
 #include <openssl/hmac.h>
 
@@ -31,9 +30,8 @@ std::string GenerateNonce(size_t length)
 std::string GenerateTimestamp()
 {
 	auto now = std::chrono::system_clock::now();
-	auto now_ms = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
-	auto value = now_ms.time_since_epoch();
-	long duration = value.count();
+	auto value = std::chrono::time_point_cast<std::chrono::seconds>(now).time_since_epoch();
+	unsigned long duration = value.count();
 
 	return std::to_string(duration);
 }
@@ -46,10 +44,10 @@ std::string PercentEncode(std::string const& base)
 
 	for(int i = 0; i < len; i++)
 	{
-		if(isalnum(str[i]))
+		if(isalnum(str[i]) || str[i] == '-' || str[i] == '.' || str[i] == '_' || str[i] == '~')
 			st << str[i];
 		else
-			st << "%" << std::hex << ((int)str[i]);
+			st << "%" << std::hex << std::uppercase << ((int)str[i]);
 	}
 	return st.str();
 }
@@ -65,7 +63,7 @@ TFC::Net::AuthHeader::AuthHeader(const std::string& consumerKey,
 	headers["oauth_token"] = token;
 	headers["oauth_callback"] = oAuthCallback;
 
-	headers["oauth_nonce"] = GenerateNonce(32);
+	headers["oauth_nonce"] = GenerateNonce(42);
 	headers["oauth_timestamp"] = GenerateTimestamp();
 }
 
@@ -101,7 +99,7 @@ std::string TFC::Net::CreateSignatureBaseString(
 		if (first) first = false;
 		else paramStream << "&";
 
-		paramStream << PercentEncode(kv.first) << "=" << kv.second;
+		paramStream << kv.first << "=" << kv.second;
 	}
 
 	std::stringstream resultStream;
@@ -109,10 +107,11 @@ std::string TFC::Net::CreateSignatureBaseString(
 	resultStream << PercentEncode(url) << "&";
 	resultStream << PercentEncode(paramStream.str());
 
+	std::cout << "Base signature : " << resultStream.str() << "\n";
 	return resultStream.str();
 }
 
-std::string TFC::Net::CalculateSignature(std::string const& base, AuthHeader const& authHeader)
+std::string TFC::Net::CalculateSignature(std::string const& base, AuthHeader& authHeader)
 {
 	std::stringstream signingKey;
 	signingKey << PercentEncode(authHeader.headers.at("oauth_consumer_key")) << "&";
@@ -122,6 +121,6 @@ std::string TFC::Net::CalculateSignature(std::string const& base, AuthHeader con
 	unsigned char* digest;
 	digest = HMAC(EVP_sha1(), key.c_str(), key.length(), (unsigned char*)base.c_str(), base.length(), NULL, NULL);
 
-	return TFC::Net::Base64Encode(digest, 20);
+	return authHeader.headers["oauth_signature"] = PercentEncode(TFC::Net::Base64Encode(digest, 20));
 }
 

@@ -65,6 +65,21 @@ namespace {
 		static constexpr char const* clientSecret = "DEdQUn-QFbiitgpGyLd6dtoZ";
 	};
 
+	struct TwitterOAuthProvider
+	{
+		static constexpr char const* authUrl = "https://api.twitter.com/oauth/authorize";
+		static constexpr char const* tokenUrl = "https://api.twitter.com/oauth/request_token";
+		static constexpr char const* redirectionUrl = "http://galaxygift.id/";
+		static constexpr bool threeLegged = true;
+	};
+
+	struct TwitterAppClientProvider
+	{
+		static constexpr char const* clientId = "vOKnOpVfvlYlPiGbZ2Qgtga1I";
+		static constexpr char const* clientScope = "email";
+		static constexpr char const* clientSecret = "dyNtTL8G71QTv1X41m4D6fb605m5vKh0hZ1KDV2NpcdQLx2ZbT";
+	};
+
 	struct InvalidOAuthProvider
 	{
 		static constexpr char const* invalidAuth = "http://invalid.org";
@@ -159,4 +174,48 @@ TEST_F(OAuthTest, FullStackOAuth)
 	verify.AccessToken = tc.accessToken;
 	auto result = verify.Call();
 	EXPECT_EQ(true, *(result.Response)) << "OAuth token is invalid.";
+}
+
+
+
+class TwitterOAuthTestClass : public TFC::EventClass
+{
+public:
+	typedef TFC::Net::OAuth2Client<TwitterOAuthProvider, TwitterAppClientProvider> TwitterClient;
+	TwitterClient client;
+	std::timed_mutex mutex;
+	std::string accessToken;
+
+	void OnAccessTokenReceived(TFC::Net::OAuth2ClientBase* src, std::string token)
+	{
+		accessToken = token;
+		std::cout << "Access Token : " << accessToken << "\n";
+		mutex.unlock();
+	}
+
+	TwitterOAuthTestClass()
+	{
+		client.eventAccessTokenReceived += EventHandler(TwitterOAuthTestClass::OnAccessTokenReceived);
+	}
+
+	void PerformRequest()
+	{
+		mutex.lock();
+		client.PerformRequest();
+	}
+};
+
+TEST_F(OAuthTest, TwitterStackOAuth)
+{
+	TwitterOAuthTestClass tc;
+
+	EFL_BLOCK_BEGIN;
+		EFL_SYNC_BEGIN(tc);
+			tc.PerformRequest();
+		EFL_SYNC_END;
+	EFL_BLOCK_END;
+
+	tc.mutex.lock();
+
+	EXPECT_LT(2, tc.accessToken.length()) << "OAuth token not received.";
 }

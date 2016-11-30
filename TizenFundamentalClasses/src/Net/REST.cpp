@@ -314,6 +314,8 @@ size_t RESTServiceTemplateBase_WriteCallback(char *data, size_t size, size_t nme
 
 RESTResultBase TFC::Net::RESTServiceTemplateBase::PerformCall()
 {
+	OnBeforePrepareRequest();
+
 	this->working = true;
 	auto curlHandle = curl_easy_init();
 

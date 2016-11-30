@@ -11,19 +11,21 @@
 #include "TFC/Net/REST.h"
 #include "TFC/Net/OAuth.h"
 #include <sstream>
+#include <iostream>
+#include <map>
 
 namespace TFC {
 namespace Net {
 
 	struct AuthHeader {
-		std::unordered_map<std::string, std::string> headers;
+		std::map<std::string, std::string> headers;
 
 		AuthHeader(	std::string const& consumerKey,
 					std::string const& token = "",
 					std::string const& oAuthCallback = "");
 	};
 
-	std::string CalculateSignature(std::string const& base, AuthHeader const& authHeader);
+	std::string CalculateSignature(std::string const& base, AuthHeader& authHeader);
 
 	std::string CreateSignatureBaseString(
 			std::string const& url, HTTPMode httpMode,
@@ -41,13 +43,15 @@ namespace Net {
 		template<ParameterType P, typename T>
 		using Parameter = typename TFC::Net::RESTServiceBase<ResponseType>::template Parameter<P, T>;
 	public:
-		OAuthRESTServiceTemplateBase(std::string url, HTTPMode httpMode, OAuthParam* param, std::string const& token = "");
+		OAuthRESTServiceTemplateBase(std::string url, HTTPMode httpMode, OAuthParam* param,
+				std::string const& token = "", std::string const& oAuthCallback = "");
 
 		virtual ~OAuthRESTServiceTemplateBase() {}
 	protected:
 		virtual void OnBeforePrepareRequest();
 	private:
 		std::string token;
+		std::string oAuthCallback;
 		OAuthParam* paramPtr;
 		//typedef UserInfoExtractor<TClientInfoProvider> ClientInfo;
 		Parameter<TFC::Net::ParameterType::Header, std::string> Authorization;
@@ -71,29 +75,43 @@ namespace Net {
 }
 
 template<class ResponseType>
-TFC::Net::OAuthRESTServiceTemplateBase<ResponseType>::OAuthRESTServiceTemplateBase(std::string url, HTTPMode httpMode, OAuthParam* param, const std::string& token) :
+TFC::Net::OAuthRESTServiceTemplateBase<ResponseType>::OAuthRESTServiceTemplateBase(std::string url, HTTPMode httpMode, OAuthParam* param,
+		std::string const& token, std::string const& oAuthCallback) :
 		TFC::Net::RESTServiceBase<ResponseType>(url, httpMode),
 		token(token),
 		paramPtr(param),
+		oAuthCallback(oAuthCallback),
 		Authorization(this, "Authorization")
 {
-
 }
 
 template<class ResponseType>
 void TFC::Net::OAuthRESTServiceTemplateBase<ResponseType>::OnBeforePrepareRequest()
 {
-	AuthHeader authHeader(paramPtr->clientId);
+	AuthHeader authHeader(paramPtr->clientId, token, oAuthCallback);
 	std::string base = CreateSignatureBaseString(this->Url, this->httpMode, this->postDataParam, this->queryStringParam, authHeader);
 	std::string signature = CalculateSignature(base, authHeader);
 
 	std::stringstream authString;
 	authString << "OAuth ";
+	std::cout << "OAuth ";
+	bool first = true;
 	for (auto& kv : authHeader.headers)
 	{
-		authString << kv.first << "=" << kv.second << ",";
+		if (!kv.second.empty())
+		{
+			if (!first)
+			{
+				authString << ",";
+				std::cout << ",\n";
+			}
+			first = false;
+			authString << kv.first << "=\"" << kv.second << "\"";
+			std::cout << kv.first << "=\"" << kv.second << "\"";
+		}
 	}
-	authString << "oauth_signature" << "=" << signature;
+	//authString << "oauth_signature" << "=\"" << signature << "\"";
+	//std::cout << "oauth_signature" << "=\"" << signature << "\"";
 
 	Authorization = authString.str();
 }
