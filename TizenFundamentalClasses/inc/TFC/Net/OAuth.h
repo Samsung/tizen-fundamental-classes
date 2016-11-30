@@ -234,6 +234,18 @@ struct OAuthParam
 			ServiceInfo::threeLegged
 		});
 	}
+
+	template<typename TClientInfoProvider>
+	static OAuthParam* BuildClientInfo()
+	{
+		typedef UserInfoExtractor<TClientInfoProvider> ClientInfo;
+
+		return new OAuthParam({
+			ClientInfo::clientId,
+			ClientInfo::clientSecret,
+			ClientInfo::clientScope
+		});
+	}
 };
 
 class OAuth2ClientBase : public EventEmitterClass<OAuth2ClientBase>
@@ -255,6 +267,8 @@ private:
 	oauth2_manager_h managerHandle;
 	OAuthParam*		 paramPtr;
 	bool busy;
+
+	void PerformOAuth1Request();
 
 	void CleanUpRequest();
 

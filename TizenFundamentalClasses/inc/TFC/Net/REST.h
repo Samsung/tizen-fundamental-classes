@@ -53,7 +53,7 @@ enum class ResultType
  */
 class LIBAPI IServiceParameter
 {
-protected:
+public:
 	bool isSet;
 
 	/**
@@ -71,7 +71,7 @@ protected:
 	 * @return String that contains the encoded value.
 	 */
 	virtual std::string GetEncodedValue() = 0;
-
+protected:
 	friend class RESTServiceTemplateBase;
 	virtual ~IServiceParameter();
 };
@@ -224,13 +224,14 @@ public:
 class LIBAPI RESTServiceTemplateBase
 {
 public:
-	template<ParameterType ParamType, class ValueType>
+
 	/**
 	 * Template class for parameters of a REST Service.
 	 * The first type argument is ParameterType, used to determine its behavior.
 	 * @see {ParameterType}
 	 * The second type argument is the type of the value.
 	 */
+	template<ParameterType ParamType, class ValueType>
 	class Parameter: public GenericServiceParameter<ValueType>
 	{
 	private:
@@ -278,6 +279,13 @@ protected:
 
 	std::string UserAgent, Url, FinalUrl;
 	RESTResultBase CallInternal();
+
+	HTTPMode httpMode;
+
+	std::vector<std::pair<char const*, IServiceParameter*>> queryStringParam;
+	std::vector<std::pair<char const*, IServiceParameter*>> headerParam;
+	std::unordered_map<std::string, IServiceParameter*> urlParam;
+	std::unordered_map<std::string, IServiceParameter*> postDataParam;
 private:
 	virtual void* OnProcessResponseIntl(int httpCode, const std::string& responseStr, int& errorCode,
 		std::string& errorMessage) = 0;
@@ -289,16 +297,10 @@ private:
 	void RegisterParameter(ParameterType paramType, char const* key, IServiceParameter* ref);
 
 	bool working;
-	HTTPMode httpMode;
 
 	struct curl_slist* PrepareHeader();
 	std::string PrepareUrl();
 	std::string PrepareQueryString();
-
-	std::vector<std::pair<char const*, IServiceParameter*>> queryStringParam;
-	std::vector<std::pair<char const*, IServiceParameter*>> headerParam;
-	std::unordered_map<std::string, IServiceParameter*> urlParam;
-	std::unordered_map<std::string, IServiceParameter*> postDataParam;
 };
 
 /**

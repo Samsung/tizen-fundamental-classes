@@ -6,6 +6,7 @@
  */
 
 #include "TFC/Net/OAuth.h"
+#include "TFC/Net/OAuthREST.h"
 #include <iostream>
 
 #define OAUTH_DECLARE_ERROR_MSG(ERR_CODE, ERR_STR) \
@@ -13,6 +14,20 @@
 
 #define OAUTH_OP_CHECK_INIT int result
 #define OAUTH_OP_CHECK_THROW(STATEMENT) result = STATEMENT; if (result != OAUTH2_ERROR_NONE) throw OAuth2Exception(result)
+
+class OAuth1RequestTokenService : public TFC::Net::OAuthRESTServiceTemplateBase<std::string>
+{
+public:
+	OAuth1RequestTokenService(std::string const& requestTokenUrl, TFC::Net::OAuthParam* param) :
+		TFC::Net::OAuthRESTServiceTemplateBase<std::string>(requestTokenUrl, TFC::Net::HTTPMode::Get, param)
+	{
+	}
+protected:
+	virtual std::string* OnProcessResponse(int httpCode, const std::string& responseStr, int& errorCode, std::string& errorMessage)
+	{
+		return new std::string(responseStr);
+	}
+};
 
 TFC ::Net::OAuth2Exception::OAuth2Exception(int oauthErrorCode) :
 		TFCException(GetErrorMessage(oauthErrorCode)),
@@ -42,14 +57,31 @@ const char* TFC::Net::OAuth2Exception::GetErrorMessage(int code)
 LIBAPI
 void TFC::Net::OAuth2ClientBase::PerformRequest()
 {
-	PerformXAuthRequest("", "");
+	if (paramPtr == nullptr) return;
+
+	if (paramPtr->threeLegged)
+	{
+		PerformOAuth1Request();
+	}
+	else
+	{
+		PerformXAuthRequest("", "");
+	}
+}
+
+void TFC::Net::OAuth2ClientBase::PerformOAuth1Request()
+{
+	OAuth1RequestTokenService service(paramPtr->tokenUrl, paramPtr);
+	auto result = service.Call();
+	std::string* response = result.Response;
+	std::cout << "\nRequest token response : \n" << *response << "\n\n";
+	eventAccessTokenReceived(this, *response);
 }
 
 LIBAPI
 void TFC::Net::OAuth2ClientBase::PerformXAuthRequest(
 		const std::string& username, const std::string& password)
 {
-	if (paramPtr == nullptr) return;
 	OAUTH_OP_CHECK_INIT;
 
 	OAUTH_OP_CHECK_THROW(oauth2_request_set_auth_end_point_url(requestHandle, paramPtr->authUrl));
@@ -84,29 +116,34 @@ TFC::Net::OAuth2ClientBase::OAuth2ClientBase(OAuthParam* param) :
 		paramPtr(param),
 		busy(false)
 {
-	OAUTH_OP_CHECK_INIT;
-	OAUTH_OP_CHECK_THROW(oauth2_manager_create(&this->managerHandle));
-	OAUTH_OP_CHECK_THROW(oauth2_request_create(&this->requestHandle));
+	if (!paramPtr->threeLegged)
+	{
+		OAUTH_OP_CHECK_INIT;
+		OAUTH_OP_CHECK_THROW(oauth2_manager_create(&this->managerHandle));
+		OAUTH_OP_CHECK_THROW(oauth2_request_create(&this->requestHandle));
+	}
 }
 
 LIBAPI
-TFC::Net::OAuth2ClientBase::~OAuth2ClientBase() {
-
-
-	CleanUpRequest();
-
-	// Clean up manager
-	if(this->managerHandle != nullptr)
+TFC::Net::OAuth2ClientBase::~OAuth2ClientBase()
+{
+	if (!paramPtr->threeLegged)
 	{
-		oauth2_manager_destroy(this->managerHandle);
-		this->managerHandle = nullptr;
-	}
+		CleanUpRequest();
 
-	// Clean up param
-	if(this->paramPtr != nullptr)
-	{
-		delete this->paramPtr;
-		this->paramPtr = nullptr;
+		// Clean up manager
+		if(this->managerHandle != nullptr)
+		{
+			oauth2_manager_destroy(this->managerHandle);
+			this->managerHandle = nullptr;
+		}
+
+		// Clean up param
+		if(this->paramPtr != nullptr)
+		{
+			delete this->paramPtr;
+			this->paramPtr = nullptr;
+		}
 	}
 }
 
