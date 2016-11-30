@@ -84,6 +84,9 @@ bool StackingControllerManager::PopController()
 
 LIBAPI bool StackingControllerManager::NavigateBack()
 {
+	if(this->pendingNavigation)
+		return true; // TODO change this to exception
+
 	this->pendingNavigation = true;
 	InvokeLater(&StackingControllerManager::DoNavigateBackward);
 
@@ -119,7 +122,7 @@ LIBAPI ControllerFactory::ControllerFactory(char const* controllerName, Controll
 
 LIBAPI ControllerBase& TFC::Framework::StackingControllerManager::GetCurrentController() const
 {
-	return *(this->controllerStack.back().get());
+	return *(this->controllerStack.back());
 }
 
 LIBAPI

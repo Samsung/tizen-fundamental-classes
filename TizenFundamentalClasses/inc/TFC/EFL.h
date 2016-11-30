@@ -55,6 +55,8 @@ private:
 
 	char const* eventName;
 	Evas_Object* boundObject;
+	Evas_Smart_Cb cbPtr;
+	Evas_Object_Event_Cb finalizePtr;
 };
 
 typedef EvasSmartEventObjectBase<> EvasSmartEventObject;
@@ -169,6 +171,7 @@ void TFC::EFL::EFLProxyClass::InvokeLater(void (T::*func)(TArgs...), TArgs ... a
 	}, p);
 }
 
+
 template<typename T>
 void TFC::EFL::EFLProxyClass::InvokeLater(void (T::*func)(void))
 {
@@ -200,7 +203,7 @@ void TFC::EFL::EvasSmartEventObjectBase<T>::Finalize(void *data, Evas *e, Evas_O
 }
 
 template<typename T>
-TFC::EFL::EvasSmartEventObjectBase<T>::EvasSmartEventObjectBase() : eventName(nullptr), boundObject(nullptr)
+TFC::EFL::EvasSmartEventObjectBase<T>::EvasSmartEventObjectBase() : eventName(nullptr), boundObject(nullptr), finalizePtr(nullptr), cbPtr(nullptr)
 {
 
 }
@@ -214,11 +217,15 @@ TFC::EFL::EvasSmartEventObjectBase<T>::~EvasSmartEventObjectBase()
 template<typename T>
 void TFC::EFL::EvasSmartEventObjectBase<T>::Bind(Evas_Object* obj,const char* eventName)
 {
-	if(this->boundObject != nullptr)
+	if(this->boundObject != nullptr) {
 		throw EventBoundException();
+	}
 
-	evas_object_smart_callback_add(obj, eventName, Callback, this);
-	evas_object_event_callback_add(obj, EVAS_CALLBACK_DEL, Finalize, this);
+	this->cbPtr = Callback;
+	this->finalizePtr = Finalize;
+
+	evas_object_smart_callback_add(obj, eventName, this->cbPtr, this);
+	evas_object_event_callback_add(obj, EVAS_CALLBACK_DEL, this->finalizePtr, this);
 
 	this->boundObject = obj;
 	this->eventName = eventName;
@@ -230,8 +237,8 @@ void TFC::EFL::EvasSmartEventObjectBase<T>::Unbind()
 	if(this->boundObject == nullptr)
 		return;
 
-	evas_object_smart_callback_del_full(boundObject, eventName, Callback, this);
-	evas_object_event_callback_del_full(boundObject, EVAS_CALLBACK_DEL, Finalize, this);
+	evas_object_smart_callback_del_full(boundObject, eventName, this->cbPtr, this);
+	evas_object_event_callback_del_full(boundObject, EVAS_CALLBACK_DEL, this->finalizePtr, this);
 
 	this->boundObject = nullptr;
 	this->eventName = nullptr;

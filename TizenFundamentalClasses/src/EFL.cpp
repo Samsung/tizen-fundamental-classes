@@ -26,8 +26,9 @@ TFC::EFL::EvasObjectEventObject::~EvasObjectEventObject()
 LIBAPI
 void TFC::EFL::EvasObjectEventObject::Bind(Evas_Object* obj, Evas_Callback_Type eventType)
 {
-	if(this->boundObject != nullptr)
+	if(this->boundObject != nullptr) {
 			throw EventBoundException();
+	}
 
 	evas_object_event_callback_add(obj, eventType, Callback, this);
 	evas_object_event_callback_add(obj, EVAS_CALLBACK_DEL, Finalize, this);
