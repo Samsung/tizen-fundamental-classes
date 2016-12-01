@@ -27,6 +27,7 @@ private:
 	void OnDismiss(Evas_Object* objSource, void* eventData);
 	bool BackButtonPressed(Evas_Object* objSource, void* eventData);
 	EvasSmartEvent eventDismiss;
+	EvasSmartEvent eventTimeout;
 public:
 	/**
 	 * Constructor for Toast class.

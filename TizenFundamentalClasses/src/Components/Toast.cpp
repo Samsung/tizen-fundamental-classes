@@ -19,6 +19,7 @@ LIBAPI bool TFC::Components::Toast::BackButtonPressed(Evas_Object* objSource, vo
 
 LIBAPI TFC::Components::Toast::Toast() {
 	this->eventDismiss += EventHandler(Toast::OnDismiss);
+	this->eventTimeout += EventHandler(Toast::OnDismiss);
 }
 
 
@@ -48,7 +49,7 @@ LIBAPI void TFC::Components::Toast::Show(const std::string& message, double time
 	//evas_object_smart_callback_add(popup, "timeout", EvasSmartEventHandler, &toastObj.eventDismiss);
 
 	toastObj.eventDismiss.Bind(popup, "block,clicked");
-	toastObj.eventDismiss.Bind(popup, "timeout");
+	toastObj.eventTimeout.Bind(popup, "timeout");
 
 	evas_object_show(popup);
 }
