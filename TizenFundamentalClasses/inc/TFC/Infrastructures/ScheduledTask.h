@@ -33,6 +33,7 @@ public:
 	void ScheduleOnce(std::chrono::system_clock::time_point t);
 	void SchedulePeriodic(std::chrono::system_clock::time_point startAt, std::chrono::microseconds interval);
 	void Cancel();
+	bool IsScheduled() { return timer != nullptr; }
 };
 
 }
