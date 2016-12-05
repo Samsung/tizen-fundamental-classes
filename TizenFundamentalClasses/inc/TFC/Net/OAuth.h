@@ -46,12 +46,12 @@ struct AuthUrlIntrospector
 
 
 template<typename TServiceInfoProvider>
-struct TokenUrlIntrospector
+struct AccessTokenUrlIntrospector
 {
 	typedef long 	True;
 	typedef char	False;
 
-	template<typename T, typename = typename std::is_same<decltype(T::tokenUrl), char const*>::type> static True  TestFunc(decltype(T::tokenUrl) = nullptr);
+	template<typename T, typename = typename std::is_same<decltype(T::accessTokenUrl), char const*>::type> static True  TestFunc(decltype(T::accessTokenUrl) = nullptr);
 	template<typename T> static False TestFunc(...);
 
 	enum { available = sizeof(decltype(TestFunc<TServiceInfoProvider>(nullptr))) == sizeof(True) };
@@ -60,7 +60,27 @@ struct TokenUrlIntrospector
 	struct Extractor { static constexpr char const* value = nullptr; };
 
 	template<typename T>
-	struct Extractor<true, T> { static constexpr char const* value = T::tokenUrl; };
+	struct Extractor<true, T> { static constexpr char const* value = T::accessTokenUrl; };
+
+	static constexpr auto value = Extractor<>::value;
+};
+
+template<typename TServiceInfoProvider>
+struct RequestTokenUrlIntrospector
+{
+	typedef long 	True;
+	typedef char	False;
+
+	template<typename T, typename = typename std::is_same<decltype(T::requestTokenUrl), char const*>::type> static True  TestFunc(decltype(T::requestTokenUrl) = nullptr);
+	template<typename T> static False TestFunc(...);
+
+	enum { available = sizeof(decltype(TestFunc<TServiceInfoProvider>(nullptr))) == sizeof(True) };
+
+	template<bool = available, typename = TServiceInfoProvider>
+	struct Extractor { static constexpr char const* value = nullptr; };
+
+	template<typename T>
+	struct Extractor<true, T> { static constexpr char const* value = T::requestTokenUrl; };
 
 	static constexpr auto value = Extractor<>::value;
 };
@@ -129,7 +149,8 @@ template<typename TServiceInfoProvider>
 struct ServiceInfoExtractor
 {
 	static constexpr auto authUrl = TServiceInfoProvider::authUrl;
-	static constexpr auto tokenUrl = TokenUrlIntrospector<TServiceInfoProvider>::value;
+	static constexpr auto accessTokenUrl = AccessTokenUrlIntrospector<TServiceInfoProvider>::value;
+	static constexpr auto requestTokenUrl = RequestTokenUrlIntrospector<TServiceInfoProvider>::value;
 	static constexpr auto refreshTokenUrl = RefreshTokenUrlIntrospector<TServiceInfoProvider>::value;
 	static constexpr auto redirectionUrl = RedirectionUrlIntrospector<TServiceInfoProvider>::value;
 	static constexpr bool threeLegged = ThreeLeggedIntrospector<TServiceInfoProvider>::value;
@@ -207,7 +228,8 @@ struct OAuthParam
 {
 	// This is provided by ServiceInfo provider class
 	char const* authUrl;
-	char const* tokenUrl;
+	char const* accessTokenUrl;
+	char const* requestTokenUrl;
 	char const* redirectionUrl;
 	char const* refreshTokenUrl;
 
@@ -225,7 +247,8 @@ struct OAuthParam
 
 		return new OAuthParam({
 			ServiceInfo::authUrl,
-			ServiceInfo::tokenUrl,
+			ServiceInfo::accessTokenUrl,
+			ServiceInfo::requestTokenUrl,
 			ServiceInfo::redirectionUrl,
 			ServiceInfo::refreshTokenUrl,
 			ClientInfo::clientId,

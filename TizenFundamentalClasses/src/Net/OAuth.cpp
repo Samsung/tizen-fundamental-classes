@@ -31,11 +31,11 @@ struct OAuthToken {
 	}
 };
 
-class OAuth1RequestTokenService : public TFC::Net::OAuthRESTServiceTemplateBase<OAuthToken>
+class OAuth1TokenService : public TFC::Net::OAuthRESTServiceTemplateBase<OAuthToken>
 {
 public:
-	OAuth1RequestTokenService(std::string const& requestTokenUrl, TFC::Net::OAuthParam* param, std::string const& oAuthCallback) :
-		TFC::Net::OAuthRESTServiceTemplateBase<OAuthToken>(requestTokenUrl, TFC::Net::HTTPMode::Get, param, "", oAuthCallback)
+	OAuth1TokenService(std::string const& tokenUrl, TFC::Net::OAuthParam* param, std::string const& token, std::string const& oAuthCallback) :
+		TFC::Net::OAuthRESTServiceTemplateBase<OAuthToken>(tokenUrl, TFC::Net::HTTPMode::Get, param, token, oAuthCallback)
 	{
 	}
 protected:
@@ -90,10 +90,10 @@ void TFC::Net::OAuth2ClientBase::PerformRequest()
 
 void TFC::Net::OAuth2ClientBase::PerformOAuth1Request()
 {
-	OAuth1RequestTokenService service(paramPtr->tokenUrl, paramPtr, "");
+	OAuth1TokenService service(paramPtr->requestTokenUrl, paramPtr, "", paramPtr->redirectionUrl);
 	auto result = service.Call();
 	OAuthToken* response = result.Response;
-	std::cout << "Request Token : " << response->token << ", Secret : " << response->secret << "\n";
+	std::cout << "Token : " << response->token << ", Secret : " << response->secret << "\n";
 	eventAccessTokenReceived(this, response->token);
 }
 
@@ -104,9 +104,9 @@ void TFC::Net::OAuth2ClientBase::PerformXAuthRequest(
 	OAUTH_OP_CHECK_INIT;
 
 	OAUTH_OP_CHECK_THROW(oauth2_request_set_auth_end_point_url(requestHandle, paramPtr->authUrl));
-	if (paramPtr->tokenUrl)
+	if (paramPtr->accessTokenUrl)
 	{
-		OAUTH_OP_CHECK_THROW(oauth2_request_set_token_end_point_url(requestHandle, paramPtr->tokenUrl));
+		OAUTH_OP_CHECK_THROW(oauth2_request_set_token_end_point_url(requestHandle, paramPtr->accessTokenUrl));
 	}
 	OAUTH_OP_CHECK_THROW(oauth2_request_set_redirection_url(requestHandle, paramPtr->redirectionUrl));
 

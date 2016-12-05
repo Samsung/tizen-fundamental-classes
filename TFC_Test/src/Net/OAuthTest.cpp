@@ -53,7 +53,7 @@ namespace {
 	struct GoogleOAuthProvider
 	{
 		static constexpr char const* authUrl = "https://accounts.google.com/o/oauth2/auth";
-		static constexpr char const* tokenUrl = "https://accounts.google.com/o/oauth2/token";
+		static constexpr char const* accessTokenUrl = "https://accounts.google.com/o/oauth2/token";
 		static constexpr char const* refreshTokenUrl = "https://www.googleapis.com/oauth2/v3/token";
 		static constexpr char const* redirectionUrl = "http://heliosky.com";
 	};
@@ -67,9 +67,10 @@ namespace {
 
 	struct TwitterOAuthProvider
 	{
-		static constexpr char const* authUrl = "https://api.twitter.com/oauth/authorize";
-		static constexpr char const* tokenUrl = "https://api.twitter.com/oauth/request_token";
-		static constexpr char const* redirectionUrl = "twitterclient://callback";
+		static constexpr char const* authUrl = "https://api.twitter.com/oauth/authenticate";
+		static constexpr char const* accessTokenUrl = "https://api.twitter.com/oauth/access_token";
+		static constexpr char const* requestTokenUrl = "https://api.twitter.com/oauth/request_token";
+		static constexpr char const* redirectionUrl = "http://galaxygift.id/";
 		static constexpr bool threeLegged = true;
 	};
 
@@ -102,7 +103,7 @@ TEST_F(OAuthTest, RetrieveAuthUrl)
 	typedef TFC::Net::ServiceInfoExtractor<FacebookOAuthProvider> Extractor;
 
 	auto res1 = Extractor::authUrl;
-	auto res2 = Extractor::tokenUrl;
+	auto res2 = Extractor::accessTokenUrl;
 	auto res3 = Extractor::redirectionUrl;
 	auto res4 = Extractor::refreshTokenUrl;
 
