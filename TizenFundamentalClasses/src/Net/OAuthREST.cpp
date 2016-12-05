@@ -10,10 +10,11 @@
 #include <chrono>
 #include <algorithm>
 #include <openssl/hmac.h>
+#include <cstring>
 
 using namespace TFC::Net;
 
-std::string GenerateNonce(size_t length)
+std::string GenerateNonce(std::size_t length)
 {
     std::string str(length, 0);
     std::generate_n(str.begin(), length, [] () -> char {
@@ -52,8 +53,11 @@ std::string PercentEncode(std::string const& base)
 	return st.str();
 }
 
-TFC::Net::AuthHeader::AuthHeader(const std::string& consumerKey,
-		const std::string& token, const std::string& oAuthCallback)
+TFC::Net::AuthHeader::AuthHeader(
+		std::string const& consumerKey,
+		std::string const& consumerSecret,
+		std::string const& token,
+		std::string const& oAuthCallback) : consumerSecret(consumerSecret)
 {
 	headers["oauth_version"] = "1.0";
 	headers["oauth_signature_method"] = "HMAC-SHA1";
@@ -63,7 +67,7 @@ TFC::Net::AuthHeader::AuthHeader(const std::string& consumerKey,
 	headers["oauth_token"] = token;
 	headers["oauth_callback"] = oAuthCallback;
 
-	headers["oauth_nonce"] = GenerateNonce(42);
+	headers["oauth_nonce"] = GenerateNonce(32);
 	headers["oauth_timestamp"] = GenerateTimestamp();
 }
 
@@ -103,18 +107,27 @@ std::string TFC::Net::CreateSignatureBaseString(
 	}
 
 	std::stringstream resultStream;
-	resultStream << (httpMode == TFC::Net::HTTPMode::Post ? "POST" : "GET") << "&";
+	switch (httpMode) {
+	case HTTPMode::Post :
+		resultStream << "POST"; break;
+	case HTTPMode::Delete :
+		resultStream << "DELETE"; break;
+	case HTTPMode::Get :
+	default:
+		resultStream << "GET";
+	}
+	resultStream << "&";
 	resultStream << PercentEncode(url) << "&";
 	resultStream << PercentEncode(paramStream.str());
 
-	std::cout << "Base signature : " << resultStream.str() << "\n";
+	//std::cout << "Base signature : " << resultStream.str() << "\n";
 	return resultStream.str();
 }
 
 std::string TFC::Net::CalculateSignature(std::string const& base, AuthHeader& authHeader)
 {
 	std::stringstream signingKey;
-	signingKey << PercentEncode(authHeader.headers.at("oauth_consumer_key")) << "&";
+	signingKey << PercentEncode(authHeader.consumerSecret) << "&";
 	signingKey << PercentEncode(authHeader.headers.at("oauth_token"));
 	std::string key = signingKey.str();
 

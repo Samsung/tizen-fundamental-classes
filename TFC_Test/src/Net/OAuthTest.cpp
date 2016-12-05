@@ -69,7 +69,7 @@ namespace {
 	{
 		static constexpr char const* authUrl = "https://api.twitter.com/oauth/authorize";
 		static constexpr char const* tokenUrl = "https://api.twitter.com/oauth/request_token";
-		static constexpr char const* redirectionUrl = "http://galaxygift.id/";
+		static constexpr char const* redirectionUrl = "twitterclient://callback";
 		static constexpr bool threeLegged = true;
 	};
 

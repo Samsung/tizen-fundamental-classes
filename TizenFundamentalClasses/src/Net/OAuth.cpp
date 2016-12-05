@@ -19,7 +19,7 @@ class OAuth1RequestTokenService : public TFC::Net::OAuthRESTServiceTemplateBase<
 {
 public:
 	OAuth1RequestTokenService(std::string const& requestTokenUrl, TFC::Net::OAuthParam* param, std::string const& oAuthCallback) :
-		TFC::Net::OAuthRESTServiceTemplateBase<std::string>(requestTokenUrl, TFC::Net::HTTPMode::Post, param, "", oAuthCallback)
+		TFC::Net::OAuthRESTServiceTemplateBase<std::string>(requestTokenUrl, TFC::Net::HTTPMode::Get, param, "", oAuthCallback)
 	{
 	}
 protected:
@@ -71,7 +71,7 @@ void TFC::Net::OAuth2ClientBase::PerformRequest()
 
 void TFC::Net::OAuth2ClientBase::PerformOAuth1Request()
 {
-	OAuth1RequestTokenService service(paramPtr->tokenUrl, paramPtr, paramPtr->redirectionUrl);
+	OAuth1RequestTokenService service(paramPtr->tokenUrl, paramPtr, "");
 	auto result = service.Call();
 	std::string* response = result.Response;
 	std::cout << "\nRequest token response : \n" << *response << "\n\n";

@@ -11,7 +11,6 @@
 #include "TFC/Net/REST.h"
 #include "TFC/Net/OAuth.h"
 #include <sstream>
-#include <iostream>
 #include <map>
 
 namespace TFC {
@@ -19,8 +18,9 @@ namespace Net {
 
 	struct AuthHeader {
 		std::map<std::string, std::string> headers;
-
+		std::string consumerSecret;
 		AuthHeader(	std::string const& consumerKey,
+					std::string const& consumerSecret,
 					std::string const& token = "",
 					std::string const& oAuthCallback = "");
 	};
@@ -88,13 +88,12 @@ TFC::Net::OAuthRESTServiceTemplateBase<ResponseType>::OAuthRESTServiceTemplateBa
 template<class ResponseType>
 void TFC::Net::OAuthRESTServiceTemplateBase<ResponseType>::OnBeforePrepareRequest()
 {
-	AuthHeader authHeader(paramPtr->clientId, token, oAuthCallback);
+	AuthHeader authHeader(paramPtr->clientId, paramPtr->clientSecret, token, oAuthCallback);
 	std::string base = CreateSignatureBaseString(this->Url, this->httpMode, this->postDataParam, this->queryStringParam, authHeader);
 	std::string signature = CalculateSignature(base, authHeader);
 
 	std::stringstream authString;
 	authString << "OAuth ";
-	std::cout << "OAuth ";
 	bool first = true;
 	for (auto& kv : authHeader.headers)
 	{
@@ -103,15 +102,11 @@ void TFC::Net::OAuthRESTServiceTemplateBase<ResponseType>::OnBeforePrepareReques
 			if (!first)
 			{
 				authString << ",";
-				std::cout << ",\n";
 			}
 			first = false;
 			authString << kv.first << "=\"" << kv.second << "\"";
-			std::cout << kv.first << "=\"" << kv.second << "\"";
 		}
 	}
-	//authString << "oauth_signature" << "=\"" << signature << "\"";
-	//std::cout << "oauth_signature" << "=\"" << signature << "\"";
 
 	Authorization = authString.str();
 }
