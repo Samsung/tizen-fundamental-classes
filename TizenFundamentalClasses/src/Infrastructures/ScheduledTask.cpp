@@ -45,6 +45,9 @@ bool TFC::Infrastructures::ScheduledTask::TimerCallback() {
 
 	// If it is not periodic, firstStarted will still be false
 	// If it is periodic, and the second time, it will be true, which will renew the timer
+	if(!this->firstStarted)
+		this->timer = nullptr;
+
 	return this->firstStarted;
 }
 
