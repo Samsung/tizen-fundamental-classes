@@ -7,6 +7,7 @@
 
 #include "TFC/Net/OAuth.h"
 #include "TFC/Net/OAuthREST.h"
+#include "TFC/EFL.h"
 #include <iostream>
 
 #define OAUTH_DECLARE_ERROR_MSG(ERR_CODE, ERR_STR) \
@@ -14,6 +15,31 @@
 
 #define OAUTH_OP_CHECK_INIT int result
 #define OAUTH_OP_CHECK_THROW(STATEMENT) result = STATEMENT; if (result != OAUTH2_ERROR_NONE) throw OAuth2Exception(result)
+
+class TFC::Net::OAuthWindow : public TFC::EventEmitterClass<TFC::Net::OAuthWindow>,
+							  public TFC::EFL::EFLProxyClass
+{
+public:
+	OAuthWindow();
+
+	void Show(std::string const& url, std::string const& expectedCallbackUrl);
+	Event<std::string> eventCallbackCaptured;
+private:
+	std::string expectedCallbackUrl;
+
+	EvasSmartEventTyped<char const*> eventUrlChanged;
+	EvasSmartEvent eventLoadFinished;
+
+	Evas_Object* ewk;
+	Evas_Object* loadingPopup;
+	Elm_Win* window;
+
+	void ShowLoadingPopup();
+	void HideLoadingPopup();
+
+	void OnUrlChanged(Evas_Object* obj, char const* url);
+	void OnLoadFinished(Evas_Object* obj, void* nop);
+};
 
 struct OAuthToken {
 	std::string token;
@@ -133,7 +159,8 @@ void TFC::Net::OAuth2ClientBase::RefreshToken(std::string oldToken) {
 LIBAPI
 TFC::Net::OAuth2ClientBase::OAuth2ClientBase(OAuthParam* param) :
 		paramPtr(param),
-		busy(false)
+		busy(false),
+		window(nullptr)
 {
 	if (!paramPtr->threeLegged)
 	{
@@ -164,6 +191,9 @@ TFC::Net::OAuth2ClientBase::~OAuth2ClientBase()
 			this->paramPtr = nullptr;
 		}
 	}
+
+	if(window != nullptr)
+		delete window;
 }
 
 void TFC::Net::OAuth2ClientBase::CleanUpRequest() {
@@ -194,4 +224,30 @@ void TFC::Net::OAuth2ClientBase::RequestAuthorizationCallback(
 
 	auto oAuth2ClientPtr = static_cast<OAuth2ClientBase*>(thisObj);
 	oAuth2ClientPtr->eventAccessTokenReceived(oAuth2ClientPtr, token);
+}
+
+//// IMPLEMENTATION FOR OAUTHWINDOW
+
+TFC::Net::OAuthWindow::OAuthWindow()
+{
+}
+
+void TFC::Net::OAuthWindow::Show(const std::string& url, const std::string& expectedCallbackUrl)
+{
+}
+
+void TFC::Net::OAuthWindow::ShowLoadingPopup()
+{
+}
+
+void TFC::Net::OAuthWindow::HideLoadingPopup()
+{
+}
+
+void TFC::Net::OAuthWindow::OnUrlChanged(Evas_Object* obj, const char* url)
+{
+}
+
+void TFC::Net::OAuthWindow::OnLoadFinished(Evas_Object* obj, void* nop)
+{
 }

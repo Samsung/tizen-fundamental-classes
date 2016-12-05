@@ -141,6 +141,8 @@ private:
 class EFLProxyClass : public virtual TFC::EventClass
 {
 protected:
+	template<typename T>
+	using EvasSmartEventTyped		= EvasSmartEventObjectBase<T>;
 	using EvasSmartEvent 			= EvasSmartEventObject;
 	using EvasObjectEvent 			= EvasObjectEventObject;
 	using EdjeSignalEvent 			= EdjeSignalEventObject;

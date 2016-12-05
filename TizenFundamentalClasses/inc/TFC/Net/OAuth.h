@@ -271,6 +271,8 @@ struct OAuthParam
 	}
 };
 
+class OAuthWindow;
+
 class OAuth2ClientBase : public EventEmitterClass<OAuth2ClientBase>
 {
 public:
@@ -296,6 +298,11 @@ private:
 	void CleanUpRequest();
 
 	static void RequestAuthorizationCallback(oauth2_response_h response, void* thisObj);
+
+	OAuthWindow* window;
+
+
+
 
 public:
 	bool IsBusy() const { return this->busy; }
