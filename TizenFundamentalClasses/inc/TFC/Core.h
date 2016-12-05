@@ -22,8 +22,7 @@
 
 #include <exception>
 #include <string>
-
-
+#include <type_traits>
 
 
 // Forward declaration of TFC Core Language Features
@@ -95,6 +94,62 @@ class ObjectClass;
  */
 template<typename TClass>
 class PropertyClass;
+
+class ManagedClass
+{
+public:
+	class SharedHandle;
+
+	class SafePointer
+	{
+	public:
+		bool TryAccess() const;
+		SafePointer();
+		~SafePointer();
+		SafePointer(SafePointer&& that);
+		SafePointer(SafePointer const& that);
+		operator bool() const { return TryAccess(); }
+	private:
+		friend class ManagedClass;
+		SafePointer(SharedHandle* handle);
+
+
+
+		SharedHandle* handle;
+	};
+
+	template<typename T>
+	static SafePointer GetSafePointerFrom(T* what);
+
+	template<typename T, bool = std::is_base_of<ManagedClass, T>::value>
+	struct SafePointerGetter;
+
+	ManagedClass();
+	~ManagedClass();
+	SafePointer GetSafePointer();
+
+private:
+	SharedHandle* handle;
+
+};
+
+template<typename T, bool>
+struct ManagedClass::SafePointerGetter
+{
+	static SafePointer GetSafePointer(T* what)
+	{
+		return what->GetSafePointer();
+	}
+};
+
+template<typename T>
+struct ManagedClass::SafePointerGetter<T, false>
+{
+	static SafePointer GetSafePointer(T* what)
+	{
+		return {};
+	}
+};
 
 /**
  * EventEmitter is an attribute class marking that the class inheriting this class may has
@@ -209,6 +264,11 @@ public:
 	virtual ~ObjectClass();
 };
 
+template<typename T>
+TFC::ManagedClass::SafePointer TFC::ManagedClass::GetSafePointerFrom(T* what)
+{
+	return TFC::ManagedClass::SafePointerGetter<T>::GetSafePointer(what);
+}
 
 
 #endif /* CORE_NEW_H_ */

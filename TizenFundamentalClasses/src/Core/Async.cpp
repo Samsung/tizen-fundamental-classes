@@ -99,8 +99,8 @@ void Async_Complete(void* data, Ecore_Thread* thd)
 	if(!ctx->payload.awaitable)
 	{
 		// If it is not awaitable, notify the completion function
-		auto completeFunc = ctx->payload.completeFunc;
-		completeFunc(ctx->payload.internalData);
+		auto completeInvoker = ctx->payload.completeInvoker;
+		completeInvoker(ctx->payload.internalData);
 
 		// Then finalize their internals
 		auto finalizeFunc = ctx->payload.finalizeFunc;
@@ -121,6 +121,8 @@ void Async_Notify(void* data, Ecore_Thread* thd, void* notifData)
 LIBAPI
 void* TFC::Core::Async::RunAsyncTask(AsyncHandlerPayload payload)
 {
+	dlog_print(DLOG_DEBUG, LOG_TAG, "Async task run");
+
 	AsyncContext* ctx = new AsyncContext;
 	ctx->payload = payload;
 	ctx->runningLock.lock();

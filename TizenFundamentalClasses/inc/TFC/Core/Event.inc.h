@@ -4,6 +4,7 @@
 #define TFC_CORE_EVENT_INC_H
 
 #include <memory>
+#include <cstddef>
 #include "TFC/Core/Introspect.h"
 
 #ifndef TFC_CORE_H_
@@ -100,6 +101,7 @@ class TFC::Core::SharedEventObject : protected std::shared_ptr<TFC::Core::EventO
 public:
 	typedef TFC::Core::EventObject<TObjectSource, TEventData> Type;
 	SharedEventObject();
+	SharedEventObject(std::nullptr_t);
 	void operator+=(const typename TFC::Core::EventObject<TObjectSource, TEventData>::EventDelegate& other);
 	void operator-=(const typename TFC::Core::EventObject<TObjectSource, TEventData>::EventDelegate& other);
 	void operator()(TObjectSource objSource, TEventData eventData) const;
@@ -241,6 +243,12 @@ template<typename TObjectSource, typename TEventData>
 TFC::Core::SharedEventObject<TObjectSource, TEventData>::SharedEventObject() :
 	std::shared_ptr<TFC::Core::EventObject<TObjectSource, TEventData>>(
 			new TFC::Core::EventObject<TObjectSource, TEventData>(true))
+{
+
+}
+
+template<typename TObjectSource, typename TEventData>
+TFC::Core::SharedEventObject<TObjectSource, TEventData>::SharedEventObject(std::nullptr_t)
 {
 
 }
