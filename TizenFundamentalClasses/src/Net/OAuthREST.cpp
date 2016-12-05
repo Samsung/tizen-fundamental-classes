@@ -10,7 +10,6 @@
 #include <chrono>
 #include <algorithm>
 #include <openssl/hmac.h>
-#include <cstring>
 
 using namespace TFC::Net;
 

@@ -15,17 +15,36 @@
 #define OAUTH_OP_CHECK_INIT int result
 #define OAUTH_OP_CHECK_THROW(STATEMENT) result = STATEMENT; if (result != OAUTH2_ERROR_NONE) throw OAuth2Exception(result)
 
-class OAuth1RequestTokenService : public TFC::Net::OAuthRESTServiceTemplateBase<std::string>
+struct OAuthToken {
+	std::string token;
+	std::string secret;
+
+	void ParseTokenSecret(std::string const& str)
+	{
+		auto tokenStart = str.find("oauth_token=") + 12;
+		auto tokenEnd = str.find("&", tokenStart);
+		auto secretStart = str.find("oauth_token_secret=") + 19;
+		auto secretEnd = str.find("&", secretStart);
+
+		token = str.substr(tokenStart, tokenEnd - tokenStart);
+		secret = str.substr(secretStart, secretEnd - secretStart);
+	}
+};
+
+class OAuth1RequestTokenService : public TFC::Net::OAuthRESTServiceTemplateBase<OAuthToken>
 {
 public:
 	OAuth1RequestTokenService(std::string const& requestTokenUrl, TFC::Net::OAuthParam* param, std::string const& oAuthCallback) :
-		TFC::Net::OAuthRESTServiceTemplateBase<std::string>(requestTokenUrl, TFC::Net::HTTPMode::Get, param, "", oAuthCallback)
+		TFC::Net::OAuthRESTServiceTemplateBase<OAuthToken>(requestTokenUrl, TFC::Net::HTTPMode::Get, param, "", oAuthCallback)
 	{
 	}
 protected:
-	virtual std::string* OnProcessResponse(int httpCode, const std::string& responseStr, int& errorCode, std::string& errorMessage)
+	virtual OAuthToken* OnProcessResponse(int httpCode, const std::string& responseStr, int& errorCode, std::string& errorMessage)
 	{
-		return new std::string(responseStr);
+		std::cout << "\nRequest token response : \n" << responseStr << "\n";
+		auto oAuthToken = new OAuthToken();
+		oAuthToken->ParseTokenSecret(responseStr);
+		return oAuthToken;
 	}
 };
 
@@ -73,9 +92,9 @@ void TFC::Net::OAuth2ClientBase::PerformOAuth1Request()
 {
 	OAuth1RequestTokenService service(paramPtr->tokenUrl, paramPtr, "");
 	auto result = service.Call();
-	std::string* response = result.Response;
-	std::cout << "\nRequest token response : \n" << *response << "\n\n";
-	eventAccessTokenReceived(this, *response);
+	OAuthToken* response = result.Response;
+	std::cout << "Request Token : " << response->token << ", Secret : " << response->secret << "\n";
+	eventAccessTokenReceived(this, response->token);
 }
 
 LIBAPI
