@@ -74,9 +74,10 @@ class MoveBlocker
 {
 	int a;
 public:
+	MoveBlocker() : a (0) { }
 	MoveBlocker(MoveBlocker&& other) = delete;
 	MoveBlocker(MoveBlocker const& other) { this->a = other.a; }
-	MoveBlocker() : a(25) {}
+	MoveBlocker(int val) : a(val) {}
 	int GetA() const { return a; }
 };
 
@@ -202,7 +203,7 @@ TEST_F(AsyncTest, AsyncWithFinally)
 		};
 
 		EFL_SYNC_BEGIN(data);
-			MoveBlocker mb;
+			MoveBlocker mb(25);
 			auto safeHandle = data.cp.GetSafePointer();
 			tfc_async
 			{
@@ -219,7 +220,49 @@ TEST_F(AsyncTest, AsyncWithFinally)
 
 	mutexTest.lock();
 	ASSERT_TRUE(correct) << "Asynchronous operation with finally failed";
+}
 
+TEST_F(AsyncTest, AsyncWithFinallyByReference)
+{
+	using namespace TFC;
+	using Ms = std::chrono::milliseconds;
+	std::mutex mutexTest;
+	mutexTest.lock();
+	bool correct = false;
+
+	CopyInspector cp;
+
+	dlog_print(DLOG_DEBUG, "TFC-Debug", "Start test Async with Finally");
+
+	EFL_BLOCK_BEGIN;
+		struct {
+			bool& correct;
+			int tc;
+			std::mutex& mutexTest;
+			CopyInspector& cp;
+		} data = {
+			correct,
+			rand(),
+			mutexTest,
+			cp
+		};
+
+		EFL_SYNC_BEGIN(data);
+			MoveBlocker mb(data.tc);
+			tfc_async
+			{
+				return mb;
+			}
+			tfc_async_complete(MoveBlocker result)
+			{
+				data.correct = result.GetA() == data.tc;
+				data.mutexTest.unlock();
+			};
+		EFL_SYNC_END;
+	EFL_BLOCK_END;
+
+	mutexTest.lock();
+	ASSERT_TRUE(correct) << "Asynchronous operation with finally reference failed";
 }
 
 TEST_F(AsyncTest, AsyncWithFinallyVoid)

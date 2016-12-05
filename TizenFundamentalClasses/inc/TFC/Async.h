@@ -28,34 +28,17 @@ namespace Async {
 template<typename TReturnValue>
 struct AsyncTask;
 
-struct AsyncTypeTag
-{
-	struct AsyncVoid 	{ };
-	struct AsyncNonVoid { };
-};
-
-
-
-template<typename T>
-struct AsyncTypeSelector
-{
-	typedef AsyncTypeTag::AsyncNonVoid Tag;
-	typedef T EventDataType;
-	typedef std::function<void(T)> CompleteFunction;
-};
-
-template<>
-struct AsyncTypeSelector<void>
-{
-	typedef AsyncTypeTag::AsyncVoid Tag;
-	typedef void* EventDataType;
-	typedef std::function<void()> CompleteFunction;
-};
-
-
+/**
+ * Base class template for AsyncOperand of tfc_async syntax. AsyncOperand encapsulates asynchronous syntax tree
+ * to be processed by AsyncBuilder. AsyncOperand contains information about lambda closure for asynchronous
+ * operation, as well as additional information such as complete handler or complete event on its specialization.
+ *
+ * This base template defines AsyncOperand for asynchronous operation which returns some value but does not have
+ * completion notification.
+ */
 template<
 	typename TLambda,
-	typename TEventType = void,
+	typename TCompleteType = void,
 	typename TReturnValue = typename Introspect::CallableObject<TLambda>::ReturnType
 >
 struct AsyncOperand
@@ -72,8 +55,10 @@ struct AsyncOperand
 	}
 };
 
-
-
+/**
+ * Specialization for AsyncOperand where the asynchronous operation does not return any value and does not
+ * have completion notification.
+ */
 template<typename TLambda>
 struct AsyncOperand<TLambda, void, void>
 {
@@ -90,6 +75,10 @@ struct AsyncOperand<TLambda, void, void>
 	}
 };
 
+/**
+ * Specialization for AsyncOperand where the asynchronous operation does not return any value and have
+ * completion notification via event.
+ */
 template<typename TLambda>
 struct AsyncOperand<TLambda, SharedEventObject<AsyncTask<void>*, void*>, void> :
 	AsyncOperand<TLambda, void, void>
@@ -104,7 +93,10 @@ struct AsyncOperand<TLambda, SharedEventObject<AsyncTask<void>*, void*>, void> :
 	}
 };
 
-
+/**
+ * Specialization for AsyncOperand where the asynchronous operation return a value and have completion
+ * notification via event.
+ */
 template<typename TLambda, typename TReturnValue>
 struct AsyncOperand<TLambda, SharedEventObject<AsyncTask<TReturnValue>*, TReturnValue>, TReturnValue> :
 	AsyncOperand<TLambda, void, TReturnValue>
@@ -120,6 +112,15 @@ struct AsyncOperand<TLambda, SharedEventObject<AsyncTask<TReturnValue>*, TReturn
 	}
 };
 
+/**
+ * Base class template for AsyncCompleteOperand which wraps the syntax tree of tfc_async_complete clause.
+ * It contains information on lambda closure for asynchronous complete operation and specializes on
+ * its parameter. The parameter on lambda closure needs to be matched with the asynchronous lambda return type.
+ * But because tfc_async_complete is evaluated earlier before tfc_async itself, The checking is delayed until
+ * tfc_async is evaluated.
+ *
+ * This base template defines a tfc_async_complete closure with non-void parameter.
+ */
 template<typename TLambda,
 		 typename TIntrospect = Introspect::CallableObject<TLambda>,
 		 bool TNonVoidParam   = TIntrospect::Arity == 1,
@@ -130,10 +131,10 @@ struct AsyncCompleteOperand
 	static constexpr bool Valid = true;
 	static constexpr bool IsVoid = false;
 
-	TLambda&& CompleteLambda;
+	TLambda&& completeLambda;
 
-	AsyncCompleteOperand(TLambda&& CompleteLambda) :
-			CompleteLambda(std::move(CompleteLambda))
+	AsyncCompleteOperand(TLambda&& completeLambda) :
+			completeLambda(std::move(completeLambda))
 	{
 
 	}
@@ -145,7 +146,7 @@ struct AsyncCompleteOperand
 
 	template<typename TLambdaAsync,
 			 typename TIntrospectAsync = Introspect::CallableObject<TLambdaAsync>,
-			 bool 	  RuleValidation   = std::is_same<typename TIntrospect::template Args<0>,
+			 bool 	  RuleValidation   = std::is_same<typename std::remove_reference<typename TIntrospect::template Args<0>>::type,
 								  	  	  	  	  	  typename TIntrospectAsync::ReturnType>::value>
 	struct Match
 	{
@@ -153,16 +154,19 @@ struct AsyncCompleteOperand
 	};
 };
 
+/**
+ * Specialization for AsyncCompleteOperand with void parameter.
+ */
 template<typename TLambda, typename TIntrospect>
 struct AsyncCompleteOperand<TLambda, TIntrospect, false, true>
 {
 	static constexpr bool Valid = true;
 	static constexpr bool IsVoid = true;
 
-	TLambda&& CompleteLambda;
+	TLambda&& completeLambda;
 
-	AsyncCompleteOperand(TLambda&& CompleteLambda) :
-				CompleteLambda(std::forward<TLambda>(CompleteLambda))
+	AsyncCompleteOperand(TLambda&& completeLambda) :
+				completeLambda(std::forward<TLambda>(completeLambda))
 	{
 
 	}
@@ -182,6 +186,10 @@ struct AsyncCompleteOperand<TLambda, TIntrospect, false, true>
 	};
 };
 
+/**
+ * Specialization for fallback of incorrect lambda type, where it has more than one parameter. This
+ * is to support assertion in later evaluation.
+ */
 template<typename TLambda, typename TIntrospect>
 struct AsyncCompleteOperand<TLambda, TIntrospect, false, false>
 {
@@ -199,6 +207,10 @@ struct AsyncCompleteOperand<TLambda, TIntrospect, false, false>
 	}
 };
 
+/**
+ * Specialization of AsyncOperand which uses completion notification via inline lambda with tfc_async_complete
+ * syntax.
+ */
 template<typename TLambda, typename TReturnValue, typename TLambdaComplete>
 struct AsyncOperand<TLambda, AsyncCompleteOperand<TLambdaComplete>, TReturnValue> :
 	AsyncOperand<TLambda, void, TReturnValue>
@@ -213,7 +225,10 @@ struct AsyncOperand<TLambda, AsyncCompleteOperand<TLambdaComplete>, TReturnValue
 	}
 };
 
-template<typename T>
+/**
+ * Container class to store asynchronous result.
+ */
+template<typename T, bool = std::is_move_constructible<T>::value>
 struct AsyncResult
 {
 	typedef T ReturnType;
@@ -222,19 +237,43 @@ struct AsyncResult
 	AsyncResult(T&& value) : value(std::move(value)) { };
 };
 
+template<typename T>
+struct AsyncResult<T, false>
+{
+	typedef T ReturnType;
+	T value;
+	AsyncResult(T&& value) : value(value) { };
+};
+
+/**
+ * Specialization if the asynchronous operation does not return any value.
+ */
 template<>
 struct AsyncResult<void>
 {
 
 };
 
+//// FORWARD DECLARATION
+
 template<typename TLambda, typename TReturnType = typename Introspect::CallableObject<TLambda>::ReturnType>
 struct CompleteLambdaInvoker;
-
 
 template<typename TLambda, typename TReturnType = typename Introspect::CallableObject<TLambda>::ReturnType>
 struct CompleteEventInvoker;
 
+//// END OF FORWARD DECLARATION
+
+/**
+ * Template class for AsyncTaskInterface which stips down information to the necessary minimal information
+ * required in user codes which is the result value of asynchronous operation. This class is necessary because
+ * the template performs type-erasure, while internally the asynchronous engine is templateless, it needs to
+ * know necessary information how to delete the information passed to it.
+ *
+ * To ensure the bridging between user codes and internal asynchronous engine, this class will act as interface
+ * without requiring the user codes to define the lambda type on the template. So the user codes may see the
+ * opaque pointer of AsyncTask<TReturnValue> which still carry the return type information.
+ */
 template<typename TReturnType>
 struct AsyncTaskInterface
 {
@@ -252,9 +291,20 @@ struct AsyncTaskInterface
 	}
 };
 
+/**
+ * Base class template for AsyncCompletePackage which wraps the completion lambda so it can be called
+ * via asyncrhonous engine which is templateless. This class actually acts similar with polymorphism,
+ * but it does not utilizes C++ polymorphism to reduce unnecessary virtual table creation as each
+ * instantiation of this class will (may) be unique to each lambda. This class also behaves similar
+ * with std::function (as this class is actually replacing the std::function) but this class is a more
+ * lightweight version of std::function which can only be used with lambda type.
+ */
 template<typename TReturnType>
 struct AsyncCompletePackage
 {
+	/**
+	 * Inner class which wraps the completion lambda itself
+	 */
 	template<typename TLambdaComplete>
 	struct LambdaStorage
 	{
@@ -266,33 +316,68 @@ struct AsyncCompletePackage
 
 		}
 
-		static void Invoker(void* storage, TReturnType&& val)
+		struct NonMovableTag { };
+		struct MovableTag { };
+
+		static void InvokerStatic(LambdaStorage<TLambdaComplete>* thiz, TReturnType&& val, NonMovableTag)
 		{
-			auto thiz = reinterpret_cast<LambdaStorage<TLambdaComplete>*>(storage);
+			thiz->lambdaStorage(val);
+		}
+
+		static void InvokerStatic(LambdaStorage<TLambdaComplete>* thiz, TReturnType&& val, MovableTag)
+		{
 			thiz->lambdaStorage(std::move(val));
 		}
 
+		/**
+		 * Static function which will invoke the lambda on behalf of its caller by assuming that the
+		 * storage parameter is exactly the correct LambdaStorage type.
+		 */
+		static void Invoker(void* storage, TReturnType&& val)
+		{
+			// Determine whether the TReturnType is movable or not, as both kind have different calling convention especially if the
+			// parameter is not r-value reference.
+			typedef typename std::conditional<std::is_move_constructible<TReturnType>::value, MovableTag, NonMovableTag>::type MovabilityTag;
+
+			auto thiz = reinterpret_cast<LambdaStorage<TLambdaComplete>*>(storage);
+			InvokerStatic(thiz, std::move(val), MovabilityTag {});
+		}
+
+		/**
+		 * Static function which will invoke the deletion on the lambda storage on behalf of its caller
+		 * by assuming that the storage parameter is exactly the correct LambdaStorage type.
+		 */
 		static void Deleter(void* storage)
 		{
 			auto thiz = reinterpret_cast<LambdaStorage<TLambdaComplete>*>(storage);
 			delete thiz;
 		}
 
+		/**
+		 * Pack lambda into a lambda storage.
+		 */
 		static void* PackLambda(TLambdaComplete&& l)
 		{
 			return new LambdaStorage { std::move(l) };
 		}
 	};
-	void* storage;
-	void (*invokerFunc)(void*, TReturnType&& val);
-	void (*deleterFunc)(void*);
 
+	void* storage; 									/**< Pointer to store the LambdaStorage pointer */
+	void (*invokerFunc)(void*, TReturnType&& val); 	/**< Pointer to the invoker function of the LambdaStorage */
+	void (*deleterFunc)(void*); 					/**< Pointer to the deleter function of the LambdaStorage */
+
+	/**
+	 * Invoke the call to the completion lambda.
+	 */
 	void operator()(TReturnType&& val)
 	{
 		if(storage != nullptr)
 			invokerFunc(storage, std::move(val));
 	}
 
+	/**
+	 * Creates empty AsyncCompletePackage.
+	 */
 	AsyncCompletePackage() :
 		storage(nullptr),
 		invokerFunc(nullptr),
@@ -301,6 +386,9 @@ struct AsyncCompletePackage
 
 	}
 
+	/**
+	 * Creates AsyncCompletePackage with the completion lambda.
+	 */
 	template<typename TLambdaComplete>
 	AsyncCompletePackage(TLambdaComplete&& lambda) :
 		storage(LambdaStorage<TLambdaComplete>::PackLambda(std::move(lambda))),
@@ -310,6 +398,9 @@ struct AsyncCompletePackage
 
 	}
 
+	/**
+	 * Destructor of AsyncCompletePackage which also destruct the LambdaStorage.
+	 */
 	~AsyncCompletePackage()
 	{
 		if(storage != nullptr)
@@ -389,7 +480,8 @@ struct AsyncPackage : public AsyncTaskInterface<typename Introspect::CallableObj
 
 	TLambda functionAsync;
 
-	SharedEventObject<AsyncTask<ReturnType>*, typename AsyncTypeSelector<ReturnType>::EventDataType> eventComplete;
+	//SharedEventObject<AsyncTask<ReturnType>*, typename AsyncTypeSelector<ReturnType>::EventDataType>
+	typename AsyncOperand<TLambda>::EventType eventComplete;
 	AsyncCompletePackage<ReturnType> lambdaComplete;
 
 	void(*completeInvoker)(void*);
@@ -404,19 +496,19 @@ struct AsyncPackage : public AsyncTaskInterface<typename Introspect::CallableObj
 	AsyncPackage() : completeInvoker(nullptr), taskHandle(nullptr), awaitable(true) { };
 
 	AsyncPackage(TLambda&& functionAsync) :
-					AsyncTaskInterface<ReturnType>(DeleterFunction),
-					functionAsync(std::move(functionAsync)),
-					eventComplete(nullptr),
-					completeInvoker(nullptr),
-					taskHandle(nullptr),
-					awaitable(true)
+				AsyncTaskInterface<ReturnType>(DeleterFunction),
+				functionAsync(std::move(functionAsync)),
+				eventComplete(nullptr),
+				completeInvoker(nullptr),
+				taskHandle(nullptr),
+				awaitable(true)
 	{
 
 	}
 
 	AsyncPackage(
 			TLambda&& functionAsync,
-			SharedEventObject<AsyncTask<ReturnType>*, typename AsyncTypeSelector<ReturnType>::EventDataType> eventComplete) :
+			typename AsyncOperand<TLambda>::EventType eventComplete) :
 				AsyncTaskInterface<ReturnType>(DeleterFunction),
 				functionAsync(std::move(functionAsync)),
 				eventComplete(eventComplete),
@@ -678,7 +770,7 @@ The following template form :
 	auto operator>>(TLambdaAsync async, AsyncCompleteOperand<TLambdaAfter> after)
 		-> AsyncOperand<typename TIntrospectAsync::ReturnType, AsyncCompleteOperand<TLambdaAfter>>
 	{
-		return { async, std::move(after.CompleteLambda) };
+		return { async, std::move(after.completeLambda) };
 	}
 is not applicable if we want to use std::enable_if and will result in [template parameter redefines default argument] error.
 See : https://stackoverflow.com/questions/29502052/template-specialization-and-enable-if-problems
@@ -693,7 +785,7 @@ auto operator>>(TLambdaAsync&& async, AsyncCompleteOperand<TLambdaAfter> after)
 	-> AsyncOperand<TLambdaAsync, AsyncCompleteOperand<TLambdaAfter>>
 {
 	dlog_print(DLOG_DEBUG, "TFC-Debug", "Build async with >> operator and lambda after");
-	return { std::forward<TLambdaAsync>(async), std::move(after.CompleteLambda) };
+	return { std::forward<TLambdaAsync>(async), std::move(after.completeLambda) };
 }
 
 // Assert that CompleteBuilder >> operator will receive lambda with appropriate parameter
@@ -736,7 +828,6 @@ struct TFC::Async
 															  void*,
 															  TReturnValue>::type
 									> Event;
-	typedef typename Event::Type BaseEvent;
 
 };
 
