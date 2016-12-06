@@ -48,6 +48,8 @@
 #define HTML_TAG_P					"p"
 #define HTML_TAG_TABLE				"table"
 #define HTML_TAG_IFRAME				"iframe"
+#define HTML_TAG_UL					"ul"
+#define HTML_TAG_OL					"ol"
 
 #define FILE_EDC_WEBVIEW "edc/SimpleWebView.edj"
 #define EWK_FONT_SIZE 48
@@ -209,7 +211,7 @@ void TFC::Components::SimpleWebView::Render()
 						AddImage(src);
 					}
 				}
-				else if(iequals(tag, HTML_TAG_TABLE) || iequals(tag, HTML_TAG_IFRAME))
+				else if(iequals(tag, HTML_TAG_TABLE) || iequals(tag, HTML_TAG_IFRAME) || isequals(tag, HTML_TAG_OL) || isequals(tag, HTML_TAG_UL))
 				{
 					flushForCustomProcess = true;
 					customProcessBuffer.clear();
