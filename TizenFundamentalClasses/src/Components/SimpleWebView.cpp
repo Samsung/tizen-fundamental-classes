@@ -211,7 +211,7 @@ void TFC::Components::SimpleWebView::Render()
 						AddImage(src);
 					}
 				}
-				else if(iequals(tag, HTML_TAG_TABLE) || iequals(tag, HTML_TAG_IFRAME) || isequals(tag, HTML_TAG_OL) || isequals(tag, HTML_TAG_UL))
+				else if(iequals(tag, HTML_TAG_TABLE) || iequals(tag, HTML_TAG_IFRAME) || iequals(tag, HTML_TAG_OL) || iequals(tag, HTML_TAG_UL))
 				{
 					flushForCustomProcess = true;
 					customProcessBuffer.clear();
