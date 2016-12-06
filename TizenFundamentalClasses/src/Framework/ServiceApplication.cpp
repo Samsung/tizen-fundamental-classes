@@ -72,5 +72,20 @@ int TFC::Framework::ServiceApplicationBase::Main(
 	service_app_add_event_handler(&handlers[APP_EVENT_LANGUAGE_CHANGED], APP_EVENT_LANGUAGE_CHANGED, languageChangedHandler, appObj);
 	service_app_add_event_handler(&handlers[APP_EVENT_REGION_FORMAT_CHANGED], APP_EVENT_REGION_FORMAT_CHANGED, InlineApplicationEventHandler(RegionChanged), appObj);
 
-	return service_app_main(argc, argv, &event_callback, appObj);
+	auto retCode = service_app_main(argc, argv, &event_callback, appObj);
+
+	switch(retCode)
+	{
+	case APP_ERROR_INVALID_PARAMETER:
+		dlog_print(DLOG_DEBUG, LOG_TAG, "Failed to launch service application: Invalid parameter");
+		break;
+	case APP_ERROR_INVALID_CONTEXT:
+		dlog_print(DLOG_DEBUG, LOG_TAG, "Failed to launch service application: Invalid context");
+		break;
+	case APP_ERROR_ALREADY_RUNNING:
+		dlog_print(DLOG_DEBUG, LOG_TAG, "Failed to launch service application: Already running");
+		break;
+	}
+
+	return retCode;
 }
