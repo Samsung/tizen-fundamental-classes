@@ -40,9 +40,10 @@ namespace Net {
 	template<class ResponseType>
 	class OAuthRESTServiceTemplateBase : public TFC::Net::RESTServiceBase<ResponseType>
 	{
+	public:
 		template<ParameterType P, typename T>
 		using Parameter = typename TFC::Net::RESTServiceBase<ResponseType>::template Parameter<P, T>;
-	public:
+
 		OAuthRESTServiceTemplateBase(std::string url, HTTPMode httpMode, OAuthParam* param,
 				std::string const& token = "", std::string const& oAuthCallback = "");
 

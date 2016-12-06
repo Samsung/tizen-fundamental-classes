@@ -70,14 +70,17 @@ TFC::Net::OAuthGrant::OAuthGrant(std::string const& str)
 class OAuth1TokenService : public TFC::Net::OAuthRESTServiceTemplateBase<TFC::Net::OAuthToken>
 {
 public:
+	Parameter<TFC::Net::ParameterType::PostData, std::string> Verifier;
+
 	OAuth1TokenService(std::string const& tokenUrl, TFC::Net::OAuthParam* param, std::string const& token, std::string const& oAuthCallback) :
-		TFC::Net::OAuthRESTServiceTemplateBase<TFC::Net::OAuthToken>(tokenUrl, TFC::Net::HTTPMode::Get, param, token, oAuthCallback)
+		TFC::Net::OAuthRESTServiceTemplateBase<TFC::Net::OAuthToken>(tokenUrl, TFC::Net::HTTPMode::Post, param, token, oAuthCallback),
+		Verifier(this, "oauth_verifier")
 	{
 	}
 protected:
 	virtual TFC::Net::OAuthToken* OnProcessResponse(int httpCode, const std::string& responseStr, int& errorCode, std::string& errorMessage)
 	{
-		std::cout << "\nRequest token response : \n" << responseStr << "\n";
+		std::cout << "\Response : \n" << responseStr << "\n";
 		auto oAuthToken = new TFC::Net::OAuthToken(responseStr);
 		return oAuthToken;
 	}
@@ -128,7 +131,7 @@ void TFC::Net::OAuth2ClientBase::PerformOAuth1Request()
 	OAuth1TokenService service(paramPtr->requestTokenUrl, paramPtr, "", paramPtr->redirectionUrl);
 	auto result = service.Call();
 	OAuthToken* response = result.Response;
-	std::cout << "Token : " << response->token << ", Secret : " << response->secret << "\n";
+	std::cout << "Request Token : " << response->token << ", Secret : " << response->secret << "\n";
 
 	std::stringstream urlStream;
 	urlStream << paramPtr->authUrl << "?oauth_token=" << response->token;
@@ -137,7 +140,12 @@ void TFC::Net::OAuth2ClientBase::PerformOAuth1Request()
 
 void TFC::Net::OAuth2ClientBase::OnAuthGrantCallbackCaptured(OAuthWindow* source, OAuthGrant data)
 {
-	eventAccessTokenReceived(this, data.token);
+	OAuth1TokenService service(paramPtr->accessTokenUrl, paramPtr, data.token, "");
+	service.Verifier = data.verifier;
+	auto result = service.Call();
+	OAuthToken* response = result.Response;
+	std::cout << "Access Token : " << response->token << ", Secret : " << response->secret << "\n";
+	eventAccessTokenReceived(this, response->token);
 }
 
 LIBAPI
