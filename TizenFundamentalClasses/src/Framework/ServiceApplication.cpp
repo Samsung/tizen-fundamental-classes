@@ -7,7 +7,7 @@
  */
 
 #include "TFC/Framework/ServiceApplication.h"
-
+#include <dlog.h>
 #include <system_settings.h>
 
 #define InlineApplicationEventHandler(HANDLERNAME) [] (app_event_info_h e, void* a) { reinterpret_cast<ServiceApplicationBase*>(a)-> HANDLERNAME (e); }

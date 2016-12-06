@@ -53,7 +53,7 @@ private:
 	std::string const& GetIconEdjeFile() const;
 	void SetIconEdjeFile(std::string const& val);
 
-	typedef EFL::EvasSmartEventObjectBase<Elm_Object_Item> GenlistEvent;
+	typedef EFL::EvasSmartEventObjectBase<Elm_Object_Item*> GenlistEvent;
 
 	void MenuScrollInternal(Evas_Object* objSource, Elm_Object_Item* eventData);
 	void MenuPressedInternal(Evas_Object* objSource, Elm_Object_Item* eventData);
