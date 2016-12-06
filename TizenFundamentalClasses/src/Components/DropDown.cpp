@@ -87,7 +87,7 @@ LIBAPI void TFC::Components::DropDown::ShowDropdown()
 	evas_object_smart_callback_add(dropdownComponent, "dismissed", EFL::EvasSmartEventHandler, &eventDropdownDismiss);
 	*/
 	// TODO validate that back button is executed properly, or else, create BackButtonCallback implementation
-	eventDropdownDismiss.Bind(dropdownComponent, "dismissed");
+	//eventDropdownDismiss.Bind(dropdownComponent, "dismissed");
 
 	//change position of the popup base on button
 	Evas_Coord x, y;
