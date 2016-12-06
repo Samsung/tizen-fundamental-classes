@@ -271,6 +271,20 @@ struct OAuthParam
 	}
 };
 
+struct OAuthToken
+{
+	std::string token;
+	std::string secret;
+	OAuthToken(std::string const& response);
+};
+
+struct OAuthGrant
+{
+	std::string token;
+	std::string verifier;
+	OAuthGrant(std::string const& url);
+};
+
 class OAuthWindow;
 
 class OAuth2ClientBase : public EventEmitterClass<OAuth2ClientBase>
@@ -301,7 +315,7 @@ private:
 
 	OAuthWindow* window;
 
-
+	void OnAuthGrantCallbackCaptured(OAuthWindow* source, OAuthGrant data);
 
 
 public:
