@@ -54,7 +54,7 @@ namespace Net {
 		std::string token;
 		std::string oAuthCallback;
 		OAuthParam* paramPtr;
-		//typedef UserInfoExtractor<TClientInfoProvider> ClientInfo;
+		//typedef ClientInfoExtractor<TClientInfoProvider> ClientInfo;
 		Parameter<TFC::Net::ParameterType::Header, std::string> Authorization;
 	};
 

@@ -112,11 +112,11 @@ const char* TFC::Net::OAuth2Exception::GetErrorMessage(int code)
 }
 
 LIBAPI
-void TFC::Net::OAuth2ClientBase::PerformRequest()
+void TFC::Net::OAuthClientBase::PerformRequest()
 {
 	if (paramPtr == nullptr) return;
 
-	if (paramPtr->threeLegged)
+	if (paramPtr->oAuthMode == OAuthMode::Version1)
 	{
 		PerformOAuth1Request();
 	}
@@ -126,7 +126,7 @@ void TFC::Net::OAuth2ClientBase::PerformRequest()
 	}
 }
 
-void TFC::Net::OAuth2ClientBase::PerformOAuth1Request()
+void TFC::Net::OAuthClientBase::PerformOAuth1Request()
 {
 	OAuth1TokenService service(paramPtr->requestTokenUrl, paramPtr, "", paramPtr->redirectionUrl);
 	auto result = service.Call();
@@ -138,7 +138,7 @@ void TFC::Net::OAuth2ClientBase::PerformOAuth1Request()
 	window->Show(urlStream.str(), paramPtr->redirectionUrl);
 }
 
-void TFC::Net::OAuth2ClientBase::OnAuthGrantCallbackCaptured(OAuthWindow* source, OAuthGrant data)
+void TFC::Net::OAuthClientBase::OnAuthGrantCallbackCaptured(OAuthWindow* source, OAuthGrant data)
 {
 	OAuth1TokenService service(paramPtr->accessTokenUrl, paramPtr, data.token, "");
 	service.Verifier = data.verifier;
@@ -149,7 +149,7 @@ void TFC::Net::OAuth2ClientBase::OnAuthGrantCallbackCaptured(OAuthWindow* source
 }
 
 LIBAPI
-void TFC::Net::OAuth2ClientBase::PerformXAuthRequest(
+void TFC::Net::OAuthClientBase::PerformXAuthRequest(
 		const std::string& username, const std::string& password)
 {
 	OAUTH_OP_CHECK_INIT;
@@ -178,16 +178,16 @@ void TFC::Net::OAuth2ClientBase::PerformXAuthRequest(
 }
 
 LIBAPI
-void TFC::Net::OAuth2ClientBase::RefreshToken(std::string oldToken) {
+void TFC::Net::OAuthClientBase::RefreshToken(std::string oldToken) {
 }
 
 LIBAPI
-TFC::Net::OAuth2ClientBase::OAuth2ClientBase(OAuthParam* param) :
+TFC::Net::OAuthClientBase::OAuthClientBase(OAuthParam* param) :
 		paramPtr(param),
 		busy(false),
 		window(nullptr)
 {
-	if (!paramPtr->threeLegged)
+	if (paramPtr->oAuthMode != OAuthMode::Version1)
 	{
 		OAUTH_OP_CHECK_INIT;
 		OAUTH_OP_CHECK_THROW(oauth2_manager_create(&this->managerHandle));
@@ -196,14 +196,14 @@ TFC::Net::OAuth2ClientBase::OAuth2ClientBase(OAuthParam* param) :
 	else
 	{
 		window = new OAuthWindow();
-		window->eventCallbackCaptured += EventHandler(OAuth2ClientBase::OnAuthGrantCallbackCaptured);
+		window->eventCallbackCaptured += EventHandler(OAuthClientBase::OnAuthGrantCallbackCaptured);
 	}
 }
 
 LIBAPI
-TFC::Net::OAuth2ClientBase::~OAuth2ClientBase()
+TFC::Net::OAuthClientBase::~OAuthClientBase()
 {
-	if (!paramPtr->threeLegged)
+	if (paramPtr->oAuthMode != OAuthMode::Version1)
 	{
 		CleanUpRequest();
 
@@ -226,7 +226,7 @@ TFC::Net::OAuth2ClientBase::~OAuth2ClientBase()
 		delete window;
 }
 
-void TFC::Net::OAuth2ClientBase::CleanUpRequest() {
+void TFC::Net::OAuthClientBase::CleanUpRequest() {
 	if(this->requestHandle != nullptr)
 	{
 		oauth2_request_destroy(this->requestHandle);
@@ -234,7 +234,7 @@ void TFC::Net::OAuth2ClientBase::CleanUpRequest() {
 	}
 }
 
-void TFC::Net::OAuth2ClientBase::RequestAuthorizationCallback(
+void TFC::Net::OAuthClientBase::RequestAuthorizationCallback(
 		oauth2_response_h response, void* thisObj)
 {
 	oauth2_error_h err;
@@ -252,7 +252,7 @@ void TFC::Net::OAuth2ClientBase::RequestAuthorizationCallback(
 	char* token;
 	oauth2_response_get_access_token(response, &token);
 
-	auto oAuth2ClientPtr = static_cast<OAuth2ClientBase*>(thisObj);
+	auto oAuth2ClientPtr = static_cast<OAuthClientBase*>(thisObj);
 	oAuth2ClientPtr->eventAccessTokenReceived(oAuth2ClientPtr, token);
 }
 

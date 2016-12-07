@@ -19,6 +19,11 @@ extern "C" {
 namespace TFC {
 namespace Net {
 
+enum class OAuthMode {
+	Version1,
+	Version2
+};
+
 class OAuth2Exception : public TFCException
 {
 
@@ -146,17 +151,36 @@ struct ThreeLeggedIntrospector
 };
 
 template<typename TServiceInfoProvider>
+struct OAuthModeIntrospector
+{
+	typedef long 	True;
+	typedef char	False;
+
+	template<typename T, typename = typename std::is_same<decltype(T::oAuthMode), OAuthMode>::type> static True  TestFunc(decltype(T::oAuthMode)* = nullptr);
+	template<typename T> static False TestFunc(...);
+
+	enum { available = sizeof(decltype(TestFunc<TServiceInfoProvider>(nullptr))) == sizeof(True) };
+
+	template<bool = available, typename = TServiceInfoProvider>
+	struct Extractor { static constexpr OAuthMode value = OAuthMode::Version2; };
+
+	template<typename T>
+	struct Extractor<true, T> { static constexpr OAuthMode value = T::oAuthMode; };
+
+	static constexpr auto value = Extractor<>::value;
+};
+
+template<typename TServiceInfoProvider>
 struct ServiceInfoExtractor
 {
 	static constexpr auto authUrl = TServiceInfoProvider::authUrl;
+	static constexpr auto oAuthMode = OAuthModeIntrospector<TServiceInfoProvider>::value;
 	static constexpr auto accessTokenUrl = AccessTokenUrlIntrospector<TServiceInfoProvider>::value;
 	static constexpr auto requestTokenUrl = RequestTokenUrlIntrospector<TServiceInfoProvider>::value;
 	static constexpr auto refreshTokenUrl = RefreshTokenUrlIntrospector<TServiceInfoProvider>::value;
-	static constexpr auto redirectionUrl = RedirectionUrlIntrospector<TServiceInfoProvider>::value;
-	static constexpr bool threeLegged = ThreeLeggedIntrospector<TServiceInfoProvider>::value;
 };
 
-template<typename TUserInfoProvider>
+template<typename TClientInfoProvider>
 struct ClientIdIntrospector
 {
 	typedef long 	True;
@@ -165,9 +189,9 @@ struct ClientIdIntrospector
 	template<typename T, typename = typename std::is_same<decltype(T::clientId), char const*>::type> static True  TestFunc(decltype(T::clientId) = nullptr);
 	template<typename T> static False TestFunc(...);
 
-	enum { available = sizeof(decltype(TestFunc<TUserInfoProvider>(nullptr))) == sizeof(True) };
+	enum { available = sizeof(decltype(TestFunc<TClientInfoProvider>(nullptr))) == sizeof(True) };
 
-	template<bool = available, typename = TUserInfoProvider>
+	template<bool = available, typename = TClientInfoProvider>
 	struct Extractor { static constexpr char const* value = nullptr; };
 
 	template<typename T>
@@ -176,7 +200,7 @@ struct ClientIdIntrospector
 	static constexpr auto value = Extractor<>::value;
 };
 
-template<typename TUserInfoProvider>
+template<typename TClientInfoProvider>
 struct ClientSecretIntrospector
 {
 	typedef long 	True;
@@ -185,9 +209,9 @@ struct ClientSecretIntrospector
 	template<typename T, typename = typename std::is_same<decltype(T::clientSecret), char const*>::type> static True  TestFunc(decltype(T::clientSecret) = nullptr);
 	template<typename T> static False TestFunc(...);
 
-	enum { available = sizeof(decltype(TestFunc<TUserInfoProvider>(nullptr))) == sizeof(True) };
+	enum { available = sizeof(decltype(TestFunc<TClientInfoProvider>(nullptr))) == sizeof(True) };
 
-	template<bool = available, typename = TUserInfoProvider>
+	template<bool = available, typename = TClientInfoProvider>
 	struct Extractor { static constexpr char const* value = nullptr; };
 
 	template<typename T>
@@ -196,7 +220,7 @@ struct ClientSecretIntrospector
 	static constexpr auto value = Extractor<>::value;
 };
 
-template<typename TUserInfoProvider>
+template<typename TClientInfoProvider>
 struct ClientScopeIntrospector
 {
 	typedef long 	True;
@@ -205,9 +229,9 @@ struct ClientScopeIntrospector
 	template<typename T, typename = typename std::is_same<decltype(T::clientScope), char const*>::type> static True  TestFunc(decltype(T::clientScope) = nullptr);
 	template<typename T> static False TestFunc(...);
 
-	enum { available = sizeof(decltype(TestFunc<TUserInfoProvider>(nullptr))) == sizeof(True) };
+	enum { available = sizeof(decltype(TestFunc<TClientInfoProvider>(nullptr))) == sizeof(True) };
 
-	template<bool = available, typename = TUserInfoProvider>
+	template<bool = available, typename = TClientInfoProvider>
 	struct Extractor { static constexpr char const* value = nullptr; };
 
 	template<typename T>
@@ -216,12 +240,13 @@ struct ClientScopeIntrospector
 	static constexpr auto value = Extractor<>::value;
 };
 
-template<typename TUserInfoProvider>
-struct UserInfoExtractor
+template<typename TClientInfoProvider>
+struct ClientInfoExtractor
 {
-	static constexpr auto clientId = TUserInfoProvider::clientId;
-	static constexpr auto clientSecret = ClientSecretIntrospector<TUserInfoProvider>::value;
-	static constexpr auto clientScope = ClientScopeIntrospector<TUserInfoProvider>::value;
+	static constexpr auto clientId = TClientInfoProvider::clientId;
+	static constexpr auto clientSecret = ClientSecretIntrospector<TClientInfoProvider>::value;
+	static constexpr auto clientScope = ClientScopeIntrospector<TClientInfoProvider>::value;
+	static constexpr auto redirectionUrl = TClientInfoProvider::redirectionUrl;
 };
 
 struct OAuthParam
@@ -230,38 +255,39 @@ struct OAuthParam
 	char const* authUrl;
 	char const* accessTokenUrl;
 	char const* requestTokenUrl;
-	char const* redirectionUrl;
 	char const* refreshTokenUrl;
+	OAuthMode 	oAuthMode;
 
 	// This is provided by ClientInfo provider class
 	char const* clientId;
 	char const* clientSecret;
 	char const* clientScope;
-	bool threeLegged;
+	char const* redirectionUrl;
+
 
 	template<typename TServiceInfoProvider, typename TClientInfoProvider>
 	static OAuthParam* Build()
 	{
 		typedef ServiceInfoExtractor<TServiceInfoProvider> ServiceInfo;
-		typedef UserInfoExtractor<TClientInfoProvider> ClientInfo;
+		typedef ClientInfoExtractor<TClientInfoProvider> ClientInfo;
 
 		return new OAuthParam({
 			ServiceInfo::authUrl,
 			ServiceInfo::accessTokenUrl,
 			ServiceInfo::requestTokenUrl,
-			ServiceInfo::redirectionUrl,
 			ServiceInfo::refreshTokenUrl,
+			ServiceInfo::oAuthMode,
 			ClientInfo::clientId,
 			ClientInfo::clientSecret,
 			ClientInfo::clientScope,
-			ServiceInfo::threeLegged
+			ClientInfo::redirectionUrl
 		});
 	}
 
 	template<typename TClientInfoProvider>
 	static OAuthParam* BuildClientInfo()
 	{
-		typedef UserInfoExtractor<TClientInfoProvider> ClientInfo;
+		typedef ClientInfoExtractor<TClientInfoProvider> ClientInfo;
 
 		return new OAuthParam({
 			ClientInfo::clientId,
@@ -287,7 +313,7 @@ struct OAuthGrant
 
 class OAuthWindow;
 
-class OAuth2ClientBase : public EventEmitterClass<OAuth2ClientBase>
+class OAuthClientBase : public EventEmitterClass<OAuthClientBase>
 {
 public:
 	Event<std::string> eventAccessTokenReceived;
@@ -298,8 +324,8 @@ public:
 	void RefreshToken(std::string oldToken);
 
 protected:
-	OAuth2ClientBase(OAuthParam* param);
-	~OAuth2ClientBase();
+	OAuthClientBase(OAuthParam* param);
+	~OAuthClientBase();
 
 private:
 	oauth2_request_h requestHandle;
@@ -323,10 +349,10 @@ public:
 };
 
 template<typename TServiceInfoProvider, typename TClientInfoProvider>
-class OAuth2Client : public OAuth2ClientBase
+class OAuthClient : public OAuthClientBase
 {
 public:
-	OAuth2Client() : OAuth2ClientBase(OAuthParam::Build<TServiceInfoProvider, TClientInfoProvider>())
+	OAuthClient() : OAuthClientBase(OAuthParam::Build<TServiceInfoProvider, TClientInfoProvider>())
 	{
 
 	}
