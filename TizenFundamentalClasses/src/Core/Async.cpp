@@ -51,11 +51,19 @@ struct AsyncContext
 	}
 };
 
+struct SynchronizeContext
+{
+	std::mutex syncMutex;
+	SynchronizeHandlerPayload* handlerPayload;
+};
+
 std::map<AsyncContext*, AsyncContext*> AsyncContext::table;
 
 void Async_Thread(void* data, Ecore_Thread* thd)
 {
 	auto ctx = reinterpret_cast<AsyncContext*>(data);
+
+	dlog_print(DLOG_DEBUG, LOG_TAG, "In thread. Ctx: %d", ctx);
 
 	// Acquire running lock
 
@@ -69,7 +77,7 @@ void Async_Thread(void* data, Ecore_Thread* thd)
 
 	// Run the task
 	auto taskFunc = ctx->payload.taskFunc;
-	taskFunc(ctx->payload.internalData);
+	taskFunc(ctx->payload.internalData, ctx);
 
 	//std::cout << "Thread Completed: " << (int)ctx << std::endl;
 
@@ -114,6 +122,11 @@ void Async_Complete(void* data, Ecore_Thread* thd)
 void Async_Notify(void* data, Ecore_Thread* thd, void* notifData)
 {
 	auto ctx = reinterpret_cast<AsyncContext*>(data);
+	auto syncCtx = reinterpret_cast<SynchronizeContext*>(notifData);
+	// Run the function
+	syncCtx->handlerPayload->lambdaInvokerFunc(syncCtx->handlerPayload->packagePtr);
+	// Release lock
+	syncCtx->syncMutex.unlock();
 }
 
 }
@@ -121,11 +134,13 @@ void Async_Notify(void* data, Ecore_Thread* thd, void* notifData)
 LIBAPI
 void* TFC::Core::Async::RunAsyncTask(AsyncHandlerPayload payload)
 {
-	dlog_print(DLOG_DEBUG, LOG_TAG, "Async task run");
+
 
 	AsyncContext* ctx = new AsyncContext;
 	ctx->payload = payload;
 	ctx->runningLock.lock();
+
+	dlog_print(DLOG_DEBUG, LOG_TAG, "Async task run. Ctx: %d", ctx);
 
 	ctx->threadHandle = ecore_thread_feedback_run(Async_Thread,
 												  Async_Notify,
@@ -155,4 +170,31 @@ void TFC::Core::Async::AwaitAsyncTask(void* handle, void*& package, bool& doFina
 			doFinalize = true;
 		}
 	}
+}
+
+#include<sstream>
+
+LIBAPI
+void TFC::Core::Async::SynchronizeCall(void* taskHandle, SynchronizeHandlerPayload* p)
+{
+	auto ctx = AsyncContext::TryGet(taskHandle);
+
+	if(ctx == nullptr)
+	{
+		std::stringstream s;
+		s << "Invalid task handle received on SynchronizeCall: " << (int32_t)taskHandle;
+		throw TFCException(s.str());
+	}
+
+	else
+	{
+		SynchronizeContext syncCtx;
+		syncCtx.syncMutex.lock();
+		syncCtx.handlerPayload = p;
+		ecore_thread_feedback(ctx->threadHandle, &syncCtx);
+		// Wait until the lock is released (a.k.a. Async_Notify is runned)
+		syncCtx.syncMutex.lock();
+		delete p;
+	}
+
 }

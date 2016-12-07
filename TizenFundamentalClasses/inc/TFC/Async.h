@@ -10,7 +10,6 @@
 #ifndef TFC_CORE_ASYNC_NEW_H_
 #define TFC_CORE_ASYNC_NEW_H_
 
-#include <functional>
 #include <utility>
 #include <dlog.h>
 #include "TFC/Core.h"
@@ -480,7 +479,6 @@ struct AsyncPackage : public AsyncTaskInterface<typename Introspect::CallableObj
 
 	TLambda functionAsync;
 
-	//SharedEventObject<AsyncTask<ReturnType>*, typename AsyncTypeSelector<ReturnType>::EventDataType>
 	typename AsyncOperand<TLambda>::EventType eventComplete;
 	AsyncCompletePackage<ReturnType> lambdaComplete;
 
@@ -543,20 +541,20 @@ struct AsyncPackage : public AsyncTaskInterface<typename Introspect::CallableObj
 template<typename TLambda, typename TReturnType = typename Introspect::CallableObject<TLambda>::ReturnType>
 struct AsyncWorker
 {
-	static void Func(void* package)
+	static void Func(void* package, void* taskHandle)
 	{
 		auto ptr = reinterpret_cast<AsyncPackage<TLambda>*>(package);
-		ptr->result = new AsyncResult<TReturnType>(ptr->functionAsync());
+		ptr->result = new AsyncResult<TReturnType>(ptr->functionAsync(taskHandle));
 	}
 };
 
 template<typename TLambda>
 struct AsyncWorker<TLambda, void>
 {
-	static void Func(void* package)
+	static void Func(void* package, void* taskHandle)
 	{
 		auto ptr = reinterpret_cast<AsyncPackage<TLambda>*>(package);
-		ptr->functionAsync();
+		ptr->functionAsync(taskHandle);
 	}
 };
 
@@ -608,14 +606,6 @@ auto PackOperand(AsyncOperand<TLambda, TEvent, TReturnValue>&& operand)
 	-> typename std::enable_if<!std::is_void<TEvent>::value, AsyncPackage<TLambda>*>::type
 {
 	dlog_print(DLOG_DEBUG, "TFC-Debug", "Pack operand");
-	/*
-	AsyncPackage<TReturnValue>* ret = new AsyncPackage<TReturnValue>;
-	ret->functionAsync = operand.asyncFunc;
-	ret->eventComplete = operand.eventRef;
-	ret->completeInvoker = CompleteEventInvoker<TReturnValue>;
-	ret->awaitable = false
-	*/
-
 	return new AsyncPackage<TLambda> { std::forward<TLambda>(operand.asyncFunc), operand.eventRef };
 }
 
@@ -624,13 +614,6 @@ auto PackOperand(AsyncOperand<TLambda, AsyncCompleteOperand<TLambdaComplete>, TR
 	-> AsyncPackage<TLambda>*
 {
 	dlog_print(DLOG_DEBUG, "TFC-Debug", "Pack operand");
-	/*
-	AsyncPackage<TReturnValue>* ret = new AsyncPackage<TReturnValue>;
-	ret->functionAsync = operand.asyncFunc;
-	ret->lambdaComplete = std::move(operand.lambdaComplete);
-	ret->completeInvoker = CompleteLambdaInvoker<TReturnValue>;
-	ret->awaitable = false;
-	*/
 	return new AsyncPackage<TLambda> { std::forward<TLambda>(operand.asyncFunc), std::move(operand.lambdaComplete) };
 }
 
@@ -639,27 +622,22 @@ auto PackOperand(AsyncOperand<TLambda, void>&& operand)
 	-> AsyncPackage<TLambda>*
 {
 	dlog_print(DLOG_DEBUG, "TFC-Debug", "Pack operand");
-	/*
-	AsyncPackage<typename AsyncOperand<TLambda>::ReturnType>* ret = new AsyncPackage<typename AsyncOperand<TLambda>::ReturnType>;
-	ret->functionAsync = operand.asyncFunc;
-	*/
-
 	return new AsyncPackage<TLambda> { std::forward<TLambda>(operand.asyncFunc) };
 }
 
 struct AsyncHandlerPayload
 {
-	typedef void(*FunctionType)(void*);
-	FunctionType taskFunc;
-	FunctionType completeInvoker;
-	FunctionType finalizeFunc;
-	void*		 internalData;
-	void**		 taskHandleRef;
-	bool		 awaitable;
+	typedef void	(FunctionType)		(void*);
+	typedef void	(AsyncFunctionType)	(void*, void*);
+	AsyncFunctionType* 	taskFunc;
+	FunctionType* 		completeInvoker;
+	FunctionType* 		finalizeFunc;
+	void*		 		internalData;
+	void**				taskHandleRef;
+	bool		 		awaitable;
 };
 
 void* RunAsyncTask(AsyncHandlerPayload payload);
-
 void AwaitAsyncTask(void* handle, void*& package, bool& doFinalize);
 
 struct AwaitBuilder
@@ -743,7 +721,7 @@ struct CompleteBuilder
 
 template<typename TLambda,
 		 typename TIntrospect = Introspect::CallableObject<TLambda>,
-		 typename 			  = typename std::enable_if<TIntrospect::Arity == 0>::type>
+		 typename 			  = typename std::enable_if<TIntrospect::Arity == 1>::type>
 auto operator>>(TLambda&& lambda, typename AsyncOperand<TLambda>::EventType& event)
 	-> AsyncOperand<TLambda, typename AsyncOperand<TLambda>::EventType>
 {
@@ -809,7 +787,62 @@ auto operator>>(TLambdaAsync&& async, AsyncCompleteOperand<TLambdaAfter> after)
 	return { nullptr, nullptr };
 }
 
+template<typename TLambdaSync>
+struct SynchronizePackage
+{
+	TLambdaSync lambda;
 
+	static void SynchronizeLambdaInvoker(void* package)
+	{
+		reinterpret_cast<SynchronizePackage<TLambdaSync>*>(package)->lambda();
+	}
+
+	static void Deleter(void* package)
+	{
+		delete reinterpret_cast<SynchronizePackage<TLambdaSync>*>(package);
+	}
+
+	SynchronizePackage(TLambdaSync&& param) : lambda(std::move(param)) { }
+};
+
+struct SynchronizeHandlerPayload
+{
+	typedef void(SynchronizePackageFunction)(void*);
+
+	void* packagePtr;
+	SynchronizePackageFunction* lambdaInvokerFunc;
+	SynchronizePackageFunction* deleterFunc;
+
+	template<typename TLambdaSync>
+	static SynchronizeHandlerPayload* PackLambda(TLambdaSync&& l)
+	{
+		return new SynchronizeHandlerPayload {
+			new SynchronizePackage<TLambdaSync>(std::move(l)),
+			SynchronizePackage<TLambdaSync>::SynchronizeLambdaInvoker,
+			SynchronizePackage<TLambdaSync>::Deleter
+		};
+	}
+
+	~SynchronizeHandlerPayload() { if(packagePtr != nullptr) deleterFunc(packagePtr); }
+};
+
+void SynchronizeCall(void* taskHandle, SynchronizeHandlerPayload* p);
+
+struct SynchronizeBuilder
+{
+	void* taskHandle;
+
+	SynchronizeBuilder(void* taskHandle) : taskHandle(taskHandle)
+	{
+
+	}
+
+	template<typename TLambdaSync>
+	void operator&(TLambdaSync&& l)
+	{
+		SynchronizeCall(taskHandle, SynchronizeHandlerPayload::PackLambda(std::move(l)));
+	}
+};
 
 }}}
 
@@ -825,10 +858,11 @@ struct TFC::Async
 
 };
 
-#define tfc_async TFC::Core::Async::AsyncBuilder() & [=] ()
+#define tfc_async TFC::Core::Async::AsyncBuilder() & [=] (void* __tfc_taskHandle)
 #define tfc_await TFC::Core::Async::AwaitBuilder() &
 #define tfc_try_await
 #define tfc_async_complete >> TFC::Core::Async::CompleteBuilder() * [=]
+#define tfc_synchronize TFC::Core::Async::SynchronizeBuilder(__tfc_taskHandle) & [&] ()
 #define tfc_if_abort_return
 
 #endif /* ASYNC_NEW_H_ */
