@@ -601,12 +601,6 @@ struct CompleteLambdaInvoker<TLambda, void>
 	}
 };
 
-template<typename T>
-void AsyncFinalizeHandler(void* package)
-{
-	auto ptr = reinterpret_cast<AsyncPackage<T>*>(package);
-	delete ptr;
-}
 
 
 template<typename TLambda, typename TEvent, typename TReturnValue>
@@ -718,7 +712,7 @@ struct AsyncBuilder
 		AsyncHandlerPayload payload = {
 			AsyncWorker<TLambda>::Func,
 			packed->completeInvoker,
-			AsyncFinalizeHandler<TLambda>,
+			packed->deleterFunction,
 			packed,
 			&packed->taskHandle,
 			packed->awaitable

@@ -12,6 +12,8 @@
 #include <typeinfo>
 
 #include <dlog.h>
+#include <execinfo.h>
+#include <cxxabi.h>
 
 class TFC::ManagedClass::SharedHandle
 {
@@ -37,33 +39,114 @@ LIBAPI TFC::ObjectClass::~ObjectClass()
 
 }
 
+#define EXCEPTION_BT_BUFFERSIZE 100
+
+
 LIBAPI
 TFC::TFCException::TFCException(char const* message) {
-	//this->msg = message;
+	this->msg = message;
+	BuildStackTrace();
+}
 
+
+
+void TFC::TFCException::BuildStackTrace()
+{
 	std::stringstream strBuf;
+
 	strBuf << "Exception of type: ";
-	strBuf << typeid(this).name();
-	strBuf << " (" << message << ")\n";
+
+	int status = 0;
+	auto typeIdName = typeid(this).name();
+	auto execName = abi::__cxa_demangle(typeIdName, nullptr, nullptr, &status);
+
+	if(status == 0)
+		strBuf << execName;
+	else
+		strBuf << typeIdName;
+
+	free(execName);
+
+	strBuf << " (" << this->msg << ")\n";
 	strBuf << "Call trace:\n";
 
+	void* buffer[EXCEPTION_BT_BUFFERSIZE];
 
-	this->msg = message;
+	auto cnt = backtrace(buffer, EXCEPTION_BT_BUFFERSIZE);
+	auto symbols = backtrace_symbols(buffer, cnt);
+
+	// https://panthema.net/2008/0901-stacktrace-demangled/
+
+	for(int i = 2; i < cnt; i++)
+	{
+		strBuf << (cnt - i) << ": ";
+
+		// Tokenize
+		char* beginFunc = nullptr;
+		char* beginOffset = nullptr;
+		char* endOffset = nullptr;
+
+		for(char* p = symbols[i]; *p; p++)
+		{
+			if(*p == '(')
+				beginFunc = p;
+			else if(*p == '+')
+				beginOffset = p;
+			else if(*p == ')' && beginOffset != nullptr)
+				endOffset = p;
+		}
+
+		if(beginFunc 		!= nullptr
+		   and beginOffset	!= nullptr
+		   and endOffset 	!= nullptr)
+		{
+			*beginFunc++ = '\0';
+			*beginOffset++ = '\0';
+			*endOffset++ = '\0';
+
+			char* ret = abi::__cxa_demangle(beginFunc, nullptr, nullptr, &status);
+
+			if(status == 0)
+			{
+				strBuf << symbols[i] << ": " << ret << " +" << beginOffset << endOffset << '\n';
+			}
+			else
+			{
+				strBuf << symbols[i] << ": " << beginFunc << " +" << beginOffset << endOffset << '\n';
+			}
+
+			if(ret != nullptr)
+			{
+				free(ret);
+			}
+		}
+		else
+		{
+			strBuf << symbols[i] << '\n';
+		}
+	}
+
+	free(symbols);
+
+	this->stackTrace = strBuf.str();
 }
 
 LIBAPI
 TFC::TFCException::TFCException(std::string&& message) {
 	this->msg = message;
+	BuildStackTrace();
 }
 
 LIBAPI
 TFC::TFCException::TFCException(std::string const& message) {
 	this->msg = message;
+	BuildStackTrace();
 }
 
 LIBAPI
 char const* TFC::TFCException::what() const throw () {
 	return this->msg.c_str();
+
 }
 
 LIBAPI

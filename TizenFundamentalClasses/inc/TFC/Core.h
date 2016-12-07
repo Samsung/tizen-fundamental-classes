@@ -114,7 +114,6 @@ public:
 		SafePointer(SharedHandle* handle);
 
 
-
 		SharedHandle* handle;
 	};
 
@@ -168,6 +167,12 @@ public:
 
 private:
 	std::string msg;
+	std::string stackTrace;
+
+	void BuildStackTrace();
+
+public:
+	std::string& GetStackTrace() { return this->stackTrace; }
 };
 
 struct Color
