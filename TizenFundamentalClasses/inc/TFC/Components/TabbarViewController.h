@@ -53,7 +53,7 @@ private:
 protected:
 	void AddTab(std::string text, Framework::ControllerBase& controller);
 	virtual Evas_Object* CreateView(Evas_Object* root) final;
-
+	void OnReload(TFC::ObjectClass* param) override;
 public:
 	TabbarViewController(TFC::Framework::ControllerManager* m, char const* controllerName);
 };

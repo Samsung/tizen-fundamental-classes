@@ -222,3 +222,7 @@ void TFC::Components::TabbarViewController::OnTabContentScrolled(
 
 	this->tabs[pageH].controller->Reload(nullptr);
 }
+
+void TFC::Components::TabbarViewController::OnReload(TFC::ObjectClass* param) {
+	this->tabs[this->currentTab].controller->Reload(param);
+}
