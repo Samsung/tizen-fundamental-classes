@@ -41,13 +41,13 @@ namespace {
 	{
 		static constexpr char const* authUrl = "https://www.facebook.com/dialog/oauth";
 		static constexpr char const* refreshTokenUrl = "https://www.facebook.com/dialog/oauth";
-		static constexpr char const* redirectionUrl = "http://galaxygift.id/";
 	};
 
 	struct FacebookAppClientProvider
 	{
 		static constexpr char const* clientId = "492256874254380";
 		static constexpr char const* clientScope = "public_profile, email";
+		static constexpr char const* redirectionUrl = "http://galaxygift.id/";
 	};
 
 	struct GoogleOAuthProvider
@@ -55,7 +55,6 @@ namespace {
 		static constexpr char const* authUrl = "https://accounts.google.com/o/oauth2/auth";
 		static constexpr char const* accessTokenUrl = "https://accounts.google.com/o/oauth2/token";
 		static constexpr char const* refreshTokenUrl = "https://www.googleapis.com/oauth2/v3/token";
-		static constexpr char const* redirectionUrl = "http://heliosky.com";
 	};
 
 	struct GoogleAppClientProvider
@@ -63,6 +62,7 @@ namespace {
 		static constexpr char const* clientId = "216020663022-qo7o09pun912281apcal6bfvco0m7d64.apps.googleusercontent.com";
 		static constexpr char const* clientScope = "email";
 		static constexpr char const* clientSecret = "DEdQUn-QFbiitgpGyLd6dtoZ";
+		static constexpr char const* redirectionUrl = "http://heliosky.com";
 	};
 
 	struct TwitterOAuthProvider
@@ -70,8 +70,7 @@ namespace {
 		static constexpr char const* authUrl = "https://api.twitter.com/oauth/authenticate";
 		static constexpr char const* accessTokenUrl = "https://api.twitter.com/oauth/access_token";
 		static constexpr char const* requestTokenUrl = "https://api.twitter.com/oauth/request_token";
-		static constexpr char const* redirectionUrl = "http://galaxygift.id/";
-		static constexpr bool threeLegged = true;
+		static constexpr auto oAuthMode = TFC::Net::OAuthMode::Version1;
 	};
 
 	struct TwitterAppClientProvider
@@ -79,6 +78,7 @@ namespace {
 		static constexpr char const* clientId = "vOKnOpVfvlYlPiGbZ2Qgtga1I";
 		static constexpr char const* clientScope = "email";
 		static constexpr char const* clientSecret = "dyNtTL8G71QTv1X41m4D6fb605m5vKh0hZ1KDV2NpcdQLx2ZbT";
+		static constexpr char const* redirectionUrl = "http://galaxygift.id/";
 	};
 
 	struct InvalidOAuthProvider
@@ -104,24 +104,22 @@ TEST_F(OAuthTest, RetrieveAuthUrl)
 
 	auto res1 = Extractor::authUrl;
 	auto res2 = Extractor::accessTokenUrl;
-	auto res3 = Extractor::redirectionUrl;
 	auto res4 = Extractor::refreshTokenUrl;
 
 	EXPECT_STREQ("https://www.facebook.com/dialog/oauth", res1) << "Metaprogramming failed to retrieve value";
 	EXPECT_STREQ("https://www.facebook.com/dialog/oauth", res4) << "Metaprogramming failed to retrieve value";
 	EXPECT_EQ(nullptr, res2) << "Metaprogramming failed to retrieve value";
-	EXPECT_EQ(nullptr, res3) << "Metaprogramming failed to retrieve value";
 }
 
 class OAuthTestClass : public TFC::EventClass
 {
 public:
-	typedef TFC::Net::OAuth2Client<GoogleOAuthProvider, GoogleAppClientProvider> FBClient;
+	typedef TFC::Net::OAuthClient<GoogleOAuthProvider, GoogleAppClientProvider> FBClient;
 	FBClient client;
 	std::timed_mutex mutex;
 	std::string accessToken;
 
-	void OnAccessTokenReceived(TFC::Net::OAuth2ClientBase* src, std::string token)
+	void OnAccessTokenReceived(TFC::Net::OAuthClientBase* src, std::string token)
 	{
 		accessToken = token;
 		std::cout << "Access Token : " << accessToken << "\n";
@@ -182,12 +180,12 @@ TEST_F(OAuthTest, FullStackOAuth)
 class TwitterOAuthTestClass : public TFC::EventClass
 {
 public:
-	typedef TFC::Net::OAuth2Client<TwitterOAuthProvider, TwitterAppClientProvider> TwitterClient;
+	typedef TFC::Net::OAuthClient<TwitterOAuthProvider, TwitterAppClientProvider> TwitterClient;
 	TwitterClient client;
 	std::timed_mutex mutex;
 	std::string accessToken;
 
-	void OnAccessTokenReceived(TFC::Net::OAuth2ClientBase* src, std::string token)
+	void OnAccessTokenReceived(TFC::Net::OAuthClientBase* src, std::string token)
 	{
 		accessToken = token;
 		std::cout << "Access Token : " << accessToken << "\n";

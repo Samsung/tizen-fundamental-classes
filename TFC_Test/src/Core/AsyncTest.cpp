@@ -37,7 +37,7 @@ TEST_F(AsyncTest, OperatorRedirectionTest)
 	int a = 5;
 
 	TFC::Core::SharedEventObject<TFC::Core::Async::AsyncTask<void>*, void*> eventAsync;
-	auto operand = [a] () { int b = a; } >> eventAsync;
+	auto operand = [a] (void*) { int b = a; } >> eventAsync;
 
 	/* This is invalid operation because the lambda has parameter
 	auto operandInvalid = [a] (int b) { int c = b + a; } >> eventAsync;
@@ -52,7 +52,7 @@ TEST_F(AsyncTest, OperatorRedirectionTest)
 TEST_F(AsyncTest, OperatorRedirectionTestNonVoid)
 {
 	TFC::Core::SharedEventObject<TFC::Core::Async::AsyncTask<std::string>*, std::string> eventAsync;
-	auto operand = [] { return std::string("Hello!"); } >> eventAsync;
+	auto operand = [] (void*) { return std::string("Hello!"); } >> eventAsync;
 
 	//typedef TFC::Core::Async::AsyncOperand<std::string, decltype(eventAsync)> CorrectType;
 	//ASSERT_TRUE((std::is_same<decltype(operand), CorrectType>::value)) << "Operator << yields incorrect type on non void";
@@ -338,6 +338,8 @@ TEST_F(AsyncTest, AsyncWithSafeHandle)
 		}
 	};
 
+	dlog_print(DLOG_DEBUG, "TFC-Debug", "Begin first case");
+
 	int test = rand();
 	EFL_BLOCK_BEGIN;
 		EFL_SYNC_BEGIN(test);
@@ -358,6 +360,8 @@ TEST_F(AsyncTest, AsyncWithSafeHandle)
 	mutexAsync.lock();
 	ASSERT_TRUE(operationResult) << "Using SafePointer handle failed";
 
+	dlog_print(DLOG_DEBUG, "TFC-Debug", "Begin second case");
+
 	auto otherObj = new SomeAsyncClass;
 
 	EFL_BLOCK_BEGIN;
@@ -370,4 +374,53 @@ TEST_F(AsyncTest, AsyncWithSafeHandle)
 	ASSERT_TRUE(otherObj->safelyAccessed) << "Using SafePointer handle failed";
 
 	delete otherObj;
+}
+
+TEST_F(AsyncTest, AsyncWithSynchronizeBlock)
+{
+	using Ms = std::chrono::milliseconds;
+
+	struct {
+		std::mutex mutexTest;
+		int test;
+		int* result;
+	} t;
+	t.test = rand();
+	t.result = new int;
+	t.mutexTest.lock();
+
+	EFL_BLOCK_BEGIN;
+		EFL_SYNC_BEGIN(t);
+
+			int test = t.test;
+			int* result = t.result;
+			std::mutex* mutexTest = &t.mutexTest;
+			tfc_async
+			{
+				int value = test + 12345;
+				dlog_print(DLOG_DEBUG, "TFC-Debug", "Before synchronize. Ctx: %d", __tfc_taskHandle );
+				std::this_thread::sleep_for(Ms(1000));
+
+				tfc_synchronize
+				{
+					value += 303030;
+					std::this_thread::sleep_for(Ms(1000));
+				};
+				dlog_print(DLOG_DEBUG, "TFC-Debug", "After synchronize");
+				return value;
+			}
+			tfc_async_complete(int value)
+			{
+				*result = value;
+				mutexTest->unlock();
+			};
+
+		EFL_SYNC_END;
+	EFL_BLOCK_END;
+
+	t.mutexTest.lock();
+	int expected = t.test + 12345 + 303030;
+
+	EXPECT_EQ(expected, *t.result) << "Invalid result from synchronize";
+	delete t.result;
 }
