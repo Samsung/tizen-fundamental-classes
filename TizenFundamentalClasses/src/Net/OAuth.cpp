@@ -8,7 +8,7 @@
 #include "TFC/Net/OAuth.h"
 #include "TFC/Net/OAuthREST.h"
 #include "TFC/EFL.h"
-#include <iostream>
+#include <dlog.h>
 #include <efl_extension.h>
 #include <EWebKit.h>
 #include <system_info.h>
@@ -52,8 +52,11 @@ TFC::Net::OAuthToken::OAuthToken(std::string const& str)
 	auto secretStart = str.find("oauth_token_secret=") + 19;
 	auto secretEnd = str.find("&", secretStart);
 
-	token = str.substr(tokenStart, tokenEnd - tokenStart);
-	secret = str.substr(secretStart, secretEnd - secretStart);
+	if (tokenEnd != std::string::npos && secretEnd != std::string::npos)
+	{
+		token = str.substr(tokenStart, tokenEnd - tokenStart);
+		secret = str.substr(secretStart, secretEnd - secretStart);
+	}
 };
 
 TFC::Net::OAuthGrant::OAuthGrant(std::string const& str)
@@ -63,8 +66,11 @@ TFC::Net::OAuthGrant::OAuthGrant(std::string const& str)
 	auto verifierStart = str.find("oauth_verifier=") + 15;
 	auto verifierEnd = str.find("&", verifierStart);
 
-	token = str.substr(tokenStart, tokenEnd - tokenStart);
-	verifier = str.substr(verifierStart, verifierEnd - verifierStart);
+	if (tokenEnd != std::string::npos && verifierEnd != std::string::npos)
+	{
+		token = str.substr(tokenStart, tokenEnd - tokenStart);
+		verifier = str.substr(verifierStart, verifierEnd - verifierStart);
+	}
 }
 
 class OAuth1TokenService : public TFC::Net::OAuthRESTServiceTemplateBase<TFC::Net::OAuthToken>
@@ -80,7 +86,7 @@ public:
 protected:
 	virtual TFC::Net::OAuthToken* OnProcessResponse(int httpCode, const std::string& responseStr, int& errorCode, std::string& errorMessage)
 	{
-		std::cout << "\Response : \n" << responseStr << "\n";
+		dlog_print(DLOG_DEBUG, LOG_TAG, "OAuth Client Response : %s", responseStr.c_str());
 		auto oAuthToken = new TFC::Net::OAuthToken(responseStr);
 		return oAuthToken;
 	}
@@ -131,8 +137,10 @@ void TFC::Net::OAuthClientBase::PerformOAuth1Request()
 	OAuth1TokenService service(paramPtr->requestTokenUrl, paramPtr, "", paramPtr->redirectionUrl);
 	auto result = service.Call();
 	OAuthToken* response = result.Response;
-	std::cout << "Request Token : " << response->token << ", Secret : " << response->secret << "\n";
+	if (!response) throw OAuth2Exception(OAUTH2_ERROR_NETWORK_ERROR);
 
+	//std::cout << "Request Token : " << response->token << ", Secret : " << response->secret << "\n";
+	dlog_print(DLOG_DEBUG, LOG_TAG, "Request token : %s, secret : %s", response->token.c_str(), response->secret.c_str());
 	std::stringstream urlStream;
 	urlStream << paramPtr->authUrl << "?oauth_token=" << response->token;
 	window->Show(urlStream.str(), paramPtr->redirectionUrl);
@@ -144,7 +152,10 @@ void TFC::Net::OAuthClientBase::OnAuthGrantCallbackCaptured(OAuthWindow* source,
 	service.Verifier = data.verifier;
 	auto result = service.Call();
 	OAuthToken* response = result.Response;
-	std::cout << "Access Token : " << response->token << ", Secret : " << response->secret << "\n";
+	if (!response) throw OAuth2Exception(OAUTH2_ERROR_NETWORK_ERROR);
+
+	//std::cout << "Access Token : " << response->token << ", Secret : " << response->secret << "\n";
+	dlog_print(DLOG_DEBUG, LOG_TAG, "Access token : %s, secret : %s", response->token.c_str(), response->secret.c_str());
 	eventAccessTokenReceived(this, response->token);
 }
 
@@ -246,7 +257,8 @@ void TFC::Net::OAuthClientBase::RequestAuthorizationCallback(
 	{
 		char* errorDescription;
 		oauth2_error_get_description(err, &errorDescription);
-		std::cout << "Error : " << errorDescription << "\n";
+		//std::cout << "Error : " << errorDescription << "\n";
+		dlog_print(DLOG_DEBUG, LOG_TAG, "OAuth Client Error : %s", errorDescription);
 	}
 
 	char* token;
@@ -344,11 +356,11 @@ void TFC::Net::OAuthWindow::HideLoadingPopup()
 void TFC::Net::OAuthWindow::OnUrlChanged(Evas_Object* obj, const char* url)
 {
 	std::string urlStr(url);
-	std::cout << "URL change : " << urlStr << "\n";
+	//std::cout << "URL change : " << urlStr << "\n";
 	if (urlStr.find(expectedCallbackUrl) != std::string::npos)
 	{
 		Hide();
-		std::cout << "Expected URL with token : " << urlStr << "\n\n";
+		//std::cout << "Expected URL with token : " << urlStr << "\n\n";
 		OAuthGrant grant(urlStr);
 		eventCallbackCaptured(this, grant);
 		ShowLoadingPopup();

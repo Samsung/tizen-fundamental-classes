@@ -200,7 +200,14 @@ public:
 	void PerformRequest()
 	{
 		mutex.lock();
+		try
+		{
 		client.PerformRequest();
+		}
+		catch (TFC::Net::OAuth2Exception& ex)
+		{
+			std::cout << ex.what() << "\n";
+		}
 	}
 };
 
