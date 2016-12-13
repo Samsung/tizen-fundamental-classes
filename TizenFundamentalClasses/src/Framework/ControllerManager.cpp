@@ -119,6 +119,7 @@ void TFC::Framework::StackingControllerManager::DoNavigateBackward()
 Evas_Object* StackingControllerManager::CreateViewContainer(Evas_Object* parent)
 {
 	auto naviframe = elm_naviframe_add(parent);
+	elm_naviframe_prev_btn_auto_pushed_set(naviframe, EINA_TRUE);
 	evas_object_size_hint_weight_set(naviframe, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
 	evas_object_size_hint_align_set(naviframe, EVAS_HINT_FILL, EVAS_HINT_FILL);
 	evas_object_show(naviframe);
