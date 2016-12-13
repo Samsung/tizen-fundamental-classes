@@ -175,7 +175,7 @@ void StackingControllerManager::PushView(ViewBase* view)
 		}
 
 		evas_object_smart_callback_add(backButton, "clicked", [] (void* a, Evas_Object* b, void* c)
-		{	static_cast<UIApplicationBase*>(a)->BackButtonPressed();}, this);
+		{	static_cast<StackingControllerManager*>(a)->NavigateBack(); }, this);
 
 		evas_object_show(viewComponent);
 	}
