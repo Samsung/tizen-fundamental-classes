@@ -7,11 +7,12 @@
  */
 
 #include "TFC/Framework/Application.h"
+#include "TFC/Framework/MVCApplication.h"
 
 using namespace TFC::Framework;
 
 LIBAPI MVCApplicationBase::MVCApplicationBase(char const* appPackage, char const* mainController) :
-	UIApplicationBase(appPackage), StackingControllerManager(this), mainController(mainController)
+	UIApplicationBase(appPackage), mainController(mainController)
 {
 }
 
@@ -22,6 +23,7 @@ LIBAPI bool MVCApplicationBase::OnBackButtonPressed()
 
 LIBAPI void MVCApplicationBase::OnApplicationCreated()
 {
+	this->SetApplicationContent(this->CreateViewContainer(this->GetApplicationConformant()));
 	this->NavigateTo(mainController, nullptr);
 }
 

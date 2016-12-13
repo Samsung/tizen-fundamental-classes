@@ -7,11 +7,11 @@
  */
 
 #include "TFC/Framework/Application.h"
+#include "TFC/Framework/ControllerManager.h"
 
 using namespace TFC::Framework;
 
-LIBAPI TFC::Framework::SwitchingControllerManager::SwitchingControllerManager(IAttachable* iattachable) :
-	iattachable(iattachable)
+LIBAPI TFC::Framework::SwitchingControllerManager::SwitchingControllerManager()
 {
 }
 
@@ -27,27 +27,6 @@ LIBAPI ControllerBase* SwitchingControllerManager::GetController(char const* con
 	return nullptr;//static_cast<ControllerBase*>(entry->attachedData);
 }
 
-void SwitchingControllerManager::NavigateTo(const char* controllerName, ObjectClass* data)
-{
-	NavigateTo(controllerName, data, false);
-}
-
-void SwitchingControllerManager::NavigateTo(const char* controllerName, ObjectClass* data, bool noTrail)
-{
-	auto controllerToSwitch = GetController(controllerName);
-
-	controllerToSwitch->Unload();
-	iattachable->Detach();
-	iattachable->Attach(controllerToSwitch->View);
-	controllerToSwitch->Load(data);
-
-	currentController = controllerToSwitch;
-}
-
-bool SwitchingControllerManager::NavigateBack()
-{
-	return true;
-}
 
 
 LIBAPI
@@ -57,8 +36,3 @@ ControllerBase& TFC::Framework::SwitchingControllerManager::GetCurrentController
 }
 
 
-LIBAPI
-void TFC::Framework::SwitchingControllerManager::ClearNavigationHistory()
-{
-	// TODO implement this on Switching Controller Manager
-}

@@ -10,6 +10,7 @@
 
 #include <dlog.h>
 #include "TFC/Framework/Application.h"
+#include "TFC/Framework/ControllerManager.h"
 
 using namespace TFC::Framework;
 
@@ -93,15 +94,6 @@ LIBAPI bool UIApplicationBase::ApplicationCreate()
 	EVAS_HINT_EXPAND);
 	elm_win_resize_object_add(this->win, this->conform);
 	evas_object_show(this->conform);
-
-	// Naviframe
-	this->rootFrame = elm_naviframe_add(this->conform);
-
-	elm_naviframe_prev_btn_auto_pushed_set(this->rootFrame, EINA_TRUE);
-	elm_naviframe_content_preserve_on_pop_set(this->rootFrame, EINA_FALSE);
-	elm_object_content_set(this->conform, this->rootFrame);
-	evas_object_show(this->rootFrame);
-
 	evas_object_show(this->win);
 
 	this->OnApplicationCreated();
@@ -185,69 +177,13 @@ LIBAPI bool UIApplicationBase::ReleaseExclusiveBackButtonPressed(EventClass* ins
 	return false;
 }
 
-LIBAPI void UIApplicationBase::Attach(ViewBase* view)
+LIBAPI void UIApplicationBase::SetApplicationContent(Evas_Object* content)
 {
-	Evas_Object* viewComponent = view->Create(this->rootFrame);
-
-	//show to window
-	if (viewComponent != NULL)
-	{
-		auto naviframeContent = dynamic_cast<INaviframeContent*>(view);
-
-		char const* naviframeStyle = nullptr;
-
-		if (naviframeContent)
-			naviframeStyle = naviframeContent->GetContentStyle();
-
-		auto naviframeItem = elm_naviframe_item_push(this->rootFrame, view->Title->c_str(), NULL, NULL,
-			viewComponent, naviframeStyle);
-
-		auto backButton = elm_object_item_part_content_get(naviframeItem, "elm.swallow.prev_btn");
-		auto style = elm_object_style_get(backButton);
-
-		// Title button handling
-
-		if (naviframeContent)
-		{
-			char const* buttonPart = "title_left_btn";
-			auto left = naviframeContent->GetTitleLeftButton(&buttonPart);
-			if (left)
-			{
-				auto oldObj = elm_object_item_part_content_unset(naviframeItem, buttonPart);
-				evas_object_hide(oldObj);
-				elm_object_item_part_content_set(naviframeItem, buttonPart, left);
-				evas_object_show(left);
-			}
-
-			buttonPart = "title_right_btn";
-			auto right = naviframeContent->GetTitleRightButton(&buttonPart);
-			if (right)
-			{
-				auto oldObj = elm_object_item_part_content_unset(naviframeItem, buttonPart);
-				evas_object_hide(oldObj);
-				elm_object_item_part_content_set(naviframeItem, buttonPart, right);
-				evas_object_show(right);
-			}
-
-			naviframeContent->RaiseAfterNaviframePush(naviframeItem);
-		}
-
-
-
-		dlog_print(DLOG_DEBUG, LOG_TAG, "Prev Button Style: %s", style);
-
-		evas_object_smart_callback_add(backButton, "clicked", [] (void* a, Evas_Object* b, void* c)
-		{	static_cast<UIApplicationBase*>(a)->BackButtonPressed();}, this);
-
-		evas_object_show(viewComponent);
-	}
+	// Naviframe
+	this->rootFrame = content;
+	elm_object_content_set(this->conform, this->rootFrame);
+	evas_object_show(this->rootFrame);
 }
-
-LIBAPI void UIApplicationBase::Detach()
-{
-	elm_naviframe_item_pop(this->rootFrame);
-}
-
 
 LIBAPI bool UIApplicationBase::OnBackButtonPressed()
 {

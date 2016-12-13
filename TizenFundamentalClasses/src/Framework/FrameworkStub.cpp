@@ -10,10 +10,6 @@
 
 using namespace TFC::Framework;
 
-LIBAPI IAttachable::~IAttachable()
-{
-
-}
 
 LIBAPI INaviframeContent::~INaviframeContent()
 {

@@ -51,32 +51,6 @@ class ApplicationBase;
 typedef bool (EventClass::*BackButtonCallback)();
 
 /**
- * Interface that represents an attachable object. A class that implements this
- * interface should be able to receive a ViewBase and attach its content internally
- */
-class LIBAPI IAttachable
-{
-public:
-
-	/**
-	 * Method to be called to attach a view inside this attachable object
-	 *
-	 * @param view A view to be attached
-	 */
-	virtual void Attach(ViewBase* view) = 0;
-
-	/**
-	 * Method to be called to detach the currently attached view from the object
-	 */
-	virtual void Detach() = 0;
-
-	/**
-	 * Virtual destructor for the interface
-	 */
-	virtual ~IAttachable();
-};
-
-/**
  * Application base class that encapsulates a simple Tizen application. It contains a simple
  * implementation of a Tizen application, and several overridable methods that can be overriden
  * for specific Tizen system callback implementation.
@@ -196,7 +170,7 @@ public:
 	virtual void OnReceiveAppControlMessage(app_control_h app_control) = 0;
 };
 
-class LIBAPI UIApplicationBase : public ApplicationBase, public IAttachable
+class LIBAPI UIApplicationBase : public ApplicationBase
 {
 private:
 
@@ -267,22 +241,12 @@ public:
 
 	bool ReleaseExclusiveBackButtonPressed(EventClass* instance, BackButtonCallback callback);
 
+	void SetApplicationContent(Evas_Object* content);
+
 	/**
 	 * Method that will be called by Tizen system when the user clicks the back button
 	 */
 	void BackButtonPressed();
-
-	/**
-	 * Method to be called to attach a view inside this attachable object
-	 *
-	 * @param view A view to be attached
-	 */
-	void Attach(ViewBase* view);
-
-	/**
-	 * Method to be called to detach the currently attached view from the object
-	 */
-	void Detach();
 
 	//TODO Give replacement for these SimpleReadOnlyProperty as these classes is no longer available
 	/*
@@ -299,7 +263,7 @@ public:
  * controller will be managed by ControllerManager to support navigation between controllers,
  * and control passing.
  */
-class LIBAPI ControllerBase: virtual public EventClass
+class LIBAPI ControllerBase
 {
 protected:
 	/**
@@ -437,34 +401,44 @@ private:
 /**
  * Class that encapsulate controller stack within ControllerManager
  */
-class ControllerChain
+enum class NavigationFlag
 {
-public:
-	ControllerBase* instance;
-	ControllerChain* next;
-
+	Default 	 = 0x1,
+	Back 		 = 0x2,
+	NoTrail 	 = 0x4,
+	ClearHistory = 0x8,
+	NoCallUnload = 0xF
 };
+
+inline bool operator&(NavigationFlag a, NavigationFlag b) { return static_cast<int>(a) & static_cast<int>(b); }
+inline NavigationFlag operator|(NavigationFlag a, NavigationFlag b) { return static_cast<NavigationFlag>(static_cast<int>(a) | static_cast<int>(b)); }
 
 /**
  * Class that manages Controller and provides navigation mechanism between loaded controllers
  */
 class LIBAPI ControllerManager :
-	public EventClass,
+	public EFL::EFLProxyClass,
 	public EventEmitterClass<ControllerManager>,
 	PropertyClass<ControllerManager>
 {
 private:
 	//Eina_Hash* controllerTable;
 	std::unordered_map<std::string, ControllerFactoryMethod> controllerTable;
+
+	bool pendingNavigation;
+	void PerformNavigationInternal(char const* controllerName, ObjectClass* data, NavigationFlag mode);
 protected:
-	virtual ControllerBase& GetCurrentController() const = 0;
 	ControllerBase* Instantiate(char const* controllerName);
+
+	virtual ControllerBase& GetCurrentController() const = 0;
+	virtual void PerformNavigation(char const* controllerName, ObjectClass* data, NavigationFlag mode) = 0;
+	virtual Evas_Object* CreateViewContainer(Evas_Object* parent) = 0;
 public:
 	ControllerManager();
-	virtual void ClearNavigationHistory() = 0;
-	virtual bool NavigateBack() = 0;
-	virtual void NavigateTo(char const* controllerName, ObjectClass* data) = 0;
-	virtual void NavigateTo(char const* controllerName, ObjectClass* data, bool noTrail) = 0;
+	void NavigateTo(char const* controllerName, ObjectClass* data, NavigationFlag mode);
+	void NavigateTo(char const* controllerName, ObjectClass* data) 				 { NavigateTo(controllerName, data, NavigationFlag::Default); };
+	void NavigateTo(char const* controllerName, ObjectClass* data, bool noTrail) { NavigateTo(controllerName, data, NavigationFlag::NoTrail); };
+	bool NavigateBack() 													     { NavigateTo(nullptr, nullptr, NavigationFlag::Back); return true; };
 
 	Event<ControllerBase*> eventNavigationProcessed;
 	Property<ControllerBase&>::Get<&ControllerManager::GetCurrentController> CurrentController;
@@ -474,66 +448,7 @@ public:
 	 * the controller and instantiate it when needed
 	 */
 	void RegisterControllerFactory(ControllerFactory* controller);
-
 	virtual ~ControllerManager();
-};
-
-class LIBAPI StackingControllerManager: public ControllerManager, public EFL::EFLProxyClass
-{
-private:
-	std::deque<std::unique_ptr<ControllerBase>> controllerStack;
-	IAttachable* const app;
-	void PushController(ControllerBase* controller);
-	bool PopController();
-
-	bool pendingNavigation;
-	void OnPerformNavigation();
-
-	void DoNavigateBackward();
-	void DoNavigateForward(char const* targetControllerName, ObjectClass* data, bool noTrail);
-protected:
-	virtual ControllerBase& GetCurrentController() const override;
-public:
-	/**
-	 * Constructor of NAvigatingControllerManager
-	 *
-	 * @param app IAttachable which this controller manager will attach the underlying view
-	 */
-	StackingControllerManager(IAttachable* app);
-	virtual void ClearNavigationHistory() override;
-	virtual void NavigateTo(const char* controllerName, ObjectClass* data) override;
-	virtual void NavigateTo(const char* controllerName, ObjectClass* data, bool noTrail) override;
-	virtual bool NavigateBack() override;
-};
-
-class SwitchingControllerManager: public ControllerManager
-{
-private:
-	IAttachable* const iattachable;
-	ControllerBase* GetController(char const* controllerName);
-	ControllerBase* currentController;
-protected:
-	virtual ControllerBase& GetCurrentController() const override;
-public:
-	SwitchingControllerManager(IAttachable* iattachable);
-	//void SwitchTo(char const* controllerName);
-	virtual void ClearNavigationHistory() override;
-	virtual void NavigateTo(const char* controllerName, ObjectClass* data) override;
-	virtual void NavigateTo(const char* controllerName, ObjectClass* data, bool noTrail) override;
-	virtual bool NavigateBack() override;
-};
-
-class LIBAPI MVCApplicationBase:
-	public UIApplicationBase,
-	public StackingControllerManager
-{
-private:
-	char const* mainController;
-public:
-	MVCApplicationBase(char const* appPackage, char const* mainController);
-	virtual bool OnBackButtonPressed() final;
-	virtual void OnApplicationCreated();
-	virtual ~MVCApplicationBase();
 };
 
 class LIBAPI ITitleProvider: PropertyClass<ITitleProvider>

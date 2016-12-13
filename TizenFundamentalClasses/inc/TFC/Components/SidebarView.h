@@ -29,7 +29,6 @@ class LIBAPI SidebarView:
 		public BackButtonHandler,
 		public EFL::EFLProxyClass,
 		EventEmitterClass<SidebarView>,
-		public Framework::IAttachable,
 		public Framework::INaviframeContent,
 		public Framework::ViewBase
 {
