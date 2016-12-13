@@ -8,6 +8,9 @@
 #include "TFC/Net/OAuth.h"
 #include "TFC/Net/OAuthREST.h"
 #include "TFC/EFL.h"
+#include "TFC/Async.h"
+
+#include <iostream>
 #include <dlog.h>
 #include <efl_extension.h>
 #include <EWebKit.h>
@@ -64,13 +67,13 @@ TFC::Net::OAuthGrant::OAuthGrant(std::string const& str)
 	auto tokenStart = str.find("oauth_token=") + 12;
 	auto tokenEnd = str.find("&", tokenStart);
 	auto verifierStart = str.find("oauth_verifier=") + 15;
-	auto verifierEnd = str.find("&", verifierStart);
 
-	if (tokenEnd != std::string::npos && verifierEnd != std::string::npos)
+	if (tokenEnd != std::string::npos)
 	{
 		token = str.substr(tokenStart, tokenEnd - tokenStart);
-		verifier = str.substr(verifierStart, verifierEnd - verifierStart);
+		verifier = str.substr(verifierStart, str.length() - verifierStart);
 	}
+	//std::cout << "Token : " << token << ", Verifier : " << verifier << "\n";
 }
 
 class OAuth1TokenService : public TFC::Net::OAuthRESTServiceTemplateBase<TFC::Net::OAuthToken>
@@ -86,6 +89,7 @@ public:
 protected:
 	virtual TFC::Net::OAuthToken* OnProcessResponse(int httpCode, const std::string& responseStr, int& errorCode, std::string& errorMessage)
 	{
+		//std::cout << "OAuth Client Response : " << responseStr << "\n";
 		dlog_print(DLOG_DEBUG, LOG_TAG, "OAuth Client Response : %s", responseStr.c_str());
 		auto oAuthToken = new TFC::Net::OAuthToken(responseStr);
 		return oAuthToken;
@@ -134,29 +138,44 @@ void TFC::Net::OAuthClientBase::PerformRequest()
 
 void TFC::Net::OAuthClientBase::PerformOAuth1Request()
 {
-	OAuth1TokenService service(paramPtr->requestTokenUrl, paramPtr, "", paramPtr->redirectionUrl);
-	auto result = service.Call();
-	OAuthToken* response = result.Response;
-	if (!response) throw OAuth2Exception(OAUTH2_ERROR_NETWORK_ERROR);
+	window = new OAuthWindow();
+	window->eventCallbackCaptured += EventHandler(OAuthClientBase::OnAuthGrantCallbackCaptured);
+	tfc_async
+	{
+		OAuth1TokenService service(paramPtr->requestTokenUrl, paramPtr, "", paramPtr->redirectionUrl);
+		auto result = service.Call();
+		return (OAuthToken*)result.Response;
+	}
+	tfc_async_complete (OAuthToken* response)
+	{
+		if (response == nullptr) throw OAuth2Exception(OAUTH2_ERROR_NETWORK_ERROR);
 
-	//std::cout << "Request Token : " << response->token << ", Secret : " << response->secret << "\n";
-	dlog_print(DLOG_DEBUG, LOG_TAG, "Request token : %s, secret : %s", response->token.c_str(), response->secret.c_str());
-	std::stringstream urlStream;
-	urlStream << paramPtr->authUrl << "?oauth_token=" << response->token;
-	window->Show(urlStream.str(), paramPtr->redirectionUrl);
+		//std::cout << "Request Token : " << response->token << ", Secret : " << response->secret << "\n";
+		dlog_print(DLOG_DEBUG, LOG_TAG, "Request token : %s, secret : %s", response->token.c_str(), response->secret.c_str());
+		std::stringstream urlStream;
+		urlStream << paramPtr->authUrl << "?oauth_token=" << response->token;
+		window->Show(urlStream.str(), paramPtr->redirectionUrl);
+	};
 }
 
 void TFC::Net::OAuthClientBase::OnAuthGrantCallbackCaptured(OAuthWindow* source, OAuthGrant data)
 {
-	OAuth1TokenService service(paramPtr->accessTokenUrl, paramPtr, data.token, "");
-	service.Verifier = data.verifier;
-	auto result = service.Call();
-	OAuthToken* response = result.Response;
-	if (!response) throw OAuth2Exception(OAUTH2_ERROR_NETWORK_ERROR);
+	tfc_async
+	{
+		OAuth1TokenService service(paramPtr->accessTokenUrl, paramPtr, data.token, "");
+		service.Verifier = data.verifier;
+		auto result = service.Call();
+		return (OAuthToken*)result.Response;
+	}
+	tfc_async_complete (OAuthToken* response)
+	{
+		if (response == nullptr) throw OAuth2Exception(OAUTH2_ERROR_NETWORK_ERROR);
 
-	//std::cout << "Access Token : " << response->token << ", Secret : " << response->secret << "\n";
-	dlog_print(DLOG_DEBUG, LOG_TAG, "Access token : %s, secret : %s", response->token.c_str(), response->secret.c_str());
-	eventAccessTokenReceived(this, response->token);
+		//std::cout << "Access Token : " << response->token << ", Secret : " << response->secret << "\n";
+		dlog_print(DLOG_DEBUG, LOG_TAG, "Access token : %s, secret : %s", response->token.c_str(), response->secret.c_str());
+		eventAccessTokenReceived(this, response->token);
+		window->Hide();
+	};
 }
 
 LIBAPI
@@ -206,8 +225,6 @@ TFC::Net::OAuthClientBase::OAuthClientBase(OAuthParam* param) :
 	}
 	else
 	{
-		window = new OAuthWindow();
-		window->eventCallbackCaptured += EventHandler(OAuthClientBase::OnAuthGrantCallbackCaptured);
 	}
 }
 
@@ -277,24 +294,21 @@ TFC::Net::OAuthWindow::OAuthWindow() :
 {
 	eventLoadFinished += EventHandler(OAuthWindow::OnLoadFinished);
 	eventUrlChanged += EventHandler(OAuthWindow::OnUrlChanged);
-}
-
-void TFC::Net::OAuthWindow::Show(const std::string& url, const std::string& expectedCallbackUrl)
-{
-	ShowLoadingPopup();
-	this->expectedCallbackUrl = expectedCallbackUrl;
-
-	int w = 0, h = 0;
-	system_info_get_platform_int("tizen.org/feature/screen.width", &w);
-	system_info_get_platform_int("tizen.org/feature/screen.height", &h);
 
 	window = elm_win_util_standard_add("Login", "");
 	eext_object_event_callback_add(window, EEXT_CALLBACK_BACK, [] (void *data, Evas_Object *p, void *info) {
 		auto thiz = static_cast<OAuthWindow*>(data);
 		thiz->Hide();
 	}, this);
+	ShowLoadingPopup();
 
 	ewk_init();
+}
+
+void TFC::Net::OAuthWindow::Show(const std::string& url, const std::string& expectedCallbackUrl)
+{
+	HideLoadingPopup();
+	this->expectedCallbackUrl = expectedCallbackUrl;
 
 	auto box = elm_box_add(window);
 	elm_box_padding_set(box, 0, 3);
@@ -308,6 +322,9 @@ void TFC::Net::OAuthWindow::Show(const std::string& url, const std::string& expe
 	if (ewk == nullptr)
 		return;
 
+	int w = 0, h = 0;
+	system_info_get_platform_int("tizen.org/feature/screen.width", &w);
+	system_info_get_platform_int("tizen.org/feature/screen.height", &h);
 	ewk_view_url_set(ewk, url.c_str());
 	evas_object_size_hint_min_set(ewk, w, h);
 
@@ -325,7 +342,8 @@ void TFC::Net::OAuthWindow::Show(const std::string& url, const std::string& expe
 
 void TFC::Net::OAuthWindow::Hide()
 {
-	if (ewk) {
+	if (ewk)
+	{
 		ewk_view_stop(ewk);
 		evas_object_hide(ewk);
 		evas_object_hide(window);
@@ -337,7 +355,8 @@ void TFC::Net::OAuthWindow::Hide()
 
 void TFC::Net::OAuthWindow::ShowLoadingPopup()
 {
-	if (!loadingPopup) {
+	if (!loadingPopup)
+	{
 		loadingPopup = elm_popup_add(window);
 		elm_popup_content_text_wrap_type_set(loadingPopup, ELM_WRAP_MIXED);
 		elm_object_text_set(loadingPopup, "Loading...");
@@ -348,7 +367,8 @@ void TFC::Net::OAuthWindow::ShowLoadingPopup()
 
 void TFC::Net::OAuthWindow::HideLoadingPopup()
 {
-	if (loadingPopup) {
+	if (loadingPopup)
+	{
 		evas_object_hide(loadingPopup);
 	}
 }
@@ -359,7 +379,6 @@ void TFC::Net::OAuthWindow::OnUrlChanged(Evas_Object* obj, const char* url)
 	//std::cout << "URL change : " << urlStr << "\n";
 	if (urlStr.find(expectedCallbackUrl) != std::string::npos)
 	{
-		Hide();
 		//std::cout << "Expected URL with token : " << urlStr << "\n\n";
 		OAuthGrant grant(urlStr);
 		eventCallbackCaptured(this, grant);
