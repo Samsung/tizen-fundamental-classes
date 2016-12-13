@@ -292,6 +292,8 @@ TFC::Net::OAuthWindow::OAuthWindow() :
 		ewk(nullptr),
 		window(nullptr)
 {
+	ewk_init();
+
 	eventLoadFinished += EventHandler(OAuthWindow::OnLoadFinished);
 	eventUrlChanged += EventHandler(OAuthWindow::OnUrlChanged);
 
@@ -300,9 +302,9 @@ TFC::Net::OAuthWindow::OAuthWindow() :
 		auto thiz = static_cast<OAuthWindow*>(data);
 		thiz->Hide();
 	}, this);
-	ShowLoadingPopup();
+	evas_object_show(window);
 
-	ewk_init();
+	ShowLoadingPopup();
 }
 
 void TFC::Net::OAuthWindow::Show(const std::string& url, const std::string& expectedCallbackUrl)
@@ -351,17 +353,15 @@ void TFC::Net::OAuthWindow::Hide()
 	HideLoadingPopup();
 	ewk = nullptr;
 	window = nullptr;
+	loadingPopup = nullptr;
 }
 
 void TFC::Net::OAuthWindow::ShowLoadingPopup()
 {
-	if (!loadingPopup)
-	{
-		loadingPopup = elm_popup_add(window);
-		elm_popup_content_text_wrap_type_set(loadingPopup, ELM_WRAP_MIXED);
-		elm_object_text_set(loadingPopup, "Loading...");
-		elm_popup_orient_set(loadingPopup, ELM_POPUP_ORIENT_BOTTOM);
-	}
+	loadingPopup = elm_popup_add(window);
+	elm_popup_content_text_wrap_type_set(loadingPopup, ELM_WRAP_MIXED);
+	elm_object_text_set(loadingPopup, "Loading...");
+	elm_popup_orient_set(loadingPopup, ELM_POPUP_ORIENT_BOTTOM);
 	evas_object_show(loadingPopup);
 }
 
@@ -379,10 +379,10 @@ void TFC::Net::OAuthWindow::OnUrlChanged(Evas_Object* obj, const char* url)
 	//std::cout << "URL change : " << urlStr << "\n";
 	if (urlStr.find(expectedCallbackUrl) != std::string::npos)
 	{
+		ShowLoadingPopup();
 		//std::cout << "Expected URL with token : " << urlStr << "\n\n";
 		OAuthGrant grant(urlStr);
 		eventCallbackCaptured(this, grant);
-		ShowLoadingPopup();
 	}
 }
 
