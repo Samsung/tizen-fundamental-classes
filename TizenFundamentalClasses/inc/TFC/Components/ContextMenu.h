@@ -39,43 +39,6 @@ public:
 		void RaiseEvent();
 	};
 
-private:
-	friend struct ContextMenuPackage;
-
-	std::vector<ContextMenuPackage*> currentItemPackages;
-
-	std::string text;
-	Evas_Object* naviframe;
-	Evas_Object* button;
-	Evas_Object* contextMenu;
-
-	EvasSmartEvent eventContextMenuButtonClicked;
-	EvasSmartEvent eventContextMenuDismissed;
-
-	bool menuShown;
-	std::vector<MenuItem*> rootMenu;
-
-	void OnContextMenuButtonClicked(Evas_Object* obj, void* eventData);
-	void OnContextMenuDismissed(Evas_Object* obj, void* eventData);
-	bool BackButtonClicked() override;
-	void ShowMenu();
-	void HideMenu();
-
-	void RaiseOnClickEvent(MenuItem* menuItemRef);
-
-protected:
-	/**
-	 * Method overriden from ComponentBase, creates the UI elements of the component.
-	 *
-	 * @param root The root/parent given for this component.
-	 *
-	 * @return The context menu button on the naviframe.
-	 */
-	virtual Evas_Object* CreateComponent(Evas_Object* root) override;
-	void SetText(std::string const& text);
-	std::string const& GetText() const;
-
-public:
 	/**
 	 * Constructor of ContextMenu.
 	 */
@@ -122,6 +85,44 @@ public:
 	 */
 	virtual ~ContextMenu();
 
+protected:
+	/**
+	 * Method overriden from ComponentBase, creates the UI elements of the component.
+	 *
+	 * @param root The root/parent given for this component.
+	 *
+	 * @return The context menu button on the naviframe.
+	 */
+	virtual Evas_Object* CreateComponent(Evas_Object* root) override;
+	void SetText(std::string const& text);
+	std::string const& GetText() const;
+
+private:
+	friend struct ContextMenuPackage;
+	std::string text;
+
+	std::vector<ContextMenuPackage*> currentItemPackages;
+	std::vector<MenuItem*> rootMenu;
+
+	EvasSmartEvent eventContextMenuButtonClicked;
+	EvasSmartEvent eventContextMenuDismissed;
+
+	Evas_Object* naviframe;
+	Evas_Object* button;
+	Evas_Object* contextMenu;
+
+	bool menuShown;
+
+	bool BackButtonClicked() override;
+
+	void OnContextMenuButtonClicked(Evas_Object* obj, void* eventData);
+	void OnContextMenuDismissed(Evas_Object* obj, void* eventData);
+	void ShowMenu();
+	void HideMenu();
+
+	void RaiseOnClickEvent(MenuItem* menuItemRef);
+
+public:
 	Property<std::string const&>::Get<&ContextMenu::GetText>::Set<&ContextMenu::SetText> Text;
 };
 

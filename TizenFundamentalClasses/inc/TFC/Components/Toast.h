@@ -23,11 +23,6 @@ namespace Components {
 
 class LIBAPI Toast : public EFL::EFLProxyClass
 {
-private:
-	void OnDismiss(Evas_Object* objSource, void* eventData);
-	bool BackButtonPressed(Evas_Object* objSource, void* eventData);
-	EvasSmartEvent eventDismiss;
-	EvasSmartEvent eventTimeout;
 public:
 	/**
 	 * Constructor for Toast class.
@@ -48,6 +43,12 @@ public:
 	 * @param timeout How long the toast will be shown.
 	 */
 	static void Show(const std::string& message, double timeout);
+private:
+	EvasSmartEvent eventDismiss;
+	EvasSmartEvent eventTimeout;
+
+	void OnDismiss(Evas_Object* objSource, void* eventData);
+	bool BackButtonPressed(Evas_Object* objSource, void* eventData);
 };
 
 }}

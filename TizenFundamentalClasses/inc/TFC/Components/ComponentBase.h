@@ -34,11 +34,16 @@ class LIBAPI ComponentBase:
 		public EFL::EFLProxyClass,
 		public TFC::PropertyClass<ComponentBase>
 {
-private:
-	bool created;
-	bool enabled;
-	bool visible;
-	std::string name;
+public:
+	ComponentBase();
+	inline bool IsCreated()
+	{
+		return created;
+	}
+	Evas_Object* LIBAPI Create(Evas_Object* root);
+
+	virtual LIBAPI ~ComponentBase();
+	LIBAPI operator Evas_Object*() const;
 protected:
 	/**
 	 * Field componentRoot which consists of the created component. Before method Create is called, this field must
@@ -105,20 +110,15 @@ protected:
 
 	virtual LIBAPI void SetName(const std::string& name);
 	virtual LIBAPI std::string const& GetName() const;
+private:
+	std::string name;
+	bool created;
+	bool enabled;
+	bool visible;
 public:
-	ComponentBase();
-	inline bool IsCreated()
-	{
-		return created;
-	}
-	Evas_Object* LIBAPI Create(Evas_Object* root);
-
 	Property<bool>::Get<&ComponentBase::GetEnabled>::Set<&ComponentBase::SetEnabled> Enabled;
 	Property<bool>::Get<&ComponentBase::GetVisible>::Set<&ComponentBase::SetVisible> Visible;
 	Property<std::string const&>::Get<&ComponentBase::GetName>::Set<&ComponentBase::SetName> Name;
-
-	virtual LIBAPI ~ComponentBase();
-	LIBAPI operator Evas_Object*() const;
 };
 
 }

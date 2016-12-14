@@ -12,12 +12,12 @@
 #include <algorithm>
 
 TFC::Components::FloatingMenu::FloatingMenu() :
+	buttonImage(""),
 	naviframe(nullptr),
 	floatingLayout(nullptr),
 	button(nullptr),
 	contextMenu(nullptr),
 	menuShown(false),
-	buttonImage(""),
 	ButtonImage(this)
 {
 	eventButtonClicked += EventHandler(FloatingMenu::OnButtonClicked);

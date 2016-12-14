@@ -172,9 +172,12 @@ void TFC::Components::Pager::SetOverflowString(const std::string& str)
 }
 
 LIBAPI TFC::Components::Pager::Pager() :
-		pagerContent(nullptr),
 		currentIndex(1),
 		maxIndex(1),
+		pagerBox(nullptr),
+		pagerTop(nullptr),
+		pagerBottom(nullptr),
+		pagerContent(nullptr),
 		underflowEnable(true),
 		overflowEnable(true),
 		PagerContent(this),
@@ -185,16 +188,6 @@ LIBAPI TFC::Components::Pager::Pager() :
 		UnderflowString(this),
 		OverflowString(this)
 {
-	this->pagerTop = nullptr;
-	this->pagerBottom = nullptr;
-	this->pagerBox = nullptr;
-	/*
-	this->PagerContent = nullptr;
-	this->MaxIndex = 1;
-	this->CurrentIndex = 1;
-	this->UnderflowEnable = true;
-	this->OverflowEnable = true;
-	*/
 	this->eventClickSignal += EventHandler(Pager::OnClickSignal);
 }
 

@@ -37,43 +37,6 @@ public:
 		MenuItem* menuItemRef;
 		void RaiseEvent();
 	};
-private:
-	std::string buttonImage;
-
-	Evas_Object* naviframe;
-	Evas_Object* floatingLayout;
-	Evas_Object* button;
-	Evas_Object* contextMenu;
-
-	EvasSmartEvent eventButtonClicked;
-	EvasSmartEvent eventContextMenuDismissed;
-
-	friend struct ContextMenuPackage;
-	std::vector<ContextMenuPackage*> currentItemPackages;
-
-	bool menuShown;
-	std::vector<MenuItem*> rootMenu;
-
-	void OnButtonClicked(Evas_Object* obj, void* eventData);
-	void OnContextMenuDismissed(Evas_Object* obj, void* eventData);
-	bool BackButtonClicked();
-	void ShowMenu();
-	void HideMenu();
-
-	void RaiseOnClickEvent(MenuItem* menuItemRef);
-
-	std::string const& GetButtonImage() const { return buttonImage; }
-	void SetButtonImage(std::string const& str) { buttonImage = str; }
-protected:
-	/**
-	 * Method overriden from ComponentBase, creates the UI elements of the component.
-	 *
-	 * @param root The root/parent given for this component.
-	 *
-	 * @return An Eext_FloatingButton widget.
-	 */
-	virtual Evas_Object* CreateComponent(Evas_Object* root) final;
-public:
 	/**
 	 * Constructor of FloatingMenu.
 	 *
@@ -86,12 +49,6 @@ public:
 	 * Destructor of FloatingMenu.
 	 */
 	virtual ~FloatingMenu();
-
-	/**
-	 * Property string that will be used as path of the floating button's image.
-	 */
-	Property<std::string const&>::Get<&FloatingMenu::GetButtonImage>::Set<&FloatingMenu::SetButtonImage> ButtonImage;
-
 	/**
 	 * Method to add MenuItem to the floating menu.
 	 *
@@ -127,6 +84,49 @@ public:
 	 * @param listOfMenus Vector that contains MenuItems that will be set.
 	 */
 	void SetMenu(const std::vector<MenuItem*>& listOfMenus);
+protected:
+	/**
+	 * Method overriden from ComponentBase, creates the UI elements of the component.
+	 *
+	 * @param root The root/parent given for this component.
+	 *
+	 * @return An Eext_FloatingButton widget.
+	 */
+	virtual Evas_Object* CreateComponent(Evas_Object* root) final;
+private:
+	std::string buttonImage;
+	std::vector<ContextMenuPackage*> currentItemPackages;
+	std::vector<MenuItem*> rootMenu;
+
+	EvasSmartEvent eventButtonClicked;
+	EvasSmartEvent eventContextMenuDismissed;
+
+	Evas_Object* naviframe;
+	Evas_Object* floatingLayout;
+	Evas_Object* button;
+	Evas_Object* contextMenu;
+
+	friend struct ContextMenuPackage;
+
+	bool menuShown;
+
+	bool BackButtonClicked() override;
+
+	void OnButtonClicked(Evas_Object* obj, void* eventData);
+	void OnContextMenuDismissed(Evas_Object* obj, void* eventData);
+	void ShowMenu();
+	void HideMenu();
+
+	void RaiseOnClickEvent(MenuItem* menuItemRef);
+
+	std::string const& GetButtonImage() const { return buttonImage; }
+	void SetButtonImage(std::string const& str) { buttonImage = str; }
+public:
+
+	/**
+	 * Property string that will be used as path of the floating button's image.
+	 */
+	Property<std::string const&>::Get<&FloatingMenu::GetButtonImage>::Set<&FloatingMenu::SetButtonImage> ButtonImage;
 };
 
 }}

@@ -288,8 +288,8 @@ void TFC::Net::OAuthClientBase::RequestAuthorizationCallback(
 //// IMPLEMENTATION FOR OAUTHWINDOW
 
 TFC::Net::OAuthWindow::OAuthWindow() :
-		loadingPopup(nullptr),
 		ewk(nullptr),
+		loadingPopup(nullptr),
 		window(nullptr)
 {
 	ewk_init();

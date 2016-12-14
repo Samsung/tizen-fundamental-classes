@@ -19,8 +19,8 @@ void ControllerManager_FreeFactory(void* data)
 }
 
 TFC::Framework::ControllerManager::ControllerManager() :
-	CurrentController(this),
-	pendingNavigation(false)
+	pendingNavigation(false),
+	CurrentController(this)
 {
 
 }

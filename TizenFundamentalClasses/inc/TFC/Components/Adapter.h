@@ -67,11 +67,6 @@ public:
 template<class T>
 class AdapterItemClass : public virtual AdapterItemClassBase
 {
-protected:
-	/**
-	 * Constructor for AdapterItemClass.
-	 */
-	AdapterItemClass();
 public:
 	virtual std::string GetString(void* data, Evas_Object *obj, const char *part) final;
 	virtual Evas_Object* GetContent(void* data, Evas_Object *obj, const char *part) final;
@@ -109,6 +104,11 @@ public:
 	 * Destructor for AdapterItemClass.
 	 */
 	virtual ~AdapterItemClass() { };
+protected:
+	/**
+	 * Constructor for AdapterItemClass.
+	 */
+	AdapterItemClass();
 };
 
 /**

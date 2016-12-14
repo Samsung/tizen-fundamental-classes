@@ -22,18 +22,19 @@ class LIBAPI ScrollablePuller :
 	using PropertyClass<ScrollablePuller>::Property;
 	using EventEmitterClass<ScrollablePuller>::Event;
 
-private :
-	Evas_Object* rootLayout;
-	Evas_Object* puller;
-	Evas_Object* box;
-	Evas_Object* bgTop;
-	Evas_Object* bgBottom;
+public :
+	ScrollablePuller();
+	~ScrollablePuller();
 
-	Evas_Coord width;
-	Evas_Coord height;
-	Evas_Coord posX;
-	Evas_Coord posY;
-	bool pullerShown;
+	Event<void*> eventPull;
+	Event<Evas_Object**> eventPullerContentFill;
+
+	void ResetPuller();
+	void TogglePuller(bool enable);
+protected :
+	virtual Evas_Object* CreateComponent(Evas_Object* root) final;
+private :
+	std::string partName;
 
 	EvasObjectEvent eventResize;
 	EvasSmartEvent eventScrollTop;
@@ -42,15 +43,27 @@ private :
 	EvasSmartEvent eventPullerScroll;
 	EvasSmartEvent eventPullerStop;
 
+	std::size_t pullerSize;
+	Evas_Coord width;
+	Evas_Coord height;
+	Evas_Coord posX;
+	Evas_Coord posY;
+
 	Evas_Object* scrollable;
+	Evas_Object* rootLayout;
+	Evas_Object* puller;
+	Evas_Object* box;
+	Evas_Object* bgTop;
+	Evas_Object* bgBottom;
+
+	bool pullerShown;
+
 	Evas_Object* GetScrollable() { return scrollable; }
 	void SetScrollable(Evas_Object* scroll) { scrollable = scroll; }
 
-	std::string partName;
 	std::string const& GetPartName() const { return partName; }
 	void SetPartName(std::string const& name) { partName = name; }
 
-	std::size_t pullerSize;
 	std::size_t GetPullerSize() const { return pullerSize; }
 	void SetPullerSize(std::size_t const& size) { pullerSize = size; }
 
@@ -60,21 +73,10 @@ private :
 	void OnPulledEnd(Evas_Object* obj, void* eventData);
 	void OnPullerScroll(Evas_Object* obj, void* eventData);
 	void OnPullerStop(Evas_Object* obj, void* eventData);
-protected :
-	virtual Evas_Object* CreateComponent(Evas_Object* root) final;
-public :
-	ScrollablePuller();
-	~ScrollablePuller();
-
-	Event<void*> eventPull;
-	Event<Evas_Object**> eventPullerContentFill;
-
+public:
 	Property<Evas_Object*>::Get<&ScrollablePuller::GetScrollable>::Set<&ScrollablePuller::SetScrollable> Scrollable;
 	Property<std::string const&>::Get<&ScrollablePuller::GetPartName>::Set<&ScrollablePuller::SetPartName> PartName;
 	Property<std::size_t>::Get<&ScrollablePuller::GetPullerSize>::Set<&ScrollablePuller::SetPullerSize> PullerSize;
-
-	void ResetPuller();
-	void TogglePuller(bool enable);
 };
 
 }

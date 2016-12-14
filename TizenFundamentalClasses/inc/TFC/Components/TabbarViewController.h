@@ -30,17 +30,24 @@ class LIBAPI TabbarViewController:
 		public EFL::EFLProxyClass,
 		public Framework::ViewBase
 {
+public:
+	TabbarViewController(TFC::Framework::ControllerManager* m, char const* controllerName);
+protected:
+	void AddTab(std::string text, Framework::ControllerBase& controller);
+	virtual Evas_Object* CreateView(Evas_Object* root) final;
+	void OnReload(TFC::ObjectClass* param) override;
 private:
 	std::vector<TabEntry> tabs;
-	bool disableChangeTabByScroll;
 	int currentTab;
+
+	EvasObjectEvent eventLayoutResize;
+	EvasSmartEvent eventTabContentScrolled;
 
 	Evas_Object* scroller;
 	Evas_Object* box;
 	Evas_Object* tabbar;
 
-	EvasObjectEvent eventLayoutResize;
-	EvasSmartEvent eventTabContentScrolled;
+	bool disableChangeTabByScroll;
 
 	void OnLayoutResize(EFL::EvasEventSourceInfo objSource, void* event_data);
 	void OnTabContentScrolled(Evas_Object* source, void* event_data);
@@ -50,12 +57,6 @@ private:
 	//void OnTabbarButtonClicked(EvasSmartEvent::Type* event, Evas_Object* source, void* event_data);
 	static void OnTabbarButtonClicked(void *data, Evas_Object *source, void *event_data);
 
-protected:
-	void AddTab(std::string text, Framework::ControllerBase& controller);
-	virtual Evas_Object* CreateView(Evas_Object* root) final;
-	void OnReload(TFC::ObjectClass* param) override;
-public:
-	TabbarViewController(TFC::Framework::ControllerManager* m, char const* controllerName);
 };
 }
 }

@@ -22,19 +22,11 @@ namespace Components {
  */
 class LIBAPI BackButtonHandler : public virtual EventClass
 {
-private:
-	class Wrapper : public EventClass
-	{
-		BackButtonHandler* handler;
-	public:
-		Wrapper(BackButtonHandler* handler);
-		void Call();
-	};
-
-	friend class Wrapper;
-	Wrapper* obj;
-	bool acquired;
-	bool BackButtonClickedInternal();
+public:
+	/**
+	 * Destructor of BackButtonHandler.
+	 */
+	virtual ~BackButtonHandler();
 protected:
 	/**
 	 * Constructor for BackButtonHandler.
@@ -64,11 +56,19 @@ protected:
 	 * 		   false to cancel closing the application
 	 */
 	virtual bool BackButtonClicked() = 0;
-public:
-	/**
-	 * Destructor of BackButtonHandler.
-	 */
-	virtual ~BackButtonHandler();
+private:
+	class Wrapper : public EventClass
+	{
+		BackButtonHandler* handler;
+	public:
+		Wrapper(BackButtonHandler* handler);
+		void Call();
+	};
+
+	friend class Wrapper;
+	Wrapper* obj;
+	bool acquired;
+	bool BackButtonClickedInternal();
 };
 
 }

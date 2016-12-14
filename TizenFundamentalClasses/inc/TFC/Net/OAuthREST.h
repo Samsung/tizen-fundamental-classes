@@ -80,8 +80,8 @@ TFC::Net::OAuthRESTServiceTemplateBase<ResponseType>::OAuthRESTServiceTemplateBa
 		std::string const& token, std::string const& oAuthCallback) :
 		TFC::Net::RESTServiceBase<ResponseType>(url, httpMode),
 		token(token),
-		paramPtr(param),
 		oAuthCallback(oAuthCallback),
+		paramPtr(param),
 		Authorization(this, "Authorization")
 {
 }

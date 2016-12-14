@@ -13,20 +13,21 @@
 
 LIBAPI
 TFC::Components::ScrollablePuller::ScrollablePuller() :
-	Scrollable(this),
-	PartName(this),
-	PullerSize(this),
-	scrollable(nullptr),
-	puller(nullptr),
-	box(nullptr),
-	bgTop(nullptr),
-	bgBottom(nullptr),
+	pullerSize(250),
 	width(0),
 	height(0),
 	posX(0),
 	posY(0),
+	scrollable(nullptr),
+	rootLayout(nullptr),
+	puller(nullptr),
+	box(nullptr),
+	bgTop(nullptr),
+	bgBottom(nullptr),
 	pullerShown(false),
-	pullerSize(250)
+	Scrollable(this),
+	PartName(this),
+	PullerSize(this)
 {
 	eventResize += EventHandler(ScrollablePuller::OnResize);
 	eventScrollTop += EventHandler(ScrollablePuller::OnScrollTop);

@@ -26,6 +26,36 @@ class LIBAPI FloatingButton :
 {
 	using PropertyClass<FloatingButton>::Property;
 
+public:
+	/**
+	 * Constructor of FloatingButton component.
+	 *
+	 * @note This component requires a swallow named "elm.swallow.floatingbutton"
+	 * 		 that must be present in the layout of views that use it.
+	 */
+	FloatingButton();
+	/**
+	 * Event that will be triggered when the leftmost button is clicked.
+	 */
+	EvasSmartEvent eventButtonLeftClick;
+
+	/**
+	 * Event that will be triggered when the rightmost button is clicked.
+	 */
+	EvasSmartEvent eventButtonRightClick;
+
+	/**
+	 * Method that can be used to set an alternative, white styled FloatingButton.
+	 */
+	void SetWhiteBackground();
+
+	/**
+	 * Method to set buttons style.
+	 *
+	 * @param left If true, then the left button will be styled. If false, then the right button.
+	 * @param style String to the style resource.
+	 */
+	void SetButtonStyle(bool left, const std::string& style);
 private:
 	std::string buttonLeftImage;
 	std::string buttonRightImage;
@@ -58,14 +88,6 @@ protected:
 	virtual Evas_Object* CreateComponent(Evas_Object* root) final;
 public:
 	/**
-	 * Constructor of FloatingButton component.
-	 *
-	 * @note This component requires a swallow named "elm.swallow.floatingbutton"
-	 * 		 that must be present in the layout of views that use it.
-	 */
-	FloatingButton();
-
-	/**
 	 * String that will be used as path of the leftmost button's image.
 	 * If this is empty, leftmost button will not be shown.
 	 */
@@ -76,18 +98,6 @@ public:
 	 * If this is empty or doubleButton is false, rightmost button will not be shown.
 	 */
 	Property<std::string const&>::Get<&FloatingButton::GetButtonRightImage>::Set<&FloatingButton::SetButtonRightImage> ButtonRightImage;
-
-
-	/**
-	 * Event that will be triggered when the leftmost button is clicked.
-	 */
-	EvasSmartEvent eventButtonLeftClick;
-
-	/**
-	 * Event that will be triggered when the rightmost button is clicked.
-	 */
-	EvasSmartEvent eventButtonRightClick;
-
 	/**
 	 * Boolean that will set the number of buttons on FloatingButton.
 	 * If true, then it will enable double button mode. If false, then it will only have one button.
@@ -99,19 +109,6 @@ public:
 	 * If true, then it will be static. If false, then it will be movable.
 	 */
 	Property<bool>::Get<&FloatingButton::GetMovementBlock>::Set<&FloatingButton::SetMovementBlock> MovementBlock;
-
-	/**
-	 * Method that can be used to set an alternative, white styled FloatingButton.
-	 */
-	void SetWhiteBackground();
-
-	/**
-	 * Method to set buttons style.
-	 *
-	 * @param left If true, then the left button will be styled. If false, then the right button.
-	 * @param style String to the style resource.
-	 */
-	void SetButtonStyle(bool left, const std::string& style);
 };
 
 }}

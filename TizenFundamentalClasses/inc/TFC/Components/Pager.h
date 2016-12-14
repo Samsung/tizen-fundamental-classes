@@ -29,51 +29,6 @@ class LIBAPI Pager:
 	using PropertyClass<Pager>::Property;
 	using EventEmitterClass<Pager>::Event;
 
-private:
-	std::string buttonPrevStyle;
-	std::string buttonNextStyle;
-
-	Evas_Object* pagerBox;
-	Evas_Object* pagerTop;
-	Evas_Object* pagerBottom;
-
-	EdjeSignalEvent eventClickSignal;
-
-	void OnClickSignal(Evas_Object* source, EFL::EdjeSignalInfo signalInfo);
-	void NextPage();
-	void PrevPage();
-
-	Evas_Object* pagerContent;
-	int currentIndex;
-	int maxIndex;
-	bool underflowEnable;
-	bool overflowEnable;
-	std::string underflowString;
-	std::string overflowString;
-protected:
-	/**
-	 * Method overriden from ComponentBase, creates the UI elements of the component.
-	 *
-	 * @param root The root/parent given for this component.
-	 *
-	 * @return A box (Elm_Box) that contains both the content and the pagination UI.
-	 */
-	virtual Evas_Object* CreateComponent(Evas_Object* root) override;
-
-	Evas_Object* GetPagerContent();
-	int GetCurrentIndex() const;
-	int GetMaxIndex() const;
-	bool GetUnderflowEnable() const;
-	bool GetOverflowEnable() const;
-	std::string const& GetUnderflowString() const;
-	std::string const& GetOverflowString() const;
-
-	void SetPagerContent(Evas_Object* content);
-	void SetMaxIndex(int const& maxIndex);
-	void SetUnderflowEnable(bool const& underflow);
-	void SetOverflowEnable(bool const& overflow);
-	void SetUnderflowString(std::string const& str);
-	void SetOverflowString(std::string const& str);
 public:
 	/**
 	 * Constructor for Pager component.
@@ -97,7 +52,54 @@ public:
 	 * This will only happen when OverflowEnable is true.
 	 */
 	Event<void*> eventOverflow;
+protected:
+	/**
+	 * Method overriden from ComponentBase, creates the UI elements of the component.
+	 *
+	 * @param root The root/parent given for this component.
+	 *
+	 * @return A box (Elm_Box) that contains both the content and the pagination UI.
+	 */
+	virtual Evas_Object* CreateComponent(Evas_Object* root) override;
+private:
+	std::string buttonPrevStyle;
+	std::string buttonNextStyle;
 
+	std::string underflowString;
+	std::string overflowString;
+
+	int currentIndex;
+	int maxIndex;
+
+	Evas_Object* pagerBox;
+	Evas_Object* pagerTop;
+	Evas_Object* pagerBottom;
+	Evas_Object* pagerContent;
+
+	EdjeSignalEvent eventClickSignal;
+
+	bool underflowEnable;
+	bool overflowEnable;
+
+	void OnClickSignal(Evas_Object* source, EFL::EdjeSignalInfo signalInfo);
+	void NextPage();
+	void PrevPage();
+
+	Evas_Object* GetPagerContent();
+	int GetCurrentIndex() const;
+	int GetMaxIndex() const;
+	bool GetUnderflowEnable() const;
+	bool GetOverflowEnable() const;
+	std::string const& GetUnderflowString() const;
+	std::string const& GetOverflowString() const;
+
+	void SetPagerContent(Evas_Object* content);
+	void SetMaxIndex(int const& maxIndex);
+	void SetUnderflowEnable(bool const& underflow);
+	void SetOverflowEnable(bool const& overflow);
+	void SetUnderflowString(std::string const& str);
+	void SetOverflowString(std::string const& str);
+public:
 	/**
 	 * Contents that want to be paginated.
 	 *

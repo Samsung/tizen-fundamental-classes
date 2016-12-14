@@ -31,35 +31,6 @@ class LIBAPI DropDown :
 {
 	using EventEmitterClass<DropDown>::Event;
 	using PropertyClass<DropDown>::Property;
-private:
-	std::string text;
-
-	Evas_Object* parentComponent;
-	Evas_Object* dropdownComponent;
-	Adapter* dataSource;
-
-	EvasSmartEvent eventDropdownButtonClick;
-	EvasSmartEvent eventDropdownDismiss;
-	EvasObjectEvent eventDropdownBack;
-
-	void SetDataSource(Adapter* adapter);
-	Adapter* GetDataSource();
-
-	void ShowDropdown();
-	void OnDropDownButtonClick(Evas_Object* objSource, void* eventData);
-
-	std::string const& GetText() const { return this->text; }
-	void SetText(std::string const& text) { this->text = text; }
-protected:
-	/**
-	 * Method overriden from ComponentBase, creates the UI elements of the component.
-	 *
-	 * @param root The root/parent given for this component.
-	 *
-	 * @return The dropdown's button.
-	 */
-	virtual Evas_Object* CreateComponent(Evas_Object* root) override;
-
 public:
 	/**
 	 * Constructor for DropDown.
@@ -77,7 +48,35 @@ public:
 	 * Event that will be triggered when selected item in the dropdown changes.
 	 */
 	Event<void*> ItemSelectionChanged;
+protected:
+	/**
+	 * Method overriden from ComponentBase, creates the UI elements of the component.
+	 *
+	 * @param root The root/parent given for this component.
+	 *
+	 * @return The dropdown's button.
+	 */
+	virtual Evas_Object* CreateComponent(Evas_Object* root) override;
+private:
+	std::string text;
 
+	EvasSmartEvent eventDropdownButtonClick;
+	EvasSmartEvent eventDropdownDismiss;
+	EvasObjectEvent eventDropdownBack;
+
+	Adapter* dataSource;
+	Evas_Object* parentComponent;
+	Evas_Object* dropdownComponent;
+
+	void SetDataSource(Adapter* adapter);
+	Adapter* GetDataSource();
+
+	void ShowDropdown();
+	void OnDropDownButtonClick(Evas_Object* objSource, void* eventData);
+
+	std::string const& GetText() const { return this->text; }
+	void SetText(std::string const& text) { this->text = text; }
+public:
 	/**
 	 * Property that enables getting & setting the adapter of the dropdown.
 	 * The return/parameter type is Adapter.

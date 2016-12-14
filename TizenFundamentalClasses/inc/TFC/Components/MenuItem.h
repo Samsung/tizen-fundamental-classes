@@ -25,10 +25,6 @@ class MenuItem;
  */
 class LIBAPI CustomMenuStyle
 {
-private:
-	Elm_Genlist_Item_Class* customStyle;
-
-	operator Elm_Genlist_Item_Class* ();
 public:
 	/**
 	 * Constructor for CustomMenuStyle.
@@ -65,6 +61,10 @@ public:
 	virtual Evas_Object* GetContent(MenuItem* data, Evas_Object *obj, const char *part) = 0;
 
 	friend class TreeMenu;
+private:
+	Elm_Genlist_Item_Class* customStyle;
+
+	operator Elm_Genlist_Item_Class* ();
 };
 
 /**
@@ -76,20 +76,6 @@ class LIBAPI MenuItem :
 	PropertyClass<MenuItem>,
 	EventEmitterClass<MenuItem>
 {
-private:
-	std::vector<MenuItem*>	subMenus;
-	std::string 			menuText;
-	std::string 			menuIcon;
-
-	MenuItem* 				parentMenu;
-	void* 					itemData;
-	Elm_Object_Item* 		genlistItem;
-	CustomMenuStyle*		customStyle;
-	bool 					expanded;
-
-	std::string const&		GetText() const 		{ return this->menuText; }
-	std::string const&		GetMenuIcon() const		{ return this->menuIcon; }
-	CustomMenuStyle*		GetCustomItemStyle()	{ return this->customStyle; }
 public:
 	/**
 	 * Constructor of MenuItem.
@@ -138,6 +124,27 @@ public:
 
 	// TODO Reimplement using Property
 
+	template<class T>
+	T* GetItemData();
+	Elm_Object_Item* GetGenlistItem();
+
+	friend class TreeMenu;
+	Event<Elm_Object_Item*> OnMenuItemClick;
+private:
+	std::string 			menuText;
+	std::string 			menuIcon;
+	std::vector<MenuItem*>	subMenus;
+
+	MenuItem* 				parentMenu;
+	void* 					itemData;
+	Elm_Object_Item* 		genlistItem;
+	CustomMenuStyle*		customStyle;
+	bool 					expanded;
+
+	std::string const&		GetText() const 		{ return this->menuText; }
+	std::string const&		GetMenuIcon() const		{ return this->menuIcon; }
+	CustomMenuStyle*		GetCustomItemStyle()	{ return this->customStyle; }
+public:
 	/**
 	 * Property that enables getting & setting text of the menu item.
 	 * The return/parameter type is string.
@@ -155,13 +162,6 @@ public:
 	 * The return/parameter type is CustomMenuStyle.
 	 */
 	Property<CustomMenuStyle*>::Get<&MenuItem::GetCustomItemStyle> CustomItemStyle;
-
-	template<class T>
-	T* GetItemData();
-	Elm_Object_Item* GetGenlistItem();
-
-	friend class TreeMenu;
-	Event<Elm_Object_Item*> OnMenuItemClick;
 };
 
 }

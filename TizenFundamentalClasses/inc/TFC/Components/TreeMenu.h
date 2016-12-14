@@ -32,56 +32,6 @@ class LIBAPI TreeMenu:
 {
 	using EventEmitterClass<TreeMenu>::Event;
 	using PropertyClass<TreeMenu>::Property;
-private:
-	Evas_Object* genlist;
-	Elm_Genlist_Item_Class* itemClass;
-	Elm_Genlist_Item_Class* submenuItemClass;
-	Elm_Object_Item* currentlySelected;
-	std::vector<MenuItem*> rootMenu;
-	std::string iconEdjeFile;
-
-	bool isScrolled;
-	bool autoExpand;
-
-	void GenerateRootMenu();
-	void GenerateSubMenu(MenuItem* subMenu);
-	const std::vector<MenuItem*>& GetMenuItems() const;
-
-	bool GetAutoExpanded() const;
-	void SetAutoExpanded(const bool& val);
-
-	std::string const& GetIconEdjeFile() const;
-	void SetIconEdjeFile(std::string const& val);
-
-	typedef EFL::EvasSmartEventObjectBase<Elm_Object_Item*> GenlistEvent;
-
-	void MenuScrollInternal(Evas_Object* objSource, Elm_Object_Item* eventData);
-	void MenuPressedInternal(Evas_Object* objSource, Elm_Object_Item* eventData);
-	void MenuReleasedInternal(Evas_Object* objSource, Elm_Object_Item* eventData);
-	void MenuSelectedInternal(Evas_Object* objSource, Elm_Object_Item* eventData);
-	void MenuUnselectedInternal(Evas_Object* objSource, Elm_Object_Item* eventData);
-	void MenuExpanded(Evas_Object* objSource, Elm_Object_Item* eventData);
-	void MenuContracted(Evas_Object* objSource, Elm_Object_Item* eventData);
-	void AppendMenuToGenlist(MenuItem* menu);
-
-	GenlistEvent eventMenuScrollInternal;
-	GenlistEvent eventMenuPressedInternal;
-	GenlistEvent eventMenuReleasedInternal;
-	GenlistEvent eventMenuSelectedInternal;
-	GenlistEvent eventMenuUnselectedInternal;
-	GenlistEvent eventMenuExpanded;
-	GenlistEvent eventMenuContracted;
-
-protected:
-	/**
-	 * Method overriden from ComponentBase, creates the UI elements of the component.
-	 *
-	 * @param root The root/parent given for this component.
-	 *
-	 * @return An Elm_Genlist widget.
-	 */
-	virtual LIBAPI Evas_Object* CreateComponent(Evas_Object* root) override;
-
 public:
 	/**
 	 * Constructor for TreeMenu.
@@ -136,8 +86,62 @@ public:
 	 */
 	void ResetCurrentlySelectedItem();
 
+	/**
+	 * Event that will be triggered when a menu item is selected.
+	 */
+	Event<MenuItem*> OnMenuSelected;
 
-	// TODO Reimplement with correct Property declaration
+protected:
+	/**
+	 * Method overriden from ComponentBase, creates the UI elements of the component.
+	 *
+	 * @param root The root/parent given for this component.
+	 *
+	 * @return An Elm_Genlist widget.
+	 */
+	virtual LIBAPI Evas_Object* CreateComponent(Evas_Object* root) override;
+
+private:
+	std::string iconEdjeFile;
+	std::vector<MenuItem*> rootMenu;
+
+	Evas_Object* genlist;
+	Elm_Genlist_Item_Class* itemClass;
+	Elm_Genlist_Item_Class* submenuItemClass;
+	Elm_Object_Item* currentlySelected;
+
+	typedef EFL::EvasSmartEventObjectBase<Elm_Object_Item*> GenlistEvent;
+	GenlistEvent eventMenuScrollInternal;
+	GenlistEvent eventMenuPressedInternal;
+	GenlistEvent eventMenuReleasedInternal;
+	GenlistEvent eventMenuSelectedInternal;
+	GenlistEvent eventMenuUnselectedInternal;
+	GenlistEvent eventMenuExpanded;
+	GenlistEvent eventMenuContracted;
+
+	bool isScrolled;
+	bool autoExpand;
+
+	void GenerateRootMenu();
+	void GenerateSubMenu(MenuItem* subMenu);
+	const std::vector<MenuItem*>& GetMenuItems() const;
+
+	bool GetAutoExpanded() const;
+	void SetAutoExpanded(const bool& val);
+
+	std::string const& GetIconEdjeFile() const;
+	void SetIconEdjeFile(std::string const& val);
+
+	void MenuScrollInternal(Evas_Object* objSource, Elm_Object_Item* eventData);
+	void MenuPressedInternal(Evas_Object* objSource, Elm_Object_Item* eventData);
+	void MenuReleasedInternal(Evas_Object* objSource, Elm_Object_Item* eventData);
+	void MenuSelectedInternal(Evas_Object* objSource, Elm_Object_Item* eventData);
+	void MenuUnselectedInternal(Evas_Object* objSource, Elm_Object_Item* eventData);
+	void MenuExpanded(Evas_Object* objSource, Elm_Object_Item* eventData);
+	void MenuContracted(Evas_Object* objSource, Elm_Object_Item* eventData);
+	void AppendMenuToGenlist(MenuItem* menu);
+
+public:
 	/**
 	 * Property that can be filled to set the expand/contract icon edje file.
 	 * The return/parameter type is string.
@@ -156,11 +160,6 @@ public:
 	 * The return/parameter type is bool.
 	 */
 	Property<bool>::Get<&TreeMenu::GetAutoExpanded>::Set<&TreeMenu::SetAutoExpanded> AutoExpanded;
-
-	/**
-	 * Event that will be triggered when a menu item is selected.
-	 */
-	Event<MenuItem*> OnMenuSelected;
 };
 
 }

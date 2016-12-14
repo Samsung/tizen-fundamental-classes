@@ -27,27 +27,6 @@ class LIBAPI Field :
 	using PropertyClass<Field>::Property;
 	using EventEmitterClass<Field>::Event;
 
-private:
-	mutable std::string text;
-	bool multiline;
-	bool bottomBorder;
-
-	Evas_Object* field;
-protected:
-	/**
-	 * Method overriden from ComponentBase, creates the UI elements of the component.
-	 *
-	 * @param root The root/parent given for this component.
-	 *
-	 * @return An Elm_Entry widget.
-	 */
-	virtual Evas_Object* CreateComponent(Evas_Object* root) override;
-	void SetText(std::string const& text);
-	std::string const& GetText() const;
-	void SetMultiline(bool const& val);
-	bool GetMultiline() const;
-	void SetBottomBorderVisible(bool const& visible);
-	bool GetBottomBorderVisible() const;
 public:
 	/**
 	 * Constructor for Field component.
@@ -116,7 +95,28 @@ public:
 	 * Event that will be triggered when text on the field changed.
 	 */
 	EvasSmartEvent eventTextChanged;
+private:
+	mutable std::string text;
+	Evas_Object* field;
 
+	bool multiline;
+	bool bottomBorder;
+protected:
+	/**
+	 * Method overriden from ComponentBase, creates the UI elements of the component.
+	 *
+	 * @param root The root/parent given for this component.
+	 *
+	 * @return An Elm_Entry widget.
+	 */
+	virtual Evas_Object* CreateComponent(Evas_Object* root) override;
+	void SetText(std::string const& text);
+	std::string const& GetText() const;
+	void SetMultiline(bool const& val);
+	bool GetMultiline() const;
+	void SetBottomBorderVisible(bool const& visible);
+	bool GetBottomBorderVisible() const;
+public:
 	/**
 	 * Property that enables getting & setting text on the field.
 	 * The return/parameter type is string reference.

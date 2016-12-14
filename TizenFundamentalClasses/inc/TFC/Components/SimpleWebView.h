@@ -34,43 +34,6 @@ class LIBAPI SimpleWebView:
 {
 	using EventEmitterClass<SimpleWebView>::Event;
 	using PropertyClass<SimpleWebView>::Property;
-private:
-	std::string data;
-	Evas_Object* box;
-	Evas_Object* boxPage;
-	bool isRendering;
-
-	std::string fontFormat;
-	std::string font;
-	int fontSize;
-
-	void SetFont(std::string const& font);
-	std::string const& GetFont() const;
-
-	void SetFontSize(int const& fontSize);
-	int GetFontSize() const;
-
-	void AddParagraph(Evas_Object* boxPage, std::string& paragraph);
-	void AddImage(std::string& url);
-	void Render();
-
-	struct ImageAsyncPackage {
-		Evas_Object* placeholder;
-		std::string filePath;
-	};
-
-	Async<ImageAsyncPackage>::Event eventImageDownloadCompleted;
-
-	void OnImageDownloadCompleted(Async<ImageAsyncPackage>::Task* asyncTask, ImageAsyncPackage result);
-protected:
-	/**
-	 * Method overriden from ComponentBase, creates the UI elements of the component.
-	 *
-	 * @param root The root/parent given for this component.
-	 *
-	 * @return A box (Elm_Box) that contains the rendered result.
-	 */
-	virtual Evas_Object* CreateComponent(Evas_Object* root) override;
 public:
 	/**
 	 * Constructor of SimpleWebView component.
@@ -106,7 +69,46 @@ public:
 	 * and call AddCustomComponent() to represent the content as a custom widget.
 	 */
 	Event<std::string*> eventProcessingCustomTag;
+protected:
+	/**
+	 * Method overriden from ComponentBase, creates the UI elements of the component.
+	 *
+	 * @param root The root/parent given for this component.
+	 *
+	 * @return A box (Elm_Box) that contains the rendered result.
+	 */
+	virtual Evas_Object* CreateComponent(Evas_Object* root) override;
+private:
+	std::string data;
+	std::string fontFormat;
+	std::string font;
 
+	struct ImageAsyncPackage {
+		Evas_Object* placeholder;
+		std::string filePath;
+	};
+
+	Async<ImageAsyncPackage>::Event eventImageDownloadCompleted;
+
+	int fontSize;
+
+	Evas_Object* box;
+	Evas_Object* boxPage;
+
+	bool isRendering;
+
+	void SetFont(std::string const& font);
+	std::string const& GetFont() const;
+
+	void SetFontSize(int const& fontSize);
+	int GetFontSize() const;
+
+	void AddParagraph(Evas_Object* boxPage, std::string& paragraph);
+	void AddImage(std::string& url);
+	void Render();
+
+	void OnImageDownloadCompleted(Async<ImageAsyncPackage>::Task* asyncTask, ImageAsyncPackage result);
+public:
 	/**
 	 * Property that can be used to getting & setting the font family of the rendered text.
 	 */

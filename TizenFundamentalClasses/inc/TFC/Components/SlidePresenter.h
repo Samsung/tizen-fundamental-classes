@@ -20,6 +20,15 @@ class LIBAPI SlidePresenter :
 		public ComponentBase,
 		public EFL::EFLProxyClass
 {
+public:
+	SlidePresenter();
+	virtual ~SlidePresenter();
+
+	void InsertPage(Evas_Object* page);
+	void InsertPageAt(Evas_Object* page, int index);
+	void Remove(int index);
+protected:
+	virtual Evas_Object* CreateComponent(Evas_Object* root) override;
 private:
 	std::vector<Evas_Object*> pageList;
 
@@ -31,20 +40,9 @@ private:
 	EvasSmartEvent eventPageScrolled;
 	EvasSmartEvent eventIndexSelected;
 
-
 	void OnLayoutResize(EFL::EvasEventSourceInfo objSource, void* event_data);
 	void OnPageScrolled(Evas_Object* source, void* event_data);
 	void OnIndexSelected(Evas_Object* source, void* event_data);
-
-protected:
-	virtual Evas_Object* CreateComponent(Evas_Object* root) override;
-public:
-	SlidePresenter();
-	virtual ~SlidePresenter();
-
-	void InsertPage(Evas_Object* page);
-	void InsertPageAt(Evas_Object* page, int index);
-	void Remove(int index);
 };
 
 

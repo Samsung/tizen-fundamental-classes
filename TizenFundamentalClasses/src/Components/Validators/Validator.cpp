@@ -14,9 +14,9 @@ int const Validator::ERROR_INVALID_COMPONENT = 0;
 
 LIBAPI
 TFC::Components::Validators::Validator::Validator(ComponentBase* component) :
+	ErrorMessage(errorMessage),
 	component(component),
-	validationResult(Validator::ERROR_NONE),
-	ErrorMessage(errorMessage)
+	validationResult(Validator::ERROR_NONE)
 {
 	errorDictionary[Validator::ERROR_NONE] = "No error found in component %0.";
 	errorDictionary[Validator::ERROR_INVALID_COMPONENT] = "Component %0 is not valid / created yet.";

@@ -46,9 +46,9 @@ LIBAPI Evas_Object* TFC::Components::DropDown::CreateComponent(Evas_Object* root
 }
 
 LIBAPI TFC::Components::DropDown::DropDown() :
+	dataSource(nullptr),
 	parentComponent(nullptr),
 	dropdownComponent(nullptr),
-	dataSource(nullptr),
 	DataSource(this),
 	Text(this)
 {

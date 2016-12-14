@@ -14,12 +14,12 @@
 using namespace TFC::Components;
 
 LIBAPI FloatingButton::FloatingButton() :
+		buttonLeftImage(""),
+		buttonRightImage(""),
 		naviframe(nullptr),
 		floatingButton(nullptr),
 		buttonLeft(nullptr),
 		buttonRight(nullptr),
-		buttonLeftImage(""),
-		buttonRightImage(""),
 		doubleButton(false),
 		movementBlock(false),
 		ButtonLeftImage(this),

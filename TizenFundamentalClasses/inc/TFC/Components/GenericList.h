@@ -28,11 +28,6 @@ namespace Components {
 	 */
 	class LIBAPI GenericListItemClassBase : public virtual AdapterItemClassBase
 	{
-	private:
-		Elm_Genlist_Item_Class* itemClass;
-	protected:
-		GenericListItemClassBase(char const* styleName, bool defaultEventClick = true);
-		bool itemClickEnabled;
 	public:
 		/**
 		 * Helper to retrieve a package that holds the item's class, data, and GenericList it belongs to.
@@ -58,6 +53,11 @@ namespace Components {
 		 * Method to get whether the item is clickable or not.
 		 */
 		bool IsItemClickEnabled() const;
+	protected:
+		GenericListItemClassBase(char const* styleName, bool defaultEventClick = true);
+		bool itemClickEnabled;
+	private:
+		Elm_Genlist_Item_Class* itemClass;
 	};
 
 	/**
@@ -67,6 +67,11 @@ namespace Components {
 	template<class T>
 	class GenericListItemClass : public AdapterItemClass<T>, public GenericListItemClassBase
 	{
+	public:
+		/**
+		 * Destructor for GenericListItemClass.
+		 */
+		virtual ~GenericListItemClass() { };
 	protected:
 		/**
 		 * Constructor for GenericListItemClass.
@@ -74,11 +79,6 @@ namespace Components {
 		 * @param styleName Name of the style that will be used.
 		 */
 		GenericListItemClass(char const* styleName);
-	public:
-		/**
-		 * Destructor for GenericListItemClass.
-		 */
-		virtual ~GenericListItemClass() { };
 	};
 
 	/**
@@ -103,8 +103,24 @@ namespace Components {
 				PointerToGetterString ptrGetter;
 			};
 		};
+	public:
+		virtual std::string GetString(T* data, Evas_Object *obj, const char *part) final;
 
-		std::unordered_map<std::string, Pointer> mappingMap;
+		/**
+		 * Abstract method for providing Evas_Object representation from a part of a genlist item.
+		 *
+		 * @param data Item's data.
+		 * @param obj Parent Evas_Object.
+		 * @param part Corresponding part's name.
+		 *
+		 * @return The Evas_Object representation.
+		 */
+		virtual Evas_Object* GetContent(T* data, Evas_Object *obj, const char *part);
+
+		/**
+		 * Destructor for SimpleGenericListItemClass.
+		 */
+		virtual ~SimpleGenericListItemClass() { };
 	protected:
 		/**
 		 * Add mapping from a member string of the template argument to a certain part.
@@ -136,24 +152,8 @@ namespace Components {
 		 * @param styleName Name of the style that will be used.
 		 */
 		SimpleGenericListItemClass(char const* styleName);
-	public:
-		virtual std::string GetString(T* data, Evas_Object *obj, const char *part) final;
-
-		/**
-		 * Abstract method for providing Evas_Object representation from a part of a genlist item.
-		 *
-		 * @param data Item's data.
-		 * @param obj Parent Evas_Object.
-		 * @param part Corresponding part's name.
-		 *
-		 * @return The Evas_Object representation.
-		 */
-		virtual Evas_Object* GetContent(T* data, Evas_Object *obj, const char *part);
-
-		/**
-		 * Destructor for SimpleGenericListItemClass.
-		 */
-		virtual ~SimpleGenericListItemClass() { };
+	private:
+		std::unordered_map<std::string, Pointer> mappingMap;
 	};
 
 	/**
@@ -263,6 +263,7 @@ namespace Components {
 		virtual Evas_Object* CreateComponent(Evas_Object* root) override;
 
 	private:
+		int backToTopThreshold;
 		Evas_Object* genlist;
 		Elm_Object_Item* dummyBottom;
 		Elm_Object_Item* dummyTop;
@@ -274,7 +275,6 @@ namespace Components {
 		bool underscroll;
 		bool longpressed;
 		bool isScrolling;
-		int backToTopThreshold;
 		bool backToTopShown;
 		bool firstRealize;
 

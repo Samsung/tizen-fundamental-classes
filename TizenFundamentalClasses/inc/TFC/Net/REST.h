@@ -246,7 +246,7 @@ public:
 		 * @param key Constant string that will be copied as key of the parameter.
 		 */
 		Parameter(RESTServiceTemplateBase* instance, char const* key) :
-			key(key), instance(instance)
+			instance(instance), key(key)
 		{
 			this->isSet = false;
 			instance->RegisterParameter(ParamType, key, this);

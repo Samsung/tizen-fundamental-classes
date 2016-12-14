@@ -117,7 +117,7 @@ LIBAPI bool TFC::Components::Field::GetBottomBorderVisible() const
 }
 
 LIBAPI TFC::Components::Field::Field() :
-		text(""), multiline(false), bottomBorder(false), field(nullptr),
+		text(""), field(nullptr), multiline(false), bottomBorder(false),
 		Text(this), Multiline(this), BottomBorderVisible(this)
 {
 }

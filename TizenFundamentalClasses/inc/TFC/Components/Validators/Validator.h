@@ -22,19 +22,20 @@ class Validator {
 public:
 	Validator(ComponentBase* component);
 	virtual ~Validator();
-	int Validate();
-	std::string const& ErrorMessage;
 
 	static int const ERROR_NONE;
 	static int const ERROR_INVALID_COMPONENT;
+	std::string const& ErrorMessage;
+
+	int Validate();
 	void SetErrorMessageFormat(int error, std::string const& message);
 protected:
+	std::unordered_map<int, std::string> errorDictionary;
+	std::vector<std::function<std::string()>> formatFunctions;
+
 	ComponentBase* const component;
 	int validationResult;
 	virtual int ValidateInternal() = 0;
-
-	std::unordered_map<int, std::string> errorDictionary;
-	std::vector<std::function<std::string()>> formatFunctions;
 private:
 	std::string errorMessage;
 	void GenerateErrorMessage();
@@ -48,9 +49,9 @@ public:
 	bool ValidateAll();
 	const std::string& LastValidationMessage;
 private:
+	std::string lastValidationMessage;
 	std::vector<Validator*> validators;
 	int lastValidationResult;
-	std::string lastValidationMessage;
 };
 
 }

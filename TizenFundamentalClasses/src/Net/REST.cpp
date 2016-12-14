@@ -181,8 +181,8 @@ struct curl_slist* TFC::Net::RESTServiceTemplateBase::PrepareHeader()
 TFC::Net::RESTServiceTemplateBase::RESTServiceTemplateBase(std::string url, HTTPMode httpMode) :
 	UserAgent("TFC-framework-tizen/1.0"),
 	Url(url),
-	working(false),
-	httpMode(httpMode)
+	httpMode(httpMode),
+	working(false)
 {
 }
 

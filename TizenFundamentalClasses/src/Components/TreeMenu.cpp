@@ -270,11 +270,9 @@ void TreeMenu::GenerateRootMenu()
 }
 
 TreeMenu::TreeMenu() :
-	genlist(nullptr), itemClass(nullptr), submenuItemClass(nullptr),
-	currentlySelected(nullptr), autoExpand(false),
-	MenuItems(this), AutoExpanded(this),
-	IconEdjeFile(this)
-
+	isClickPersist(true), genlist(nullptr), itemClass(nullptr), submenuItemClass(nullptr),
+	currentlySelected(nullptr), isScrolled(false), autoExpand(false),
+	IconEdjeFile(this), MenuItems(this), AutoExpanded(this)
 {
 	eventMenuScrollInternal +=  EventHandler(TreeMenu::MenuScrollInternal);
 
@@ -286,9 +284,6 @@ TreeMenu::TreeMenu() :
 
 	eventMenuExpanded += EventHandler(TreeMenu::MenuExpanded);
 	eventMenuContracted += EventHandler(TreeMenu::MenuContracted);
-
-	isClickPersist = true;
-	isScrolled = false;
 }
 
 void TreeMenu::AppendMenuToGenlist(MenuItem* menu)

@@ -33,55 +33,6 @@ class LIBAPI SidebarView:
 		public Framework::ViewBase
 {
 	using EventEmitterClass<SidebarView>::Event;
-
-private:
-
-	Evas_Object* leftPanel;
-	Evas_Object* background;
-	Evas_Object* currentContent;
-	Evas_Object* bg;
-	Evas_Object* contentWrapper;
-
-	EvasSmartEvent drawerButtonClick;
-	EvasSmartEvent drawerScroll;
-
-	void OnDrawerButtonClick(Evas_Object* objSource, void* eventData);
-	void OnDrawerScrolling(Evas_Object* objSource, void* eventData);
-protected:
-	/**
-	 * Layout of the view, created as child of the view root.
-	 */
-	Evas_Object* layout;
-
-	virtual Evas_Object* CreateView(Evas_Object* root) final;
-
-	/**
-	 * Method that have to be overriden to set the content of the sidebar panel.
-	 *
-	 * @param root Same as the view root.
-	 * @return Evas_Object representation of the content.
-	 */
-	virtual Evas_Object* CreateSidebar(Evas_Object* root) = 0;
-
-	/**
-	 * Method that can be overriden to set the style of the drawer button.
-	 *
-	 * @param button Drawer button.
-	 */
-	virtual void DrawerButtonStyle(Evas_Object* button);
-
-
-	virtual Evas_Object* CreateContentWrapper(Evas_Object* root);
-
-	/**
-	 * Method from BackButtonHandler that will be called when the back button is pressed.
-	 * The default implementation of SidebarView is to close the sidebar panel if it's opened.
-	 *
-	 * @return true if the application should be closed after clicking back.
-	 * 		   false to cancel closing the application.
-	 */
-	virtual bool BackButtonClicked() override;
-
 public:
 	/**
 	 * Constructor of SidebarView.
@@ -135,8 +86,53 @@ public:
 	 * @return EINA_TRUE if opened, EINA_FALSE if closed.
 	 */
 	Eina_Bool IsDrawerOpened();
+protected:
+	/**
+	 * Layout of the view, created as child of the view root.
+	 */
+	Evas_Object* layout;
 
+	virtual Evas_Object* CreateView(Evas_Object* root) final;
+
+	/**
+	 * Method that have to be overriden to set the content of the sidebar panel.
+	 *
+	 * @param root Same as the view root.
+	 * @return Evas_Object representation of the content.
+	 */
+	virtual Evas_Object* CreateSidebar(Evas_Object* root) = 0;
+
+	/**
+	 * Method that can be overriden to set the style of the drawer button.
+	 *
+	 * @param button Drawer button.
+	 */
+	virtual void DrawerButtonStyle(Evas_Object* button);
+
+
+	virtual Evas_Object* CreateContentWrapper(Evas_Object* root);
+
+	/**
+	 * Method from BackButtonHandler that will be called when the back button is pressed.
+	 * The default implementation of SidebarView is to close the sidebar panel if it's opened.
+	 *
+	 * @return true if the application should be closed after clicking back.
+	 * 		   false to cancel closing the application.
+	 */
+	virtual bool BackButtonClicked() override;
 private:
+	EvasSmartEvent drawerButtonClick;
+	EvasSmartEvent drawerScroll;
+
+	Evas_Object* leftPanel;
+	Evas_Object* background;
+	Evas_Object* currentContent;
+	Evas_Object* bg;
+	Evas_Object* contentWrapper;
+
+	void OnDrawerButtonClick(Evas_Object* objSource, void* eventData);
+	void OnDrawerScrolling(Evas_Object* objSource, void* eventData);
+
 	void OnDrawerOpened(SidebarView* sidebarView, void* unused);
 	void OnDrawerClosed(SidebarView* sidebarView, void* unused);
 };

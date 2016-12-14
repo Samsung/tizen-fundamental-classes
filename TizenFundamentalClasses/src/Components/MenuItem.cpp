@@ -12,13 +12,13 @@
 using namespace TFC::Components;
 
 MenuItem::MenuItem(std::string menuText, std::string menuIcon, void* itemData, CustomMenuStyle* customStyle) :
+	menuText(menuText),
+	menuIcon(menuIcon),
 	parentMenu(nullptr),
 	itemData(itemData),
 	genlistItem(nullptr),
-	expanded(false),
-	menuText(menuText),
-	menuIcon(menuIcon),
 	customStyle(customStyle),
+	expanded(false),
 	Text(this),
 	MenuIcon(this),
 	CustomItemStyle(this)
