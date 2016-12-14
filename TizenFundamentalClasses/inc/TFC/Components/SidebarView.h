@@ -80,7 +80,7 @@ protected:
 	 * @return true if the application should be closed after clicking back.
 	 * 		   false to cancel closing the application.
 	 */
-	virtual bool BackButtonClicked();
+	virtual bool BackButtonClicked() override;
 
 public:
 	/**

@@ -121,7 +121,7 @@ void Async_Complete(void* data, Ecore_Thread* thd)
 
 void Async_Notify(void* data, Ecore_Thread* thd, void* notifData)
 {
-	auto ctx = reinterpret_cast<AsyncContext*>(data);
+	//auto ctx = reinterpret_cast<AsyncContext*>(data);
 	auto syncCtx = reinterpret_cast<SynchronizeContext*>(notifData);
 	// Run the function
 	syncCtx->handlerPayload->lambdaInvokerFunc(syncCtx->handlerPayload->packagePtr);

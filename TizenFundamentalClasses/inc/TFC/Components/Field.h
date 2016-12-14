@@ -41,7 +41,7 @@ protected:
 	 *
 	 * @return An Elm_Entry widget.
 	 */
-	virtual Evas_Object* CreateComponent(Evas_Object* root);
+	virtual Evas_Object* CreateComponent(Evas_Object* root) override;
 	void SetText(std::string const& text);
 	std::string const& GetText() const;
 	void SetMultiline(bool const& val);

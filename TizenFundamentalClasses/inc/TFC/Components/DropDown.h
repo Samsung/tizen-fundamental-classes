@@ -58,7 +58,7 @@ protected:
 	 *
 	 * @return The dropdown's button.
 	 */
-	virtual Evas_Object* CreateComponent(Evas_Object* root);
+	virtual Evas_Object* CreateComponent(Evas_Object* root) override;
 
 public:
 	/**

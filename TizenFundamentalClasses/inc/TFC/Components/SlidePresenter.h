@@ -37,7 +37,7 @@ private:
 	void OnIndexSelected(Evas_Object* source, void* event_data);
 
 protected:
-	virtual Evas_Object* CreateComponent(Evas_Object* root);
+	virtual Evas_Object* CreateComponent(Evas_Object* root) override;
 public:
 	SlidePresenter();
 	virtual ~SlidePresenter();

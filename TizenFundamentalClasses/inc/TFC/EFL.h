@@ -205,7 +205,7 @@ void TFC::EFL::EvasSmartEventObjectBase<T>::Finalize(void *data, Evas *e, Evas_O
 }
 
 template<typename T>
-TFC::EFL::EvasSmartEventObjectBase<T>::EvasSmartEventObjectBase() : eventName(nullptr), boundObject(nullptr), finalizePtr(nullptr), cbPtr(nullptr)
+TFC::EFL::EvasSmartEventObjectBase<T>::EvasSmartEventObjectBase() : eventName(nullptr), boundObject(nullptr), cbPtr(nullptr), finalizePtr(nullptr)
 {
 
 }

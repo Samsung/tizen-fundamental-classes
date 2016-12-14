@@ -13,7 +13,7 @@
 
 LIBAPI
 TFC::EFL::EvasObjectEventObject::EvasObjectEventObject() :
-	boundObject(nullptr), eventType(EVAS_CALLBACK_DEL)
+	eventType(EVAS_CALLBACK_DEL), boundObject(nullptr)
 {
 }
 

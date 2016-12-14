@@ -19,7 +19,8 @@ void ControllerManager_FreeFactory(void* data)
 }
 
 TFC::Framework::ControllerManager::ControllerManager() :
-	CurrentController(this)
+	CurrentController(this),
+	pendingNavigation(false)
 {
 
 }
@@ -41,7 +42,8 @@ TFC::Framework::ControllerManager::~ControllerManager()
 }
 
 LIBAPI
-StackingControllerManager::StackingControllerManager()
+StackingControllerManager::StackingControllerManager() :
+	viewContainer(nullptr)
 {
 
 }
@@ -145,7 +147,7 @@ void StackingControllerManager::PushView(ViewBase* view)
 			viewComponent, naviframeStyle);
 
 		auto backButton = elm_object_item_part_content_get(naviframeItem, "elm.swallow.prev_btn");
-		auto style = elm_object_style_get(backButton);
+		//auto style = elm_object_style_get(backButton);
 
 		// Title button handling
 

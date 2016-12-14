@@ -58,7 +58,7 @@ protected:
 	 *
 	 * @return A box (Elm_Box) that contains both the content and the pagination UI.
 	 */
-	virtual Evas_Object* CreateComponent(Evas_Object* root);
+	virtual Evas_Object* CreateComponent(Evas_Object* root) override;
 
 	Evas_Object* GetPagerContent();
 	int GetCurrentIndex() const;

@@ -61,7 +61,7 @@ private :
 	void OnPullerScroll(Evas_Object* obj, void* eventData);
 	void OnPullerStop(Evas_Object* obj, void* eventData);
 protected :
-	virtual Evas_Object* CreateComponent(Evas_Object* root);
+	virtual Evas_Object* CreateComponent(Evas_Object* root) final;
 public :
 	ScrollablePuller();
 	~ScrollablePuller();

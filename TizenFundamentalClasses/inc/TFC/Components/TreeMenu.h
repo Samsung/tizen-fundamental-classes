@@ -80,7 +80,7 @@ protected:
 	 *
 	 * @return An Elm_Genlist widget.
 	 */
-	virtual LIBAPI Evas_Object* CreateComponent(Evas_Object* root);
+	virtual LIBAPI Evas_Object* CreateComponent(Evas_Object* root) override;
 
 public:
 	/**

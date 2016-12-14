@@ -57,7 +57,7 @@ private:
 
 	void OnContextMenuButtonClicked(Evas_Object* obj, void* eventData);
 	void OnContextMenuDismissed(Evas_Object* obj, void* eventData);
-	bool BackButtonClicked();
+	bool BackButtonClicked() override;
 	void ShowMenu();
 	void HideMenu();
 
@@ -71,7 +71,7 @@ protected:
 	 *
 	 * @return The context menu button on the naviframe.
 	 */
-	virtual Evas_Object* CreateComponent(Evas_Object* root);
+	virtual Evas_Object* CreateComponent(Evas_Object* root) override;
 	void SetText(std::string const& text);
 	std::string const& GetText() const;
 

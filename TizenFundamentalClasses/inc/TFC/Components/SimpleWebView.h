@@ -70,7 +70,7 @@ protected:
 	 *
 	 * @return A box (Elm_Box) that contains the rendered result.
 	 */
-	virtual Evas_Object* CreateComponent(Evas_Object* root);
+	virtual Evas_Object* CreateComponent(Evas_Object* root) override;
 public:
 	/**
 	 * Constructor of SimpleWebView component.

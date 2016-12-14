@@ -260,7 +260,7 @@ namespace Components {
 		 *
 		 * @return An Elm_Genlist widget.
 		 */
-		virtual Evas_Object* CreateComponent(Evas_Object* root);
+		virtual Evas_Object* CreateComponent(Evas_Object* root) override;
 
 	private:
 		Evas_Object* genlist;
