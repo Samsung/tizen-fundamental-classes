@@ -45,7 +45,6 @@ public:
 	class EventDelegate;
 
 	EventObject();
-	EventObject(bool logDelete);
 	~EventObject();
 	void operator+=(const EventDelegate& other);
 	void operator-=(const EventDelegate& other);
@@ -59,10 +58,6 @@ private:
 
 	template<typename, typename>
 	friend class TFC::Core::SharedEventObject;
-
-#if VERBOSE
-	bool logDelete;
-#endif
 
 };
 
@@ -132,33 +127,11 @@ template<class TObjectSource, class TEventData>
 TFC::Core::EventObject<TObjectSource, TEventData>::EventObject() :
 	first(nullptr)
 {
-#if VERBOSE
-	logDelete = false;
-#endif
-}
-
-template<class TObjectSource, class TEventData>
-TFC::Core::EventObject<TObjectSource, TEventData>::EventObject(bool logDelete) :
-	first(nullptr)
-{
-#if VERBOSE
-	logDelete = true;
-#endif
-
-#if VERBOSE
-	if(logDelete)
-		dlog_print(DLOG_DEBUG, "TFC-Event", "Event created %d", this);
-#endif
 }
 
 template<class TObjectSource, class TEventData>
 TFC::Core::EventObject<TObjectSource, TEventData>::~EventObject()
 {
-#if VERBOSE
-	if(logDelete)
-		dlog_print(DLOG_DEBUG, "TFC-Event", "Event deleted %d", this);
-#endif
-
 	auto current = this->first;
 
 	while(current != nullptr)
@@ -223,11 +196,6 @@ template<class TObjectSource, class TEventData>
 void TFC::Core::EventObject<TObjectSource, TEventData>::operator() (TObjectSource objSource,
 		TEventData eventData) const
 {
-#if VERBOSE
-	if(logDelete)
-		dlog_print(DLOG_DEBUG, "TFC-Event", "Event raise %d", this);
-#endif
-
 	auto current = this->first;
 
 	while(current != nullptr)
@@ -242,7 +210,7 @@ void TFC::Core::EventObject<TObjectSource, TEventData>::operator() (TObjectSourc
 template<typename TObjectSource, typename TEventData>
 TFC::Core::SharedEventObject<TObjectSource, TEventData>::SharedEventObject() :
 	std::shared_ptr<TFC::Core::EventObject<TObjectSource, TEventData>>(
-			new TFC::Core::EventObject<TObjectSource, TEventData>(true))
+			new TFC::Core::EventObject<TObjectSource, TEventData>())
 {
 
 }
