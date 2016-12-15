@@ -24,7 +24,7 @@ TFC::Components::ScrollablePuller::ScrollablePuller() :
 	box(nullptr),
 	bgTop(nullptr),
 	bgBottom(nullptr),
-	pullerShown(false),
+	pullerShown(true),
 	Scrollable(this),
 	PartName(this),
 	PullerSize(this)
@@ -80,19 +80,21 @@ Evas_Object* TFC::Components::ScrollablePuller::CreateComponent(Evas_Object* roo
 	eventPulledEnd.Bind(puller, "scroll,drag,stop");
 	eventPullerStop.Bind(puller, "scroll,anim,stop");
 
-	dlog_print(DLOG_DEBUG, LOG_TAG, "Creating scrollable puller");
+	//dlog_print(DLOG_DEBUG, "PULLER", "Creating scrollable puller");
 
 	return puller;
 }
 
 void TFC::Components::ScrollablePuller::OnResize(EFL::EvasEventSourceInfo objSource, void* event_data)
 {
-	evas_object_show(puller);
-	elm_object_part_content_set(rootLayout, partName.c_str(), puller);
-	pullerShown = true;
+	if (pullerShown)
+	{
+		evas_object_show(puller);
+		elm_object_part_content_set(rootLayout, partName.c_str(), puller);
+	}
 
 	evas_object_geometry_get(scrollable, &posX, &posY, &width, &height);
-	dlog_print(DLOG_DEBUG, LOG_TAG, "Scrollable puller Resize : %d %d", width, height);
+	//dlog_print(DLOG_DEBUG, "PULLER", "Scrollable puller Resize : %d %d", width, height);
 
 	box = elm_box_add(puller);
 	evas_object_size_hint_weight_set(box, EVAS_HINT_EXPAND, 0);
@@ -140,7 +142,7 @@ void TFC::Components::ScrollablePuller::OnPulledEnd(Evas_Object* obj, void* even
 	Evas_Coord y;
 	elm_scroller_region_get(puller, nullptr, &y, nullptr, nullptr);
 	if (y == 0) {
-		dlog_print(DLOG_DEBUG, LOG_TAG, "Scrollable puller event trigger");
+		//dlog_print(DLOG_DEBUG, "PULLER", "Scrollable puller event trigger");
 		eventPull(this, nullptr);
 	}
 	ecore_idler_add([] (void* data) -> Eina_Bool {
