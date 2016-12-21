@@ -407,7 +407,7 @@ enum class NavigationFlag
 	Back 		 = 0x2,
 	NoTrail 	 = 0x4,
 	ClearHistory = 0x8,
-	NoCallUnload = 0xF
+	NoCallUnload = 0x10
 };
 
 inline bool operator&(NavigationFlag a, NavigationFlag b) { return static_cast<int>(a) & static_cast<int>(b); }
