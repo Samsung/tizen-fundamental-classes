@@ -52,7 +52,7 @@ std::string PercentEncode(std::string const& base)
 	return st.str();
 }
 
-TFC::Net::AuthHeader::AuthHeader(
+LIBAPI TFC::Net::AuthHeader::AuthHeader(
 		std::string const& consumerKey,
 		std::string const& consumerSecret,
 		std::string const& token,
@@ -70,7 +70,7 @@ TFC::Net::AuthHeader::AuthHeader(
 	headers["oauth_timestamp"] = GenerateTimestamp();
 }
 
-std::string TFC::Net::CreateSignatureBaseString(
+LIBAPI std::string TFC::Net::CreateSignatureBaseString(
 		std::string const& url, HTTPMode httpMode,
 		std::unordered_map<std::string, IServiceParameter*> const& postDataParam,
 		std::vector<std::pair<char const*, IServiceParameter*>> const& queryStringParam,
@@ -123,7 +123,7 @@ std::string TFC::Net::CreateSignatureBaseString(
 	return resultStream.str();
 }
 
-std::string TFC::Net::CalculateSignature(std::string const& base, AuthHeader& authHeader)
+LIBAPI std::string TFC::Net::CalculateSignature(std::string const& base, AuthHeader& authHeader)
 {
 	std::stringstream signingKey;
 	signingKey << PercentEncode(authHeader.consumerSecret) << "&";
