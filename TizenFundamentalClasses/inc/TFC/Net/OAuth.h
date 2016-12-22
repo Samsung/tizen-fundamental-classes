@@ -324,6 +324,7 @@ class OAuthClientBase : public EventEmitterClass<OAuthClientBase>
 public:
 	Event<std::string> eventAccessTokenReceived;
 	Event<std::string> eventRefreshTokenReceived;
+	Event<OAuthToken*> eventAccessTokenSecretReceived;
 
 	void PerformRequest();
 	void PerformXAuthRequest(std::string const& username, std::string const& password);

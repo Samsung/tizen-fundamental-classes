@@ -173,7 +173,7 @@ void TFC::Net::OAuthClientBase::OnAuthGrantCallbackCaptured(OAuthWindow* source,
 
 		//std::cout << "Access Token : " << response->token << ", Secret : " << response->secret << "\n";
 		dlog_print(DLOG_DEBUG, LOG_TAG, "Access token : %s, secret : %s", response->token.c_str(), response->secret.c_str());
-		eventAccessTokenReceived(this, response->token);
+		eventAccessTokenSecretReceived(this, response);
 		window->Hide();
 	};
 }

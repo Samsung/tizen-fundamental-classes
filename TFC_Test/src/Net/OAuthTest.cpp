@@ -185,16 +185,18 @@ public:
 	std::timed_mutex mutex;
 	std::string accessToken;
 
-	void OnAccessTokenReceived(TFC::Net::OAuthClientBase* src, std::string token)
+	void OnAccessTokenReceived(TFC::Net::OAuthClientBase* src, TFC::Net::OAuthToken* tok)
 	{
-		accessToken = token;
+		accessToken = tok->token;
 		std::cout << "Access Token : " << accessToken << "\n";
+		std::cout << "Access Token Secret : " << tok->secret << "\n";
+		delete tok;
 		mutex.unlock();
 	}
 
 	TwitterOAuthTestClass()
 	{
-		client.eventAccessTokenReceived += EventHandler(TwitterOAuthTestClass::OnAccessTokenReceived);
+		client.eventAccessTokenSecretReceived += EventHandler(TwitterOAuthTestClass::OnAccessTokenReceived);
 	}
 
 	void PerformRequest()
