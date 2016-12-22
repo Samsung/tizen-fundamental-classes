@@ -290,9 +290,15 @@ struct OAuthParam
 		typedef ClientInfoExtractor<TClientInfoProvider> ClientInfo;
 
 		return new OAuthParam({
+			nullptr,
+			nullptr,
+			nullptr,
+			nullptr,
+			OAuthMode::Version2,
 			ClientInfo::clientId,
 			ClientInfo::clientSecret,
-			ClientInfo::clientScope
+			ClientInfo::clientScope,
+			ClientInfo::redirectionUrl
 		});
 	}
 };
