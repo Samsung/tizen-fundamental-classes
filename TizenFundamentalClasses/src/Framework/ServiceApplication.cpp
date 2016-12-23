@@ -10,7 +10,6 @@
 #include <dlog.h>
 #include <system_settings.h>
 #include <dlog.h>
-
 #define InlineApplicationEventHandler(HANDLERNAME) [] (app_event_info_h e, void* a) { reinterpret_cast<ServiceApplicationBase*>(a)-> HANDLERNAME (e); }
 
 void TFC::Framework::ServiceApplicationBase::ApplicationTerminate() {
@@ -26,6 +25,7 @@ void TFC::Framework::ServiceApplicationBase::LanguageChanged(
 
 void TFC::Framework::ServiceApplicationBase::OrientationChanged(
 		app_event_info_h event_info) {
+
 }
 
 void TFC::Framework::ServiceApplicationBase::RegionChanged(

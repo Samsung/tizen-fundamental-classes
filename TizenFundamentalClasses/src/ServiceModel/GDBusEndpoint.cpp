@@ -15,45 +15,45 @@ using namespace TFC::ServiceModel;
 
 
 LIBAPI
-GVariantPackerPolicy::GVariantPackerPolicy()
+GVariantSerializer::GVariantSerializer()
 {
 	g_variant_builder_init(&builder, G_VARIANT_TYPE_TUPLE);
 
 }
 
 LIBAPI
-GVariantPackerPolicy::PackType GVariantPackerPolicy::EndPack() {
+GVariantSerializer::PackType GVariantSerializer::EndPack() {
 	return g_variant_builder_end(&builder);
 }
 
 template<>
 LIBAPI
-void GVariantPackerPolicy::Pack<int>(int args)
+void GVariantSerializer::Pack<int>(int args)
 {
 	g_variant_builder_add(&builder, "i", args);
 }
 
 template<>
 LIBAPI
-void GVariantPackerPolicy::Pack<double>(double args)
+void GVariantSerializer::Pack<double>(double args)
 {
 	g_variant_builder_add(&builder, "d", args);
 }
 
 template<>
 LIBAPI
-void GVariantPackerPolicy::Pack<std::string>(std::string args)
+void GVariantSerializer::Pack<std::string>(std::string args)
 {
 	g_variant_builder_add(&builder, "s", args.c_str());
 }
 
 LIBAPI
-TFC::ServiceModel::GVariantUnpackerPolicy::GVariantUnpackerPolicy(PackType p) : variant(p) {
+TFC::ServiceModel::GVariantDeserializer::GVariantDeserializer(PackType p) : variant(p) {
 }
 
 template<>
 LIBAPI
-int GVariantUnpackerPolicy::Unpack<int>(int index)
+int GVariantDeserializer::Unpack<int>(int index)
 {
 	int res;
 	g_variant_get_child(variant, index, "i", &res);
@@ -62,7 +62,7 @@ int GVariantUnpackerPolicy::Unpack<int>(int index)
 
 template<>
 LIBAPI
-double GVariantUnpackerPolicy::Unpack<double>(int index)
+double GVariantDeserializer::Unpack<double>(int index)
 {
 	double res;
 	g_variant_get_child(variant, index, "d", &res);
@@ -71,7 +71,7 @@ double GVariantUnpackerPolicy::Unpack<double>(int index)
 
 template<>
 LIBAPI
-std::string GVariantUnpackerPolicy::Unpack<std::string>(int index)
+std::string GVariantDeserializer::Unpack<std::string>(int index)
 {
 	auto strVariant = g_variant_get_child_value(variant, index);
 	gsize len = 0;
@@ -82,6 +82,6 @@ std::string GVariantUnpackerPolicy::Unpack<std::string>(int index)
 }
 
 LIBAPI
-TFC::ServiceModel::GVariantUnpackerPolicy::~GVariantUnpackerPolicy() {
+TFC::ServiceModel::GVariantDeserializer::~GVariantDeserializer() {
 	g_variant_unref(variant);
 }

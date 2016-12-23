@@ -10,15 +10,17 @@
 #define TFC_CORE_INTROSPECT_H_
 
 #include <type_traits>
-#include "TFC/Core.h"
+//#include "TFC/Core.h"
+#include <tuple>
 
 namespace TFC {
 namespace Core {
 namespace Introspect {
 
+/*
 template<typename TClass, typename TEventInfo>
 EventObject<TClass*, TEventInfo> EventOfFunc(EventObject<TClass*, TEventInfo> TClass::* param);
-
+*/
 template<typename T>
 class HasMemberAccessOperator
 {
@@ -60,17 +62,21 @@ struct MemberFunction<TReturn (TClass::*)(TArgs...)>
 
 	template<size_t idx>
 	using Args = typename std::tuple_element<idx, std::tuple<TArgs...>>::type;
+
+	typedef std::tuple<TArgs...> ArgsTuple;
 };
 
 template<typename TClass, typename TReturn, typename... TArgs>
 struct MemberFunction<TReturn (TClass::*)(TArgs...) const> : MemberFunction<TReturn (TClass::*)(TArgs...)>
 {
+	/*
 	static constexpr auto Arity = sizeof...(TArgs);
 	typedef TReturn ReturnType;
 	typedef TClass	DeclaringType;
 
 	template<size_t idx>
 	using Args = typename std::tuple_element<idx, std::tuple<TArgs...>>::type;
+	*/
 };
 
 template<typename T>
@@ -129,7 +135,7 @@ struct CallableObject<TRet(*)(TArgs...), true> : StaticFunction<TRet(TArgs...)>
 
 }}}
 
-#define EventOf(EVENT_VAR) decltype(TFC::Core::Introspect::EventOfFunc(& EVENT_VAR))
+//#define EventOf(EVENT_VAR) decltype(TFC::Core::Introspect::EventOfFunc(& EVENT_VAR))
 
 
 #endif /* INTROSPECT_H_ */

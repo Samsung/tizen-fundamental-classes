@@ -13,12 +13,12 @@
 namespace TFC {
 namespace ServiceModel {
 
-struct GVariantPackerPolicy
+struct GVariantSerializer
 {
 	GVariantBuilder builder;
 
 	typedef GVariant* PackType;
-	GVariantPackerPolicy();
+	GVariantSerializer();
 
 	template<typename T>
 	void Pack(T args);
@@ -28,14 +28,14 @@ struct GVariantPackerPolicy
 	PackType EndPack();
 };
 
-struct GVariantUnpackerPolicy
+struct GVariantDeserializer
 {
 	typedef GVariant* PackType;
 
 	PackType variant;
 
-	GVariantUnpackerPolicy(PackType p);
-	~GVariantUnpackerPolicy();
+	GVariantDeserializer(PackType p);
+	~GVariantDeserializer();
 	template<typename T>
 	T Unpack(int index);
 

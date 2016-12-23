@@ -10,112 +10,107 @@
 
 
 #include <tuple>
-#include <typeinfo>
-#include <dlog.h>
 #include "TFC/Core/Introspect.h"
 
 namespace TFC {
 namespace ServiceModel {
 
-template<typename TPackerPolicy, typename... TArgs>
-struct PackerFunctor;
+template<typename TSerializerClass, typename... TArgs>
+struct SerializerFunctor;
 
-template<typename TPackerPolicy, typename TCurrent, typename... TArgs>
-struct PackerFunctor<TPackerPolicy, TCurrent, TArgs...>
+template<typename TSerializerClass, typename TCurrent, typename... TArgs>
+struct SerializerFunctor<TSerializerClass, TCurrent, TArgs...>
 {
-	static void Func(TPackerPolicy& p, TCurrent t, TArgs... next)
+	static void Func(TSerializerClass& p, TCurrent t, TArgs... next)
 	{
 		p.Pack(t);
-		PackerFunctor<TPackerPolicy, TArgs...>::Func(p, next...);
+		SerializerFunctor<TSerializerClass, TArgs...>::Func(p, next...);
 	}
 };
 
-template<typename TPackerPolicy>
-struct PackerFunctor<TPackerPolicy>
+template<typename TSerializerClass>
+struct SerializerFunctor<TSerializerClass>
 {
-	static void Func(TPackerPolicy& p)
-	{
-
-	}
+	static void Func(TSerializerClass& p) { }
 };
 
-template<typename TPackerPolicy, typename... TArgs>
-typename TPackerPolicy::PackType PackerFunction(TArgs... args)
-{
-	TPackerPolicy packer;
-	PackerFunctor<TPackerPolicy, TArgs...>::Func(packer, args...);
-
-	return packer.EndPack();
-}
-
-
-
-
-template<typename TPackerPolicy,
+template<typename TSerializerClass,
 		 typename TFunctionType,
 		 typename TParameterPack = typename TFC::Core::Introspect::MemberFunction<TFunctionType>::ArgsTuple>
-struct ParameterPacker
-{
+struct ParameterSerializer;
 
-};
-
-template<typename TPackerPolicy,
+template<typename TSerializerClass,
 		 typename TFunctionType,
 		 typename... TArgs>
-struct ParameterPacker<TPackerPolicy, TFunctionType, std::tuple<TArgs...>>
+struct ParameterSerializer<TSerializerClass, TFunctionType, std::tuple<TArgs...>>
 {
-	typename TPackerPolicy::PackType operator()(TArgs... param)
+	static typename TSerializerClass::PackType Serialize(TArgs... param)
 	{
-		return PackerFunction<TPackerPolicy>(param...);
+		TSerializerClass packer;
+		SerializerFunctor<TSerializerClass, TArgs...>::Func(packer, param...);
+		return packer.EndPack();
 	}
 };
 
-template<typename TPackerPolicy,
+template<typename TDeserializerClass,
 		 typename TFunctionType,
-		 TFunctionType funcPtr,
 		 typename TParameterPack = typename TFC::Core::Introspect::MemberFunction<TFunctionType>::ArgsTuple>
-struct ParameterUnpacker;
+struct ParameterDeserializer;
 
-template<typename TPackerPolicy, typename... TArgs>
-struct UnpackerFunctor
+template<typename TDeserializerClass, typename... TArgs>
+struct ParameterDeserializerFunctor
 {
-	static std::tuple<TArgs...> Func(TPackerPolicy& p)
+	static std::tuple<TArgs...> Func(TDeserializerClass& p)
 	{
 		int index = 0;
 		return std::make_tuple(p.template Unpack<TArgs>(index++)...);
 	}
 };
 
-template<int ...> struct seq {};
+template<int...> struct seq {};
 
-template<int N, int ...S> struct gens : gens<N-1, N-1, S...> {};
+template<int N, int... S> struct gens : gens<N-1, N-1, S...> {};
 
-template<int ...S> struct gens<0, S...>{ typedef seq<S...> type; };
+template<int... S> struct gens<0, S...>{ typedef seq<S...> type; };
 
-template<typename TPackerPolicy,
+template<typename TDeserializerClass,
 		 typename TFunctionType,
-		 TFunctionType funcPtr,
 		 typename... TArgs>
-struct ParameterUnpacker<TPackerPolicy, TFunctionType, funcPtr, std::tuple<TArgs...>>
+struct ParameterDeserializer<TDeserializerClass, TFunctionType, std::tuple<TArgs...>>
+{
+	static std::tuple<TArgs...> Deserialize(typename TDeserializerClass::PackType p)
+	{
+		TDeserializerClass unpacker(p);
+		return ParameterDeserializerFunctor<TDeserializerClass, TArgs...>::Func(unpacker);
+	}
+};
+
+template<typename TFunctionType,
+		 typename TParameterPack = typename TFC::Core::Introspect::MemberFunction<TFunctionType>::ArgsTuple>
+struct DelayedInvoker;
+
+template<typename TFunctionType, typename... TArgs>
+struct DelayedInvoker<TFunctionType, std::tuple<TArgs...>>
 {
 	typedef typename TFC::Core::Introspect::MemberFunction<TFunctionType>::DeclaringType InstanceType;
 	typedef typename TFC::Core::Introspect::MemberFunction<TFunctionType>::ReturnType ReturnType;
 
+	InstanceType* i;
+	TFunctionType ptr;
+
+
+	DelayedInvoker(InstanceType* i, TFunctionType ptr) : i(i), ptr(ptr) { }
 
 	template<int... S>
-	ReturnType Call(InstanceType* i, std::tuple<TArgs...> const& param, seq<S...>)
+	ReturnType Call(std::tuple<TArgs...> const& param, seq<S...>)
 	{
-		return (i->*funcPtr)(std::get<S>(param)...);
+		return (i->*ptr)(std::get<S>(param)...);
 	}
 
-	ReturnType operator()(typename TPackerPolicy::PackType p, InstanceType* i)
+	ReturnType operator()(std::tuple<TArgs...> const& args)
 	{
-		TPackerPolicy unpacker(p);
-		auto unpacked = UnpackerFunctor<TPackerPolicy, TArgs...>::Func(unpacker);
-		return Call(i, unpacked, typename gens<sizeof...(TArgs)>::type());
+		return Call(args, typename gens<sizeof...(TArgs)>::type());
 	}
-
-
 };
 
 }}
