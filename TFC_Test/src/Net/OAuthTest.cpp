@@ -7,7 +7,7 @@
 
 
 
-#include "TFC/Net/OAuth.h"
+#include "TFC/Net/OAuthREST.h"
 #include "TFC/Net/REST.h"
 #include "TFC_Test.h"
 
@@ -184,12 +184,14 @@ public:
 	TwitterClient client;
 	std::timed_mutex mutex;
 	std::string accessToken;
+	std::string accessTokenSecret;
 
 	void OnAccessTokenReceived(TFC::Net::OAuthClientBase* src, TFC::Net::OAuthToken* tok)
 	{
 		accessToken = tok->token;
+		accessTokenSecret = tok->secret;
 		std::cout << "Access Token : " << accessToken << "\n";
-		std::cout << "Access Token Secret : " << tok->secret << "\n";
+		std::cout << "Access Token Secret : " << accessTokenSecret << "\n";
 		delete tok;
 		mutex.unlock();
 	}
@@ -213,6 +215,21 @@ public:
 	}
 };
 
+class TwitterTestAPI : public TFC::Net::TwitterRESTServiceBase<TwitterAppClientProvider, bool>
+{
+public:
+	TwitterTestAPI(std::string const& token, std::string const& tokenSecret) :
+		TwitterRESTServiceBase("https://api.twitter.com/1.1/account/verify_credentials.json", TFC::Net::HTTPMode::Get, token, tokenSecret)
+	{
+	}
+protected:
+	virtual bool* OnProcessResponse(int httpCode, const std::string& responseStr, int& errorCode, std::string& errorMessage)
+	{
+		std::cout << "Verify credential response : " << responseStr << "\n";
+		return new bool(!responseStr.empty());
+	}
+};
+
 TEST_F(OAuthTest, TwitterStackOAuth)
 {
 	TwitterOAuthTestClass tc;
@@ -225,5 +242,9 @@ TEST_F(OAuthTest, TwitterStackOAuth)
 
 	tc.mutex.lock();
 
-	EXPECT_LT(2, tc.accessToken.length()) << "OAuth token not received.";
+	EXPECT_LT(2, tc.accessToken.length()) << "Twitter OAuth token not received.";
+
+	TwitterTestAPI test(tc.accessToken, tc.accessTokenSecret);
+	auto result = test.Call();
+	EXPECT_EQ(true, *(result.Response)) << "Twitter API failed.";
 }

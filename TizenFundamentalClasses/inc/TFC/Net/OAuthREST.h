@@ -25,7 +25,7 @@ namespace Net {
 					std::string const& oAuthCallback = "");
 	};
 
-	std::string CalculateSignature(std::string const& base, AuthHeader& authHeader);
+	std::string CalculateSignature(std::string const& base, AuthHeader& authHeader, std::string const& tokenSecret = "");
 
 	std::string CreateSignatureBaseString(
 			std::string const& url, HTTPMode httpMode,
@@ -50,11 +50,10 @@ namespace Net {
 		virtual ~OAuthRESTServiceTemplateBase() {}
 	protected:
 		virtual void OnBeforePrepareRequest();
-	private:
-		std::string token;
-		std::string oAuthCallback;
 		OAuthParam* paramPtr;
-		//typedef ClientInfoExtractor<TClientInfoProvider> ClientInfo;
+		std::string token;
+	private:
+		std::string oAuthCallback;
 		Parameter<TFC::Net::ParameterType::Header, std::string> Authorization;
 	};
 
@@ -71,6 +70,30 @@ namespace Net {
 		{
 
 		}
+	};
+
+	/**
+	 *
+	 */
+	template<typename TClientInfoProvider, class ResponseType>
+	class TwitterRESTServiceBase : public TFC::Net::OAuthRESTServiceBase<TClientInfoProvider, ResponseType>
+	{
+	public:
+		template<ParameterType P, typename T>
+		using Parameter = typename TFC::Net::RESTServiceBase<ResponseType>::template Parameter<P, T>;
+
+		TwitterRESTServiceBase(std::string url, HTTPMode httpMode, std::string const& token, std::string const& tokenSecret);
+	protected:
+		virtual void OnBeforePrepareRequest();
+	private:
+		std::string tokenSecret;
+		Parameter<TFC::Net::ParameterType::Query, std::string> Version;
+		Parameter<TFC::Net::ParameterType::Query, std::string> SignatureMethod;
+		Parameter<TFC::Net::ParameterType::Query, std::string> Signature;
+		Parameter<TFC::Net::ParameterType::Query, std::string> ConsumerKey;
+		Parameter<TFC::Net::ParameterType::Query, std::string> Token;
+		Parameter<TFC::Net::ParameterType::Query, std::string> Nonce;
+		Parameter<TFC::Net::ParameterType::Query, std::string> Timestamp;
 	};
 }
 }
@@ -91,7 +114,7 @@ void TFC::Net::OAuthRESTServiceTemplateBase<ResponseType>::OnBeforePrepareReques
 {
 	AuthHeader authHeader(paramPtr->clientId, paramPtr->clientSecret, token, oAuthCallback);
 	std::string base = CreateSignatureBaseString(this->Url, this->httpMode, this->postDataParam, this->queryStringParam, authHeader);
-	std::string signature = CalculateSignature(base, authHeader);
+	CalculateSignature(base, authHeader);
 
 	std::stringstream authString;
 	authString << "OAuth ";
@@ -110,6 +133,41 @@ void TFC::Net::OAuthRESTServiceTemplateBase<ResponseType>::OnBeforePrepareReques
 	}
 
 	Authorization = authString.str();
+}
+
+
+template<typename TClientInfoProvider, class ResponseType>
+TFC::Net::TwitterRESTServiceBase<TClientInfoProvider, ResponseType>::TwitterRESTServiceBase(
+		std::string url, HTTPMode httpMode, std::string const& token, std::string const& tokenSecret) :
+	OAuthRESTServiceBase<TClientInfoProvider, ResponseType>(url, httpMode, token),
+	tokenSecret(tokenSecret),
+	Version(this, "oauth_version"),
+	SignatureMethod(this, "oauth_signature_method"),
+	Signature(this, "oauth_signature"),
+	ConsumerKey(this, "oauth_consumer_key"),
+	Token(this, "oauth_token"),
+	Nonce(this, "oauth_nonce"),
+	Timestamp(this, "oauth_timestamp")
+{
+
+}
+
+template<typename TClientInfoProvider, class ResponseType>
+void TFC::Net::TwitterRESTServiceBase<TClientInfoProvider, ResponseType>::OnBeforePrepareRequest()
+{
+	AuthHeader authHeader(this->paramPtr->clientId, this->paramPtr->clientSecret, this->token, "");
+	std::unordered_map<std::string, IServiceParameter*> postDataParam;
+	std::vector<std::pair<char const*, IServiceParameter*>> queryStringParam;
+	std::string base = CreateSignatureBaseString(this->Url, this->httpMode, postDataParam, queryStringParam, authHeader);
+	std::string signature = CalculateSignature(base, authHeader, tokenSecret);
+
+	Version = authHeader.headers["oauth_version"];
+	SignatureMethod = authHeader.headers["oauth_signature_method"];
+	Signature = signature;
+	ConsumerKey = authHeader.headers["oauth_consumer_key"];
+	Token = authHeader.headers["oauth_token"];
+	Nonce = authHeader.headers["oauth_nonce"];
+	Timestamp = authHeader.headers["oauth_timestamp"];
 }
 
 #endif /* TFC_NET_OAUTHREST_H_ */

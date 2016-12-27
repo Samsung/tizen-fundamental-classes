@@ -123,16 +123,18 @@ LIBAPI std::string TFC::Net::CreateSignatureBaseString(
 	return resultStream.str();
 }
 
-LIBAPI std::string TFC::Net::CalculateSignature(std::string const& base, AuthHeader& authHeader)
+LIBAPI std::string TFC::Net::CalculateSignature(std::string const& base, AuthHeader& authHeader, std::string const& tokenSecret)
 {
 	std::stringstream signingKey;
 	signingKey << PercentEncode(authHeader.consumerSecret) << "&";
-	signingKey << PercentEncode(authHeader.headers.at("oauth_token"));
+	signingKey << PercentEncode(tokenSecret);
 	std::string key = signingKey.str();
 
 	unsigned char* digest;
 	digest = HMAC(EVP_sha1(), key.c_str(), key.length(), (unsigned char*)base.c_str(), base.length(), NULL, NULL);
 
-	return authHeader.headers["oauth_signature"] = PercentEncode(TFC::Net::Base64Encode(digest, 20));
+	std::string signature = TFC::Net::Base64Encode(digest, 20);
+	authHeader.headers["oauth_signature"] = PercentEncode(signature);
+	return signature;
 }
 
