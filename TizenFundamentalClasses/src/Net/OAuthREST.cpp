@@ -80,13 +80,13 @@ LIBAPI std::string TFC::Net::CreateSignatureBaseString(
 	for (auto& kv : queryStringParam)
 	{
 		if (kv.second->isSet) {
-			paramMap[kv.first] = kv.second->GetEncodedValue();
+			paramMap[kv.first] = PercentEncode(kv.second->GetRawValue());
 		}
 	}
 	for (auto& kv : postDataParam)
 	{
 		if (kv.second->isSet) {
-			paramMap[kv.first] = kv.second->GetEncodedValue();
+			paramMap[kv.first] = PercentEncode(kv.second->GetRawValue());
 		}
 	}
 	for (auto& kv : authHeader.headers)
