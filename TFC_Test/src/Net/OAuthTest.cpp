@@ -218,8 +218,11 @@ public:
 class TwitterTestAPI : public TFC::Net::TwitterRESTServiceBase<TwitterAppClientProvider, bool>
 {
 public:
+	Parameter<TFC::Net::ParameterType::Query, std::string> IncludeEmail;
+
 	TwitterTestAPI(std::string const& token, std::string const& tokenSecret) :
-		TwitterRESTServiceBase("https://api.twitter.com/1.1/account/verify_credentials.json", TFC::Net::HTTPMode::Get, token, tokenSecret)
+		TwitterRESTServiceBase("https://api.twitter.com/1.1/account/verify_credentials.json", TFC::Net::HTTPMode::Get, token, tokenSecret),
+		IncludeEmail(this, "include_email")
 	{
 	}
 protected:
@@ -245,6 +248,7 @@ TEST_F(OAuthTest, TwitterStackOAuth)
 	EXPECT_LT(2, tc.accessToken.length()) << "Twitter OAuth token not received.";
 
 	TwitterTestAPI test(tc.accessToken, tc.accessTokenSecret);
+	test.IncludeEmail = "true";
 	auto result = test.Call();
 	EXPECT_EQ(true, *(result.Response)) << "Twitter API failed.";
 }

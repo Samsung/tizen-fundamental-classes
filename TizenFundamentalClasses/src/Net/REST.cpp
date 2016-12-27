@@ -9,7 +9,6 @@
 
 #include <curl/curl.h>
 #include <exception>
-#include <iostream>
 
 #include "TFC/Net/REST.h"
 #include "TFC/Net/Util.h"
@@ -355,7 +354,7 @@ RESTResultBase TFC::Net::RESTServiceTemplateBase::PerformCall()
 		}
 
 		dlog_print(DLOG_DEBUG, LOG_TAG, "Final url: %s", FinalUrl.c_str());
-		std::cout << "Final URL : " << FinalUrl << "\n";
+
 		curl_easy_setopt(curlHandle, CURLOPT_URL, FinalUrl.c_str());
 
 		dlog_print(DLOG_DEBUG, LOG_TAG, "Prepare Post Data");

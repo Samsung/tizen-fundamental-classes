@@ -156,9 +156,7 @@ template<typename TClientInfoProvider, class ResponseType>
 void TFC::Net::TwitterRESTServiceBase<TClientInfoProvider, ResponseType>::OnBeforePrepareRequest()
 {
 	AuthHeader authHeader(this->paramPtr->clientId, this->paramPtr->clientSecret, this->token, "");
-	std::unordered_map<std::string, IServiceParameter*> postDataParam;
-	std::vector<std::pair<char const*, IServiceParameter*>> queryStringParam;
-	std::string base = CreateSignatureBaseString(this->Url, this->httpMode, postDataParam, queryStringParam, authHeader);
+	std::string base = CreateSignatureBaseString(this->Url, this->httpMode, this->postDataParam, this->queryStringParam, authHeader);
 	std::string signature = CalculateSignature(base, authHeader, tokenSecret);
 
 	Version = authHeader.headers["oauth_version"];
