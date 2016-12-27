@@ -38,8 +38,23 @@ struct GVariantDeserializer
 	~GVariantDeserializer();
 	template<typename T>
 	T Unpack(int index);
+};
 
 
+class GDBusClient
+{
+private:
+	void* handle;
+public:
+	GDBusClient(char const* busName, char const* objectPath, char const* interfaceName);
+	GVariant* RemoteCall(char const* methodName, GVariant* parameter);
+};
+
+struct GDBusChannel
+{
+	typedef GVariantSerializer 	 Serializer;
+	typedef GVariantDeserializer Deserializer;
+	typedef GDBusClient			 Client;
 };
 
 }

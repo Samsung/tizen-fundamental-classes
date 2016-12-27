@@ -9,6 +9,8 @@
 #include "TFC/Core.h"
 #include "TFC/ServiceModel/GDBusEndpoint.h"
 
+#include <glib-2.0/gio/gio.h>
+
 #include <string>
 
 using namespace TFC::ServiceModel;
@@ -84,4 +86,18 @@ std::string GVariantDeserializer::Unpack<std::string>(int index)
 LIBAPI
 TFC::ServiceModel::GVariantDeserializer::~GVariantDeserializer() {
 	g_variant_unref(variant);
+}
+
+LIBAPI
+TFC::ServiceModel::GDBusClient::GDBusClient(const char* busName,
+		const char* objectPath, const char* interfaceName) {
+	this->handle = g_dbus_proxy_new_for_bus_sync(G_BUS_TYPE_SESSION, G_DBUS_PROXY_FLAGS_NONE, nullptr, busName, objectPath, interfaceName, nullptr, nullptr);
+}
+
+#include <dlog.h>
+
+LIBAPI
+GVariant* TFC::ServiceModel::GDBusClient::RemoteCall(const char* methodName, GVariant* parameter) {
+	dlog_print(DLOG_DEBUG, "RPC-Test", "Calling: %s", methodName);
+	return g_dbus_proxy_call_sync((GDBusProxy*)this->handle, methodName, parameter, G_DBUS_CALL_FLAGS_NONE, -1, nullptr, nullptr);
 }

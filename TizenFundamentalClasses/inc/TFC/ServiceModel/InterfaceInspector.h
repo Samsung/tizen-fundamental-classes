@@ -10,6 +10,9 @@
 
 
 #include <tuple>
+
+#include <dlog.h>
+
 #include "TFC/Core/Introspect.h"
 
 namespace TFC {
@@ -44,10 +47,22 @@ template<typename TSerializerClass,
 		 typename... TArgs>
 struct ParameterSerializer<TSerializerClass, TFunctionType, std::tuple<TArgs...>>
 {
-	static typename TSerializerClass::PackType Serialize(TArgs... param)
+	static typename TSerializerClass::PackType Serialize(TArgs const&... param)
 	{
 		TSerializerClass packer;
 		SerializerFunctor<TSerializerClass, TArgs...>::Func(packer, param...);
+		return packer.EndPack();
+	}
+};
+
+template<typename TSerializerClass,
+		 typename TObj>
+struct ObjectSerializer
+{
+	static typename TSerializerClass::PackType Serialize(TObj const& obj)
+	{
+		TSerializerClass packer;
+		SerializerFunctor<TSerializerClass, TObj>::Func(packer, obj);
 		return packer.EndPack();
 	}
 };
@@ -67,6 +82,8 @@ struct ParameterDeserializerFunctor
 	}
 };
 
+
+
 template<int...> struct seq {};
 
 template<int N, int... S> struct gens : gens<N-1, N-1, S...> {};
@@ -85,31 +102,44 @@ struct ParameterDeserializer<TDeserializerClass, TFunctionType, std::tuple<TArgs
 	}
 };
 
-template<typename TFunctionType,
+template<typename TDeserializerClass, typename TObj>
+struct ObjectDeserializer
+{
+	static TObj Deserialize(typename TDeserializerClass::PackType p)
+	{
+		TDeserializerClass unpacker(p);
+		return std::get<0>(ParameterDeserializerFunctor<TDeserializerClass, TObj>::Func(unpacker));
+	}
+};
+
+template<typename TDeserializerClass>
+struct ObjectDeserializer<TDeserializerClass, void>
+{
+	static void Deserialize(typename TDeserializerClass::PackType p)
+	{
+		return;
+	}
+};
+
+template<typename TFunctionType, TFunctionType ptr,
 		 typename TParameterPack = typename TFC::Core::Introspect::MemberFunction<TFunctionType>::ArgsTuple>
 struct DelayedInvoker;
 
-template<typename TFunctionType, typename... TArgs>
-struct DelayedInvoker<TFunctionType, std::tuple<TArgs...>>
+template<typename TFunctionType, TFunctionType ptr, typename... TArgs>
+struct DelayedInvoker<TFunctionType, ptr, std::tuple<TArgs...>>
 {
 	typedef typename TFC::Core::Introspect::MemberFunction<TFunctionType>::DeclaringType InstanceType;
 	typedef typename TFC::Core::Introspect::MemberFunction<TFunctionType>::ReturnType ReturnType;
 
-	InstanceType* i;
-	TFunctionType ptr;
-
-
-	DelayedInvoker(InstanceType* i, TFunctionType ptr) : i(i), ptr(ptr) { }
-
 	template<int... S>
-	ReturnType Call(std::tuple<TArgs...> const& param, seq<S...>)
+	static ReturnType Call(InstanceType* i, std::tuple<TArgs...> const& param, seq<S...>)
 	{
 		return (i->*ptr)(std::get<S>(param)...);
 	}
 
-	ReturnType operator()(std::tuple<TArgs...> const& args)
+	static ReturnType Invoke(InstanceType* i, std::tuple<TArgs...> const& args)
 	{
-		return Call(args, typename gens<sizeof...(TArgs)>::type());
+		return Call(i, args, typename gens<sizeof...(TArgs)>::type());
 	}
 };
 

@@ -96,6 +96,19 @@ struct StaticFunction<TRet(TArgs...)>
 };
 
 template<typename T>
+struct IsMemberFunction
+{
+	static constexpr bool Value = false;
+};
+
+template<typename TRet, typename TDeclaring, typename... TArgs>
+struct IsMemberFunction<TRet (TDeclaring::*)(TArgs...)>
+{
+	static constexpr bool Value = true;
+	typedef MemberFunction<TRet (TDeclaring::*)(TArgs...)> Introspect;
+};
+
+template<typename T>
 struct IsFunctionPointer
 {
 	static constexpr bool Value = false;
