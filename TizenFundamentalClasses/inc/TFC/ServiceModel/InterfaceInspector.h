@@ -14,34 +14,68 @@
 #include <dlog.h>
 
 #include "TFC/Core/Introspect.h"
+#include "TFC/Core/Metaprogramming.h"
 
 namespace TFC {
 namespace ServiceModel {
 
+/**
+ * Function template which generates operation to perform serialization based on requested type.
+ * The resulting code will perform serialization by calling Pack method of TSerializerClass object.
+ * TSerializerClass should have Pack method overloaded with all types specified in TArgs.
+ *
+ * This template generates sequences of instructions calling Pack method using template
+ * recursion for each type in TArgs.
+ */
 template<typename TSerializerClass, typename... TArgs>
 struct SerializerFunctor;
 
+/**
+ * Recursion case for SerializerFunctor
+ */
 template<typename TSerializerClass, typename TCurrent, typename... TArgs>
 struct SerializerFunctor<TSerializerClass, TCurrent, TArgs...>
 {
 	static void Func(TSerializerClass& p, TCurrent t, TArgs... next)
 	{
 		p.Pack(t);
+		// Call SerializerFunctor recursive by passing the TArgs tails as arguments
 		SerializerFunctor<TSerializerClass, TArgs...>::Func(p, next...);
 	}
 };
 
+/**
+ * Base case for SerializerFunctor where TArgs is nil entirely
+ */
 template<typename TSerializerClass>
 struct SerializerFunctor<TSerializerClass>
 {
+	// Base function just do nothing
 	static void Func(TSerializerClass& p) { }
 };
 
+/**
+ * ParameterSerializer templates generates the serialization operations based on TFunctionType
+ * pointer-to-member-function. This template extracts the parameter list on TFunctionType using
+ * introspector template (Core::Introspect::MemberFunction<>).
+ *
+ * This template declaration basically only specify the class template structure with its default
+ * argument. The actual definition will extract the pointer-to-member parameter list from static
+ * list retrieved from introspector template.
+ */
 template<typename TSerializerClass,
 		 typename TFunctionType,
-		 typename TParameterPack = typename TFC::Core::Introspect::MemberFunction<TFunctionType>::ArgsTuple>
+		 typename TParameterPack = typename Core::Introspect::MemberFunction<TFunctionType>::ArgsTuple>
 struct ParameterSerializer;
 
+/**
+ * This is the definition (and specialization) for ParameterSerializer template. The introspector class
+ * specified in its declaration supply the TParameterPack (third argument of the template) with the
+ * static-list of the pointer-to-member-function's parameter types.
+ *
+ * The TParameterPack which is a tuple with list of arguments is extracted using variadic template,
+ * then itself is supplied to the SerializerFunctor to generates the serialization instructions.
+ */
 template<typename TSerializerClass,
 		 typename TFunctionType,
 		 typename... TArgs>
@@ -67,38 +101,42 @@ struct ObjectSerializer
 	}
 };
 
+
+
 template<typename TDeserializerClass,
 		 typename TFunctionType,
-		 typename TParameterPack = typename TFC::Core::Introspect::MemberFunction<TFunctionType>::ArgsTuple>
+		 typename TParameterPack = typename Core::Introspect::MemberFunction<TFunctionType>::ArgsTuple>
 struct ParameterDeserializer;
 
 template<typename TDeserializerClass, typename... TArgs>
 struct ParameterDeserializerFunctor
 {
+	typedef typename Core::Metaprogramming::SequenceGenerator<sizeof...(TArgs)>::Type ArgSequence;
+
+	template<int... S>
+	static std::tuple<TArgs...> Func(TDeserializerClass& p, Core::Metaprogramming::Sequence<S...>)
+	{
+		return std::make_tuple(p.template Unpack<TArgs>(S)...);
+	}
+
 	static std::tuple<TArgs...> Func(TDeserializerClass& p)
 	{
-		int index = 0;
-		return std::make_tuple(p.template Unpack<TArgs>(index++)...);
+		return Func(p, ArgSequence());
 	}
 };
-
-
-
-template<int...> struct seq {};
-
-template<int N, int... S> struct gens : gens<N-1, N-1, S...> {};
-
-template<int... S> struct gens<0, S...>{ typedef seq<S...> type; };
 
 template<typename TDeserializerClass,
 		 typename TFunctionType,
 		 typename... TArgs>
 struct ParameterDeserializer<TDeserializerClass, TFunctionType, std::tuple<TArgs...>>
 {
-	static std::tuple<TArgs...> Deserialize(typename TDeserializerClass::PackType p)
+	static std::tuple<TArgs...> Deserialize(typename TDeserializerClass::PackType p, bool finalizePackedObject = true)
 	{
 		TDeserializerClass unpacker(p);
 		return ParameterDeserializerFunctor<TDeserializerClass, TArgs...>::Func(unpacker);
+
+		if(finalizePackedObject)
+			unpacker.Finalize();
 	}
 };
 
@@ -121,25 +159,26 @@ struct ObjectDeserializer<TDeserializerClass, void>
 	}
 };
 
-template<typename TFunctionType, TFunctionType ptr,
-		 typename TParameterPack = typename TFC::Core::Introspect::MemberFunction<TFunctionType>::ArgsTuple>
+template<typename TFunctionType,
+		 typename TParameterPack = typename Core::Introspect::MemberFunction<TFunctionType>::ArgsTuple>
 struct DelayedInvoker;
 
-template<typename TFunctionType, TFunctionType ptr, typename... TArgs>
-struct DelayedInvoker<TFunctionType, ptr, std::tuple<TArgs...>>
+template<typename TFunctionType, typename... TArgs>
+struct DelayedInvoker<TFunctionType, std::tuple<TArgs...>>
 {
-	typedef typename TFC::Core::Introspect::MemberFunction<TFunctionType>::DeclaringType InstanceType;
-	typedef typename TFC::Core::Introspect::MemberFunction<TFunctionType>::ReturnType ReturnType;
+	typedef typename Core::Introspect::MemberFunction<TFunctionType>::DeclaringType InstanceType;
+	typedef typename Core::Introspect::MemberFunction<TFunctionType>::ReturnType ReturnType;
+	typedef typename Core::Metaprogramming::SequenceGenerator<sizeof...(TArgs)>::Type ArgSequence;
 
 	template<int... S>
-	static ReturnType Call(InstanceType* i, std::tuple<TArgs...> const& param, seq<S...>)
+	static ReturnType Call(InstanceType* i, TFunctionType ptr, std::tuple<TArgs...> const& param, Core::Metaprogramming::Sequence<S...>)
 	{
 		return (i->*ptr)(std::get<S>(param)...);
 	}
 
-	static ReturnType Invoke(InstanceType* i, std::tuple<TArgs...> const& args)
+	static ReturnType Invoke(InstanceType* i, TFunctionType ptr, std::tuple<TArgs...> const& args)
 	{
-		return Call(i, args, typename gens<sizeof...(TArgs)>::type());
+		return Call(i, ptr, args, ArgSequence());
 	}
 };
 

@@ -35,9 +35,11 @@ struct GVariantDeserializer
 	PackType variant;
 
 	GVariantDeserializer(PackType p);
-	~GVariantDeserializer();
+
 	template<typename T>
 	T Unpack(int index);
+
+	void Finalize();
 };
 
 
@@ -55,6 +57,8 @@ struct GDBusChannel
 	typedef GVariantSerializer 	 Serializer;
 	typedef GVariantDeserializer Deserializer;
 	typedef GDBusClient			 Client;
+	typedef GDBusClient			 Server;
+	typedef GVariant* PackType;
 };
 
 }

@@ -69,14 +69,7 @@ struct MemberFunction<TReturn (TClass::*)(TArgs...)>
 template<typename TClass, typename TReturn, typename... TArgs>
 struct MemberFunction<TReturn (TClass::*)(TArgs...) const> : MemberFunction<TReturn (TClass::*)(TArgs...)>
 {
-	/*
-	static constexpr auto Arity = sizeof...(TArgs);
-	typedef TReturn ReturnType;
-	typedef TClass	DeclaringType;
 
-	template<size_t idx>
-	using Args = typename std::tuple_element<idx, std::tuple<TArgs...>>::type;
-	*/
 };
 
 template<typename T>

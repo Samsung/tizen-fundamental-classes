@@ -43,7 +43,6 @@ struct InterfacePrefixInspector
 template<typename TEndpoint, typename T>
 class ClientEndpoint : public T
 {
-
 private:
 	std::string objectPath;
 	typedef typename TEndpoint::Channel Channel;
@@ -55,7 +54,6 @@ private:
 	{
 		typedef ParameterSerializer<typename Channel::Serializer, TMemPtr> Serializer;
 		typedef ObjectDeserializer<typename Channel::Deserializer, typename TFC::Core::Introspect::MemberFunction<TMemPtr>::ReturnType> ReturnTypeDeserializer;
-		typedef TypeMetadata<T> Metadata;
 
 		auto& typeInfo = TypeMetadata<T>::typeInfo;
 
