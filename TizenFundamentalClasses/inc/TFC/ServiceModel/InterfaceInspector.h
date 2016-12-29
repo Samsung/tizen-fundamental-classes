@@ -101,6 +101,16 @@ struct ObjectSerializer
 	}
 };
 
+template<typename TSerializerClass>
+struct ObjectSerializer<TSerializerClass, void>
+{
+	static typename TSerializerClass::PackType Serialize()
+	{
+		TSerializerClass packer;
+		return packer.EndPack();
+	}
+};
+
 
 
 template<typename TDeserializerClass,

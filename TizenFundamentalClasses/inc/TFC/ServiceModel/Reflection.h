@@ -116,10 +116,10 @@ class PropertyInfo : public ObjectClass
 
 
 
-class TypeInfo
+class TypeDescription
 {
 public:
-	class TypeInfoBuilder
+	class TypeDescriptionBuilder
 	{
 	public:
 		enum class TypeMemberKind
@@ -133,25 +133,25 @@ public:
 		struct InitializerFunctor;
 
 		template<typename T>
-		TypeInfoBuilder(T member, char const* name)
+		TypeDescriptionBuilder(T member, char const* name)
 		{
 			InitializerFunctor<T>::Initialize(member, name, kind, infoObject);
 		}
 
 	private:
-		friend class TypeInfo;
+		friend class TypeDescription;
 
 		TypeMemberKind kind;
 		ObjectClass* infoObject;
 	};
 
-	TypeInfo(std::string className, std::initializer_list<TypeInfoBuilder> init)
+	TypeDescription(std::initializer_list<TypeDescriptionBuilder> init)
 	{
 		for(auto& i : init)
 		{
 			switch(i.kind)
 			{
-			case TypeInfoBuilder::TypeMemberKind::Function:
+			case TypeDescriptionBuilder::TypeMemberKind::Function:
 				auto funcInfo = dynamic_cast<FunctionInfo*>(i.infoObject);
 				functionMap.emplace(std::make_pair(funcInfo->functionName, funcInfo));
 				break;
@@ -190,9 +190,9 @@ private:
 };
 
 template<typename T>
-struct TypeMetadata
+struct TypeInfo
 {
-
+	static TypeDescription typeDescription;
 };
 
 
@@ -205,16 +205,21 @@ class ServiceEndpoint
 }}
 
 template<typename T>
-struct TFC::ServiceModel::TypeInfo::TypeInfoBuilder::InitializerFunctor<T, true>
+struct TFC::ServiceModel::TypeDescription::TypeDescriptionBuilder::InitializerFunctor<T, true>
 {
 	static void Initialize(
 			T member,
 			char const* name,
-			TFC::ServiceModel::TypeInfo::TypeInfoBuilder::TypeMemberKind& kind,
+			TFC::ServiceModel::TypeDescription::TypeDescriptionBuilder::TypeMemberKind& kind,
 			TFC::ObjectClass*& ptr)
 	{
 		ptr = new FunctionInfoTemplate<T>(name, member);
 		kind = TypeMemberKind::Function;
 	}
 };
+
+#define TFC_DefineTypeInfo(TYPENAME) \
+	template<>\
+	TFC::ServiceModel::TypeDescription TFC::ServiceModel::TypeInfo< TYPENAME >::typeDescription
+
 #endif /* TFC_SERVICEMODEL_REFLECTION_H_ */

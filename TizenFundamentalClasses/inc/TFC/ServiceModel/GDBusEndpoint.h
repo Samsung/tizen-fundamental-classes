@@ -9,6 +9,7 @@
 #define TFC_SERVICEMODEL_GDBUSENDPOINT_H_
 
 #include <glib-2.0/glib.h>
+#include <glib-2.0/gio/gio.h>
 
 namespace TFC {
 namespace ServiceModel {
@@ -42,23 +43,60 @@ struct GVariantDeserializer
 	void Finalize();
 };
 
+struct GDBusConfiguration
+{
+	char const* busName;
+	GBusType busType;
+	GBusNameOwnerFlags nameOwnerFlags;
+	GDBusProxyFlags proxyFlags;
+};
 
 class GDBusClient
 {
 private:
 	void* handle;
 public:
-	GDBusClient(char const* busName, char const* objectPath, char const* interfaceName);
+	GDBusClient(GDBusConfiguration const& config, char const* objectPath, char const* interfaceName);
 	GVariant* RemoteCall(char const* methodName, GVariant* parameter);
+};
+
+class GDBusServerObjectList
+{
+
+};
+
+class GDBusServer
+{
+private:
+	static void OnBusAcquiredCallback(GDBusConnection *connection, const gchar* name, gpointer user_data);
+	static void OnNameAcquiredCallback(GDBusConnection *connection, const gchar* name, gpointer user_data);
+	static void OnNameLostCallback(GDBusConnection *connection, const gchar* name, gpointer user_data);
+
+	void OnBusAcquired(GDBusConnection *connection, const gchar* name);
+	void OnNameAcquired(GDBusConnection *connection, const gchar* name);
+	void OnNameLost(GDBusConnection *connection, const gchar* name);
+
+public:
+	GDBusServer();
+};
+
+struct GDBusInterfaceDefinition
+{
+	void SetInterfaceName(std::string&& value);
+
+	template<typename TFuncPtr>
+	void RegisterFunction(TFuncPtr ptr);
 };
 
 struct GDBusChannel
 {
-	typedef GVariantSerializer 	 Serializer;
-	typedef GVariantDeserializer Deserializer;
-	typedef GDBusClient			 Client;
-	typedef GDBusClient			 Server;
-	typedef GVariant* PackType;
+	typedef GVariantSerializer 	 	 Serializer;
+	typedef GVariantDeserializer 	 Deserializer;
+	typedef GDBusClient			 	 Client;
+	typedef GDBusServer			 	 Server;
+	typedef GVariant* 			 	 PackType;
+	typedef GDBusConfiguration		 ConfigurationType;
+	typedef GDBusInterfaceDefinition InterfaceDefinition;
 };
 
 }

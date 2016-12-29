@@ -88,9 +88,9 @@ std::string GVariantDeserializer::Unpack<std::string>(int index)
 
 
 LIBAPI
-TFC::ServiceModel::GDBusClient::GDBusClient(const char* busName,
+TFC::ServiceModel::GDBusClient::GDBusClient(GDBusConfiguration const& config,
 		const char* objectPath, const char* interfaceName) {
-	this->handle = g_dbus_proxy_new_for_bus_sync(G_BUS_TYPE_SESSION, G_DBUS_PROXY_FLAGS_NONE, nullptr, busName, objectPath, interfaceName, nullptr, nullptr);
+	this->handle = g_dbus_proxy_new_for_bus_sync(config.busType, config.proxyFlags, nullptr, config.busName, objectPath, interfaceName, nullptr, nullptr);
 }
 
 

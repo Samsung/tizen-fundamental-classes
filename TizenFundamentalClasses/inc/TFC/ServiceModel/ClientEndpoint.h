@@ -55,11 +55,11 @@ private:
 		typedef ParameterSerializer<typename Channel::Serializer, TMemPtr> Serializer;
 		typedef ObjectDeserializer<typename Channel::Deserializer, typename TFC::Core::Introspect::MemberFunction<TMemPtr>::ReturnType> ReturnTypeDeserializer;
 
-		auto& typeInfo = TypeMetadata<T>::typeInfo;
+		auto& typeDescription = TypeInfo<T>::typeDescription;
 
 		auto serialized = Serializer::Serialize(args...);
 		dlog_print(DLOG_DEBUG, "RPC-Test", "In InvokeInternal");
-		return ReturnTypeDeserializer::Deserialize(endpoint.RemoteCall(typeInfo.GetFunctionNameByPointer(ptr), serialized));
+		return ReturnTypeDeserializer::Deserialize(endpoint.RemoteCall(typeDescription.GetFunctionNameByPointer(ptr), serialized));
 	}
 protected:
 	template<typename TMemPtr, typename... TArgs>
@@ -70,7 +70,7 @@ protected:
 	}
 
 	ClientEndpoint(char const* objectPath) :
-		endpoint(TEndpoint::busName, objectPath, GetInterfaceName(InterfacePrefixInspector<TEndpoint>::value, typeid(T)).c_str())
+		endpoint(TEndpoint::configuration, objectPath, GetInterfaceName(InterfacePrefixInspector<TEndpoint>::value, typeid(T)).c_str())
 	{
 
 	}
