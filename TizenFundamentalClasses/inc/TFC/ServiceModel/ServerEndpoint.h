@@ -10,6 +10,7 @@
 
 #include "TFC/Core/Introspect.h"
 
+#include <map>
 #include <unordered_map>
 #include <functional>
 
@@ -22,7 +23,7 @@ class IServerObject
 public:
 	typedef typename TEndpoint::Channel Channel;
 	typedef typename Channel::InterfaceDefinition InterfaceDefinition;
-	typedef typename TEndpoint::PackType PackType;
+	typedef typename Channel::PackType PackType;
 
 	virtual InterfaceDefinition const& GetInterfaceDefinition() = 0;
 	virtual PackType Invoke(std::string const& function, PackType param) = 0;
@@ -30,16 +31,7 @@ public:
 	virtual ~IServerObject() { }
 };
 
-template<typename TEndpoint, typename T>
-class ServerObjectManager
-{
-public:
-	typedef typename TEndpoint::Channel Channel;
-	typedef typename Channel::InterfaceDefinition InterfaceDefinition;
-	typedef typename TEndpoint::PackType PackType;
 
-
-};
 
 template<typename TEndpoint, typename T>
 class ServerObject : public T, public IServerObject<TEndpoint>
@@ -130,7 +122,53 @@ public:
 		return definition;
 	}
 
+	virtual typename Channel::PackType Invoke(std::string const& function, typename Channel::PackType param) override
+	{
+		return {};
+	};
+};
 
+template<typename TEndpoint, typename T>
+bool ServerObject<TEndpoint, T>::initialized = false;
+
+template<typename TEndpoint, typename T>
+typename ServerObject<TEndpoint, T>::Channel::InterfaceDefinition ServerObject<TEndpoint, T>::definition;
+
+template<typename TEndpoint, typename T>
+std::unordered_map<std::string, typename ServerObject<TEndpoint, T>::FunctionDelegate> ServerObject<TEndpoint, T>::functionMap;
+
+template<typename TEndpoint>
+class IServerObjectManager
+{
+public:
+	typedef typename TEndpoint::Channel Channel;
+	typedef typename Channel::InterfaceDefinition InterfaceDefinition;
+	typedef typename TEndpoint::PackType PackType;
+
+	virtual InterfaceDefinition const& GetInterfaceDefinition() = 0;
+	virtual PackType Invoke(int id, std::string const& function, PackType param) = 0;
+
+	virtual ~IServerObjectManager() { }
+};
+
+template<typename TEndpoint, typename T>
+class ServerObjectManager : public IServerObjectManager<TEndpoint>
+{
+public:
+	typedef typename TEndpoint::Channel Channel;
+	typedef typename Channel::InterfaceDefinition InterfaceDefinition;
+	typedef typename TEndpoint::PackType PackType;
+
+protected:
+
+private:
+	struct ManagedObjectInfo
+	{
+		ServerObject<TEndpoint, T>* instance;
+		long long lastAccessed;
+	};
+
+	std::map<int, ManagedObjectInfo> objectDictionary;
 };
 
 }}

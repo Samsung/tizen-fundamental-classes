@@ -106,3 +106,122 @@ void TFC::ServiceModel::GVariantDeserializer::Finalize()
 {
 	g_variant_unref(variant);
 }
+
+LIBAPI
+TFC::ServiceModel::GDBusInterfaceDefinition::GDBusInterfaceDefinition() {
+	this->interfaceInfo.ref_count = -1;
+	this->interfaceInfo.name = nullptr;
+	this->methodInfoList.push_back(nullptr);
+
+	this->interfaceInfo.methods = &this->methodInfoList[0];
+	this->interfaceInfo.properties = nullptr;
+	this->interfaceInfo.signals = nullptr;
+	this->interfaceInfo.annotations = nullptr;
+}
+
+LIBAPI
+void TFC::ServiceModel::GDBusInterfaceDefinition::SetInterfaceName(
+		std::string&& value) {
+	this->interfaceNameStd = std::move(value);
+
+	// Refresh interfaceInfo.name
+	this->interfaceInfo.name = const_cast<char*>(this->interfaceNameStd.c_str());
+}
+
+LIBAPI
+void TFC::ServiceModel::GDBusInterfaceDefinition::RegisterFunction(
+		std::string const& funcName,
+		std::vector<std::string> const& args,
+		std::string const& retType)
+{
+	GDBusMethodInfo* m = new GDBusMethodInfo;
+
+	m->ref_count = -1;
+	m->name = g_strdup(funcName.c_str());
+	m->annotations = nullptr;
+	m->in_args = new GDBusArgInfo*[args.size() + 1] {};
+
+	int ctr = 0;
+	for(auto& arg : args)
+	{
+		auto& store = m->in_args[ctr];
+		store = new GDBusArgInfo;
+		store->name = g_strdup_printf("arg%d", ctr);
+		store->ref_count = -1;
+		store->signature = g_strdup(arg.c_str());
+		store->annotations = nullptr;
+
+		ctr++;
+	}
+
+	m->out_args = new GDBusArgInfo*[retType.empty() ? 1 : 2] {};
+
+	if(!retType.empty())
+	{
+		auto& store = m->out_args[0];
+		store = new GDBusArgInfo;
+		store->name = g_strdup("argout");
+		store->ref_count = -1;
+		store->signature = g_strdup(retType.c_str());
+		store->annotations = nullptr;
+	}
+
+	int lastIndex = this->methodInfoList.size();
+	this->methodInfoList[lastIndex - 1] = m;
+	this->methodInfoList.push_back(nullptr);
+
+	// Refresh the address
+	this->interfaceInfo.methods = &this->methodInfoList[0];
+}
+
+LIBAPI
+TFC::ServiceModel::GDBusInterfaceDefinition::~GDBusInterfaceDefinition()
+{
+	for(auto& methodInfo : this->methodInfoList)
+	{
+		if(methodInfo == nullptr)
+			break;
+
+		dlog_print(DLOG_DEBUG, "TFC-Debug", "Destroy methodInfo name");
+		g_free(methodInfo->name);
+
+		auto inArgs = methodInfo->in_args;
+
+		int cnt = 0;
+
+		while(*inArgs != nullptr)
+		{
+			auto& inArg = *inArgs;
+
+			dlog_print(DLOG_DEBUG, "TFC-Debug", "Destroy inArgs %d", ++cnt);
+
+			dlog_print(DLOG_DEBUG, "TFC-Debug", "Destroy inArgs name");
+			g_free(inArg->name);
+
+			dlog_print(DLOG_DEBUG, "TFC-Debug", "Destroy inArgs signature");
+			g_free(inArg->signature);
+
+			dlog_print(DLOG_DEBUG, "TFC-Debug", "Destroy inArgs completely");
+			g_free(inArg);
+			inArgs++;
+		}
+
+		delete methodInfo->in_args;
+
+		auto& outArg = methodInfo->out_args[0];
+
+		if(outArg != nullptr)
+		{
+			g_free(outArg->name);
+			g_free(outArg->signature);
+			delete outArg;
+		}
+		dlog_print(DLOG_DEBUG, "TFC-Debug", "Destroy outArgs completely");
+		delete methodInfo->out_args;
+
+		dlog_print(DLOG_DEBUG, "TFC-Debug", "Destroy methodInfo completely");
+		delete methodInfo;
+	}
+
+	dlog_print(DLOG_DEBUG, "TFC-Debug", "Complete destructor");
+}
