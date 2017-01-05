@@ -23,10 +23,10 @@ class IServerObject
 public:
 	typedef typename TEndpoint::Channel Channel;
 	typedef typename Channel::InterfaceDefinition InterfaceDefinition;
-	typedef typename Channel::PackType PackType;
+	typedef typename Channel::SerializedType SerializedType;
 
 	virtual InterfaceDefinition const& GetInterfaceDefinition() = 0;
-	virtual PackType Invoke(std::string const& function, PackType param) = 0;
+	virtual SerializedType Invoke(std::string const& function, SerializedType param) = 0;
 
 	virtual ~IServerObject() { }
 };
@@ -46,7 +46,7 @@ private:
 	struct FunctionDelegate
 	{
 		PointerToMemberFunctionType targetFunc;
-		typename Channel::PackType (*delegateFunc)(T* instance, PointerToMemberFunctionType targetFunc, typename Channel::PackType p);
+		typename Channel::SerializedType (*delegateFunc)(T* instance, PointerToMemberFunctionType targetFunc, typename Channel::SerializedType p);
 	};
 
 	std::string objectPath;
@@ -69,8 +69,8 @@ protected:
 	template<typename TFuncPtr, typename = typename Core::Introspect::MemberFunction<TFuncPtr>::ReturnType>
 	struct InvokerSelector
 	{
-		static auto Func(T* instance, PointerToMemberFunctionType targetFunc, typename Channel::PackType p)
-			-> typename Channel::PackType
+		static auto Func(T* instance, PointerToMemberFunctionType targetFunc, typename Channel::SerializedType p)
+			-> typename Channel::SerializedType
 		{
 			auto targetFuncCasted = reinterpret_cast<TFuncPtr>(targetFunc);
 
@@ -85,8 +85,8 @@ protected:
 	template<typename TFuncPtr>
 	struct InvokerSelector<TFuncPtr, void>
 	{
-		static auto Func(T* instance, PointerToMemberFunctionType targetFunc, typename Channel::PackType p)
-					-> typename Channel::PackType
+		static auto Func(T* instance, PointerToMemberFunctionType targetFunc, typename Channel::SerializedType p)
+					-> typename Channel::SerializedType
 		{
 			auto targetFuncCasted = reinterpret_cast<TFuncPtr>(targetFunc);
 			auto params = ParameterDeserializer<Deserializer, TFuncPtr>::Deserialize(p, false);
@@ -122,7 +122,7 @@ public:
 		return definition;
 	}
 
-	virtual typename Channel::PackType Invoke(std::string const& function, typename Channel::PackType param) override
+	virtual typename Channel::SerializedType Invoke(std::string const& function, typename Channel::SerializedType param) override
 	{
 		return {};
 	};
@@ -143,10 +143,10 @@ class IServerObjectManager
 public:
 	typedef typename TEndpoint::Channel Channel;
 	typedef typename Channel::InterfaceDefinition InterfaceDefinition;
-	typedef typename TEndpoint::PackType PackType;
+	typedef typename TEndpoint::SerializedType SerializedType;
 
 	virtual InterfaceDefinition const& GetInterfaceDefinition() = 0;
-	virtual PackType Invoke(int id, std::string const& function, PackType param) = 0;
+	virtual SerializedType Invoke(int id, std::string const& function, SerializedType param) = 0;
 
 	virtual ~IServerObjectManager() { }
 };
@@ -157,7 +157,7 @@ class ServerObjectManager : public IServerObjectManager<TEndpoint>
 public:
 	typedef typename TEndpoint::Channel Channel;
 	typedef typename Channel::InterfaceDefinition InterfaceDefinition;
-	typedef typename TEndpoint::PackType PackType;
+	typedef typename TEndpoint::SerializedType SerializedType;
 
 protected:
 

@@ -22,27 +22,27 @@ struct GVariantSerializer
 {
 	GVariantBuilder builder;
 
-	typedef GVariant* PackType;
+	typedef GVariant* SerializedType;
 	GVariantSerializer();
 
 	template<typename T>
-	void Pack(T args);
+	void Serialize(T args);
 
 
 
-	PackType EndPack();
+	SerializedType EndPack();
 };
 
 struct GVariantDeserializer
 {
-	typedef GVariant* PackType;
+	typedef GVariant* SerializedType;
 
-	PackType variant;
+	SerializedType variant;
 
-	GVariantDeserializer(PackType p);
+	GVariantDeserializer(SerializedType p);
 
 	template<typename T>
-	T Unpack(int index);
+	T Deserialize(int index);
 
 	void Finalize();
 };
@@ -178,7 +178,7 @@ struct GDBusChannel
 	typedef GVariantDeserializer 	 Deserializer;
 	typedef GDBusClient			 	 Client;
 	typedef GDBusServer			 	 Server;
-	typedef GVariant* 			 	 PackType;
+	typedef GVariant* 			 	 SerializedType;
 	typedef GDBusConfiguration		 ConfigurationType;
 	typedef GDBusInterfaceDefinition InterfaceDefinition;
 };

@@ -107,3 +107,52 @@ TEST_F(GDBusServerTest, GDBusServerDefinition)
 
 	ASSERT_TRUE(true);
 }
+
+class SomeClass
+{
+public:
+	int 	a;
+	double	b;
+	int 	c;
+};
+
+TFC_DefineTypeSerializationInfo(SomeClass,
+			TFC_FieldInfo(SomeClass::a),
+			TFC_FieldInfo(SomeClass::b),
+			TFC_FieldInfo(SomeClass::c));
+
+template<typename TSerializerClass>
+using SomeClassSerializer = TFC::ServiceModel::ClassSerializer<TSerializerClass, SomeClass>;
+
+template<typename TDeserializerClass>
+using SomeClassDeserializer = TFC::ServiceModel::ClassDeserializer<TDeserializerClass, SomeClass>;
+
+TEST_F(GDBusServerTest, ClassSerializer)
+{
+	using namespace GDBusServerTestNS;
+
+	SomeClass p;
+	p.a = 5;
+	p.b = 12.4;
+	p.c = 16;
+
+	auto packed = SomeClassSerializer<TFC::ServiceModel::GVariantSerializer>::Serialize(p);
+
+	int actualA, actualC;
+	double actualB;
+
+	g_variant_get_child(packed, 0, "i", &actualA);
+	g_variant_get_child(packed, 1, "d", &actualB);
+	g_variant_get_child(packed, 2, "i", &actualC);
+
+	ASSERT_EQ(p.a, actualA) << "Variable a is incorrect";
+	ASSERT_DOUBLE_EQ(p.b, actualB) << "Variable b is incorrect";
+	ASSERT_EQ(p.c, actualC) << "Variable c is incorrect";
+
+	auto deserialized = SomeClassDeserializer<TFC::ServiceModel::GVariantDeserializer>::Deserialize(packed);
+
+
+	ASSERT_EQ(p.a, deserialized.a) << "Deserialized variable a is incorrect";
+	ASSERT_DOUBLE_EQ(p.b, deserialized.b) << "Deserialized variable b is incorrect";
+	ASSERT_EQ(p.c, deserialized.c) << "Deserialized variable c is incorrect";
+}

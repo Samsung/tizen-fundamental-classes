@@ -21,10 +21,10 @@ namespace ServiceModel {
 
 /**
  * Function template which generates operation to perform serialization based on requested type.
- * The resulting code will perform serialization by calling Pack method of TSerializerClass object.
- * TSerializerClass should have Pack method overloaded with all types specified in TArgs.
+ * The resulting code will perform serialization by calling Serialize method of TSerializerClass object.
+ * TSerializerClass should have Serialize method overloaded with all types specified in TArgs.
  *
- * This template generates sequences of instructions calling Pack method using template
+ * This template generates sequences of instructions calling Serialize method using template
  * recursion for each type in TArgs.
  */
 template<typename TSerializerClass, typename... TArgs>
@@ -38,7 +38,7 @@ struct SerializerFunctor<TSerializerClass, TCurrent, TArgs...>
 {
 	static void Func(TSerializerClass& p, TCurrent t, TArgs... next)
 	{
-		p.Pack(t);
+		p.Serialize(t);
 		// Call SerializerFunctor recursive by passing the TArgs tails as arguments
 		SerializerFunctor<TSerializerClass, TArgs...>::Func(p, next...);
 	}
@@ -81,19 +81,73 @@ template<typename TSerializerClass,
 		 typename... TArgs>
 struct ParameterSerializer<TSerializerClass, TFunctionType, std::tuple<TArgs...>>
 {
-	static typename TSerializerClass::PackType Serialize(TArgs const&... param)
+	static typename TSerializerClass::SerializedType Serialize(TArgs const&... param)
 	{
 		TSerializerClass packer;
 		SerializerFunctor<TSerializerClass, TArgs...>::Func(packer, param...);
 		return packer.EndPack();
 	}
+
+	static void Serialize(typename TSerializerClass::SerializedType& packer, TArgs const&... param)
+	{
+		SerializerFunctor<TSerializerClass, TArgs...>::Func(packer, param...);
+	}
 };
+
+template<typename TDeclaring, typename TValueType, TValueType TDeclaring::* memPtr>
+struct FieldInfo
+{
+	typedef TValueType ValueType;
+
+	static TValueType const& Get(TDeclaring const& ptr)
+	{
+		return ptr.*memPtr;
+	}
+
+	static void Set(TDeclaring& ptr, TValueType&& val)
+	{
+		ptr.*memPtr = std::move(val);
+	}
+};
+
+template<typename TDeclaring, typename... TField>
+struct TypeSerializationInfo
+{
+	typedef TDeclaring DeclaringType;
+	typedef std::tuple<TField...> FieldList;
+};
+
+template<typename TDeclaring>
+struct TypeSerializationInfoSelector;
+
+template<typename TSerializerClass, typename TDeclaring, typename TSerializationInfo = typename TypeSerializationInfoSelector<TDeclaring>::Type>
+struct ClassSerializer;
+
+template<typename TSerializerClass, typename TDeclaring, typename... TField>
+struct ClassSerializer<TSerializerClass, TDeclaring, TypeSerializationInfo<TDeclaring, TField...>>
+{
+
+	static typename TSerializerClass::SerializedType Serialize(TDeclaring const& ptr)
+	{
+		TSerializerClass packer;
+		SerializerFunctor<TSerializerClass, typename TField::ValueType...>::Func(packer, TField::Get(ptr)...);
+		return packer.EndPack();
+	}
+
+	static void Serialize(typename TSerializerClass::SerializedType& packer, TDeclaring const& ptr)
+	{
+		SerializerFunctor<TSerializerClass, typename TField::ValueType...>::Func(packer, TField::Get(ptr)...);
+	}
+};
+
+template<typename TSerializerClass, typename TDeclaring>
+struct ClassSerializerSelector;
 
 template<typename TSerializerClass,
 		 typename TObj>
 struct ObjectSerializer
 {
-	static typename TSerializerClass::PackType Serialize(TObj const& obj)
+	static typename TSerializerClass::SerializedType Serialize(TObj const& obj)
 	{
 		TSerializerClass packer;
 		SerializerFunctor<TSerializerClass, TObj>::Func(packer, obj);
@@ -104,7 +158,7 @@ struct ObjectSerializer
 template<typename TSerializerClass>
 struct ObjectSerializer<TSerializerClass, void>
 {
-	static typename TSerializerClass::PackType Serialize()
+	static typename TSerializerClass::SerializedType Serialize()
 	{
 		TSerializerClass packer;
 		return packer.EndPack();
@@ -126,7 +180,7 @@ struct ParameterDeserializerFunctor
 	template<int... S>
 	static std::tuple<TArgs...> Func(TDeserializerClass& p, Core::Metaprogramming::Sequence<S...>)
 	{
-		return std::make_tuple(p.template Unpack<TArgs>(S)...);
+		return std::make_tuple(p.template Deserialize<TArgs>(S)...);
 	}
 
 	static std::tuple<TArgs...> Func(TDeserializerClass& p)
@@ -140,20 +194,65 @@ template<typename TDeserializerClass,
 		 typename... TArgs>
 struct ParameterDeserializer<TDeserializerClass, TFunctionType, std::tuple<TArgs...>>
 {
-	static std::tuple<TArgs...> Deserialize(typename TDeserializerClass::PackType p, bool finalizePackedObject = true)
+	static std::tuple<TArgs...> Deserialize(typename TDeserializerClass::SerializedType p, bool finalizePackedObject = true)
 	{
 		TDeserializerClass unpacker(p);
-		return ParameterDeserializerFunctor<TDeserializerClass, TArgs...>::Func(unpacker);
 
 		if(finalizePackedObject)
 			unpacker.Finalize();
+
+		return ParameterDeserializerFunctor<TDeserializerClass, TArgs...>::Func(unpacker);
+	}
+};
+
+template<typename TDeserializerClass, typename TDeclaring, typename... TFieldArgs>
+struct ClassDeserializerFunctor;
+
+template<typename TDeserializerClass, typename TDeclaring, typename TCurrentField, typename... TRemainArgs>
+struct ClassDeserializerFunctor<TDeserializerClass, TDeclaring, TCurrentField, TRemainArgs...>
+{
+	static void Func(TDeserializerClass& p, TDeclaring& obj, int curIdx = 0)
+	{
+		TCurrentField::Set(obj, p.template Deserialize<typename TCurrentField::ValueType>(curIdx));
+		ClassDeserializerFunctor<TDeserializerClass, TDeclaring, TRemainArgs...>::Func(p, obj, curIdx + 1);
+	}
+};
+
+template<typename TDeserializerClass, typename TDeclaring>
+struct ClassDeserializerFunctor<TDeserializerClass, TDeclaring>
+{
+	static void Func(TDeserializerClass& p, TDeclaring& obj, int curIdx = 0)
+	{
+
+	}
+};
+
+
+template<typename TDeserializerClass, typename TDeclaring, typename TSerializationInfo = typename TypeSerializationInfoSelector<TDeclaring>::Type>
+struct ClassDeserializer;
+
+template<typename TDeserializerClass, typename TDeclaring, typename... TFieldArgs>
+struct ClassDeserializer<TDeserializerClass, TDeclaring, TypeSerializationInfo<TDeclaring, TFieldArgs...>>
+{
+
+	static TDeclaring Deserialize(typename TDeserializerClass::SerializedType p, bool finalizePackedObject = true)
+	{
+		TDeserializerClass unpacker(p);
+
+		TDeclaring ret;
+		ClassDeserializerFunctor<TDeserializerClass, TDeclaring, TFieldArgs...>::Func(unpacker, ret);
+
+		if(finalizePackedObject)
+			unpacker.Finalize();
+
+		return ret;
 	}
 };
 
 template<typename TDeserializerClass, typename TObj>
 struct ObjectDeserializer
 {
-	static TObj Deserialize(typename TDeserializerClass::PackType p)
+	static TObj Deserialize(typename TDeserializerClass::SerializedType p)
 	{
 		TDeserializerClass unpacker(p);
 		return std::get<0>(ParameterDeserializerFunctor<TDeserializerClass, TObj>::Func(unpacker));
@@ -163,7 +262,7 @@ struct ObjectDeserializer
 template<typename TDeserializerClass>
 struct ObjectDeserializer<TDeserializerClass, void>
 {
-	static void Deserialize(typename TDeserializerClass::PackType p)
+	static void Deserialize(typename TDeserializerClass::SerializedType p)
 	{
 		return;
 	}
@@ -194,6 +293,14 @@ struct DelayedInvoker<TFunctionType, std::tuple<TArgs...>>
 
 }}
 
+#define TFC_FieldInfo(MEMPTR) TFC::ServiceModel::FieldInfo<typename TFC::Core::Introspect::MemberField<decltype( & MEMPTR )>::DeclaringType, decltype( MEMPTR ), & MEMPTR>
 
+
+#define TFC_DefineTypeSerializationInfo( CLASS, ... ) \
+	template<> \
+	struct TFC::ServiceModel::TypeSerializationInfoSelector< CLASS > \
+	{ \
+		typedef TFC::ServiceModel::TypeSerializationInfo< CLASS , __VA_ARGS__ > Type; \
+	}
 
 #endif /* TFC_SERVICEMODEL_INTERFACEINSPECTOR_H_ */

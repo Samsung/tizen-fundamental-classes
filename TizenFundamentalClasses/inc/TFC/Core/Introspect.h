@@ -46,6 +46,18 @@ public:
 };
 
 
+template<typename TMemPtrType>
+struct MemberField
+{
+
+};
+
+template<typename TClass, typename TValueType>
+struct MemberField<TValueType (TClass::*)>
+{
+	typedef TClass DeclaringType;
+	typedef TValueType ValueType;
+};
 
 template<typename TFuncType>
 struct MemberFunction
