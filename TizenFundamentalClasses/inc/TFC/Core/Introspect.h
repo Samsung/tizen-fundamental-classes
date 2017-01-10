@@ -12,6 +12,7 @@
 #include <type_traits>
 //#include "TFC/Core.h"
 #include <tuple>
+#include <functional>
 
 namespace TFC {
 namespace Core {
@@ -149,9 +150,111 @@ struct CallableObject<TRet(*)(TArgs...), true> : StaticFunction<TRet(TArgs...)>
 	typedef typename StaticFunction<TRet(TArgs...)>::ReturnType ReturnType;
 };
 
+template<int size>
+struct StorageSelector
+{
+	typedef unsigned char Type[size];
+};
+
+template<>
+struct StorageSelector<1>
+{
+	typedef unsigned char Type;
+};
+
+template<>
+struct StorageSelector<2>
+{
+	typedef unsigned short Type;
+};
+
+template<>
+struct StorageSelector<4>
+{
+	typedef unsigned int Type;
+};
+
+template<>
+struct StorageSelector<8>
+{
+	typedef unsigned long long Type;
+};
+
+template<>
+struct StorageSelector<16>
+{
+	typedef struct { unsigned long long value[2]; } Type;
+};
+
+inline bool operator==(StorageSelector<16>::Type const& a, StorageSelector<16>::Type const& b)
+{
+	return a.value[0] == b.value[0] && a.value[1] == b.value[1];
+}
+
+inline bool operator!=(StorageSelector<16>::Type const& a, StorageSelector<16>::Type const& b)
+{
+	return a.value[0] != b.value[0] || a.value[1] != b.value[1];
+}
+
+struct PointerToMemberFunction
+{
+private:
+	class Dummy { };
+	static constexpr auto pointerSize = sizeof(void(Dummy::*)(void));
+
+	template<typename TPtrType>
+	union PointerToMemberFunctionValue;
+
+	template<typename TDeclaring, typename TRet, typename... TArgs>
+	union PointerToMemberFunctionValue<TRet (TDeclaring::*) (TArgs...)>
+	{
+		TRet (TDeclaring::* pointerValue) (TArgs...);
+		StorageSelector<pointerSize>::Type value;
+	};
+public:
+
+	StorageSelector<pointerSize>::Type value;
+
+	template<typename TPtrType>
+	static PointerToMemberFunction Get(TPtrType ptr)
+	{
+		PointerToMemberFunctionValue<TPtrType> obj { ptr };
+		return { obj.value };
+	}
+
+	bool operator==(PointerToMemberFunction const& other)
+	{
+		return value == other.value;
+	}
+};
+
+struct PointerToMemberFunctionHash
+{
+	size_t operator()(PointerToMemberFunction const& obj) const
+	{
+		auto val = obj.value;
+		return std::hash<decltype(val)>()(val);
+	}
+};
+
 
 
 }}}
+
+template<>
+struct std::hash<TFC::Core::Introspect::StorageSelector<16>::Type>
+{
+	typedef TFC::Core::Introspect::StorageSelector<16>::Type argument_type;
+	typedef std::size_t result_type;
+
+	result_type operator()(argument_type const& s) const
+	{
+		std::hash<long long> hasher;
+
+		return hasher(s.value[0]) ^ hasher(s.value[1]);
+	}
+};
+
 
 //#define EventOf(EVENT_VAR) decltype(TFC::Core::Introspect::EventOfFunc(& EVENT_VAR))
 

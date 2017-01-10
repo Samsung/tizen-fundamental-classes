@@ -57,18 +57,19 @@ private:
 
 class FunctionInfo : public ObjectClass
 {
+private:
+	size_t hash;
+
 public:
 	char const* functionName;
-
 	virtual bool Equals(FunctionInfo const& other) = 0;
+	size_t GetHash() { return this->hash; }
 
 protected:
-	FunctionInfo(char const* name) : functionName(name)
+	FunctionInfo(char const* name, size_t hash) : functionName(name), hash(hash)
 	{
 
 	}
-private:
-
 };
 
 template<typename T>
@@ -76,9 +77,16 @@ class FunctionInfoTemplate : public FunctionInfo
 {
 private:
 	T ptr;
+
+	static size_t Hash(T ptr)
+	{
+		auto val = Core::Introspect::PointerToMemberFunction::Get(ptr);
+		return Core::Introspect::PointerToMemberFunctionHash()(val);
+	}
+
 public:
 	FunctionInfoTemplate(char const* name, T ptr) :
-		FunctionInfo(name),
+		FunctionInfo(name, Hash(ptr)),
 		ptr(ptr)
 	{
 
@@ -204,6 +212,8 @@ class ServiceEndpoint
 
 }}
 
+
+
 template<typename T>
 struct TFC::ServiceModel::TypeDescription::TypeDescriptionBuilder::InitializerFunctor<T, true>
 {
@@ -217,6 +227,9 @@ struct TFC::ServiceModel::TypeDescription::TypeDescriptionBuilder::InitializerFu
 		kind = TypeMemberKind::Function;
 	}
 };
+
+
+
 
 #define TFC_DefineTypeInfo(TYPENAME) \
 	template<>\
