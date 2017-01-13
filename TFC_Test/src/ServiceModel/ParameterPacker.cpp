@@ -150,6 +150,10 @@ RPCTEST_HandleMethodCall (GDBusConnection       *connection,
 
 	std::cout << "Incoming: " << methodName << std::endl;
 
+	std::cout << "Object Path: " << object_path << std::endl;
+
+	std::cout << "Interface Name: " << interface_name << std::endl;
+
 	if(methodName == RPCTEST_METHODNAME)
 	{
 		TestClass t;
@@ -285,7 +289,7 @@ struct TestServiceEndpoint
 
 GDBusConfiguration TestServiceEndpoint::configuration  {
 	RPCTEST_BUS_NAME,
-	G_BUS_TYPE_SESSION,
+	G_BUS_TYPE_SYSTEM,
 	G_BUS_NAME_OWNER_FLAGS_NONE,
 	G_DBUS_PROXY_FLAGS_NONE
 };
@@ -318,12 +322,6 @@ TFC_DefineTypeInfo(ITest) {
 
 class ServerTest : public ServerObject<TestServiceEndpoint, ITest>
 {
-private:
-	static void Init()
-	{
-		RegisterFunction(&ITest::FunctionA);
-		RegisterFunction(&ITest::FunctionB);
-	}
 public:
 	virtual std::string FunctionA(int a, int b, double c, std::string d) override
 	{
@@ -340,7 +338,7 @@ public:
 		std::cout << "FunctionB in ServerTest is called with args: " << s << std::endl;
 	}
 
-	ServerTest() : ServerObject(&ServerTest::Init) { }
+	ServerTest() { }
 
 };
 
@@ -351,10 +349,12 @@ TEST_F(RPCUnitTest, GetInterfaceStr)
 
 TEST_F(RPCUnitTest, TestWithClient)
 {
+	using Ms = std::chrono::milliseconds;
+
 	std::mutex mtx;
 	mtx.lock();
 	introspectData = g_dbus_node_info_new_for_xml(interface_xml, nullptr);
-	auto id = g_bus_own_name(G_BUS_TYPE_SESSION,
+	auto id = g_bus_own_name(G_BUS_TYPE_SYSTEM,
 				   RPCTEST_BUS_NAME,
 				   G_BUS_NAME_OWNER_FLAGS_NONE,
 				   RPCTEST_OnBusAcquired,
@@ -382,7 +382,7 @@ TEST_F(RPCUnitTest, TestWithClient)
 
 	std::cout << "Result of the function: " << result << std::endl;
 
-
+	std::this_thread::sleep_for(Ms(1000 * 60 * 10));
 	mtx.unlock();
 
 	g_bus_unown_name(id);
@@ -488,7 +488,7 @@ TEST_F(RPCUnitTest, TestSubTree)
 		if(conn != nullptr)
 		{
 			auto proxy = g_dbus_proxy_new_sync(conn, G_DBUS_PROXY_FLAGS_NONE, nullptr, RPCTEST_BUS_NAME, RPCTEST_OBJECT_PATH "/objbanget/tong", RPCTEST_IFACE_NAME, nullptr, nullptr);
-			std::this_thread::sleep_for(Ms(1000));
+			std::this_thread::sleep_for(Ms(1000 * 60 * 10));
 			if(proxy != nullptr)
 			{
 				std::string p = "blah";

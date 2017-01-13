@@ -11,6 +11,9 @@
 
 #include <glib-2.0/gio/gio.h>
 
+#include <iostream>
+
+#include <regex>
 #include <string>
 
 using namespace TFC::ServiceModel;
@@ -129,6 +132,15 @@ void TFC::ServiceModel::GDBusInterfaceDefinition::SetInterfaceName(
 }
 
 LIBAPI
+void TFC::ServiceModel::GDBusInterfaceDefinition::SetInterfaceName(
+		std::string const& value) {
+	this->interfaceNameStd = value;
+
+	// Refresh interfaceInfo.name
+	this->interfaceInfo.name = const_cast<char*>(this->interfaceNameStd.c_str());
+}
+
+LIBAPI
 void TFC::ServiceModel::GDBusInterfaceDefinition::RegisterFunction(
 		std::string const& funcName,
 		std::vector<std::string> const& args,
@@ -224,4 +236,144 @@ TFC::ServiceModel::GDBusInterfaceDefinition::~GDBusInterfaceDefinition()
 	}
 
 	dlog_print(DLOG_DEBUG, "TFC-Debug", "Complete destructor");
+}
+
+void TFC::ServiceModel::GDBusServer::OnBusAcquiredCallback(
+		GDBusConnection* connection, const gchar* name, gpointer user_data) {
+	static_cast<GDBusServer*>(user_data)->OnBusAcquired(connection, name);
+}
+
+void TFC::ServiceModel::GDBusServer::OnNameAcquiredCallback(
+		GDBusConnection* connection, const gchar* name, gpointer user_data) {
+	static_cast<GDBusServer*>(user_data)->OnNameAcquired(connection, name);
+}
+
+void TFC::ServiceModel::GDBusServer::OnNameLostCallback(
+		GDBusConnection* connection, const gchar* name, gpointer user_data) {
+	static_cast<GDBusServer*>(user_data)->OnNameLost(connection, name);
+}
+
+GDBusInterfaceVTable const TFC::ServiceModel::GDBusServer::defaultVtable;
+
+void TFC::ServiceModel::GDBusServer::OnBusAcquired(GDBusConnection* connection,
+		const gchar* name) {
+
+	std::regex dotRegex("\\.");
+
+	std::string rootPath("/");
+	rootPath += std::regex_replace(this->config.interfacePrefix, dotRegex, "/");
+	rootPath += "/";
+
+	std::cout << "Bus acq\n";
+
+	for(auto& obj : this->objectList)
+	{
+		auto& serverObj = obj.second;
+
+		std::string objPath = rootPath;
+		objPath += std::regex_replace(serverObj->GetName(), dotRegex, "/");
+
+		GError* errPtr = nullptr;
+
+		std::cout << "Object path: " << objPath << "\n";
+
+		for(auto& iface : serverObj->GetInterfaceList())
+		{
+			g_dbus_connection_register_object(connection,
+										objPath.c_str(),
+										const_cast<GDBusInterfaceInfo*>(&(iface->GetInterfaceInfo())),
+										&defaultVtable,
+										this,
+										nullptr,
+										&errPtr);
+
+			if(errPtr != nullptr)
+			{
+				std::cout << "Error\n";
+				std::cout << errPtr->message << "\n";
+			}
+		}
+	}
+}
+
+void TFC::ServiceModel::GDBusServer::OnNameAcquired(GDBusConnection* connection,
+		const gchar* name) {
+
+	std::cout << "Name acquired: " << name << std::endl;
+}
+
+void TFC::ServiceModel::GDBusServer::OnNameLost(GDBusConnection* connection,
+		const gchar* name) {
+}
+
+LIBAPI
+TFC::ServiceModel::GDBusServer::GDBusServer(Configuration const& config) : config(config)
+{
+
+}
+
+LIBAPI
+void TFC::ServiceModel::GDBusServer::Initialize()
+{
+	this->busId = g_bus_own_name(
+						config.busType,
+						config.busName,
+						config.nameOwnerFlags,
+						OnBusAcquiredCallback,
+						OnNameAcquiredCallback,
+						OnNameLostCallback,
+						this,
+						nullptr);
+}
+
+void TFC::ServiceModel::GDBusServer::OnMethodCallCallback(
+		GDBusConnection* connection, const gchar* sender,
+		const gchar* object_path, const gchar* interface_name,
+		const gchar* method_name, GVariant* parameters,
+		GDBusMethodInvocation* invocation, gpointer user_data) {
+	static_cast<GDBusServer*>(user_data)->OnMethodCall(
+			connection, sender,
+			object_path, interface_name,
+			method_name, parameters,
+			invocation);
+}
+
+void TFC::ServiceModel::GDBusServer::OnMethodCall(GDBusConnection* connection,
+		const gchar* sender, const gchar* object_path,
+		const gchar* interface_name, const gchar* method_name,
+		GVariant* parameters, GDBusMethodInvocation* invocation) {
+
+	std::cout << "Method Call (" << object_path << ", " << interface_name << ", " << method_name << ")\n";
+
+	std::regex objectNameRegex("[A-Za-z0-9]+$");
+	std::cmatch match;
+	if(std::regex_search(object_path, match, objectNameRegex))
+	{
+		auto parsedObjectName = match.str();
+
+		std::cout << "PArsed: " << parsedObjectName << "\n";
+
+		auto obj = this->objectList.find(parsedObjectName);
+
+		if(obj != this->objectList.end())
+		{
+			auto result = obj->second->Invoke(interface_name, method_name, parameters);
+
+			g_dbus_method_invocation_return_value(invocation, result);
+		}
+	} else std::cout << "Failed parsing object name\n";
+}
+
+LIBAPI
+void TFC::ServiceModel::GDBusServer::AddServerObject(IServerObject<GDBusChannel>* obj)
+{
+	std::string const& name = obj->GetName();
+	this->objectList.emplace(name, std::unique_ptr<IServerObject<GDBusChannel>>(obj));
+}
+
+LIBAPI
+void TFC::ServiceModel::GDBusServer::AddServerObject(std::unique_ptr<IServerObject<GDBusChannel>> obj)
+{
+	std::string const& name = obj->GetName();
+	this->objectList.emplace(name, std::move(obj));
 }

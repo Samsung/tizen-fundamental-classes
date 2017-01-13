@@ -18,7 +18,6 @@
 namespace TFC {
 namespace ServiceModel {
 
-std::string GetInterfaceName(char const* prefix, std::type_info const& i);
 
 template<typename TEndpoint>
 struct InterfacePrefixInspector

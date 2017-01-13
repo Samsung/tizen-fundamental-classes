@@ -19,6 +19,11 @@
 namespace TFC {
 namespace ServiceModel {
 
+
+
+std::string GetInterfaceName(char const* prefix, std::type_info const& i);
+
+
 /**
  * Function template which generates operation to perform serialization based on requested type.
  * The resulting code will perform serialization by calling Serialize method of TSerializerClass object.

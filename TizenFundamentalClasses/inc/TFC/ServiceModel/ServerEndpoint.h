@@ -17,24 +17,74 @@
 namespace TFC {
 namespace ServiceModel {
 
-template<typename TEndpoint>
+template<typename TChannel>
 class IServerObject
 {
 public:
-	typedef typename TEndpoint::Channel Channel;
-	typedef typename Channel::InterfaceDefinition InterfaceDefinition;
-	typedef typename Channel::SerializedType SerializedType;
+	typedef typename TChannel::InterfaceDefinition InterfaceDefinition;
+	typedef typename TChannel::SerializedType SerializedType;
 
-	virtual InterfaceDefinition const& GetInterfaceDefinition() = 0;
-	virtual SerializedType Invoke(std::string const& function, SerializedType param) = 0;
+	struct ServerObjectInvoker
+	{
+		virtual SerializedType Invoke(std::string const&, SerializedType) = 0;
+	};
 
+	struct InterfaceEntry
+	{
+		std::unique_ptr<ServerObjectInvoker> invoker;
+		InterfaceDefinition& definition;
+
+		InterfaceEntry(ServerObjectInvoker* ptr, InterfaceDefinition& def) :
+			invoker(ptr), definition(def)
+		{
+		}
+	};
+
+private:
+	std::string name;
+	std::map<std::string, InterfaceEntry> ifaceVtable;
+
+protected:
+	void RegisterInterface(std::string interfaceName, InterfaceEntry ifaceInfo)
+	{
+		ifaceVtable.emplace(interfaceName, std::move(ifaceInfo));
+	}
+
+public:
+	IServerObject() { this->name = GetInterfaceName(nullptr, typeid(this)); }
 	virtual ~IServerObject() { }
+
+	std::vector<InterfaceDefinition*> GetInterfaceList()
+	{
+		std::vector<InterfaceDefinition*> ifaceRet;
+
+		for(auto& obj : ifaceVtable)
+		{
+			ifaceRet.push_back(&(obj.second.definition));
+		}
+
+		return ifaceRet;
+	}
+
+	SerializedType Invoke(std::string const& ifaceName, std::string const& funcName, SerializedType param)
+	{
+		auto iter = ifaceVtable.find(ifaceName);
+
+		if(iter == ifaceVtable.end())
+			throw TFCException("Requested interface is not found");
+
+		InterfaceEntry& iface = iter->second;
+
+		return iface.invoker->Invoke(funcName, param);
+	}
+
+	void SetName(std::string&& name) { this->name = std::move(name); }
+	void SetName(std::string const& name) { this->name = name; }
+	std::string const& GetName() { return this->name; }
 };
 
-
-
 template<typename TEndpoint, typename T>
-class ServerObject : public T, public IServerObject<TEndpoint>
+class ServerObject : public T, public virtual IServerObject<typename TEndpoint::Channel>
 {
 private:
 	typedef typename TEndpoint::Channel Channel;
@@ -55,15 +105,34 @@ private:
 	static std::unordered_map<std::string, FunctionDelegate> functionMap;
 	static bool initialized;
 
-protected:
-	ServerObject(void(*initializerFunc)())
+	class ServerObjectInvoker : public IServerObject<typename TEndpoint::Channel>::ServerObjectInvoker
 	{
+	private:
+		T* thiz;
+
+		ServerObjectInvoker(T* thizPtr) : thiz(thizPtr) { }
+	public:
+		virtual typename Channel::SerializedType Invoke(std::string const& funcName, typename Channel::SerializedType params) override
+		{
+			auto& funcDefinition = functionMap[funcName];
+			return funcDefinition.delegateFunc(thiz, funcDefinition.targetFunc, params);
+		}
+
+		friend class ServerObject<TEndpoint, T>;
+	};
+
+protected:
+	ServerObject()
+	{
+		auto ifaceName = GetInterfaceName(TEndpoint::interfacePrefix, typeid(T));
 		if(!initialized)
 		{
-			definition.SetInterfaceName(GetInterfaceName(nullptr, typeid(T)));
-			initializerFunc();
+			definition.SetInterfaceName(ifaceName);
+			InitializeInterface();
 			initialized = true;
 		}
+
+		IServerObject<typename TEndpoint::Channel>::RegisterInterface(ifaceName, { new ServerObjectInvoker(this), definition });
 	}
 
 	template<typename TFuncPtr, typename = typename Core::Introspect::MemberFunction<TFuncPtr>::ReturnType>
@@ -99,14 +168,16 @@ protected:
 		}
 	};
 
+	static void InitializeInterface();
+
 	template<typename TFuncPtr>
-	static void RegisterFunction(TFuncPtr ptr)
+	static void RegisterFunction(TFuncPtr ptr, char const* name)
 	{
 		auto& typeDescription = TypeInfo<T>::typeDescription;
 
 		functionMap.emplace(
 			std::make_pair<std::string, FunctionDelegate>(
-				typeDescription.GetFunctionNameByPointer(ptr),
+				name,
 				{
 					reinterpret_cast<PointerToMemberFunctionType>(ptr),
 					InvokerSelector<TFuncPtr>::Func
@@ -116,16 +187,9 @@ protected:
 		definition.RegisterFunction(ptr);
 	}
 
-public:
-	virtual typename Channel::InterfaceDefinition const& GetInterfaceDefinition() override
-	{
-		return definition;
-	}
 
-	virtual typename Channel::SerializedType Invoke(std::string const& function, typename Channel::SerializedType param) override
-	{
-		return {};
-	};
+public:
+	virtual ~ServerObject() { }
 };
 
 template<typename TEndpoint, typename T>

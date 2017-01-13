@@ -14,9 +14,12 @@
 
 #include "TFC/Core/Introspect.h"
 #include "TFC/ServiceModel/Reflection.h"
+#include "TFC/ServiceModel/ServerEndpoint.h"
 
 namespace TFC {
 namespace ServiceModel {
+
+struct GDBusChannel;
 
 struct GVariantSerializer
 {
@@ -71,17 +74,52 @@ class GDBusServerObjectList
 
 class GDBusServer
 {
+public:
+	struct Configuration
+	{
+		char const* interfacePrefix;
+		char const* busName;
+		GBusType busType;
+		GBusNameOwnerFlags nameOwnerFlags;
+	};
+
 private:
 	static void OnBusAcquiredCallback(GDBusConnection *connection, const gchar* name, gpointer user_data);
 	static void OnNameAcquiredCallback(GDBusConnection *connection, const gchar* name, gpointer user_data);
 	static void OnNameLostCallback(GDBusConnection *connection, const gchar* name, gpointer user_data);
 
+	static void OnMethodCallCallback(GDBusConnection       *connection,
+			const gchar           *sender,
+            const gchar           *object_path,
+            const gchar           *interface_name,
+            const gchar           *method_name,
+            GVariant              *parameters,
+            GDBusMethodInvocation *invocation,
+            gpointer               user_data);
+
+
 	void OnBusAcquired(GDBusConnection *connection, const gchar* name);
 	void OnNameAcquired(GDBusConnection *connection, const gchar* name);
 	void OnNameLost(GDBusConnection *connection, const gchar* name);
 
+	void OnMethodCall(GDBusConnection       *connection,
+			const gchar           *sender,
+            const gchar           *object_path,
+            const gchar           *interface_name,
+            const gchar           *method_name,
+            GVariant              *parameters,
+            GDBusMethodInvocation *invocation);
+
+	static constexpr GDBusInterfaceVTable defaultVtable { OnMethodCallCallback, nullptr, nullptr };
+
+	std::map<std::string, std::unique_ptr<IServerObject<GDBusChannel>>> objectList;
+	guint busId;
+	Configuration config;
 public:
-	GDBusServer();
+	GDBusServer(Configuration const& config);
+	void Initialize();
+	void AddServerObject(IServerObject<GDBusChannel>* obj);
+	void AddServerObject(std::unique_ptr<IServerObject<GDBusChannel>> obj);
 };
 
 class GDBusInterfaceDefinition
@@ -94,6 +132,7 @@ public:
 	GDBusInterfaceDefinition& operator=(GDBusInterfaceDefinition const&) = delete;
 	GDBusInterfaceDefinition& operator=(GDBusInterfaceDefinition&&) = delete;
 	void SetInterfaceName(std::string&& value);
+	void SetInterfaceName(std::string const& value);
 
 	template<typename TFuncPtr>
 	void RegisterFunction(TFuncPtr ptr);
@@ -171,6 +210,8 @@ struct GDBusSignatureFiller<>
 
 	}
 };
+
+
 
 struct GDBusChannel
 {

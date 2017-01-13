@@ -62,13 +62,53 @@ private:
 
 public:
 	char const* functionName;
-	virtual bool Equals(FunctionInfo const& other) = 0;
+	virtual bool Equals(FunctionInfo const& other) const = 0;
+	virtual void* Invoke(void* object, void* param) const = 0;
 	size_t GetHash() { return this->hash; }
 
 protected:
 	FunctionInfo(char const* name, size_t hash) : functionName(name), hash(hash)
 	{
 
+	}
+};
+
+template<typename T>
+struct InvocationResult
+{
+	T result;
+	InvocationResult(T&& var) : result(std::move(var)) { }
+	virtual ~InvocationResult() { }
+};
+
+template<>
+struct InvocationResult<void>
+{
+	virtual ~InvocationResult() { }
+};
+
+template<typename T, typename TIntrospect = Core::Introspect::MemberFunction<T>, typename TRet = typename TIntrospect::ReturnType>
+struct InvocationResultTemplate : InvocationResult<TRet>
+{
+	typedef typename TIntrospect::DeclaringType DeclaringType;
+	typedef typename TIntrospect::ArgsTuple ArgsTuple;
+
+	InvocationResultTemplate(DeclaringType* obj, T ptr, ArgsTuple* args) :
+		InvocationResult<TRet>(DelayedInvoker<T>::Invoke(obj, ptr, *args))
+	{
+
+	}
+};
+
+template<typename T, typename TIntrospect>
+struct InvocationResultTemplate<T, TIntrospect, void> : InvocationResult<void>
+{
+	typedef typename TIntrospect::DeclaringType DeclaringType;
+	typedef typename TIntrospect::ArgsTuple ArgsTuple;
+
+	InvocationResultTemplate(DeclaringType* obj, T ptr, ArgsTuple* args)
+	{
+		DelayedInvoker<T>::Invoke(obj, ptr, *args);
 	}
 };
 
@@ -84,7 +124,14 @@ private:
 		return Core::Introspect::PointerToMemberFunctionHash()(val);
 	}
 
+
+
 public:
+	typedef typename Core::Introspect::MemberFunction<T>::ReturnType ReturnType;
+	typedef typename Core::Introspect::MemberFunction<T>::DeclaringType DeclaringType;
+	typedef typename Core::Introspect::MemberFunction<T>::ArgsTuple ArgsTuple;
+
+
 	FunctionInfoTemplate(char const* name, T ptr) :
 		FunctionInfo(name, Hash(ptr)),
 		ptr(ptr)
@@ -92,7 +139,7 @@ public:
 
 	}
 
-	bool Equals(FunctionInfo const& other) override
+	bool Equals(FunctionInfo const& other) const override
 	{
 		try
 		{
@@ -109,6 +156,11 @@ public:
 			dlog_print(DLOG_DEBUG, "RPC-Test", "Bad typeid");
 			return false;
 		}
+	}
+
+	virtual void* Invoke(void* object, void* args) const override
+	{
+		return new InvocationResultTemplate<T>(reinterpret_cast<DeclaringType*>(object), ptr, reinterpret_cast<ArgsTuple*>(args));
 	}
 };
 
@@ -171,8 +223,10 @@ public:
 
 	std::map<std::string, FunctionInfo*> functionMap;
 
+	std::map<std::string, FunctionInfo*> const& GetFunctionMap() const { return functionMap; }
+
 	template<typename TMemPtr>
-	char const* GetFunctionNameByPointer(TMemPtr ptr)
+	char const* GetFunctionNameByPointer(TMemPtr ptr) const
 	{
 		FunctionInfoTemplate<TMemPtr> prototype(nullptr, ptr);
 
@@ -193,6 +247,12 @@ public:
 
 		return res->second->functionName;
 	}
+
+	FunctionInfo const& GetFunctionByName(std::string const& name) const
+	{
+		auto res = functionMap.find(name);
+		return *res->second;
+	}
 private:
 
 };
@@ -203,16 +263,12 @@ struct TypeInfo
 	static TypeDescription typeDescription;
 };
 
-
-
 class ServiceEndpoint
 {
 
 };
 
 }}
-
-
 
 template<typename T>
 struct TFC::ServiceModel::TypeDescription::TypeDescriptionBuilder::InitializerFunctor<T, true>
@@ -227,8 +283,6 @@ struct TFC::ServiceModel::TypeDescription::TypeDescriptionBuilder::InitializerFu
 		kind = TypeMemberKind::Function;
 	}
 };
-
-
 
 
 #define TFC_DefineTypeInfo(TYPENAME) \

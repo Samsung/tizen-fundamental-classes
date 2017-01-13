@@ -40,15 +40,25 @@ class GDBusServerTest : public testing::Test
 	}
 };
 
+#define RPCTEST_BUS_NAME "com.srin.tfc.RPCTest"
+#define RPCTEST_OBJECT_PATH "/com/srin/tfc/RPCTest/MyObject"
+
 namespace GDBusServerTestNS
 {
 
 struct ServiceEndpoint
 {
 	typedef TFC::ServiceModel::GDBusChannel Channel;
-	static TFC::ServiceModel::GDBusConfiguration configuration;
+	static constexpr TFC::ServiceModel::GDBusConfiguration configuration {
+		RPCTEST_BUS_NAME,
+		G_BUS_TYPE_SYSTEM,
+		G_BUS_NAME_OWNER_FLAGS_NONE,
+		G_DBUS_PROXY_FLAGS_NONE
+	};
 	static constexpr char const* interfacePrefix = "com.srin.tfc";
 };
+
+const TFC::ServiceModel::GDBusConfiguration ServiceEndpoint::configuration;
 
 class ITest
 {
@@ -58,14 +68,15 @@ public:
 	virtual ~ITest() { }
 };
 
+class ITestAgain
+{
+public:
+	virtual std::string FunctionC(int x) = 0;
+	virtual ~ITestAgain() { }
+};
+
 class ServerTest : public TFC::ServiceModel::ServerObject<ServiceEndpoint, ITest>
 {
-private:
-	static void Init()
-	{
-		RegisterFunction(&ITest::FunctionA);
-		RegisterFunction(&ITest::FunctionB);
-	}
 public:
 	virtual std::string FunctionA(int a, int b, double c, std::string d) override
 	{
@@ -82,8 +93,52 @@ public:
 		std::cout << "FunctionB in ServerTest is called with args: " << s << std::endl;
 	}
 
-	ServerTest() : ServerObject(&ServerTest::Init) { }
 };
+
+class ServerTestMultiIface : public TFC::ServiceModel::ServerObject<ServiceEndpoint, ITest>,
+							 public TFC::ServiceModel::ServerObject<ServiceEndpoint, ITestAgain>
+{
+public:
+	virtual std::string FunctionA(int a, int b, double c, std::string d) override
+	{
+		std::cout << "FunctionA in ServerTestMultiIface is called!" << a << ", " << b << ", " << c << ", " << d << "\n";
+		std::string s(d);
+		s.append(std::to_string(a));
+		s.append(std::to_string(b));
+		s.append(std::to_string(c));
+		return s;
+	}
+
+	virtual void FunctionB(int s) override
+	{
+		std::cout << "FunctionB in ServerTestMultiIface is called with args: " << s << std::endl;
+	}
+
+	virtual std::string FunctionC(int s) override
+	{
+		std::cout << "FunctionC in ServerTestMultiIface is called with args: " << s << std::endl;
+	}
+};
+
+class TestClient : TFC::ServiceModel::ClientEndpoint<ServiceEndpoint, ITest>
+{
+public:
+	TestClient() :
+		ClientEndpoint(RPCTEST_OBJECT_PATH)
+	{
+	}
+
+	virtual std::string FunctionA(int a, int b, double c, std::string d) override
+	{
+		return Invoke(&ITest::FunctionA, a, b, c, d);
+	}
+
+	virtual void FunctionB(int s) override
+	{
+		Invoke(&ITest::FunctionB, s);
+	}
+};
+
 
 }
 
@@ -92,18 +147,89 @@ TFC_DefineTypeInfo(GDBusServerTestNS::ITest) {
 	{ &GDBusServerTestNS::ITest::FunctionB, "FunctionB" }
 };
 
+TFC_DefineTypeInfo(GDBusServerTestNS::ITestAgain) {
+	{ &GDBusServerTestNS::ITestAgain::FunctionC, "FunctionC" }
+};
+
 TEST_F(GDBusServerTest, GDBusServerDefinition)
 {
 	using namespace GDBusServerTestNS;
 
 	ServerTest serverObject;
 
-	auto& data = serverObject.GetInterfaceDefinition();
+	auto data = serverObject.GetInterfaceList();
 
-	auto& interfaceInfo = data.GetInterfaceInfo();
+	auto& interfaceInfo = data[0]->GetInterfaceInfo();
+
 
 	ASSERT_STREQ("GDBusServerTestNS.ITest", interfaceInfo.name) << "Interface name is not equal";
 	ASSERT_STREQ("FunctionA", interfaceInfo.methods[0]->name) << "FunctionA name is invalid";
+
+	ASSERT_TRUE(true);
+}
+
+TEST_F(GDBusServerTest, GDBusServerDefinitionMultiIface)
+{
+	using namespace GDBusServerTestNS;
+
+	ServerTestMultiIface serverObject;
+
+	auto data = serverObject.GetInterfaceList();
+
+	auto& interfaceInfo = data[0]->GetInterfaceInfo();
+
+	ASSERT_STREQ("GDBusServerTestNS.ITest", interfaceInfo.name) << "Interface first name is not equal";
+	ASSERT_STREQ("FunctionA", interfaceInfo.methods[0]->name) << "FunctionA name is invalid";
+
+	auto& interfaceInfo1 = data[1]->GetInterfaceInfo();
+
+
+	ASSERT_STREQ("GDBusServerTestNS.ITestAgain", interfaceInfo1.name) << "Interface second name is not equal";
+	ASSERT_STREQ("FunctionC", interfaceInfo1.methods[0]->name) << "FunctionC name is invalid";
+
+	ASSERT_TRUE(true);
+}
+
+TEST_F(GDBusServerTest, InvokeMethodViaReflection)
+{
+	using namespace GDBusServerTestNS;
+
+	auto& desc = TFC::ServiceModel::TypeInfo<ITest>::typeDescription;
+
+	ServerTestMultiIface test;
+
+	ITest* ptr = &test;
+
+	auto tuple = std::make_tuple(12345);
+
+	auto& res = desc.GetFunctionByName("FunctionB");
+	res.Invoke(ptr, &tuple);
+
+	ASSERT_TRUE(true);
+}
+
+
+TEST_F(GDBusServerTest, GDBusServerCall)
+{
+	using namespace GDBusServerTestNS;
+
+	TFC::ServiceModel::GDBusServer server({ "com.srin.tfc.RPCTest", RPCTEST_BUS_NAME,  G_BUS_TYPE_SYSTEM, G_BUS_NAME_OWNER_FLAGS_NONE});
+
+	auto ptr = new ServerTest;
+	ptr->SetName("MyObject");
+	server.AddServerObject(ptr);
+
+	server.Initialize();
+
+	using Ms = std::chrono::milliseconds;
+	std::this_thread::sleep_for(Ms(1000));
+
+	std::cout << "Wake!\n";
+
+	TestClient client;
+
+	client.FunctionB(123123);
+
 
 	ASSERT_TRUE(true);
 }
@@ -155,4 +281,17 @@ TEST_F(GDBusServerTest, ClassSerializer)
 	ASSERT_EQ(p.a, deserialized.a) << "Deserialized variable a is incorrect";
 	ASSERT_DOUBLE_EQ(p.b, deserialized.b) << "Deserialized variable b is incorrect";
 	ASSERT_EQ(p.c, deserialized.c) << "Deserialized variable c is incorrect";
+}
+
+template<>
+void TFC::ServiceModel::ServerObject<GDBusServerTestNS::ServiceEndpoint, GDBusServerTestNS::ITest>::InitializeInterface()
+{
+	RegisterFunction(&ITest::FunctionA, "FunctionA");
+	RegisterFunction(&ITest::FunctionB, "FunctionB");
+}
+
+template<>
+void TFC::ServiceModel::ServerObject<GDBusServerTestNS::ServiceEndpoint, GDBusServerTestNS::ITestAgain>::InitializeInterface()
+{
+	RegisterFunction(&ITestAgain::FunctionC, "FunctionC");
 }
