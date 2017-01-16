@@ -242,7 +242,7 @@ struct ObjectSerializer<TSerializerClass, void>
 
 template<typename TDeserializerClass,
 		 typename TFunctionType,
-		 typename TParameterPack = typename Core::Introspect::MemberFunction<TFunctionType>::ArgsTuple>
+		 typename TParameterPack = typename Core::Introspect::MemberFunction<TFunctionType>::ArgsTupleDecay>
 struct ParameterDeserializer;
 
 template<typename TDeserializerClass, typename... TArgs>

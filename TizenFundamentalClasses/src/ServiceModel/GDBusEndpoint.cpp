@@ -267,7 +267,7 @@ void TFC::ServiceModel::GDBusServer::OnBusAcquired(GDBusConnection* connection,
 	std::regex dotRegex("\\.");
 
 	std::string rootPath("/");
-	rootPath += std::regex_replace(this->config.interfacePrefix, dotRegex, "/");
+	rootPath += std::regex_replace(this->config.busName, dotRegex, "/");
 	rootPath += "/";
 
 	std::cout << "Bus acq\n";
