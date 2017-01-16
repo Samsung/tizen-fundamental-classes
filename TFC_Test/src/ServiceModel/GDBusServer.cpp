@@ -43,6 +43,8 @@ class GDBusServerTest : public testing::Test
 #define RPCTEST_BUS_NAME "com.srin.tfc.RPCTest"
 #define RPCTEST_OBJECT_PATH "/com/srin/tfc/RPCTest/MyObject"
 
+static int testStore;
+
 namespace GDBusServerTestNS
 {
 
@@ -91,6 +93,7 @@ public:
 	virtual void FunctionB(int s) override
 	{
 		std::cout << "FunctionB in ServerTest is called with args: " << s << std::endl;
+		::testStore = s;
 	}
 
 };
@@ -213,10 +216,10 @@ TEST_F(GDBusServerTest, GDBusServerCall)
 {
 	using namespace GDBusServerTestNS;
 
-	TFC::ServiceModel::GDBusServer server({ "com.srin.tfc.RPCTest", RPCTEST_BUS_NAME,  G_BUS_TYPE_SYSTEM, G_BUS_NAME_OWNER_FLAGS_NONE});
-
+	TFC::ServiceModel::GDBusServer server({ "com.srin.tfc.RPCTest", RPCTEST_BUS_NAME,  G_BUS_TYPE_SYSTEM, G_BUS_NAME_OWNER_FLAGS_NONE });
 	auto ptr = new ServerTest;
 	ptr->SetName("MyObject");
+
 	server.AddServerObject(ptr);
 
 	server.Initialize();
@@ -228,10 +231,15 @@ TEST_F(GDBusServerTest, GDBusServerCall)
 
 	TestClient client;
 
-	client.FunctionB(123123);
+	int random = rand();
 
+	client.FunctionB(random);
 
-	ASSERT_TRUE(true);
+	ASSERT_EQ(::testStore, random) << "Invocation via GDBus client server failed";
+
+	auto actualStr = client.FunctionA(1, 2, 3.5, "some");
+
+	ASSERT_STREQ("some123.500000", actualStr.c_str()) << "Invocation via GDBus client server returning string failed";
 }
 
 class SomeClass

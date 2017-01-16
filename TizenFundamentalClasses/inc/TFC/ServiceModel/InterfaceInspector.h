@@ -23,6 +23,18 @@ namespace ServiceModel {
 
 std::string GetInterfaceName(char const* prefix, std::type_info const& i);
 
+template<typename TSerializerClass, typename TTarget>
+struct SerializerExist
+{
+	typedef char Correct;
+	typedef struct { char val[2]; } Incorrect;
+
+	template<typename TA, typename TB> static Correct Test(decltype(std::declval<TA>().Serialize(std::declval<TB>()))*);
+	template<typename TA, typename TB> static Incorrect Test(...);
+
+	public:
+		static constexpr bool Value = sizeof(Test<TSerializerClass, TTarget>(0)) == sizeof(Correct);
+};
 
 /**
  * Function template which generates operation to perform serialization based on requested type.
@@ -35,6 +47,17 @@ std::string GetInterfaceName(char const* prefix, std::type_info const& i);
 template<typename TSerializerClass, typename... TArgs>
 struct SerializerFunctor;
 
+template<typename TSerializerClass, typename TCurrent, bool = !std::is_class<TCurrent>::value || SerializerExist<TSerializerClass, TCurrent>::Value>
+struct SerializerSelect
+{
+	static void Serialize(TSerializerClass& p, TCurrent t)
+	{
+		p.Serialize(t);
+	}
+};
+
+
+
 /**
  * Recursion case for SerializerFunctor
  */
@@ -43,7 +66,7 @@ struct SerializerFunctor<TSerializerClass, TCurrent, TArgs...>
 {
 	static void Func(TSerializerClass& p, TCurrent t, TArgs... next)
 	{
-		p.Serialize(t);
+		SerializerSelect<TSerializerClass, TCurrent>::Serialize(p, t);
 		// Call SerializerFunctor recursive by passing the TArgs tails as arguments
 		SerializerFunctor<TSerializerClass, TArgs...>::Func(p, next...);
 	}
@@ -145,6 +168,18 @@ struct ClassSerializer<TSerializerClass, TDeclaring, TypeSerializationInfo<TDecl
 	}
 };
 
+template<typename TSerializerClass, typename TCurrent>
+struct SerializerSelect<TSerializerClass, TCurrent, false>
+{
+	static void Serialize(TSerializerClass& p, TCurrent t)
+	{
+		TSerializerClass ip;
+		ClassSerializer<TSerializerClass, TCurrent>::Serialize(ip, t);
+		auto v = ip.EndPack();
+		p.Serialize(v);
+	}
+};
+
 template<typename TSerializerClass, typename TFieldList>
 struct TupleSerializer;
 
@@ -216,12 +251,12 @@ struct ParameterDeserializerFunctor
 	typedef typename Core::Metaprogramming::SequenceGenerator<sizeof...(TArgs)>::Type ArgSequence;
 
 	template<int... S>
-	static std::tuple<TArgs...> Func(TDeserializerClass& p, Core::Metaprogramming::Sequence<S...>)
+	static std::tuple<typename std::decay<TArgs>::type...> Func(TDeserializerClass& p, Core::Metaprogramming::Sequence<S...>)
 	{
-		return std::make_tuple(p.template Deserialize<TArgs>(S)...);
+		return std::make_tuple(p.template Deserialize<typename std::decay<TArgs>::type>(S)...);
 	}
 
-	static std::tuple<TArgs...> Func(TDeserializerClass& p)
+	static std::tuple<typename std::decay<TArgs>::type...> Func(TDeserializerClass& p)
 	{
 		return Func(p, ArgSequence());
 	}

@@ -28,10 +28,12 @@ struct GVariantSerializer
 	typedef GVariant* SerializedType;
 	GVariantSerializer();
 
-	template<typename T>
-	void Serialize(T args);
+	void Serialize(int args);
+	void Serialize(bool args);
+	void Serialize(double args);
+	void Serialize(std::string args);
 
-
+	void Serialize(SerializedType p);
 
 	SerializedType EndPack();
 };
@@ -117,6 +119,7 @@ private:
 	Configuration config;
 public:
 	GDBusServer(Configuration const& config);
+	~GDBusServer();
 	void Initialize();
 	void AddServerObject(IServerObject<GDBusChannel>* obj);
 	void AddServerObject(std::unique_ptr<IServerObject<GDBusChannel>> obj);
@@ -158,7 +161,16 @@ template<typename... TArgs>
 struct GDBusSignatureFiller;
 
 template<typename T>
-struct GDBusTypeCode;
+struct GDBusTypeCode
+{
+	static constexpr char const* value = "r";
+};
+
+template<typename T>
+struct GDBusTypeCode<T const&> : GDBusTypeCode<T>
+{
+
+};
 
 #define GDBus_TypeCode_Define(TYPE, CHAR) \
 		template<> \

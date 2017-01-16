@@ -31,23 +31,26 @@ GVariantSerializer::SerializedType GVariantSerializer::EndPack() {
 	return g_variant_builder_end(&builder);
 }
 
-template<>
 LIBAPI
-void GVariantSerializer::Serialize<int>(int args)
+void GVariantSerializer::Serialize(int args)
 {
 	g_variant_builder_add(&builder, "i", args);
 }
 
-template<>
 LIBAPI
-void GVariantSerializer::Serialize<double>(double args)
+void GVariantSerializer::Serialize(bool args)
+{
+	g_variant_builder_add(&builder, "b", args);
+}
+
+LIBAPI
+void GVariantSerializer::Serialize(double args)
 {
 	g_variant_builder_add(&builder, "d", args);
 }
 
-template<>
 LIBAPI
-void GVariantSerializer::Serialize<std::string>(std::string args)
+void GVariantSerializer::Serialize(std::string args)
 {
 	g_variant_builder_add(&builder, "s", args.c_str());
 }
@@ -74,10 +77,13 @@ double GVariantDeserializer::Deserialize<double>(int index)
 	return res;
 }
 
+#include <dlog.h>
+
 template<>
 LIBAPI
 std::string GVariantDeserializer::Deserialize<std::string>(int index)
 {
+
 	auto strVariant = g_variant_get_child_value(variant, index);
 	gsize len = 0;
 	auto theStr = g_variant_get_string(strVariant, &len);
@@ -86,7 +92,7 @@ std::string GVariantDeserializer::Deserialize<std::string>(int index)
 	return res;
 }
 
-#include <dlog.h>
+
 
 
 
@@ -359,6 +365,12 @@ void TFC::ServiceModel::GDBusServer::OnMethodCall(GDBusConnection* connection,
 		{
 			auto result = obj->second->Invoke(interface_name, method_name, parameters);
 
+			gchar* printed = g_variant_print(result, true);
+			dlog_print(DLOG_DEBUG, LOG_TAG, "Invocation result: %s", printed);
+			g_free(printed);
+
+
+
 			g_dbus_method_invocation_return_value(invocation, result);
 		}
 	} else std::cout << "Failed parsing object name\n";
@@ -376,4 +388,15 @@ void TFC::ServiceModel::GDBusServer::AddServerObject(std::unique_ptr<IServerObje
 {
 	std::string const& name = obj->GetName();
 	this->objectList.emplace(name, std::move(obj));
+}
+
+LIBAPI
+TFC::ServiceModel::GDBusServer::~GDBusServer() {
+	g_bus_unown_name(this->busId);
+}
+
+LIBAPI
+void TFC::ServiceModel::GVariantSerializer::Serialize(SerializedType p)
+{
+	g_variant_builder_add_value(&builder, p);
 }

@@ -77,6 +77,7 @@ struct MemberFunction<TReturn (TClass::*)(TArgs...)>
 	using Args = typename std::tuple_element<idx, std::tuple<TArgs...>>::type;
 
 	typedef std::tuple<TArgs...> ArgsTuple;
+	typedef std::tuple<typename std::decay<TArgs>::type...> ArgsTupleDecay;
 };
 
 template<typename TClass, typename TReturn, typename... TArgs>

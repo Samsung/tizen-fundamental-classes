@@ -9,10 +9,13 @@
 #define TFC_SERVICEMODEL_SERVERENDPOINT_H_
 
 #include "TFC/Core/Introspect.h"
+#include "TFC/ServiceModel/InterfaceInspector.h"
+#include "TFC/ServiceModel/Reflection.h"
 
 #include <map>
 #include <unordered_map>
 #include <functional>
+#include <memory>
 
 namespace TFC {
 namespace ServiceModel {
@@ -173,8 +176,6 @@ protected:
 	template<typename TFuncPtr>
 	static void RegisterFunction(TFuncPtr ptr, char const* name)
 	{
-		auto& typeDescription = TypeInfo<T>::typeDescription;
-
 		functionMap.emplace(
 			std::make_pair<std::string, FunctionDelegate>(
 				name,
