@@ -47,12 +47,22 @@ struct SerializerExist
 template<typename TSerializerClass, typename... TArgs>
 struct SerializerFunctor;
 
-template<typename TSerializerClass, typename TCurrent, bool = !std::is_class<TCurrent>::value || SerializerExist<TSerializerClass, TCurrent>::Value>
+template<typename TSerializerClass, typename TCurrent, typename = void, bool = SerializerExist<TSerializerClass, TCurrent>::Value>
 struct SerializerSelect
 {
 	static void Serialize(TSerializerClass& p, TCurrent t)
 	{
 		p.Serialize(t);
+	}
+};
+
+template<typename TSerializerClass, typename TCurrent>
+struct SerializerSelect<TSerializerClass, TCurrent, typename std::enable_if<std::is_enum<TCurrent>::value>::type, false>
+{
+	static void Serialize(TSerializerClass& p, TCurrent t)
+	{
+		typedef typename std::underlying_type<TCurrent>::type CastedType;
+		p.Serialize(static_cast<CastedType>(t));
 	}
 };
 
@@ -71,6 +81,8 @@ struct SerializerFunctor<TSerializerClass, TCurrent, TArgs...>
 		SerializerFunctor<TSerializerClass, TArgs...>::Func(p, next...);
 	}
 };
+
+
 
 /**
  * Base case for SerializerFunctor where TArgs is nil entirely
@@ -122,7 +134,7 @@ struct ParameterSerializer<TSerializerClass, TFunctionType, std::tuple<TArgs...>
 	}
 };
 
-template<typename TDeclaring, typename TValueType, TValueType TDeclaring::* memPtr>
+template<typename TDeclaring, typename TValueType, TValueType TDeclaring::* memPtr, typename = void>
 struct FieldInfo
 {
 	typedef TValueType ValueType;
@@ -135,6 +147,122 @@ struct FieldInfo
 	static void Set(TDeclaring& ptr, TValueType&& val)
 	{
 		ptr.*memPtr = std::move(val);
+	}
+};
+
+
+
+template<uint32_t discriminatorV, typename TDUType, typename TValType, TValType TDUType::* targetPtr>
+struct DiscriminatedUnionCase
+{
+	static uint32_t const discriminator = discriminatorV;
+	typedef TValType ValueType;
+
+	static constexpr bool Match(uint32_t v) { return discriminator == v; }
+	static ValueType const& Get(TDUType const& o) { return o.*targetPtr; }
+};
+
+template<typename TDUType, typename... TTail>
+struct DiscriminatedUnionSelector;
+
+template<typename TDUType, typename TCurrent, typename... TTail>
+struct DiscriminatedUnionSelector<TDUType, TCurrent, TTail...>
+{
+	template<typename TSerializerClass>
+	static void Serialize(TSerializerClass& ser, TDUType const& obj, uint32_t discriminator)
+	{
+		if(TCurrent::Match(discriminator))
+			ser.Serialize(TCurrent::Get(obj));
+	}
+};
+
+template<typename TDUType>
+struct DiscriminatedUnionSelector<TDUType>
+{
+	template<typename TSerializerClass>
+	static void Serialize(TSerializerClass& ser, TDUType const& obj, uint32_t discriminator)
+	{
+
+	}
+};
+
+
+template<typename TDUType, typename... TCase>
+struct DiscriminatedUnionField
+{
+
+	TDUType const& v;
+	uint32_t discriminator;
+
+	DiscriminatedUnionField(TDUType const& v, uint32_t discriminator) : v(v), discriminator(discriminator) { }
+
+	template<typename TSerializerClass>
+	void Serialize(TSerializerClass& ser)
+	{
+		ser.Serialize(discriminator);
+		DiscriminatedUnionSelector<TDUType, TCase...>::Serialize(ser, v, discriminator);
+	}
+};
+
+template<typename TDUType>
+struct DiscriminatedUnionTypeInfoSelector
+{
+	static constexpr bool isDiscriminatedUnion = false;
+};
+
+
+
+template<typename TDUType, typename TDiscriminator, TDiscriminator TDUType::* discriminator, typename... TCase>
+struct DiscriminatedUnionTypeInfo
+{
+	typedef DiscriminatedUnionField<TDUType, TCase...> ValueType;
+
+	template<typename TDeclaring>
+	static ValueType const& Get(TDUType TDeclaring::* memPtr, TDeclaring const& ptr)
+	{
+		auto& val =  ptr.*memPtr;
+		uint32_t disc = (uint32_t)(val.*discriminator);
+		return { val, disc };
+	}
+
+	/*
+	template<typename T>
+	static void Set(TDeclaring& ptr, uint32_t discriminator, T&& value)
+	{
+		ptr.*memPtr = std::move(val);
+	}
+	*/
+};
+
+template<typename TDeclaring, typename TValueType, TValueType TDeclaring::* memPtr>
+struct FieldInfo<TDeclaring, TValueType, memPtr, Core::Metaprogramming::Void_T<typename DiscriminatedUnionTypeInfoSelector<TValueType>::Type>>
+{
+
+	typedef typename DiscriminatedUnionTypeInfoSelector<TValueType>::Type DUTypeInfo;
+
+	typedef typename DUTypeInfo::ValueType ValueType;
+
+	static ValueType const& Get(TDeclaring const& ptr)
+	{
+		return DUTypeInfo::Get(memPtr, ptr);
+	}
+
+	/*
+	static void Set(TDeclaring& ptr, TValueType&& val)
+	{
+		ptr.*memPtr = std::move(val);
+	}
+	*/
+};
+
+template<typename TSerializerClass, typename TDUType, typename... TCase, typename... TArgs>
+struct SerializerFunctor<TSerializerClass, DiscriminatedUnionField<TDUType, TCase...>, TArgs...>
+{
+	static void Func(TSerializerClass& p, DiscriminatedUnionField<TDUType, TCase...>& t, TArgs... next)
+	{
+		t.Serialize(p);
+		// Call SerializerFunctor recursive by passing the TArgs tails as arguments
+		SerializerFunctor<TSerializerClass, TArgs...>::Func(p, next...);
 	}
 };
 
@@ -168,8 +296,8 @@ struct ClassSerializer<TSerializerClass, TDeclaring, TypeSerializationInfo<TDecl
 	}
 };
 
-template<typename TSerializerClass, typename TCurrent>
-struct SerializerSelect<TSerializerClass, TCurrent, false>
+template<typename TSerializerClass, typename TCurrent, typename TVoid>
+struct SerializerSelect<TSerializerClass, TCurrent, TVoid, false>
 {
 	static void Serialize(TSerializerClass& p, TCurrent t)
 	{
@@ -291,6 +419,8 @@ struct ClassDeserializerFunctor<TDeserializerClass, TDeclaring, TCurrentField, T
 	}
 };
 
+
+
 template<typename TDeserializerClass, typename TDeclaring>
 struct ClassDeserializerFunctor<TDeserializerClass, TDeclaring>
 {
@@ -307,7 +437,6 @@ struct ClassDeserializer;
 template<typename TDeserializerClass, typename TDeclaring, typename... TFieldArgs>
 struct ClassDeserializer<TDeserializerClass, TDeclaring, TypeSerializationInfo<TDeclaring, TFieldArgs...>>
 {
-
 	static TDeclaring Deserialize(typename TDeserializerClass::SerializedType p, bool finalizePackedObject = true)
 	{
 		TDeserializerClass unpacker(p);
@@ -362,12 +491,12 @@ struct DelayedInvoker<TFunctionType, std::tuple<TArgs...>>
 	template<int... S>
 	static ReturnType Call(InstanceType* i, TFunctionType ptr, std::tuple<TArgs...> const& param, Core::Metaprogramming::Sequence<S...>)
 	{
-		return (i->*ptr)(std::get<S>(param)...);
+		return std::move((i->*ptr)(std::get<S>(param)...));
 	}
 
 	static ReturnType Invoke(InstanceType* i, TFunctionType ptr, std::tuple<TArgs...> const& args)
 	{
-		return Call(i, ptr, args, ArgSequence());
+		return std::move(Call(i, ptr, args, ArgSequence()));
 	}
 };
 
@@ -375,6 +504,17 @@ struct DelayedInvoker<TFunctionType, std::tuple<TArgs...>>
 
 #define TFC_FieldInfo(MEMPTR) TFC::ServiceModel::FieldInfo<typename TFC::Core::Introspect::MemberField<decltype( & MEMPTR )>::DeclaringType, decltype( MEMPTR ), & MEMPTR>
 
+#define TFC_DefineDiscriminatedUnionType(TYPENAME, DISCR, ... ) \
+	template<> \
+	struct TFC::ServiceModel::DiscriminatedUnionTypeInfoSelector < TYPENAME > \
+	{ \
+		static constexpr bool isDiscriminatedUnion = true; \
+		typedef TFC::ServiceModel::DiscriminatedUnionTypeInfo< TYPENAME , decltype( TYPENAME :: DISCR ), & TYPENAME :: DISCR , __VA_ARGS__ > Type; \
+	}
+
+#define TFC_DiscriminatedUnionInfo(MEMPTR, DISCR, ... ) TFC::ServiceModel::DiscriminatedUnionFieldInfo< typename TFC::Core::Introspect::MemberField< decltype( & MEMPTR ) >::DeclaringType, decltype( MEMPTR ), & MEMPTR, decltype( DISCR ), & DISCR, __VA_ARGS__ >
+
+#define TFC_UnionCase(DISCR, MEMPTR ) TFC::ServiceModel::DiscriminatedUnionCase< (uint32_t) DISCR, typename TFC::Core::Introspect::MemberField< decltype( & MEMPTR ) >::DeclaringType, decltype( MEMPTR ), & MEMPTR>
 
 #define TFC_DefineTypeSerializationInfo( CLASS, ... ) \
 	template<> \

@@ -24,6 +24,9 @@ struct SequenceGenerator<0, S...>
 	typedef Sequence<S...> Type;
 };
 
+template<typename... Ts> struct MakeVoid { typedef void Type;};
+template<typename... Ts> using Void_T = typename MakeVoid<Ts...>::Type;
+
 }}}
 
 

@@ -32,6 +32,12 @@ GVariantSerializer::SerializedType GVariantSerializer::EndPack() {
 }
 
 LIBAPI
+void GVariantSerializer::Serialize(uint32_t args)
+{
+	g_variant_builder_add(&builder, "u", args);
+}
+
+LIBAPI
 void GVariantSerializer::Serialize(int args)
 {
 	g_variant_builder_add(&builder, "i", args);
@@ -92,7 +98,14 @@ std::string GVariantDeserializer::Deserialize<std::string>(int index)
 	return res;
 }
 
-
+template<>
+LIBAPI
+bool GVariantDeserializer::Deserialize<bool>(int index)
+{
+	gboolean res;
+	g_variant_get_child(variant, index, "b", &res);
+	return res ? true : false;
+}
 
 
 

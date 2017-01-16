@@ -28,6 +28,7 @@ struct GVariantSerializer
 	typedef GVariant* SerializedType;
 	GVariantSerializer();
 
+	void Serialize(uint32_t args);
 	void Serialize(int args);
 	void Serialize(bool args);
 	void Serialize(double args);
