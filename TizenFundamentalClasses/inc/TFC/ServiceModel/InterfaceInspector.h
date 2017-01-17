@@ -171,8 +171,12 @@ struct DiscriminatedUnionSelector<TDUType, TCurrent, TTail...>
 	template<typename TSerializerClass>
 	static void Serialize(TSerializerClass& ser, TDUType const& obj, uint32_t discriminator)
 	{
+		dlog_print(DLOG_DEBUG, "TFC-Debug", "Try serializing with type %s", typeid(decltype(TCurrent::Get(obj))).name());
+
 		if(TCurrent::Match(discriminator))
 			ser.Serialize(TCurrent::Get(obj));
+		else
+			DiscriminatedUnionSelector<TDUType, TTail...>::Serialize(ser, obj, discriminator);
 	}
 };
 
