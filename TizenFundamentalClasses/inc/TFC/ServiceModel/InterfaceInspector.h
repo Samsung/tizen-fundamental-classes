@@ -157,6 +157,7 @@ struct DiscriminatedUnionCase
 {
 	static uint32_t const discriminator = discriminatorV;
 	typedef TValType ValueType;
+	static constexpr auto targetPointer = targetPtr;
 
 	static constexpr bool Match(uint32_t v) { return discriminator == v; }
 	static ValueType const& Get(TDUType const& o) { return o.*targetPtr; }
@@ -164,6 +165,24 @@ struct DiscriminatedUnionCase
 
 template<typename TDUType, typename... TTail>
 struct DiscriminatedUnionSelector;
+
+template<typename T, bool = !std::is_fundamental<T>::value>
+struct InPlaceConstructorHelper
+{
+	static void Assign(T* ptr, T&& val)
+	{
+		new (ptr) T(val);
+	}
+};
+
+template<typename T>
+struct InPlaceConstructorHelper<T, true>
+{
+	static void Assign(T* ptr, T&& val)
+	{
+		*ptr = val;
+	}
+};
 
 template<typename TDUType, typename TCurrent, typename... TTail>
 struct DiscriminatedUnionSelector<TDUType, TCurrent, TTail...>
@@ -178,6 +197,17 @@ struct DiscriminatedUnionSelector<TDUType, TCurrent, TTail...>
 		else
 			DiscriminatedUnionSelector<TDUType, TTail...>::Serialize(ser, obj, discriminator);
 	}
+
+	template<typename TDeserializerClass>
+	static void DeserializeAndSet(TDeserializerClass& ser, TDUType& obj, uint32_t discriminator, int curIdx)
+	{
+		if(TCurrent::Match(discriminator))
+		{
+			InPlaceConstructorHelper<typename TCurrent::ValueType>::Assign(&(obj.*(TCurrent::targetPointer)), ser.template Deserialize<typename TCurrent::ValueType>(curIdx));
+		}
+		else
+			DiscriminatedUnionSelector<TDUType, TTail...>::DeserializeAndSet(ser, obj, discriminator, curIdx);
+	}
 };
 
 template<typename TDUType>
@@ -185,6 +215,12 @@ struct DiscriminatedUnionSelector<TDUType>
 {
 	template<typename TSerializerClass>
 	static void Serialize(TSerializerClass& ser, TDUType const& obj, uint32_t discriminator)
+	{
+
+	}
+
+	template<typename TDeserializerClass>
+	static void DeserializeAndSet(TDeserializerClass& ser, TDUType const& obj, uint32_t discriminator, int curIdx)
 	{
 
 	}
@@ -229,13 +265,24 @@ struct DiscriminatedUnionTypeInfo
 		return { val, disc };
 	}
 
-	/*
+	template<typename TDeclaring, typename TDeserializerClass>
+	static void DeserializeAndSet(TDUType TDeclaring::* memPtr, TDeclaring& ptr, uint32_t discriminatorVal, TDeserializerClass& deser, int curIdx)
+	{
+		auto& val = ptr.*memPtr;
+		val.*discriminator = (TDiscriminator)discriminatorVal;
+		DiscriminatedUnionSelector<TDUType, TCase...>::DeserializeAndSet(deser, val, discriminatorVal, curIdx);
+
+	}
+
+
+/*
 	template<typename T>
 	static void Set(TDeclaring& ptr, uint32_t discriminator, T&& value)
 	{
 		ptr.*memPtr = std::move(val);
 	}
-	*/
+*/
+
 };
 
 template<typename TDeclaring, typename TValueType, TValueType TDeclaring::* memPtr>
@@ -250,13 +297,6 @@ struct FieldInfo<TDeclaring, TValueType, memPtr, Core::Metaprogramming::Void_T<t
 	{
 		return DUTypeInfo::Get(memPtr, ptr);
 	}
-
-	/*
-	static void Set(TDeclaring& ptr, TValueType&& val)
-	{
-		ptr.*memPtr = std::move(val);
-	}
-	*/
 };
 
 template<typename TSerializerClass, typename TDUType, typename... TCase, typename... TArgs>
@@ -410,6 +450,29 @@ struct ParameterDeserializer<TDeserializerClass, TFunctionType, std::tuple<TArgs
 	}
 };
 
+template<typename TDeserializerClass, typename TDeclaring, typename TField, typename = void>
+struct ClassDeserializerSelect
+{
+	static void DeserializeAndSet(TDeserializerClass& p, TDeclaring& obj, int curIdx = 0)
+	{
+		TField::Set(obj, p.template Deserialize<typename TField::ValueType>(curIdx));
+	}
+};
+
+
+template<typename TDeserializerClass, typename TDeclaring, typename TDUType, TDUType TDeclaring::* ptrMem, typename TAny>
+struct ClassDeserializerSelect<TDeserializerClass, TDeclaring, TFC::ServiceModel::FieldInfo<TDeclaring, TDUType, ptrMem, TAny>, Core::Metaprogramming::Void_T<typename DiscriminatedUnionTypeInfoSelector<TDUType>::Type>>
+{
+	typedef typename DiscriminatedUnionTypeInfoSelector<TDUType>::Type DUTypeInfo;
+
+	static void DeserializeAndSet(TDeserializerClass& p, TDeclaring& obj, int curIdx = 0)
+	{
+		uint32_t discriminator = p.template Deserialize<uint32_t>(curIdx);
+		DUTypeInfo::DeserializeAndSet(ptrMem, obj, discriminator, p, curIdx + 1);
+		//TField::Set(obj, p.template Deserialize<typename TField::ValueType>(curIdx));
+	}
+};
+
 template<typename TDeserializerClass, typename TDeclaring, typename... TFieldArgs>
 struct ClassDeserializerFunctor;
 
@@ -418,10 +481,12 @@ struct ClassDeserializerFunctor<TDeserializerClass, TDeclaring, TCurrentField, T
 {
 	static void Func(TDeserializerClass& p, TDeclaring& obj, int curIdx = 0)
 	{
-		TCurrentField::Set(obj, p.template Deserialize<typename TCurrentField::ValueType>(curIdx));
+		ClassDeserializerSelect<TDeserializerClass, TDeclaring, TCurrentField>::DeserializeAndSet(p, obj, curIdx);
 		ClassDeserializerFunctor<TDeserializerClass, TDeclaring, TRemainArgs...>::Func(p, obj, curIdx + 1);
 	}
 };
+
+
 
 
 
