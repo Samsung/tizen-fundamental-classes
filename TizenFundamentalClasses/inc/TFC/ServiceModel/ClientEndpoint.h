@@ -11,6 +11,10 @@
 #include "TFC/Core/Introspect.h"
 #include "TFC/ServiceModel/InterfaceInspector.h"
 #include "TFC/ServiceModel/Reflection.h"
+
+#include "TFC/Serialization/ObjectSerializer.h"
+#include "TFC/Serialization/ParameterSerializer.h"
+
 #include <dlog.h>
 #include <string>
 #include <typeinfo>
@@ -51,8 +55,8 @@ private:
 	auto InvokeInternal(TMemPtr ptr, TArgs... args)
 		-> typename TFC::Core::Introspect::MemberFunction<TMemPtr>::ReturnType
 	{
-		typedef ParameterSerializer<typename Channel::Serializer, TMemPtr> Serializer;
-		typedef ObjectDeserializer<typename Channel::Deserializer, typename TFC::Core::Introspect::MemberFunction<TMemPtr>::ReturnType> ReturnTypeDeserializer;
+		typedef Serialization::ParameterSerializer<typename Channel::Serializer, TMemPtr> Serializer;
+		typedef Serialization::ObjectDeserializer<typename Channel::Deserializer, typename TFC::Core::Introspect::MemberFunction<TMemPtr>::ReturnType> ReturnTypeDeserializer;
 
 		auto& typeDescription = TypeInfo<T>::typeDescription;
 

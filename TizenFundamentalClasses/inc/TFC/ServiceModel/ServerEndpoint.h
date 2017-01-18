@@ -12,6 +12,9 @@
 #include "TFC/ServiceModel/InterfaceInspector.h"
 #include "TFC/ServiceModel/Reflection.h"
 
+#include "TFC/Serialization/ObjectSerializer.h"
+#include "TFC/Serialization/ParameterSerializer.h"
+
 #include <map>
 #include <unordered_map>
 #include <functional>
@@ -146,10 +149,10 @@ protected:
 		{
 			auto targetFuncCasted = reinterpret_cast<TFuncPtr>(targetFunc);
 
-			auto params = ParameterDeserializer<Deserializer, TFuncPtr>::Deserialize(p, false);
+			auto params = Serialization::ParameterDeserializer<Deserializer, TFuncPtr>::Deserialize(p, false);
 			typedef DelayedInvoker<TFuncPtr> Invoker;
 			auto var = Invoker::Invoke(instance, targetFuncCasted, params);
-			typedef ObjectSerializer<Serializer, typename Core::Introspect::MemberFunction<TFuncPtr>::ReturnType> Serializer;
+			typedef Serialization::ObjectSerializer<Serializer, typename Core::Introspect::MemberFunction<TFuncPtr>::ReturnType> Serializer;
 			return Serializer::Serialize(var);
 		}
 	};
@@ -161,12 +164,12 @@ protected:
 					-> typename Channel::SerializedType
 		{
 			auto targetFuncCasted = reinterpret_cast<TFuncPtr>(targetFunc);
-			auto params = ParameterDeserializer<Deserializer, TFuncPtr>::Deserialize(p, false);
+			auto params = Serialization::ParameterDeserializer<Deserializer, TFuncPtr>::Deserialize(p, false);
 
 			typedef DelayedInvoker<TFuncPtr> Invoker;
 			Invoker::Invoke(instance, targetFuncCasted, params);
 
-			typedef ObjectSerializer<Serializer, typename Core::Introspect::MemberFunction<TFuncPtr>::ReturnType> Serializer;
+			typedef Serialization::ObjectSerializer<Serializer, typename Core::Introspect::MemberFunction<TFuncPtr>::ReturnType> Serializer;
 			return Serializer::Serialize();
 		}
 	};
