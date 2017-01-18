@@ -58,7 +58,8 @@ struct DiscriminatedUnionSelector<TDUType, TCurrent, TTail...>
 		dlog_print(DLOG_DEBUG, "TFC-Debug", "Try serializing with type %s", typeid(decltype(TCurrent::Get(obj))).name());
 
 		if(TCurrent::Match(discriminator))
-			ser.Serialize(TCurrent::Get(obj));
+			SerializerSelect<TSerializerClass, typename TCurrent::ValueType>::Serialize(ser, TCurrent::Get(obj));
+			//ser.Serialize();
 		else
 			DiscriminatedUnionSelector<TDUType, TTail...>::Serialize(ser, obj, discriminator);
 	}
