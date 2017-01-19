@@ -16,6 +16,8 @@
 #include "TFC/ServiceModel/Reflection.h"
 #include "TFC/ServiceModel/ServerEndpoint.h"
 
+#include "TFC/Serialization/ClassSerializer.h"
+
 namespace TFC {
 namespace ServiceModel {
 
@@ -48,9 +50,45 @@ struct GVariantDeserializer
 	GVariantDeserializer(SerializedType p);
 
 	template<typename T>
-	T Deserialize(int index);
+	T DeserializeImpl(int index);
+
+	template<typename T, typename = void>
+	struct DeserializerSelector
+	{
+		static T Deserialize(GVariantDeserializer& deser, int index)
+		{
+			return deser.DeserializeImpl<T>(index);
+		}
+	};
+
+	template<typename T>
+	T Deserialize(int index)
+	{
+		return DeserializerSelector<T>::Deserialize(*this, index);
+	}
+
+
 
 	void Finalize();
+};
+
+template<typename T>
+struct GVariantDeserializer::DeserializerSelector<T, Core::Metaprogramming::Void_T<typename Serialization::TypeSerializationInfoSelector<T>::Type>>
+{
+	static T Deserialize(GVariantDeserializer& deser, int index)
+	{
+		using namespace TFC::Serialization;
+		return ClassDeserializer<GVariantDeserializer, T>::Deserialize(deser);
+	}
+};
+
+template<typename T>
+struct GVariantDeserializer::DeserializerSelector<T, Core::Metaprogramming::Void_T<typename std::enable_if<std::is_enum<T>::value>::type>>
+{
+	static T Deserialize(GVariantDeserializer& deser, int index)
+	{
+		return (T)deser.DeserializeImpl<typename std::underlying_type<T>::type>(index);
+	}
 };
 
 struct GDBusConfiguration

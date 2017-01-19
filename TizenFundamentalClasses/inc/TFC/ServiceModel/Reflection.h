@@ -67,7 +67,7 @@ public:
 	size_t GetHash() { return this->hash; }
 
 protected:
-	FunctionInfo(char const* name, size_t hash) : functionName(name), hash(hash)
+	FunctionInfo(char const* name, size_t hash) :  hash(hash), functionName(name)
 	{
 
 	}
@@ -286,7 +286,7 @@ struct TFC::ServiceModel::TypeDescription::TypeDescriptionBuilder::InitializerFu
 
 
 #define TFC_DefineTypeInfo(TYPENAME) \
-	template<>\
+	template<> __attribute__((visibility("default")))\
 	TFC::ServiceModel::TypeDescription TFC::ServiceModel::TypeInfo< TYPENAME >::typeDescription
 
 #endif /* TFC_SERVICEMODEL_REFLECTION_H_ */

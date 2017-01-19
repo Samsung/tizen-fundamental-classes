@@ -67,7 +67,7 @@ TFC::ServiceModel::GVariantDeserializer::GVariantDeserializer(SerializedType p) 
 
 template<>
 LIBAPI
-int GVariantDeserializer::Deserialize<int>(int index)
+int32_t GVariantDeserializer::DeserializeImpl<int32_t>(int index)
 {
 	int res;
 	g_variant_get_child(variant, index, "i", &res);
@@ -76,7 +76,16 @@ int GVariantDeserializer::Deserialize<int>(int index)
 
 template<>
 LIBAPI
-double GVariantDeserializer::Deserialize<double>(int index)
+uint32_t GVariantDeserializer::DeserializeImpl<uint32_t>(int index)
+{
+	int res;
+	g_variant_get_child(variant, index, "u", &res);
+	return res;
+}
+
+template<>
+LIBAPI
+double GVariantDeserializer::DeserializeImpl<double>(int index)
 {
 	double res;
 	g_variant_get_child(variant, index, "d", &res);
@@ -87,7 +96,7 @@ double GVariantDeserializer::Deserialize<double>(int index)
 
 template<>
 LIBAPI
-std::string GVariantDeserializer::Deserialize<std::string>(int index)
+std::string GVariantDeserializer::DeserializeImpl<std::string>(int index)
 {
 
 	auto strVariant = g_variant_get_child_value(variant, index);
@@ -100,7 +109,7 @@ std::string GVariantDeserializer::Deserialize<std::string>(int index)
 
 template<>
 LIBAPI
-bool GVariantDeserializer::Deserialize<bool>(int index)
+bool GVariantDeserializer::DeserializeImpl<bool>(int index)
 {
 	gboolean res;
 	g_variant_get_child(variant, index, "b", &res);
