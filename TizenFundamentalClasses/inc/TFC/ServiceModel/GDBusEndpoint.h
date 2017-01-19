@@ -65,12 +65,19 @@ struct GVariantDeserializer
 	template<typename T>
 	T Deserialize(int index)
 	{
+		dlog_print(DLOG_DEBUG, "TFC-RPC", "Index %d", index);
 		return DeserializerSelector<T>::Deserialize(*this, index);
 	}
 
 
 
 	void Finalize();
+
+private:
+
+	GVariantIter iter;
+	gsize maxChild;
+	gsize currentChild;
 };
 
 template<typename T>
@@ -79,7 +86,9 @@ struct GVariantDeserializer::DeserializerSelector<T, Core::Metaprogramming::Void
 	static T Deserialize(GVariantDeserializer& deser, int index)
 	{
 		using namespace TFC::Serialization;
-		return ClassDeserializer<GVariantDeserializer, T>::Deserialize(deser);
+
+		auto innerVar = g_variant_get_child_value(deser.variant, index);
+		return ClassDeserializer<GVariantDeserializer, T>::Deserialize(innerVar);
 	}
 };
 

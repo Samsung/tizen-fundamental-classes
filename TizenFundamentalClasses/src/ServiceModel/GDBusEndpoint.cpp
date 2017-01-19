@@ -69,6 +69,16 @@ void GVariantSerializer::Serialize(std::string args)
 
 LIBAPI
 TFC::ServiceModel::GVariantDeserializer::GVariantDeserializer(SerializedType p) : variant(p) {
+	dlog_print(DLOG_DEBUG, "TFC-RPC", "Got to serialize: %d", p);
+	auto str = g_variant_print(p, true);
+	dlog_print(DLOG_DEBUG, "TFC-RPC", "The value is: %s", str);
+	g_free(str);
+
+	this->maxChild = g_variant_n_children(p);
+	this->currentChild = 0;
+
+	//TODO change to variant serialization and perform safety checking
+	//g_variant_iter_init(&iter, p);
 }
 
 template<>
@@ -76,7 +86,7 @@ LIBAPI
 int32_t GVariantDeserializer::DeserializeImpl<int32_t>(int index)
 {
 	int res;
-	g_variant_get_child(variant, index, "i", &res);
+	g_variant_get_child(variant, currentChild++, "i", &res);
 	return res;
 }
 
@@ -94,7 +104,7 @@ LIBAPI
 uint32_t GVariantDeserializer::DeserializeImpl<uint32_t>(int index)
 {
 	int res;
-	g_variant_get_child(variant, index, "u", &res);
+	g_variant_get_child(variant, currentChild++, "u", &res);
 	return res;
 }
 
@@ -103,7 +113,7 @@ LIBAPI
 double GVariantDeserializer::DeserializeImpl<double>(int index)
 {
 	double res;
-	g_variant_get_child(variant, index, "d", &res);
+	g_variant_get_child(variant, currentChild++, "d", &res);
 	return res;
 }
 
@@ -114,7 +124,7 @@ LIBAPI
 std::string GVariantDeserializer::DeserializeImpl<std::string>(int index)
 {
 
-	auto strVariant = g_variant_get_child_value(variant, index);
+	auto strVariant = g_variant_get_child_value(variant, currentChild++);
 	gsize len = 0;
 	auto theStr = g_variant_get_string(strVariant, &len);
 	std::string res(theStr, len);
@@ -127,7 +137,7 @@ LIBAPI
 bool GVariantDeserializer::DeserializeImpl<bool>(int index)
 {
 	gboolean res;
-	g_variant_get_child(variant, index, "b", &res);
+	g_variant_get_child(variant, currentChild++, "b", &res);
 	return res ? true : false;
 }
 
@@ -136,7 +146,14 @@ bool GVariantDeserializer::DeserializeImpl<bool>(int index)
 LIBAPI
 TFC::ServiceModel::GDBusClient::GDBusClient(GDBusConfiguration const& config,
 		const char* objectPath, const char* interfaceName) {
-	this->handle = g_dbus_proxy_new_for_bus_sync(config.busType, config.proxyFlags, nullptr, config.busName, objectPath, interfaceName, nullptr, nullptr);
+
+	GError* err = nullptr;
+	this->handle = g_dbus_proxy_new_for_bus_sync(config.busType, config.proxyFlags, nullptr, config.busName, objectPath, interfaceName, nullptr, &err);
+	dlog_print(DLOG_DEBUG, "RPC-Test", "After new proxy for: %s %s %s, result %d", config.busName, objectPath, interfaceName, handle);
+	if(err != nullptr) {
+		dlog_print(DLOG_ERROR, "RPC-Test", "Error when init proxy: %s", err->message);
+		throw TFC::TFCException("Error");
+	}
 }
 
 
@@ -144,7 +161,17 @@ TFC::ServiceModel::GDBusClient::GDBusClient(GDBusConfiguration const& config,
 LIBAPI
 GVariant* TFC::ServiceModel::GDBusClient::RemoteCall(const char* methodName, GVariant* parameter) {
 	dlog_print(DLOG_DEBUG, "RPC-Test", "Calling: %s", methodName);
-	return g_dbus_proxy_call_sync((GDBusProxy*)this->handle, methodName, parameter, G_DBUS_CALL_FLAGS_NONE, -1, nullptr, nullptr);
+	GError* err = nullptr;
+	auto ptr = g_dbus_proxy_call_sync((GDBusProxy*)this->handle, methodName, parameter, G_DBUS_CALL_FLAGS_NONE, -1, nullptr, &err);
+	dlog_print(DLOG_DEBUG, "RPC-Test", "Result: %d", ptr);
+
+	if(err != nullptr)
+	{
+		dlog_print(DLOG_ERROR, "RPC-Test", "Error when calling: %s", err->message);
+		throw TFC::TFCException("Error");
+	}
+
+	return ptr;
 }
 
 LIBAPI

@@ -20,6 +20,7 @@
 #define LIBAPI
 #endif
 
+#include <memory>
 #include <exception>
 #include <string>
 #include <type_traits>
@@ -40,7 +41,11 @@ class EventClass;
  * polymorphic behavior which can be downcasted during the runtime. This class has virtual
  * destructor which enables the polymorphic and RTTI feature on this class and subclass.
  */
-class ObjectClass;
+class LIBAPI ObjectClass
+{
+public:
+	virtual ~ObjectClass();
+};
 
 /**
  * PropertyClass is an attribute class marking that the class can implement Property object
@@ -238,6 +243,35 @@ struct PropertyGetterFunction;
 template<typename TDefining, typename TValue>
 struct PropertySetterFunction;
 
+template<typename T>
+struct ObjectClassPackage : public ObjectClass
+{
+	T value;
+
+	template<typename TArgs>
+	ObjectClassPackage(TArgs param) : value(std::forward<TArgs>(param))
+	{
+
+	}
+};
+
+template<typename T>
+ObjectClassPackage<T>* PackInObjectClass(T value)
+{
+	return new ObjectClassPackage<typename std::remove_reference<T>::type> { std::forward<T>(value) };
+}
+
+template<typename T>
+T UnpackFromObjectClass(ObjectClass* obj)
+{
+	auto ptrRaw = dynamic_cast<ObjectClassPackage<T>*>(obj);
+	if(ptrRaw == nullptr)
+		throw TFCException("Invalid package retrieved in UnpackFromObjectClass");
+	std::unique_ptr<ObjectClassPackage<T>> ptr(ptrRaw);
+
+	return ptrRaw->value;
+}
+
 }
 }
 
@@ -262,12 +296,6 @@ public:\
 
 #include "TFC/Core/Event.inc.h"
 #include "TFC/Core/Property.inc.h"
-
-class LIBAPI TFC::ObjectClass : public TFC::EventClass
-{
-public:
-	virtual ~ObjectClass();
-};
 
 template<typename T>
 TFC::ManagedClass::SafePointer TFC::ManagedClass::GetSafePointerFrom(T* what)
