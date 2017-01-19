@@ -44,6 +44,12 @@ void GVariantSerializer::Serialize(int args)
 }
 
 LIBAPI
+void GVariantSerializer::Serialize(int64_t args)
+{
+	g_variant_builder_add(&builder, "x", args);
+}
+
+LIBAPI
 void GVariantSerializer::Serialize(bool args)
 {
 	g_variant_builder_add(&builder, "b", args);
@@ -71,6 +77,15 @@ int32_t GVariantDeserializer::DeserializeImpl<int32_t>(int index)
 {
 	int res;
 	g_variant_get_child(variant, index, "i", &res);
+	return res;
+}
+
+template<>
+LIBAPI
+int64_t GVariantDeserializer::DeserializeImpl<int64_t>(int index)
+{
+	int64_t res;
+	g_variant_get_child(variant, index, "x", &res);
 	return res;
 }
 
