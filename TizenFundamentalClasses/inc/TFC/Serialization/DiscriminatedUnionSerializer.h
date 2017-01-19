@@ -31,7 +31,7 @@ struct DiscriminatedUnionField
 	}
 };
 
-template<typename T, bool = !std::is_fundamental<T>::value>
+template<typename T, bool = std::is_fundamental<T>::value>
 struct InPlaceConstructorHelper
 {
 	static void Assign(T* ptr, T&& val)

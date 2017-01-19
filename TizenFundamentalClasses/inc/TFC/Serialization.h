@@ -87,7 +87,7 @@ struct ParameterDeserializerFunctor
 	template<> \
 	struct TFC::Serialization::TypeSerializationInfoSelector< CLASS > \
 	{ \
-		typedef TFC::Serialization::TypeSerializationInfo< CLASS , __VA_ARGS__ > Type; \
+		typedef TFC::Serialization::TypeSerializationInfo< CLASS , ##__VA_ARGS__ > Type; \
 	}
 
 #define TFC_FieldInfo(MEMPTR, ...) TFC::Serialization::FieldInfo<typename TFC::Core::Introspect::MemberField<decltype( & MEMPTR )>::DeclaringType, decltype( MEMPTR ), & MEMPTR, std::tuple < __VA_ARGS__ > >
