@@ -146,29 +146,105 @@ bool GVariantDeserializer::DeserializeImpl<bool>(int index)
 LIBAPI
 TFC::ServiceModel::GDBusClient::GDBusClient(GDBusConfiguration const& config,
 		const char* objectPath, const char* interfaceName) {
+	if(objectPath == nullptr || objectPath[0] == '\0')
+		throw ArgumentException("Object path cannot be null or empty string.");
+
+	if(interfaceName == nullptr || interfaceName[0] == '\0')
+		throw ArgumentException("Interface name cannot be null or empty string.");
+
 
 	GError* err = nullptr;
 	this->handle = g_dbus_proxy_new_for_bus_sync(config.busType, config.proxyFlags, nullptr, config.busName, objectPath, interfaceName, nullptr, &err);
 	dlog_print(DLOG_DEBUG, "RPC-Test", "After new proxy for: %s %s %s, result %d", config.busName, objectPath, interfaceName, handle);
+
 	if(err != nullptr) {
 		dlog_print(DLOG_ERROR, "RPC-Test", "Error when init proxy: %s", err->message);
-		throw TFC::TFCException("Error");
+
+		std::string errStr("Cannot initialize proxy for object path: ");
+		errStr += objectPath;
+		errStr += "; Reason: ";
+		errStr += err->message;
+
+		throw GDBusException(std::move(errStr));
 	}
 }
 
+namespace {
 
+class GErrorDeleter
+{
+public:
+	void operator()(GError* err)
+	{
+		if(err != nullptr)
+			g_error_free(err);
+	}
+};
+
+}
 
 LIBAPI
 GVariant* TFC::ServiceModel::GDBusClient::RemoteCall(const char* methodName, GVariant* parameter) {
+
+	if(methodName == nullptr || methodName[0] == '\0')
+		throw ArgumentException("Method name cannot be null or empty string.");
+
 	dlog_print(DLOG_DEBUG, "RPC-Test", "Calling: %s", methodName);
+
 	GError* err = nullptr;
 	auto ptr = g_dbus_proxy_call_sync((GDBusProxy*)this->handle, methodName, parameter, G_DBUS_CALL_FLAGS_NONE, -1, nullptr, &err);
 	dlog_print(DLOG_DEBUG, "RPC-Test", "Result: %d", ptr);
 
 	if(err != nullptr)
 	{
-		dlog_print(DLOG_ERROR, "RPC-Test", "Error when calling: %s", err->message);
-		throw TFC::TFCException("Error");
+		std::unique_ptr<GError, GErrorDeleter> errPtr(err);
+
+		if(!g_dbus_error_is_remote_error(err))
+		{
+			dlog_print(DLOG_ERROR, "RPC-Test", "Error when calling: %s", err->message);
+			throw Core::InvocationException("Error");
+		}
+		else
+		{
+			std::string typeName(g_quark_to_string(err->domain));
+
+			dlog_print(DLOG_ERROR, "RPC-Test", "Error when calling: %s => %s", typeName.c_str(), err->message);
+
+			try
+			{
+				auto& info = Core::FindTypeByName(typeName);
+
+				std::regex errRegex(R"REGEX(^GDBus\.Error:[A-Za-z0-9._]*:\s?(.*))REGEX");
+				std::cmatch match;
+
+				std::string errMessage;
+
+				if(std::regex_match(err->message, match, errRegex))
+				{
+					errMessage = match[1].str();
+				}
+				else
+				{
+					errMessage = err->message;
+				}
+
+				try
+				{
+					info.Throw(errMessage);
+				}
+				catch(Core::FunctionNotFoundException const& ex)
+				{
+					info.Throw();
+				}
+			}
+			catch(Core::ReflectionException const& ex)
+			{
+				throw Core::InvocationException(err->message);
+			}
+
+
+
+		}
 	}
 
 	return ptr;
@@ -374,6 +450,7 @@ void TFC::ServiceModel::GDBusServer::OnNameAcquired(GDBusConnection* connection,
 
 void TFC::ServiceModel::GDBusServer::OnNameLost(GDBusConnection* connection,
 		const gchar* name) {
+
 }
 
 LIBAPI
@@ -436,6 +513,7 @@ void TFC::ServiceModel::GDBusServer::OnMethodCall(GDBusConnection* connection,
 
 
 			g_dbus_method_invocation_return_value(invocation, result);
+			dlog_print(DLOG_DEBUG, LOG_TAG, "After return");
 		}
 	} else std::cout << "Failed parsing object name\n";
 }
@@ -462,5 +540,16 @@ TFC::ServiceModel::GDBusServer::~GDBusServer() {
 LIBAPI
 void TFC::ServiceModel::GVariantSerializer::Serialize(SerializedType p)
 {
+	if(g_variant_n_children(p) == 0)
+	{
+		// Compability for GDBus which is angry if it is passed an empty tuple
+		g_variant_unref(p);
+
+		GVariantBuilder localBuilder;
+		g_variant_builder_init(&localBuilder, G_VARIANT_TYPE_TUPLE);
+		g_variant_builder_add(&localBuilder, "i", 0);
+		p = g_variant_builder_end(&localBuilder);
+	}
+
 	g_variant_builder_add_value(&builder, p);
 }

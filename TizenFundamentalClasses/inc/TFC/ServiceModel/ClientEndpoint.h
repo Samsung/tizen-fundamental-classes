@@ -9,8 +9,8 @@
 #define TFC_SERVICEMODEL_CLIENTENDPOINT_H_
 
 #include "TFC/Core/Introspect.h"
-#include "TFC/ServiceModel/InterfaceInspector.h"
-#include "TFC/ServiceModel/Reflection.h"
+#include "TFC/Core/Invocation.h"
+#include "TFC/Core/Reflection.h"
 
 #include "TFC/Serialization/ObjectSerializer.h"
 #include "TFC/Serialization/ParameterSerializer.h"
@@ -58,7 +58,7 @@ private:
 		typedef Serialization::ParameterSerializer<typename Channel::Serializer, TMemPtr> Serializer;
 		typedef Serialization::ObjectDeserializer<typename Channel::Deserializer, typename TFC::Core::Introspect::MemberFunction<TMemPtr>::ReturnType> ReturnTypeDeserializer;
 
-		auto& typeDescription = TypeInfo<T>::typeDescription;
+		auto& typeDescription = Core::TypeInfo<T>::typeDescription;
 
 		auto serialized = Serializer::Serialize(args...);
 		dlog_print(DLOG_DEBUG, "RPC-Test", "In InvokeInternal");
@@ -73,7 +73,7 @@ protected:
 	}
 
 	ClientEndpoint(char const* objectPath) :
-		endpoint(TEndpoint::configuration, objectPath, GetInterfaceName(InterfacePrefixInspector<TEndpoint>::value, typeid(T)).c_str())
+		endpoint(TEndpoint::configuration, objectPath, Core::GetInterfaceName(InterfacePrefixInspector<TEndpoint>::value, typeid(T)).c_str())
 	{
 
 	}

@@ -9,11 +9,14 @@
 #define TFC_SERIALIZATION_H_
 
 #include <tuple>
+#include "TFC/Core.h"
 #include "TFC/Core/Introspect.h"
 #include "TFC/Core/Metaprogramming.h"
 
 namespace TFC {
 namespace Serialization {
+
+TFC_ExceptionDeclare	(SerializationException, TFCException);
 
 /**
  * Function template which generates operation to perform serialization based on requested type.

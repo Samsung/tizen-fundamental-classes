@@ -165,6 +165,7 @@ class EventEmitterClass;
 class LIBAPI TFCException : public std::exception
 {
 public:
+	explicit TFCException() { }
 	explicit TFCException(char const* message);
 	explicit TFCException(std::string&& message);
 	explicit TFCException(std::string const& message);
@@ -275,16 +276,17 @@ T UnpackFromObjectClass(ObjectClass* obj)
 }
 }
 
-#define EXCEPTION_DECLARE(NAME, PARENT)\
+#define TFC_ExceptionDeclare(NAME, PARENT)\
 class NAME : public PARENT\
 {\
 public:\
+	explicit inline NAME() : PARENT() { }\
 	explicit inline NAME(char const* message) : PARENT(message) { }\
 	explicit inline NAME(std::string&& message) : PARENT(message) { }\
 	explicit inline NAME(std::string const& message) : PARENT(message) { }\
 }
 
-#define EXCEPTION_DECLARE_MSG(NAME, PARENT, DEFAULT_MESSAGE)\
+#define TFC_ExceptionDeclareWithMessage(NAME, PARENT, DEFAULT_MESSAGE)\
 class NAME : public PARENT\
 {\
 public:\
@@ -292,6 +294,14 @@ public:\
 	explicit inline NAME(char const* message) : PARENT(message) { }\
 	explicit inline NAME(std::string&& message) : PARENT(message) { }\
 	explicit inline NAME(std::string const& message) : PARENT(message) { }\
+}
+
+
+namespace TFC {
+
+TFC_ExceptionDeclare	(RuntimeException, TFCException);
+TFC_ExceptionDeclare	(ArgumentException, TFCException);
+
 }
 
 #include "TFC/Core/Event.inc.h"

@@ -13,13 +13,16 @@
 #include <vector>
 
 #include "TFC/Core/Introspect.h"
-#include "TFC/ServiceModel/Reflection.h"
+#include "TFC/Core/Reflection.h"
+#include "TFC/ServiceModel/Includes.h"
 #include "TFC/ServiceModel/ServerEndpoint.h"
 
 #include "TFC/Serialization/ClassSerializer.h"
 
 namespace TFC {
 namespace ServiceModel {
+
+TFC_ExceptionDeclare	(GDBusException, EndpointException);
 
 struct GDBusChannel;
 
@@ -294,7 +297,7 @@ inline void TFC::ServiceModel::GDBusInterfaceDefinition::RegisterFunction(
 
 	typedef Core::Introspect::MemberFunction<TFuncPtr> Introspect;
 
-	auto& typeDescription = TypeInfo<typename Introspect::DeclaringType>::typeDescription;
+	auto& typeDescription = Core::TypeInfo<typename Introspect::DeclaringType>::typeDescription;
 
 	RegisterFunction(
 			typeDescription.GetFunctionNameByPointer(ptr),

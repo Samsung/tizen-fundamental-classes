@@ -7,6 +7,8 @@
  */
 
 #include "TFC/Core.h"
+#include "TFC/Core/Reflection.h"
+
 #include <pthread.h>
 #include <sstream>
 #include <typeinfo>
@@ -242,4 +244,6 @@ bool TFC::ManagedClass::SharedHandle::IsDestructed() {
 	return this->isDestructed;
 }
 
-
+TFC_DefineTypeInfo(TFC::TFCException) {
+	{ TFC::Core::Constructor<TFC::TFCException, std::string>(), "StringDefault" }
+};

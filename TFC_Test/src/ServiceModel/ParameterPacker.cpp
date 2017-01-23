@@ -5,9 +5,9 @@
  *      Author: gilang
  */
 
-#include "TFC/ServiceModel/InterfaceInspector.h"
+#include "TFC/Core/Invocation.h"
 #include "TFC/ServiceModel/GDBusEndpoint.h"
-#include "TFC/ServiceModel/Reflection.h"
+#include "TFC/Core/Reflection.h"
 #include "TFC/ServiceModel/ClientEndpoint.h"
 #include "TFC/ServiceModel/ServerEndpoint.h"
 #include "TFC_Test.h"
@@ -39,7 +39,9 @@ class RPCUnitTest : public testing::Test
 	}
 };
 
+using namespace TFC::Serialization;
 using namespace TFC::ServiceModel;
+using namespace TFC::Core;
 
 namespace RPCTest {
 
@@ -212,7 +214,7 @@ static void RPCTEST_OnNameLost (GDBusConnection *connection, const gchar* name, 
 }
 
 template<>
-struct TFC::ServiceModel::TypeInfo<TestClass>
+struct TFC::Core::TypeInfo<TestClass>
 {
 	static constexpr char const* typeName = "TestClass";
 };
@@ -269,7 +271,7 @@ TEST_F(RPCUnitTest, DBusClientServer)
 
 TEST_F(RPCUnitTest, ReflectionTest)
 {
-	TypeDescription testClassInfo {
+	TypeDescriptionTemplate<TestClass> testClassInfo {
 		{ &TestClass::FunctionA, "FunctionA" }
 	};
 
@@ -344,7 +346,7 @@ public:
 
 TEST_F(RPCUnitTest, GetInterfaceStr)
 {
-	std::cout << TFC::ServiceModel::GetInterfaceName("com.srin.tfc", typeid(ITest)) << std::endl;
+	std::cout << TFC::Core::GetInterfaceName("com.srin.tfc", typeid(ITest)) << std::endl;
 }
 
 TEST_F(RPCUnitTest, TestWithClient)

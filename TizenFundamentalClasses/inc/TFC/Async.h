@@ -865,4 +865,5 @@ struct TFC::Async
 #define tfc_synchronize TFC::Core::Async::SynchronizeBuilder(__tfc_taskHandle) & [&] ()
 #define tfc_if_abort_return
 
+
 #endif /* ASYNC_NEW_H_ */

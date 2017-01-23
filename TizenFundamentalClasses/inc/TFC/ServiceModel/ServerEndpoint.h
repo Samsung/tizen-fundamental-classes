@@ -9,8 +9,8 @@
 #define TFC_SERVICEMODEL_SERVERENDPOINT_H_
 
 #include "TFC/Core/Introspect.h"
-#include "TFC/ServiceModel/InterfaceInspector.h"
-#include "TFC/ServiceModel/Reflection.h"
+#include "TFC/Core/Invocation.h"
+#include "TFC/Core/Reflection.h"
 
 #include "TFC/Serialization/ObjectSerializer.h"
 #include "TFC/Serialization/ParameterSerializer.h"
@@ -57,7 +57,7 @@ protected:
 	}
 
 public:
-	IServerObject() { this->name = GetInterfaceName(nullptr, typeid(this)); }
+	IServerObject() { this->name = Core::GetInterfaceName(nullptr, typeid(this)); }
 	virtual ~IServerObject() { }
 
 	std::vector<InterfaceDefinition*> GetInterfaceList()
@@ -130,7 +130,7 @@ private:
 protected:
 	ServerObject()
 	{
-		auto ifaceName = GetInterfaceName(TEndpoint::interfacePrefix, typeid(T));
+		auto ifaceName = Core::GetInterfaceName(TEndpoint::interfacePrefix, typeid(T));
 		if(!initialized)
 		{
 			definition.SetInterfaceName(ifaceName);
@@ -150,7 +150,7 @@ protected:
 			auto targetFuncCasted = reinterpret_cast<TFuncPtr>(targetFunc);
 
 			auto params = Serialization::ParameterDeserializer<Deserializer, TFuncPtr>::Deserialize(p, false);
-			typedef DelayedInvoker<TFuncPtr> Invoker;
+			typedef Core::DelayedInvoker<TFuncPtr> Invoker;
 			auto var = Invoker::Invoke(instance, targetFuncCasted, params);
 			typedef Serialization::ObjectSerializer<Serializer, typename Core::Introspect::MemberFunction<TFuncPtr>::ReturnType> Serializer;
 			return Serializer::Serialize(var);
@@ -166,7 +166,7 @@ protected:
 			auto targetFuncCasted = reinterpret_cast<TFuncPtr>(targetFunc);
 			auto params = Serialization::ParameterDeserializer<Deserializer, TFuncPtr>::Deserialize(p, false);
 
-			typedef DelayedInvoker<TFuncPtr> Invoker;
+			typedef Core::DelayedInvoker<TFuncPtr> Invoker;
 			Invoker::Invoke(instance, targetFuncCasted, params);
 
 			typedef Serialization::ObjectSerializer<Serializer, typename Core::Introspect::MemberFunction<TFuncPtr>::ReturnType> Serializer;

@@ -16,8 +16,8 @@
 namespace TFC {
 namespace EFL {
 
-EXCEPTION_DECLARE		(EFLException, TFCException);
-EXCEPTION_DECLARE_MSG	(EventBoundException, EFLException, "This event object is already bound");
+TFC_ExceptionDeclare		(EFLException, TFCException);
+TFC_ExceptionDeclareWithMessage	(EventBoundException, EFLException, "This event object is already bound");
 
 struct EdjeSignalInfo
 {

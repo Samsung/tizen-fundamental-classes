@@ -5,9 +5,11 @@
  *      Author: gilang
  */
 
-#include "TFC/ServiceModel/InterfaceInspector.h"
+#include "TFC/Serialization/ClassSerializer.h"
+
+#include "TFC/Core/Invocation.h"
 #include "TFC/ServiceModel/GDBusEndpoint.h"
-#include "TFC/ServiceModel/Reflection.h"
+#include "TFC/Core/Reflection.h"
 #include "TFC/ServiceModel/ClientEndpoint.h"
 #include "TFC/ServiceModel/ServerEndpoint.h"
 #include "TFC_Test.h"
@@ -77,6 +79,15 @@ public:
 	virtual ~ITestAgain() { }
 };
 
+class MyException : public std::exception
+{
+	std::string whoa;
+public:
+	MyException() : whoa() { }
+	MyException(std::string const& msg) : whoa(msg) { }
+	virtual char const* what() const noexcept override { return whoa.c_str(); }
+};
+
 class ServerTest : public TFC::ServiceModel::ServerObject<ServiceEndpoint, ITest>
 {
 public:
@@ -94,6 +105,7 @@ public:
 	{
 		std::cout << "FunctionB in ServerTest is called with args: " << s << std::endl;
 		::testStore = s;
+		throw MyException("Anything aah");
 	}
 
 };
@@ -120,6 +132,7 @@ public:
 	virtual std::string FunctionC(int s) override
 	{
 		std::cout << "FunctionC in ServerTestMultiIface is called with args: " << s << std::endl;
+
 	}
 };
 
@@ -154,6 +167,11 @@ TFC_DefineTypeInfo(GDBusServerTestNS::ITestAgain) {
 	{ &GDBusServerTestNS::ITestAgain::FunctionC, "FunctionC" }
 };
 
+TFC_DefineTypeInfo(GDBusServerTestNS::MyException) {
+	{ TFC::Core::Constructor<GDBusServerTestNS::MyException>(), "Default" },
+	{ TFC::Core::Constructor<GDBusServerTestNS::MyException, std::string>(), "String" }
+};
+
 TEST_F(GDBusServerTest, GDBusServerDefinition)
 {
 	using namespace GDBusServerTestNS;
@@ -163,7 +181,6 @@ TEST_F(GDBusServerTest, GDBusServerDefinition)
 	auto data = serverObject.GetInterfaceList();
 
 	auto& interfaceInfo = data[0]->GetInterfaceInfo();
-
 
 	ASSERT_STREQ("GDBusServerTestNS.ITest", interfaceInfo.name) << "Interface name is not equal";
 	ASSERT_STREQ("FunctionA", interfaceInfo.methods[0]->name) << "FunctionA name is invalid";
@@ -197,7 +214,7 @@ TEST_F(GDBusServerTest, InvokeMethodViaReflection)
 {
 	using namespace GDBusServerTestNS;
 
-	auto& desc = TFC::ServiceModel::TypeInfo<ITest>::typeDescription;
+	auto& desc = TFC::Core::TypeInfo<ITest>::typeDescription;
 
 	ServerTestMultiIface test;
 
@@ -233,9 +250,26 @@ TEST_F(GDBusServerTest, GDBusServerCall)
 
 	int random = rand();
 
-	client.FunctionB(random);
-
-	ASSERT_EQ(::testStore, random) << "Invocation via GDBus client server failed";
+	try
+	{
+		client.FunctionB(random);
+		ASSERT_EQ(::testStore, random) << "Invocation via GDBus client server failed";
+	}
+	catch(MyException const& ex)
+	{
+		std::cout << ex.what() << '\n';
+		ASSERT_TRUE(true);
+	}
+	catch(TFC::TFCException const& ex)
+	{
+		std::cout << typeid(ex).name() << " => " << ex.what() << '\n';
+		ASSERT_TRUE(false) << "Exception was not propagated.";
+	}
+	catch(std::exception const& ex)
+	{
+		std::cout << typeid(ex).name() << " => " << ex.what() << '\n';
+		ASSERT_TRUE(false) << "Exception was not propagated.";
+	}
 
 	auto actualStr = client.FunctionA(1, 2, 3.5, "some");
 
@@ -256,10 +290,10 @@ TFC_DefineTypeSerializationInfo(SomeClass,
 			TFC_FieldInfo(SomeClass::c));
 
 template<typename TSerializerClass>
-using SomeClassSerializer = TFC::ServiceModel::ClassSerializer<TSerializerClass, SomeClass>;
+using SomeClassSerializer = TFC::Serialization::ClassSerializer<TSerializerClass, SomeClass>;
 
 template<typename TDeserializerClass>
-using SomeClassDeserializer = TFC::ServiceModel::ClassDeserializer<TDeserializerClass, SomeClass>;
+using SomeClassDeserializer = TFC::Serialization::ClassDeserializer<TDeserializerClass, SomeClass>;
 
 TEST_F(GDBusServerTest, ClassSerializer)
 {
@@ -303,3 +337,52 @@ void TFC::ServiceModel::ServerObject<GDBusServerTestNS::ServiceEndpoint, GDBusSe
 {
 	RegisterFunction(&ITestAgain::FunctionC, "FunctionC");
 }
+
+class ReflectableClass
+{
+public:
+	int value;
+	std::string str;
+
+	ReflectableClass(int value) : value(value), str("default") { std::cout << "Calling int constructor\n"; }
+	ReflectableClass(std::string param) : value(123), str(param) { std::cout << "Calling string constructor param: " << param << "\n"; }
+	~ReflectableClass() { std::cout << "Calling destructor\n"; }
+};
+
+TFC_DefineTypeInfo(ReflectableClass) {
+	{ Constructor<ReflectableClass, int>(), "i" },
+	{ Constructor<ReflectableClass, std::string>(), "s" },
+	{ Destructor<ReflectableClass>() }
+};
+
+TEST_F(GDBusServerTest, ReflectionConstructor)
+{
+	using namespace TFC::Core;
+
+	int random = rand();
+
+	decltype(auto) info = FindTypeByName("ReflectableClass");
+
+	void* something = info.GetConstructor<int>().Construct(random);
+	ASSERT_EQ(random, reinterpret_cast<ReflectableClass*>(something)->value) << "Value in Reflectable Class is wrong";
+
+	void* anotherThing = info.Construct(std::string("Masa sich"));
+
+	info.Delete(something);
+	info.Delete(anotherThing);
+
+	bool fail = true;
+
+	try
+	{
+		info.Throw(std::string("Something is throwed"));
+	}
+	catch(ReflectableClass const& t)
+	{
+		std::cout << t.str << '\n';
+		fail = false;
+	}
+
+	ASSERT_FALSE(fail) << "Using Throw failed";
+}
+

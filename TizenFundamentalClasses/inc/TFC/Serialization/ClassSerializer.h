@@ -71,6 +71,7 @@ struct ClassDeserializer<TDeserializerClass, TDeclaring, TypeSerializationInfo<T
 		TDeclaring ret;
 		ClassDeserializerFunctor<TDeserializerClass, TDeclaring, TFieldArgs...>::Func(unpacker, ret);
 
+
 		if(finalizePackedObject)
 			unpacker.Finalize();
 
