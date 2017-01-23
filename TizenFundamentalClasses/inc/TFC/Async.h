@@ -14,6 +14,7 @@
 #include <dlog.h>
 #include "TFC/Core.h"
 #include "TFC/Core/Introspect.h"
+#include "TFC/Core/Metaprogramming.h"
 
 namespace TFC {
 
@@ -121,6 +122,7 @@ struct AsyncOperand<TLambda, SharedEventObject<AsyncTask<TReturnValue>*, TReturn
  * This base template defines a tfc_async_complete closure with non-void parameter.
  */
 template<typename TLambda,
+		 typename TCatchList = std::tuple<>,
 		 typename TIntrospect = Introspect::CallableObject<TLambda>,
 		 bool TNonVoidParam   = TIntrospect::Arity == 1,
 		 bool TParamOneOrZero = TIntrospect::Arity <= 1>
@@ -131,11 +133,19 @@ struct AsyncCompleteOperand
 	static constexpr bool IsVoid = false;
 
 	TLambda&& completeLambda;
+	bool catchListValid;
+	TCatchList catchList;
 
 	AsyncCompleteOperand(TLambda&& completeLambda) :
-			completeLambda(std::move(completeLambda))
+		completeLambda(std::move(completeLambda)), catchListValid(false)
 	{
 
+	}
+
+	AsyncCompleteOperand(TLambda&& completeLambda, TCatchList&& theList) :
+		completeLambda(std::move(completeLambda)), catchListValid(true), catchList(std::move(theList))
+	{
+		dlog_print(DLOG_DEBUG, "TFC-Debug", "Create AsyncCompleteOperand");
 	}
 
 	static AsyncCompleteOperand<TLambda> MakeOperand(TLambda&& lambda)
@@ -156,16 +166,24 @@ struct AsyncCompleteOperand
 /**
  * Specialization for AsyncCompleteOperand with void parameter.
  */
-template<typename TLambda, typename TIntrospect>
-struct AsyncCompleteOperand<TLambda, TIntrospect, false, true>
+template<typename TLambda, typename TCatchList, typename TIntrospect>
+struct AsyncCompleteOperand<TLambda, TCatchList, TIntrospect, false, true>
 {
 	static constexpr bool Valid = true;
 	static constexpr bool IsVoid = true;
 
 	TLambda&& completeLambda;
+	bool catchListValid;
+	TCatchList&& catchList;
 
 	AsyncCompleteOperand(TLambda&& completeLambda) :
-				completeLambda(std::forward<TLambda>(completeLambda))
+		completeLambda(std::forward<TLambda>(completeLambda)), catchListValid(false), catchList(TCatchList())
+	{
+
+	}
+
+	AsyncCompleteOperand(TLambda&& completeLambda, TCatchList&& theList) :
+		completeLambda(std::move(completeLambda)), catchListValid(true), catchList(std::move(theList))
 	{
 
 	}
@@ -189,14 +207,13 @@ struct AsyncCompleteOperand<TLambda, TIntrospect, false, true>
  * Specialization for fallback of incorrect lambda type, where it has more than one parameter. This
  * is to support assertion in later evaluation.
  */
-template<typename TLambda, typename TIntrospect>
-struct AsyncCompleteOperand<TLambda, TIntrospect, false, false>
+template<typename TLambda, typename TCatchList, typename TIntrospect>
+struct AsyncCompleteOperand<TLambda, TCatchList, TIntrospect, false, false>
 {
 	static constexpr bool Valid = false;
 
 	explicit AsyncCompleteOperand()
 	{
-
 	}
 
 	template<typename TAny>
@@ -210,15 +227,15 @@ struct AsyncCompleteOperand<TLambda, TIntrospect, false, false>
  * Specialization of AsyncOperand which uses completion notification via inline lambda with tfc_async_complete
  * syntax.
  */
-template<typename TLambda, typename TReturnValue, typename TLambdaComplete>
-struct AsyncOperand<TLambda, AsyncCompleteOperand<TLambdaComplete>, TReturnValue> :
+template<typename TLambda, typename TReturnValue, typename TLambdaComplete, typename TCatchList>
+struct AsyncOperand<TLambda, AsyncCompleteOperand<TLambdaComplete, TCatchList>, TReturnValue> :
 	AsyncOperand<TLambda, void, TReturnValue>
 {
-	TLambdaComplete&& lambdaComplete;
+	AsyncCompleteOperand<TLambdaComplete, TCatchList>&& completeOperand;
 
-	AsyncOperand(TLambda&& func, TLambdaComplete&& lambdaComplete) :
+	AsyncOperand(TLambda&& func, AsyncCompleteOperand<TLambdaComplete, TCatchList>&& completeOperand) :
 		AsyncOperand<TLambda, void, TReturnValue>(std::forward<TLambda>(func)),
-		lambdaComplete(std::forward<TLambdaComplete>(lambdaComplete))
+		completeOperand(std::move(completeOperand))
 	{
 		dlog_print(DLOG_DEBUG, "TFC-Debug", "Async operand with lambda complete constructor");
 	}
@@ -501,7 +518,7 @@ struct AsyncPackage : public AsyncTaskInterface<typename Introspect::CallableObj
 				taskHandle(nullptr),
 				awaitable(true)
 	{
-
+		dlog_print(DLOG_DEBUG, "TFC-Debug", "AsyncPackage constructor only async");
 	}
 
 	AsyncPackage(
@@ -599,42 +616,64 @@ struct CompleteLambdaInvoker<TLambda, void>
 	}
 };
 
-
-
 template<typename TLambda, typename TEvent, typename TReturnValue>
 auto PackOperand(AsyncOperand<TLambda, TEvent, TReturnValue>&& operand)
 	-> typename std::enable_if<!std::is_void<TEvent>::value, AsyncPackage<TLambda>*>::type
 {
-	dlog_print(DLOG_DEBUG, "TFC-Debug", "Pack operand");
+	dlog_print(DLOG_DEBUG, "TFC-Debug", "Pack operand with event");
 	return new AsyncPackage<TLambda> { std::forward<TLambda>(operand.asyncFunc), operand.eventRef };
 }
 
-template<typename TLambda, typename TLambdaComplete, typename TReturnValue>
-auto PackOperand(AsyncOperand<TLambda, AsyncCompleteOperand<TLambdaComplete>, TReturnValue>&& operand)
+template<typename TLambda, typename TLambdaComplete, typename TReturnValue, typename TCatchList>
+auto PackOperand(AsyncOperand<TLambda, AsyncCompleteOperand<TLambdaComplete, TCatchList>, TReturnValue>&& operand)
 	-> AsyncPackage<TLambda>*
 {
-	dlog_print(DLOG_DEBUG, "TFC-Debug", "Pack operand");
-	return new AsyncPackage<TLambda> { std::forward<TLambda>(operand.asyncFunc), std::move(operand.lambdaComplete) };
+	dlog_print(DLOG_DEBUG, "TFC-Debug", "Pack operand with complete");
+	return new AsyncPackage<TLambda> { std::forward<TLambda>(operand.asyncFunc), std::move(operand.completeOperand.completeLambda) };
 }
 
 template<typename TLambda>
 auto PackOperand(AsyncOperand<TLambda, void>&& operand)
 	-> AsyncPackage<TLambda>*
 {
-	dlog_print(DLOG_DEBUG, "TFC-Debug", "Pack operand");
+	dlog_print(DLOG_DEBUG, "TFC-Debug", "Pack operand no complete");
 	return new AsyncPackage<TLambda> { std::forward<TLambda>(operand.asyncFunc) };
 }
+
+struct CatchInvoker
+{
+	typedef void(CatchFunctionType)(void*, void*);
+	bool handled;
+	CatchFunctionType* catchFunc;
+	void* data;
+	void* ex;
+
+	CatchInvoker() : handled(false), catchFunc(nullptr), data(nullptr), ex(nullptr) { }
+	CatchInvoker(CatchFunctionType* f, void* data, void* ex) : handled(true), catchFunc(f), data(data), ex(ex) { }
+
+	void InvokeHandler()
+	{
+		if(handled)
+			catchFunc(data, ex);
+	}
+};
 
 struct AsyncHandlerPayload
 {
 	typedef void	(FunctionType)		(void*);
 	typedef void	(AsyncFunctionType)	(void*, void*);
+
 	AsyncFunctionType* 	taskFunc;
 	FunctionType* 		completeInvoker;
 	FunctionType* 		finalizeFunc;
 	void*		 		internalData;
 	void**				taskHandleRef;
 	bool		 		awaitable;
+
+	typedef CatchInvoker (CatchHandlerFunctionType) (std::exception const&, void*);
+	CatchHandlerFunctionType* 	catchHandler;
+	void*						catchHandlerData;
+	FunctionType*				catchHandlerFinalizeFunc;
 };
 
 void* RunAsyncTask(AsyncHandlerPayload payload);
@@ -647,18 +686,23 @@ struct AwaitBuilder
 	{
 		void* packagePtr = nullptr;
 		bool doFinalize = false;
+
+
 		AwaitAsyncTask(taskHandle, packagePtr, doFinalize);
 
 		if(doFinalize)
 		{
+			dlog_print(DLOG_DEBUG, "TFC-Debug", "Do finalize");
 			auto package = reinterpret_cast<AsyncTaskInterface<TReturnValue>*>(packagePtr);
 			TReturnValue ret = package->result->value;
 			auto deleter = reinterpret_cast<AsyncTaskInterface<void>*>(packagePtr)->deleterFunction;
 			deleter(packagePtr);
+			dlog_print(DLOG_DEBUG, "TFC-Debug", "Do finalize completes");
 			return ret;
 		}
 		else
 		{
+			dlog_print(DLOG_DEBUG, "TFC-Debug", "No do finalize");
 			return reinterpret_cast<AsyncTaskInterface<TReturnValue>*>(packagePtr)->result->value;
 		}
 	}
@@ -677,6 +721,66 @@ struct AwaitBuilder
 	}
 };
 
+template<typename TCatchList>
+struct CatchHandler;
+
+template<typename... TCatchList>
+struct CatchHandlerLoop;
+
+template<typename TEvent>
+struct CatchHandlerPayloadSelector
+{
+	static constexpr AsyncHandlerPayload::CatchHandlerFunctionType* catchHandler = nullptr;
+	static constexpr AsyncHandlerPayload::FunctionType* catchHandlerFinalizeFunc = nullptr;
+
+	template<typename TAny>
+	static void* Data(TAny&& operand) { dlog_print(DLOG_DEBUG, "TFC-Debug", "Get None"); return nullptr; }
+};
+
+template<typename TCatchList>
+struct CatchListDecay;
+
+template<typename... TCatchOperands>
+struct CatchListDecay<std::tuple<TCatchOperands...>>
+{
+	typedef std::tuple<typename std::remove_reference<TCatchOperands>::type...> TupleType;
+};
+
+template<typename TLambdaComplete, typename TCatchList>
+struct CatchHandlerPayloadSelector<AsyncCompleteOperand<TLambdaComplete, TCatchList>>
+{
+	static void FinalizeFunc(void* data)
+	{
+		delete reinterpret_cast<CatchListType*>(data);
+	}
+
+	typedef typename CatchListDecay<TCatchList>::TupleType CatchListType;
+
+	static constexpr AsyncHandlerPayload::CatchHandlerFunctionType* catchHandler = CatchHandler<CatchListType>::Func;
+	static constexpr AsyncHandlerPayload::FunctionType* catchHandlerFinalizeFunc = FinalizeFunc;
+
+	template<typename TLambda>
+	static void* Data(AsyncOperand<TLambda, AsyncCompleteOperand<TLambdaComplete, TCatchList>>&& operand)
+	{
+		if(!operand.completeOperand.catchListValid)
+			return nullptr;
+
+		dlog_print(DLOG_DEBUG, "TFC-Debug", "Get Data");
+
+		return new CatchListType(operand.completeOperand.catchList);
+	}
+};
+
+template<typename TLambdaComplete>
+struct CatchHandlerPayloadSelector<AsyncCompleteOperand<TLambdaComplete, std::tuple<>>>
+{
+	static constexpr AsyncHandlerPayload::CatchHandlerFunctionType* catchHandler = nullptr;
+	static constexpr AsyncHandlerPayload::FunctionType* catchHandlerFinalizeFunc = nullptr;
+
+	template<typename TAny>
+	static void* Data(TAny&& operand) { dlog_print(DLOG_DEBUG, "TFC-Debug", "Get None"); return nullptr; }
+};
+
 struct AsyncBuilder
 {
 	template<typename TLambda, typename TEvent>
@@ -686,14 +790,18 @@ struct AsyncBuilder
 		typedef typename AsyncOperand<TLambda>::ReturnType TReturnValue;
 
 		auto packed = PackOperand(std::forward<AsyncOperand<TLambda, TEvent>>(operand));
-
+		dlog_print(DLOG_DEBUG, "TFC-Debug", "Build AsyncPayload");
 		AsyncHandlerPayload payload = {
 			AsyncWorker<TLambda>::Func,
 			packed->completeInvoker,
 			packed->deleterFunction,
 			packed,
 			&packed->taskHandle,
-			packed->awaitable
+			packed->awaitable,
+			CatchHandlerPayloadSelector<TEvent>::catchHandler, // Catch Handler
+			CatchHandlerPayloadSelector<TEvent>::Data(std::move(operand)), // Catch Data
+			CatchHandlerPayloadSelector<TEvent>::catchHandlerFinalizeFunc
+
 		};
 		return reinterpret_cast<AsyncTask<TReturnValue>*>(RunAsyncTask(payload));
 	}
@@ -750,37 +858,40 @@ See : https://stackoverflow.com/questions/29502052/template-specialization-and-e
 
 template<typename TLambdaAsync,
 		 typename TLambdaAfter,
+		 typename TCatchList,
 		 typename TIntrospectAsync = Introspect::CallableObject<TLambdaAsync>,
 		 typename TIntrospectAfter = Introspect::CallableObject<TLambdaAfter>,
 		 typename std::enable_if<AsyncCompleteOperand<TLambdaAfter>::template Match<TLambdaAsync>::Valid, int>::type* = nullptr>
-auto operator>>(TLambdaAsync&& async, AsyncCompleteOperand<TLambdaAfter> after)
-	-> AsyncOperand<TLambdaAsync, AsyncCompleteOperand<TLambdaAfter>>
+auto operator>>(TLambdaAsync&& async, AsyncCompleteOperand<TLambdaAfter, TCatchList>&& after)
+	-> AsyncOperand<TLambdaAsync, AsyncCompleteOperand<TLambdaAfter, TCatchList>>
 {
 	dlog_print(DLOG_DEBUG, "TFC-Debug", "Build async with >> operator and lambda after");
-	return { std::forward<TLambdaAsync>(async), std::move(after.completeLambda) };
+	return { std::forward<TLambdaAsync>(async), std::move(after) };
 }
+
 
 // Assert that CompleteBuilder >> operator will receive lambda with appropriate parameter
 template<typename TLambdaAsync,
 		 typename TLambdaAfter,
+		 typename TCatchList,
 		 typename TIntrospectAsync = Introspect::CallableObject<TLambdaAsync>,
 		 typename TIntrospectAfter = Introspect::CallableObject<TLambdaAfter>,
 		 typename std::enable_if<!AsyncCompleteOperand<TLambdaAfter>::Valid, int>::type* = nullptr>
-auto operator>>(TLambdaAsync&& async, AsyncCompleteOperand<TLambdaAfter> after)
-	-> AsyncOperand<TLambdaAsync, AsyncCompleteOperand<TLambdaAfter>>
+auto operator>>(TLambdaAsync&& async, AsyncCompleteOperand<TLambdaAfter, TCatchList> after)
+	-> AsyncOperand<TLambdaAsync, AsyncCompleteOperand<TLambdaAfter, TCatchList>>
 {
-
 	return { nullptr, nullptr };
 }
 
 
 template<typename TLambdaAsync,
 		 typename TLambdaAfter,
+		 typename TCatchList,
 		 typename TIntrospectAsync = Introspect::CallableObject<TLambdaAsync>,
 		 typename TIntrospectAfter = Introspect::CallableObject<TLambdaAfter>,
 		 typename std::enable_if<!AsyncCompleteOperand<TLambdaAfter>::template Match<TLambdaAsync>::Valid, int>::type* = nullptr>
-auto operator>>(TLambdaAsync&& async, AsyncCompleteOperand<TLambdaAfter> after)
-	-> AsyncOperand<TLambdaAsync, AsyncCompleteOperand<TLambdaAfter>>
+auto operator>>(TLambdaAsync&& async, AsyncCompleteOperand<TLambdaAfter, TCatchList> after)
+	-> AsyncOperand<TLambdaAsync, AsyncCompleteOperand<TLambdaAfter, TCatchList>>
 {
 	static_assert(std::is_same<typename TIntrospectAfter::template Args<0>, typename TIntrospectAsync::ReturnType>::value,
 			"Parameter for tfc_async_complete lambda must match with the return value from tfc_async.");
@@ -844,6 +955,122 @@ struct SynchronizeBuilder
 	}
 };
 
+///// tfc_async_catch mechanism
+
+template<typename TLambda>
+struct CatchOperand
+{
+	TLambda lambdaStorage;
+	typedef typename std::decay<typename Introspect::CallableObject<TLambda>::template Args<0>>::type ExceptionArgs;
+
+	static bool CanHandle(std::exception const& ex)
+	{
+		dlog_print(DLOG_DEBUG, "TFC-Debug", "Test %s <=> %s", typeid(ExceptionArgs).name(), typeid(ex).name());
+		auto ptr = dynamic_cast<ExceptionArgs const*>(&ex);
+
+		if(ptr == nullptr)
+			return false;
+		else
+			return true;
+	}
+
+	static void* MarshallException(std::exception const& ex)
+	{
+		auto ptr = dynamic_cast<ExceptionArgs const*>(&ex);
+		auto* newEx = new ExceptionArgs(*ptr);
+		return newEx;
+	}
+
+	static void HandleException(void* data, void* ex)
+	{
+		auto targetEx = static_cast<ExceptionArgs*>(ex);
+		auto catchOperand = static_cast<CatchOperand<TLambda>*>(data);
+
+		catchOperand->lambdaStorage(*targetEx);
+
+		delete targetEx;
+	}
+};
+
+struct CatchBuilder
+{
+	template<typename TLambda>
+	auto operator*(TLambda&& catchHandler)
+		-> CatchOperand<TLambda>
+	{
+		return { std::move(catchHandler) };
+	}
+};
+
+/*
+template<typename TLambda, typename TNextLambda>
+auto operator+(CatchOperand<TLambda>&& catchOperand, CatchOperand<TNextLambda>&& nextCatchOperand)
+	-> std::tuple<CatchOperand<TLambda>, CatchOperand<TNextLambda>>
+{
+	return { std::move(catchOperand), std::move(nextCatchOperand) };
+}
+*/
+
+/*
+template<typename TLambda, typename... TCatchList>
+auto operator+(std::tuple<TCatchList...>&& list, CatchOperand<TLambda>&& nextCatchOperand)
+	-> std::tuple<TCatchList..., CatchOperand<TLambda>>
+{
+	return std::tuple_cat(list, std::tuple<CatchOperand<TLambda>>(std::move(nextCatchOperand)));
+}
+*/
+
+template<typename TLambdaComplete, typename... TCatchList, typename TCatchLambda>
+auto operator+(AsyncCompleteOperand<TLambdaComplete, std::tuple<TCatchList...>>&& operand, CatchOperand<TCatchLambda>&& nextCatchOperand)
+	-> AsyncCompleteOperand<TLambdaComplete, std::tuple<TCatchList..., CatchOperand<TCatchLambda>&&>>
+{
+	dlog_print(DLOG_DEBUG, "TFC-Debug", "Pack catch lambda");
+	return { std::move(operand.completeLambda), std::tuple_cat<std::tuple<TCatchList...>, std::tuple<CatchOperand<TCatchLambda>&&>>(std::move(operand.catchList), std::tuple<CatchOperand<TCatchLambda>&&>(std::move(nextCatchOperand))) };
+}
+
+template<typename TCatchOperand, typename... TTails>
+struct CatchHandlerLoop<TCatchOperand, TTails...>
+{
+	static CatchInvoker Loop(std::exception const& ex, TCatchOperand& operand, TTails&... params)
+	{
+		dlog_print(DLOG_DEBUG, "TFC-Debug", "Enter loop", typeid(typename TCatchOperand::ExceptionArgs).name());
+
+		bool success = TCatchOperand::CanHandle(ex);
+
+		if(!success)
+			return CatchHandlerLoop<TTails...>::Loop(ex, params...);
+
+		return { TCatchOperand::HandleException, &operand, TCatchOperand::MarshallException(ex) };
+	}
+};
+
+template<>
+struct CatchHandlerLoop<>
+{
+	static CatchInvoker Loop(std::exception const& ex)
+	{
+		return {};
+	}
+};
+
+template<typename... TCatchOperand>
+struct CatchHandler<std::tuple<TCatchOperand...>>
+{
+	typedef typename Core::Metaprogramming::SequenceGenerator<sizeof...(TCatchOperand)>::Type ArgSequence;
+
+	template<int... S>
+	static CatchInvoker Func(std::exception const& ex, std::tuple<TCatchOperand...>& p, Core::Metaprogramming::Sequence<S...>)
+	{
+		dlog_print(DLOG_DEBUG, "TFC-Debug", "Expand function CatchHandler");
+		return CatchHandlerLoop<TCatchOperand...>::Loop(ex, std::get<S>(p)...); //std::make_tuple(p.template Deserialize<typename std::decay<TArgs>::type>(S)...);
+	}
+
+	static CatchInvoker Func(std::exception const& ex, void* data)
+	{
+		return Func(ex, *static_cast<std::tuple<TCatchOperand...>*>(data), ArgSequence());
+	}
+};
+
 }}}
 
 template<typename TReturnValue>
@@ -855,7 +1082,6 @@ struct TFC::Async
 															  void*,
 															  TReturnValue>::type
 									> Event;
-
 };
 
 #define tfc_async TFC::Core::Async::AsyncBuilder() & [=] (void* __tfc_taskHandle)
@@ -865,5 +1091,6 @@ struct TFC::Async
 #define tfc_synchronize TFC::Core::Async::SynchronizeBuilder(__tfc_taskHandle) & [&] ()
 #define tfc_if_abort_return
 
+#define tfc_async_catch + TFC::Core::Async::CatchBuilder() * [=]
 
 #endif /* ASYNC_NEW_H_ */

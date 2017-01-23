@@ -160,20 +160,32 @@ TEST_F(AsyncTest, AsyncWithAwait)
 
 		EFL_SYNC_BEGIN(data);
 
-			int tmp = data.tc1;
+			tfc_async {
 
-			auto task = tfc_async {
-				std::this_thread::sleep_for(Ms(2000));
-				return tmp + 12345;
+				int tmp = data.tc1;
+
+				auto task = tfc_async {
+					std::this_thread::sleep_for(Ms(2000));
+					std::cout << "Finisih sleeping in thread\n";
+					return tmp + 12345;
+				};
+
+
+
+				std::this_thread::sleep_for(Ms(4000));
+				std::cout << "Finisih sleeping in outer\n";
+				data.result = tfc_await task;
+
+				std::cout << "Result here: " << data.result << std::endl;
+			}
+			tfc_async_complete
+			{
+
 			};
-
-			data.result = tfc_await task;
-
-			std::cout << "Result here: " << data.result << std::endl;
-
 		EFL_SYNC_END;
 	EFL_BLOCK_END;
 
+	std::this_thread::sleep_for(Ms(6000));
 	EXPECT_EQ(tc1 + 12345, result) << "Asynchronous completed but result is wrong";
 }
 
@@ -424,3 +436,111 @@ TEST_F(AsyncTest, AsyncWithSynchronizeBlock)
 	EXPECT_EQ(expected, *t.result) << "Invalid result from synchronize";
 	delete t.result;
 }
+
+static int counter = 0;
+
+class DestructorDetector
+{
+public:
+
+	DestructorDetector()
+	{
+		dlog_print(DLOG_DEBUG, "TFC-Destructor", "Constructed #%d %d", ++counter, this);
+	}
+
+	DestructorDetector(DestructorDetector&& o)
+	{
+		dlog_print(DLOG_DEBUG, "TFC-Destructor", "Move constructor #%d %d to %d", ++counter, &o, this);
+	}
+
+	DestructorDetector(DestructorDetector const& o)
+	{
+		dlog_print(DLOG_DEBUG, "TFC-Destructor", "Copy constructor #%d %d to %d", ++counter, &o, this);
+	}
+
+	~DestructorDetector()
+	{
+		dlog_print(DLOG_DEBUG, "TFC-Destructor", "Destructed #%d %d", counter--, this);
+	}
+
+	void SomeMethod()
+	{
+		volatile int var = 1;
+		var += 5;
+	}
+};
+
+TEST_F(AsyncTest, AsyncWithCatchBlock)
+{
+	using Ms = std::chrono::milliseconds;
+
+	struct {
+		std::mutex mutexTest;
+		int test;
+		int* result;
+		bool* except;
+	} t;
+	t.test = rand();
+	t.result = new int;
+	t.mutexTest.lock();
+	t.except = new bool;
+	*t.except = false;
+	std::cout << "Bool ptr: " << (int)t.except << '\n';
+
+	EFL_BLOCK_BEGIN;
+		EFL_SYNC_BEGIN(t);
+			DestructorDetector d;
+			int test = t.test;
+			int* result = t.result;
+			bool* except = t.except;
+			std::mutex* mutexTest = &t.mutexTest;
+			std::cout << "Bool ptr: " << (int)except << '\n';
+			tfc_async
+			{
+				int value = test + 12345;
+				dlog_print(DLOG_DEBUG, "TFC-Debug", "Before synchronize. Ctx: %d", __tfc_taskHandle );
+				std::this_thread::sleep_for(Ms(1000));
+
+				tfc_synchronize
+				{
+					value += 303030;
+					std::this_thread::sleep_for(Ms(1000));
+				};
+
+				throw TFC::TFCException("There is an exception here");
+
+				dlog_print(DLOG_DEBUG, "TFC-Debug", "After synchronize");
+				return value;
+			}
+			tfc_async_complete(int value)
+			{
+				*result = value;
+				mutexTest->unlock();
+			}
+			tfc_async_catch(TFC::TFCException const& err) mutable
+			{
+				d.SomeMethod();
+				*(except) = true;
+				dlog_print(DLOG_DEBUG, "TFC-Test", "Exception caught in TFC::Exception");
+				std::cout << "Exception caught: " << err.what() << '\n';
+				std::cout << "Bool ptr: " << (int)except << '\n';
+				mutexTest->unlock();
+			}
+			tfc_async_catch(std::exception const& err)
+			{
+				*(except) = true;
+				dlog_print(DLOG_DEBUG, "TFC-Test", "Exception caught in std::exception");
+				mutexTest->unlock();
+			};
+
+		EFL_SYNC_END;
+	EFL_BLOCK_END;
+	std::this_thread::sleep_for(Ms(4000));
+	t.mutexTest.try_lock();
+	int expected = t.test + 12345 + 303030;
+
+	ASSERT_TRUE(*(t.except)) << "Exception is not caught";
+	delete t.result;
+	delete t.except;
+}
+
