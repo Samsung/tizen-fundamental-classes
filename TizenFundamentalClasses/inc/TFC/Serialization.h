@@ -37,7 +37,10 @@ struct TypeSerializationInfo
 };
 
 template<typename TDeclaring>
-struct TypeSerializationInfoSelector;
+struct TypeSerializationInfoSelector
+{
+	static constexpr bool available = false;
+};
 
 template<typename TPredicates>
 struct PredicateEvaluator;
@@ -56,13 +59,11 @@ struct FieldInfo
 	static bool 			 Evaluate(TDeclaring const& ptr) 		{ return PredicateEvaluator<TPredicates>::Evaluate(ptr); }
 };
 
+template<typename TSerializerClass, typename TDeclaring, typename = void>
+struct GenericSerializer;
 
-
-template<typename TSerializerClass, typename TDeclaring, typename TSerializationInfo = typename TypeSerializationInfoSelector<TDeclaring>::Type>
-struct ClassSerializer;
-
-template<typename TDeserializerClass, typename TDeclaring, typename TSerializationInfo = typename TypeSerializationInfoSelector<TDeclaring>::Type>
-struct ClassDeserializer;
+template<typename TSerializerClass, typename TDeclaring, typename = void>
+struct GenericDeserializer;
 
 template<typename TDeserializerClass, typename... TArgs>
 struct ParameterDeserializerFunctor
@@ -90,6 +91,7 @@ struct ParameterDeserializerFunctor
 	template<> \
 	struct TFC::Serialization::TypeSerializationInfoSelector< CLASS > \
 	{ \
+		static constexpr bool available = true; \
 		typedef TFC::Serialization::TypeSerializationInfo< CLASS , ##__VA_ARGS__ > Type; \
 	}
 

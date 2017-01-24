@@ -8,7 +8,7 @@
 #ifndef TFC_SERIALIZATION_DISCRIMINATEDUNIONSERIALIZER_H_
 #define TFC_SERIALIZATION_DISCRIMINATEDUNIONSERIALIZER_H_
 
-#include "TFC/Serialization/DiscriminatedUnionSerializer.h"
+#include "TFC/Serialization/DiscriminatedUnion.h"
 #include "TFC/Serialization/ClassSerializer.h"
 
 namespace TFC {
@@ -89,6 +89,41 @@ struct DiscriminatedUnionSelector<TDUType>
 	static void DeserializeAndSet(TDeserializerClass& ser, TDUType const& obj, uint32_t discriminator, int curIdx)
 	{
 
+	}
+};
+
+template<typename TSerializerClass, typename TDUType>
+struct GenericSerializer<TSerializerClass, TDUType, typename std::enable_if<DiscriminatedUnionTypeInfoSelector<TDUType>::isDiscriminatedUnion>::type>
+{
+	typedef typename DiscriminatedUnionTypeInfoSelector<TDUType>::Type DUTypeInfo;
+
+	static typename TSerializerClass::SerializedType Serialize(TDUType const& ptr)
+	{
+		TSerializerClass packer;
+		auto& value = DUTypeInfo::Get(ptr);
+		value.serialize(packer);
+		return packer.EndPack();
+	}
+
+	static void Serialize(TSerializerClass& packer, TDUType const& ptr)
+	{
+		auto& value = DUTypeInfo::Get(ptr);
+		value.serialize(packer);
+	}
+};
+
+template<typename TDeserializerClass, typename TDeclaring>
+struct GenericDeserializer<TDeserializerClass, TDeclaring, typename std::enable_if<DiscriminatedUnionTypeInfoSelector<TDeclaring>::isDiscriminatedUnion>::type>
+{
+	typedef typename DiscriminatedUnionTypeInfoSelector<TDeclaring>::Type DUTypeInfo;
+
+	static auto Deserialize(typename TDeserializerClass::SerializedType p, bool finalizePackedObject = true)
+		-> decltype(DUTypeInfo::Deserialize(std::declval<TDeserializerClass>()))
+	{
+		TDeserializerClass deser(p);
+		auto ret = DUTypeInfo::Deserialize(p);
+		p.Finalize();
+		return ret;
 	}
 };
 

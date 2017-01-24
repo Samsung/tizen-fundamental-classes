@@ -38,13 +38,26 @@ struct DiscriminatedUnionTypeInfo
 		return { val, disc };
 	}
 
+	static ValueType const& Get(TDUType const& obj)
+	{
+		return { obj, obj.*discriminator };
+	}
+
 	template<typename TDeclaring, typename TDeserializerClass>
 	static void DeserializeAndSet(TDUType TDeclaring::* memPtr, TDeclaring& ptr, uint32_t discriminatorVal, TDeserializerClass& deser, int curIdx)
 	{
 		auto& val = ptr.*memPtr;
 		val.*discriminator = (TDiscriminator)discriminatorVal;
 		DiscriminatedUnionSelector<TDUType, TCase...>::DeserializeAndSet(deser, val, discriminatorVal, curIdx);
+	}
 
+	template<typename TDeserializerClass>
+	static TDUType Deserialize(TDeserializerClass& deser)
+	{
+		TDUType ret;
+		auto discriminatorVal = deser.template Deserialize<uint32_t>(0);
+		DiscriminatedUnionSelector<TDUType, TCase...>::DeserializeAndSet(deser, ret, discriminatorVal, 0);
+		return ret;
 	}
 };
 
