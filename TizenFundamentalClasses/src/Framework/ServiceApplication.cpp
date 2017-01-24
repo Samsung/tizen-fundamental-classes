@@ -50,7 +50,9 @@ TFC::Framework::ServiceApplicationBase::~ServiceApplicationBase() {
 
 
 int TFC::Framework::ServiceApplicationBase::Main(
-		ServiceApplicationBase* appObj, int argc, char* argv[]) {
+		ServiceApplicationBase* appObj, int argc, char* argv[])
+try
+{
 
 	service_app_lifecycle_callback_s event_callback;
 	app_event_handler_h handlers[5] = {NULL, };
@@ -89,4 +91,9 @@ int TFC::Framework::ServiceApplicationBase::Main(
 	}
 
 	return retCode;
+}
+catch(TFC::TFCException& ex)
+{
+	dlog_print(DLOG_ERROR, argv[0], "Exception occured (%s) => %s; Stack trace %s", typeid(ex).name(), ex.what(), ex.GetStackTrace().c_str());
+	throw;
 }
