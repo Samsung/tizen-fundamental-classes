@@ -16,7 +16,6 @@
 #include "TFC/Core/Reflection.h"
 #include "TFC/ServiceModel/Includes.h"
 #include "TFC/ServiceModel/ServerEndpoint.h"
-
 #include "TFC/Serialization/ClassSerializer.h"
 
 namespace TFC {
@@ -25,6 +24,16 @@ namespace ServiceModel {
 TFC_ExceptionDeclare	(GDBusException, EndpointException);
 
 struct GDBusChannel;
+
+class GVariantDeleter
+{
+public:
+	void operator()(GVariant* ptr)
+	{
+		if(ptr != nullptr)
+			g_variant_unref(ptr);
+	}
+};
 
 struct GVariantSerializer
 {
@@ -42,26 +51,47 @@ struct GVariantSerializer
 
 	void Serialize(SerializedType p);
 
+	template<typename T>
+	void Serialize(std::vector<T> const& args)
+	{
+		using namespace TFC::Serialization;
+
+		GVariantBuilder arrayBuilder;
+		g_variant_builder_init(&arrayBuilder, G_VARIANT_TYPE_ARRAY);
+
+		for(auto& obj : args)
+		{
+			g_variant_builder_add_value(&arrayBuilder, ClassSerializer<GVariantSerializer, T>::Serialize(obj));
+		}
+
+		Serialize(g_variant_builder_end(&arrayBuilder));
+	}
+
 	SerializedType EndPack();
 };
 
 struct GVariantDeserializer
 {
 	typedef GVariant* SerializedType;
+	typedef std::unique_ptr<GVariant, GVariantDeleter> GVariantAutoPtr;
 
 	SerializedType variant;
 
 	GVariantDeserializer(SerializedType p);
 
 	template<typename T>
-	T DeserializeImpl(int index);
+	T DeserializeImpl(SerializedType index);
+
+	template<typename, typename> friend struct DeserializeSelector;
 
 	template<typename T, typename = void>
 	struct DeserializerSelector
 	{
 		static T Deserialize(GVariantDeserializer& deser, int index)
 		{
-			return deser.DeserializeImpl<T>(index);
+			auto next = deser.NextField();
+			return deser.DeserializeImpl<T>(next.get());
+
 		}
 	};
 
@@ -72,8 +102,6 @@ struct GVariantDeserializer
 		return DeserializerSelector<T>::Deserialize(*this, index);
 	}
 
-
-
 	void Finalize();
 
 private:
@@ -81,6 +109,8 @@ private:
 	GVariantIter iter;
 	gsize maxChild;
 	gsize currentChild;
+
+	GVariantAutoPtr NextField();
 };
 
 template<typename T>
@@ -90,8 +120,8 @@ struct GVariantDeserializer::DeserializerSelector<T, Core::Metaprogramming::Void
 	{
 		using namespace TFC::Serialization;
 
-		auto innerVar = g_variant_get_child_value(deser.variant, index);
-		return ClassDeserializer<GVariantDeserializer, T>::Deserialize(innerVar);
+		auto innerVar = deser.NextField();
+		return ClassDeserializer<GVariantDeserializer, T>::Deserialize(innerVar.get(), false);
 	}
 };
 
@@ -100,7 +130,33 @@ struct GVariantDeserializer::DeserializerSelector<T, Core::Metaprogramming::Void
 {
 	static T Deserialize(GVariantDeserializer& deser, int index)
 	{
-		return (T)deser.DeserializeImpl<typename std::underlying_type<T>::type>(index);
+		auto innerVar = deser.NextField();
+		return (T)deser.DeserializeImpl<typename std::underlying_type<T>::type>(innerVar.get());
+	}
+};
+
+template<typename T>
+struct GVariantDeserializer::DeserializerSelector<std::vector<T>, Core::Metaprogramming::Void_T<typename Serialization::TypeSerializationInfoSelector<T>::Type>>
+{
+	static std::vector<T> Deserialize(GVariantDeserializer& deser, int index)
+	{
+		using namespace TFC::Serialization;
+
+		auto innerVar = deser.NextField();
+		TFCAssert<Serialization::SerializationException>(g_variant_get_type(innerVar.get()) == G_VARIANT_TYPE_ARRAY, "The specified field is not an array type");
+
+		std::vector<T> ret;
+
+		auto iter = g_variant_iter_new(innerVar.get());
+
+		for(auto current = g_variant_iter_next_value(iter); current != nullptr; current = g_variant_iter_next_value(iter))
+		{
+			ret.push_back(ClassDeserializer<GVariantDeserializer, T>::Deserialize(current));
+		}
+
+		g_variant_iter_free(iter);
+
+		return ret;
 	}
 };
 

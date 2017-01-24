@@ -67,7 +67,7 @@ void GVariantSerializer::Serialize(std::string args)
 }
 
 LIBAPI
-TFC::ServiceModel::GVariantDeserializer::GVariantDeserializer(SerializedType p) : variant(p) {
+GVariantDeserializer::GVariantDeserializer(SerializedType p) : variant(p) {
 	dlog_print(DLOG_DEBUG, "TFC-RPC", "Got to serialize: %d", p);
 	auto str = g_variant_print(p, true);
 	dlog_print(DLOG_DEBUG, "TFC-RPC", "The value is: %s", str);
@@ -77,53 +77,51 @@ TFC::ServiceModel::GVariantDeserializer::GVariantDeserializer(SerializedType p) 
 	this->currentChild = 0;
 
 	//TODO change to variant serialization and perform safety checking
-	//g_variant_iter_init(&iter, p);
+	g_variant_iter_init(&iter, p);
+}
+
+LIBAPI
+GVariantDeserializer::GVariantAutoPtr GVariantDeserializer::NextField() {
+	auto next = g_variant_iter_next_value(&iter);
+	TFCAssert<Serialization::SerializationException>(next != nullptr, "No more field to serialize");
+	return GVariantAutoPtr { next };
+}
+
+
+template<>
+LIBAPI
+int32_t GVariantDeserializer::DeserializeImpl<int32_t>(SerializedType obj)
+{
+	return g_variant_get_int32(obj);
 }
 
 template<>
 LIBAPI
-int32_t GVariantDeserializer::DeserializeImpl<int32_t>(int index)
+int64_t GVariantDeserializer::DeserializeImpl<int64_t>(SerializedType obj)
 {
-	int res;
-	g_variant_get_child(variant, currentChild++, "i", &res);
-	return res;
+	return g_variant_get_int64(obj);
 }
 
 template<>
 LIBAPI
-int64_t GVariantDeserializer::DeserializeImpl<int64_t>(int index)
+uint32_t GVariantDeserializer::DeserializeImpl<uint32_t>(SerializedType obj)
 {
-	int64_t res;
-	g_variant_get_child(variant, index, "x", &res);
-	return res;
+	return g_variant_get_uint32(obj);
 }
 
 template<>
 LIBAPI
-uint32_t GVariantDeserializer::DeserializeImpl<uint32_t>(int index)
+double GVariantDeserializer::DeserializeImpl<double>(SerializedType obj)
 {
-	int res;
-	g_variant_get_child(variant, currentChild++, "u", &res);
-	return res;
-}
-
-template<>
-LIBAPI
-double GVariantDeserializer::DeserializeImpl<double>(int index)
-{
-	double res;
-	g_variant_get_child(variant, currentChild++, "d", &res);
-	return res;
+	return g_variant_get_double(obj);
 }
 
 #include <dlog.h>
 
 template<>
 LIBAPI
-std::string GVariantDeserializer::DeserializeImpl<std::string>(int index)
+std::string GVariantDeserializer::DeserializeImpl<std::string>(SerializedType strVariant)
 {
-
-	auto strVariant = g_variant_get_child_value(variant, currentChild++);
 	gsize len = 0;
 	auto theStr = g_variant_get_string(strVariant, &len);
 	std::string res(theStr, len);
@@ -133,11 +131,9 @@ std::string GVariantDeserializer::DeserializeImpl<std::string>(int index)
 
 template<>
 LIBAPI
-bool GVariantDeserializer::DeserializeImpl<bool>(int index)
+bool GVariantDeserializer::DeserializeImpl<bool>(SerializedType obj)
 {
-	gboolean res;
-	g_variant_get_child(variant, currentChild++, "b", &res);
-	return res ? true : false;
+	return g_variant_get_boolean(obj);
 }
 
 
@@ -146,12 +142,9 @@ LIBAPI
 TFC::ServiceModel::GDBusClient::GDBusClient(GDBusConfiguration const& config,
 		const char* objectPath, const char* interfaceName) : objectPath(objectPath), interfaceName(interfaceName) {
 	this->busType = config.busType;
-	if(objectPath == nullptr || objectPath[0] == '\0')
-		throw ArgumentException("Object path cannot be null or empty string.");
 
-	if(interfaceName == nullptr || interfaceName[0] == '\0')
-		throw ArgumentException("Interface name cannot be null or empty string.");
-
+	TFCAssert<ArgumentException>(objectPath != nullptr && objectPath[0] != '\0', "Object path cannot be null or empty string.");
+	TFCAssert<ArgumentException>(interfaceName != nullptr && interfaceName[0] != '\0', "Interface name cannot be null or empty string.");
 
 	GError* err = nullptr;
 
@@ -669,3 +662,4 @@ void TFC::ServiceModel::GVariantSerializer::Serialize(SerializedType p)
 
 	g_variant_builder_add_value(&builder, p);
 }
+

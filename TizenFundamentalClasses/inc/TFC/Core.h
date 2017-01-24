@@ -208,6 +208,13 @@ inline T* ThrowIfNull(T* ptr)
 	return ptr;
 }
 
+template<typename TExcept>
+inline void TFCAssert(bool value, char const* message = "")
+{
+	if(!value)
+		throw TExcept(message);
+}
+
 namespace Core {
 
 /**
@@ -272,6 +279,8 @@ T UnpackFromObjectClass(ObjectClass* obj)
 
 	return ptrRaw->value;
 }
+
+
 
 }
 }
