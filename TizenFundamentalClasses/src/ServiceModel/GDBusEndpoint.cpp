@@ -23,7 +23,6 @@ LIBAPI
 GVariantSerializer::GVariantSerializer()
 {
 	g_variant_builder_init(&builder, G_VARIANT_TYPE_TUPLE);
-
 }
 
 LIBAPI
@@ -145,7 +144,8 @@ bool GVariantDeserializer::DeserializeImpl<bool>(int index)
 
 LIBAPI
 TFC::ServiceModel::GDBusClient::GDBusClient(GDBusConfiguration const& config,
-		const char* objectPath, const char* interfaceName) {
+		const char* objectPath, const char* interfaceName) : objectPath(objectPath), interfaceName(interfaceName) {
+	this->busType = config.busType;
 	if(objectPath == nullptr || objectPath[0] == '\0')
 		throw ArgumentException("Object path cannot be null or empty string.");
 
@@ -154,13 +154,30 @@ TFC::ServiceModel::GDBusClient::GDBusClient(GDBusConfiguration const& config,
 
 
 	GError* err = nullptr;
-	this->handle = g_dbus_proxy_new_for_bus_sync(config.busType, config.proxyFlags, nullptr, config.busName, objectPath, interfaceName, nullptr, &err);
+
+	// Check if the user speficy bus type NONE
+	if(this->busType == G_BUS_TYPE_NONE)
+	{
+		std::string realPath("unix:path=");
+		realPath.append(config.busPath);
+
+		dlog_print(DLOG_DEBUG, "RPC-Test", "Create connection for address %s", realPath.c_str());
+
+		// Create connection using direct addressing
+		this->handle = g_dbus_connection_new_for_address_sync(realPath.c_str(), G_DBUS_CONNECTION_FLAGS_AUTHENTICATION_CLIENT, nullptr, nullptr, &err);
+	}
+	else if(this->busType == G_BUS_TYPE_SYSTEM || this->busType == G_BUS_TYPE_SESSION)
+	{
+		// Create connection using DBus proxy
+		this->handle = g_dbus_proxy_new_for_bus_sync(config.busType, config.proxyFlags, nullptr, config.busName, objectPath, interfaceName, nullptr, &err);
+	}
 	dlog_print(DLOG_DEBUG, "RPC-Test", "After new proxy for: %s %s %s, result %d", config.busName, objectPath, interfaceName, handle);
 
-	if(err != nullptr) {
-		dlog_print(DLOG_ERROR, "RPC-Test", "Error when init proxy: %s", err->message);
 
-		std::string errStr("Cannot initialize proxy for object path: ");
+	if(err != nullptr) {
+		dlog_print(DLOG_ERROR, "RPC-Test", "Error when init client: %s", err->message);
+
+		std::string errStr("Cannot initialize client for object path: ");
 		errStr += objectPath;
 		errStr += "; Reason: ";
 		errStr += err->message;
@@ -181,6 +198,26 @@ public:
 	}
 };
 
+class GDeleter
+{
+public:
+	void operator()(gpointer ptr)
+	{
+		if(ptr != nullptr)
+			g_free(ptr);
+	}
+};
+
+class CDeleter
+{
+public:
+	void operator()(void* ptr)
+	{
+		if(ptr != nullptr)
+			free(ptr);
+	}
+};
+
 }
 
 LIBAPI
@@ -192,7 +229,14 @@ GVariant* TFC::ServiceModel::GDBusClient::RemoteCall(const char* methodName, GVa
 	dlog_print(DLOG_DEBUG, "RPC-Test", "Calling: %s", methodName);
 
 	GError* err = nullptr;
-	auto ptr = g_dbus_proxy_call_sync((GDBusProxy*)this->handle, methodName, parameter, G_DBUS_CALL_FLAGS_NONE, -1, nullptr, &err);
+	GVariant* ptr = nullptr;
+
+	// Call the remote method based on the bus type
+	if(busType == G_BUS_TYPE_NONE)
+		ptr = g_dbus_connection_call_sync((GDBusConnection*)this->handle, nullptr, objectPath.c_str(), interfaceName.c_str(), methodName, parameter, nullptr, G_DBUS_CALL_FLAGS_NONE, -1, nullptr, &err);
+	else
+		ptr = g_dbus_proxy_call_sync((GDBusProxy*)this->handle, methodName, parameter, G_DBUS_CALL_FLAGS_NONE, -1, nullptr, &err);
+
 	dlog_print(DLOG_DEBUG, "RPC-Test", "Result: %d", ptr);
 
 	if(err != nullptr)
@@ -241,9 +285,6 @@ GVariant* TFC::ServiceModel::GDBusClient::RemoteCall(const char* methodName, GVa
 			{
 				throw Core::InvocationException(err->message);
 			}
-
-
-
 		}
 	}
 
@@ -403,7 +444,6 @@ GDBusInterfaceVTable const TFC::ServiceModel::GDBusServer::defaultVtable;
 
 void TFC::ServiceModel::GDBusServer::OnBusAcquired(GDBusConnection* connection,
 		const gchar* name) {
-
 	std::regex dotRegex("\\.");
 
 	std::string rootPath("/");
@@ -433,10 +473,20 @@ void TFC::ServiceModel::GDBusServer::OnBusAcquired(GDBusConnection* connection,
 										nullptr,
 										&errPtr);
 
+			dlog_print(DLOG_DEBUG, LOG_TAG, "Registering %s (%s)", objPath.c_str(), iface->GetInterfaceInfo().name);
+
 			if(errPtr != nullptr)
 			{
-				std::cout << "Error\n";
-				std::cout << errPtr->message << "\n";
+				dlog_print(DLOG_ERROR, LOG_TAG, "Error registering: %s", errPtr->message);
+
+				std::stringstream ss;
+
+				ss << "Error registering object at path " << objPath;
+				ss << ": " << errPtr->message << ".";
+
+				g_error_free(errPtr);
+
+				throw GDBusException(ss.str());
 			}
 		}
 	}
@@ -454,23 +504,79 @@ void TFC::ServiceModel::GDBusServer::OnNameLost(GDBusConnection* connection,
 }
 
 LIBAPI
-TFC::ServiceModel::GDBusServer::GDBusServer(Configuration const& config) : config(config)
+TFC::ServiceModel::GDBusServer::GDBusServer(Configuration const& config) :
+	busId(0), server(nullptr), config(config)
 {
 
+}
+
+static gboolean
+GDBusServerAuthorizePeers (GDBusAuthObserver *observer,
+                           GIOStream         *stream,
+                           GCredentials      *credentials,
+                           gpointer           user_data)
+{
+  return true;
 }
 
 LIBAPI
 void TFC::ServiceModel::GDBusServer::Initialize()
 {
-	this->busId = g_bus_own_name(
-						config.busType,
-						config.busName,
-						config.nameOwnerFlags,
-						OnBusAcquiredCallback,
-						OnNameAcquiredCallback,
-						OnNameLostCallback,
-						this,
-						nullptr);
+	GError* err = nullptr;
+
+	if(config.busType == GBusType::G_BUS_TYPE_NONE)
+	{
+		// Not a message bus
+		std::unique_ptr<gchar, GDeleter> guid(g_dbus_generate_guid());
+
+		auto serverFlags = G_DBUS_SERVER_FLAGS_NONE;
+
+		std::string serverAddress("unix:path=");
+		serverAddress.append(config.busPath);
+
+		std::cout << "The path: " << serverAddress << '\n';
+
+		auto authObserver = g_dbus_auth_observer_new();
+
+		g_signal_connect (authObserver,
+						  "authorize-authenticated-peer",
+						  G_CALLBACK (GDBusServerAuthorizePeers),
+						  (gpointer) this);
+
+		server = g_dbus_server_new_sync(serverAddress.c_str(), serverFlags, guid.get(), authObserver, nullptr, &err);
+
+		if(err != nullptr)
+		{
+			std::unique_ptr<GError, GErrorDeleter> errPtr(err);
+			throw TFC::RuntimeException(errPtr->message);
+		}
+
+		g_dbus_server_start(server);
+
+		void (*func)(::GDBusServer*, GDBusConnection*, gpointer) =
+				[] (::GDBusServer *server, GDBusConnection *connection, gpointer user_data)
+				{
+					g_object_ref (connection);
+					auto thiz = reinterpret_cast<GDBusServer*>(user_data);
+					std::cout << "Registering names \n";
+					thiz->OnBusAcquired(connection, nullptr);
+				};
+
+		g_signal_connect (server, "new-connection", G_CALLBACK (func), (gpointer)this);
+
+	}
+	else if(config.busType == G_BUS_TYPE_SESSION || config.busType == G_BUS_TYPE_SYSTEM)
+	{
+		this->busId = g_bus_own_name(
+								config.busType,
+								config.busName.c_str(),
+								config.nameOwnerFlags,
+								OnBusAcquiredCallback,
+								OnNameAcquiredCallback,
+								OnNameLostCallback,
+								this,
+								nullptr);
+	}
 }
 
 void TFC::ServiceModel::GDBusServer::OnMethodCallCallback(
@@ -504,16 +610,22 @@ void TFC::ServiceModel::GDBusServer::OnMethodCall(GDBusConnection* connection,
 
 		if(obj != this->objectList.end())
 		{
-			auto result = obj->second->Invoke(interface_name, method_name, parameters);
+			try
+			{
+				auto result = obj->second->Invoke(interface_name, method_name, parameters);
 
-			gchar* printed = g_variant_print(result, true);
-			dlog_print(DLOG_DEBUG, LOG_TAG, "Invocation result: %s", printed);
-			g_free(printed);
-
-
-
-			g_dbus_method_invocation_return_value(invocation, result);
-			dlog_print(DLOG_DEBUG, LOG_TAG, "After return");
+				gchar* printed = g_variant_print(result, true);
+				dlog_print(DLOG_DEBUG, LOG_TAG, "Invocation result: %s", printed);
+				g_free(printed);
+				g_dbus_method_invocation_return_value(invocation, result);
+				dlog_print(DLOG_DEBUG, LOG_TAG, "After return");
+			}
+			catch(std::exception& ex)
+			{
+				dlog_print(DLOG_DEBUG, LOG_TAG, "Type name: %s", typeid(ex).name());
+				g_dbus_method_invocation_return_error(invocation, g_quark_from_string(typeid(ex).name()), 0, ex.what());
+				//g_dbus_method_invocation_return_dbus_error(invocation, GetInterfaceName("", typeid(ex)).c_str(), ex.what());
+			}
 		}
 	} else std::cout << "Failed parsing object name\n";
 }
@@ -534,7 +646,11 @@ void TFC::ServiceModel::GDBusServer::AddServerObject(std::unique_ptr<IServerObje
 
 LIBAPI
 TFC::ServiceModel::GDBusServer::~GDBusServer() {
-	g_bus_unown_name(this->busId);
+	if(busId != 0)
+		g_bus_unown_name(this->busId);
+
+	if(server != nullptr)
+		g_dbus_server_stop(this->server);
 }
 
 LIBAPI

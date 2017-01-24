@@ -70,6 +70,8 @@ public:
 	{
 		std::cout << "FunctionB is called with args: " << s << std::endl;
 	}
+
+	void FunctionTemp(bool, std::string, bool);
 };
 }
 
@@ -251,16 +253,30 @@ TEST_F(RPCUnitTest, DBusClientServer)
 	auto conn = g_bus_get_sync(G_BUS_TYPE_SESSION, nullptr, nullptr);
 	if(conn != nullptr)
 	{
-		auto proxy = g_dbus_proxy_new_sync(conn, G_DBUS_PROXY_FLAGS_NONE, nullptr, RPCTEST_BUS_NAME, RPCTEST_OBJECT_PATH, RPCTEST_IFACE_NAME, nullptr, nullptr);
+		//auto proxy = g_dbus_proxy_new_sync(conn, G_DBUS_PROXY_FLAGS_NONE, nullptr, RPCTEST_BUS_NAME, RPCTEST_OBJECT_PATH, RPCTEST_IFACE_NAME, nullptr, nullptr);
+
+		auto proxy = g_dbus_connection_new_for_address_sync("unix:path=/opt/usr/apps/com.srin.telegram/data/tgbus", G_DBUS_CONNECTION_FLAGS_AUTHENTICATION_CLIENT, nullptr, nullptr, &err);
+
 
 		if(proxy != nullptr)
 		{
 			std::string p = "blah";
-			auto params = ParameterSerializer<GVariantSerializer, decltype(&TestClass::FunctionA)>::Serialize(1, 2, 3.5, p);
-			auto res = g_dbus_proxy_call_sync(proxy, RPCTEST_METHODNAME, params, G_DBUS_CALL_FLAGS_NONE, -1, nullptr, nullptr);
-			std::cout << "Success calling via dbus proxy\n";
+			auto params = ParameterSerializer<GVariantSerializer, decltype(&TestClass::FunctionTemp)>::Serialize(false, "628111445024", false);
+			auto res = g_dbus_connection_call_sync(proxy, nullptr, "/com/srin/telegram/Auth", "com.srin.telegram.TelegramTizen.TGIF.IAuth", "SendCode", params, nullptr, G_DBUS_CALL_FLAGS_NONE, -1, nullptr, &err);
+
+			if(err != nullptr)
+			{
+				std::cout << "Error: " <<err->message << '\n';
+			}
+			else
+			{
+				std::cout << "Success calling via dbus proxy\n";
+			}
 		}
-		else std::cout << "Failed to create proxy\n";
+		else
+		{
+			std::cout << "Failed to create proxy"<< err->message <<"\n";
+		}
 	}
 	else std::cout << "Failed to get bus\n";
 
@@ -368,8 +384,6 @@ TEST_F(RPCUnitTest, TestWithClient)
 	std::cout << "Registering name owning\n";
 	mtx.lock();
 	std::cout << "Complete registration\n";
-
-
 
 	TestClient client;
 

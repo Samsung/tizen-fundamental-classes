@@ -43,8 +43,8 @@ class GDBusServerTest : public testing::Test
 };
 
 #define RPCTEST_BUS_NAME "com.srin.tfc.RPCTest"
-#define RPCTEST_OBJECT_PATH "/com/srin/tfc/RPCTest/MyObject"
-
+#define RPCTEST_OBJECT_PATH "/opt/usr/apps/org/example/tfc_test/data/mydbus/MyObject"//"/com/srin/tfc/RPCTest/MyObject"
+#define RPCTEST_BUS_PATH "/opt/usr/apps/org.example.tfc_test/data/mydbus"
 static int testStore;
 
 namespace GDBusServerTestNS
@@ -53,16 +53,16 @@ namespace GDBusServerTestNS
 struct ServiceEndpoint
 {
 	typedef TFC::ServiceModel::GDBusChannel Channel;
-	static constexpr TFC::ServiceModel::GDBusConfiguration configuration {
-		RPCTEST_BUS_NAME,
-		G_BUS_TYPE_SYSTEM,
-		G_BUS_NAME_OWNER_FLAGS_NONE,
-		G_DBUS_PROXY_FLAGS_NONE
-	};
+	static TFC::ServiceModel::GDBusConfiguration configuration;
 	static constexpr char const* interfacePrefix = "com.srin.tfc";
 };
 
-const TFC::ServiceModel::GDBusConfiguration ServiceEndpoint::configuration;
+TFC::ServiceModel::GDBusConfiguration ServiceEndpoint::configuration {
+	"unix:path=" RPCTEST_BUS_PATH,
+	G_BUS_TYPE_SYSTEM,
+	G_BUS_NAME_OWNER_FLAGS_NONE,
+	G_DBUS_PROXY_FLAGS_NONE
+};
 
 class ITest
 {
@@ -107,7 +107,6 @@ public:
 		::testStore = s;
 		throw MyException("Anything aah");
 	}
-
 };
 
 class ServerTestMultiIface : public TFC::ServiceModel::ServerObject<ServiceEndpoint, ITest>,
@@ -233,7 +232,7 @@ TEST_F(GDBusServerTest, GDBusServerCall)
 {
 	using namespace GDBusServerTestNS;
 
-	TFC::ServiceModel::GDBusServer server({ "com.srin.tfc.RPCTest", RPCTEST_BUS_NAME,  G_BUS_TYPE_SYSTEM, G_BUS_NAME_OWNER_FLAGS_NONE });
+	TFC::ServiceModel::GDBusServer server({ "com.srin.tfc.RPCTest", RPCTEST_BUS_PATH,  G_BUS_TYPE_SYSTEM, G_BUS_NAME_OWNER_FLAGS_NONE });
 	auto ptr = new ServerTest;
 	ptr->SetName("MyObject");
 
@@ -272,7 +271,7 @@ TEST_F(GDBusServerTest, GDBusServerCall)
 	}
 
 	auto actualStr = client.FunctionA(1, 2, 3.5, "some");
-
+	std::this_thread::sleep_for(Ms(1000));
 	ASSERT_STREQ("some123.500000", actualStr.c_str()) << "Invocation via GDBus client server returning string failed";
 }
 

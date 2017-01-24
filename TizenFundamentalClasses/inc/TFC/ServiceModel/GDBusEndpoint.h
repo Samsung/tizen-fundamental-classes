@@ -104,18 +104,24 @@ struct GVariantDeserializer::DeserializerSelector<T, Core::Metaprogramming::Void
 	}
 };
 
+
+
 struct GDBusConfiguration
 {
 	char const* busName;
 	GBusType busType;
 	GBusNameOwnerFlags nameOwnerFlags;
 	GDBusProxyFlags proxyFlags;
+	char const* busPath;
 };
 
 class GDBusClient
 {
 private:
 	void* handle;
+	std::string objectPath;
+	std::string interfaceName;
+	GBusType busType;
 public:
 	GDBusClient(GDBusConfiguration const& config, char const* objectPath, char const* interfaceName);
 	GVariant* RemoteCall(char const* methodName, GVariant* parameter);
@@ -131,10 +137,11 @@ class GDBusServer
 public:
 	struct Configuration
 	{
-		char const* interfacePrefix;
-		char const* busName;
+		std::string interfacePrefix;
+		std::string busName;
 		GBusType busType;
 		GBusNameOwnerFlags nameOwnerFlags;
+		std::string busPath;
 	};
 
 private:
@@ -168,6 +175,7 @@ private:
 
 	std::map<std::string, std::unique_ptr<IServerObject<GDBusChannel>>> objectList;
 	guint busId;
+	::GDBusServer* server;
 	Configuration config;
 public:
 	GDBusServer(Configuration const& config);

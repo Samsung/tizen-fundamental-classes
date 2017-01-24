@@ -94,6 +94,7 @@ ApplicationBase* ApplicationBase::currentInstance = nullptr;
 char const*		 ApplicationBase::resourcePath = nullptr;
 
 int ApplicationBase::Main(ApplicationBase* app, int argc, char* argv[])
+try
 {
 	ApplicationBase::currentInstance = app;
 	ApplicationBase::resourcePath = app_get_resource_path();
@@ -123,6 +124,11 @@ int ApplicationBase::Main(ApplicationBase* app, int argc, char* argv[])
 	}
 
 	return ret;
+}
+catch(TFC::TFCException& ex)
+{
+	dlog_print(DLOG_ERROR, argv[0], "Exception occured (%s) => %s; Stack trace %s", typeid(ex).name(), ex.what(), ex.GetStackTrace().c_str());
+	throw;
 }
 
 LIBAPI ApplicationBase::ApplicationBase(char const* packageName) :
