@@ -24,7 +24,7 @@ struct DiscriminatedUnionField
 	DiscriminatedUnionField(TDUType const& v, uint32_t discriminator) : v(v), discriminator(discriminator) { }
 
 	template<typename TSerializerClass>
-	void Serialize(TSerializerClass& ser)
+	void Serialize(TSerializerClass& ser) const
 	{
 		ser.Serialize(discriminator);
 		DiscriminatedUnionSelector<TDUType, TCase...>::Serialize(ser, v, discriminator);
@@ -101,14 +101,14 @@ struct GenericSerializer<TSerializerClass, TDUType, typename std::enable_if<Disc
 	{
 		TSerializerClass packer;
 		auto& value = DUTypeInfo::Get(ptr);
-		value.serialize(packer);
+		value.Serialize(packer);
 		return packer.EndPack();
 	}
 
 	static void Serialize(TSerializerClass& packer, TDUType const& ptr)
 	{
 		auto& value = DUTypeInfo::Get(ptr);
-		value.serialize(packer);
+		value.Serialize(packer);
 	}
 };
 
@@ -117,13 +117,17 @@ struct GenericDeserializer<TDeserializerClass, TDeclaring, typename std::enable_
 {
 	typedef typename DiscriminatedUnionTypeInfoSelector<TDeclaring>::Type DUTypeInfo;
 
-	static auto Deserialize(typename TDeserializerClass::SerializedType p, bool finalizePackedObject = true)
-		-> decltype(DUTypeInfo::Deserialize(std::declval<TDeserializerClass>()))
+	static TDeclaring Deserialize(typename TDeserializerClass::SerializedType p, bool finalizePackedObject = true)
 	{
 		TDeserializerClass deser(p);
 		auto ret = DUTypeInfo::Deserialize(p);
 		p.Finalize();
 		return ret;
+	}
+
+	static TDeclaring Deserialize(TDeserializerClass& unpacker)
+	{
+		return DUTypeInfo::Deserialize(unpacker);
 	}
 };
 

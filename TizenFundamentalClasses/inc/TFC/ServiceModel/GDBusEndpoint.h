@@ -61,7 +61,7 @@ struct GVariantSerializer
 
 		for(auto& obj : args)
 		{
-			g_variant_builder_add_value(&arrayBuilder, ClassSerializer<GVariantSerializer, T>::Serialize(obj));
+			g_variant_builder_add_value(&arrayBuilder, GenericSerializer<GVariantSerializer, T>::Serialize(obj));
 		}
 
 		Serialize(g_variant_builder_end(&arrayBuilder));
@@ -151,7 +151,7 @@ struct GVariantDeserializer::DeserializerSelector<std::vector<T>, Core::Metaprog
 
 		for(auto current = g_variant_iter_next_value(iter); current != nullptr; current = g_variant_iter_next_value(iter))
 		{
-			ret.push_back(ClassDeserializer<GVariantDeserializer, T>::Deserialize(current));
+			ret.push_back(GenericDeserializer<GVariantDeserializer, T>::Deserialize(current));
 		}
 
 		g_variant_iter_free(iter);

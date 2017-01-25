@@ -47,6 +47,11 @@ struct GenericDeserializer<TDeserializerClass, TDeclaring, typename std::enable_
 	{
 		return Deserializer::Deserialize(p, finalizePackedObject);
 	}
+
+	static TDeclaring Deserialize(TDeserializerClass& unpacker)
+	{
+		return Deserializer::Deserialize(unpacker);
+	}
 };
 
 template<typename TSerializerClass, typename TDeclaring, typename... TField>

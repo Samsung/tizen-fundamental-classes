@@ -40,7 +40,7 @@ struct DiscriminatedUnionTypeInfo
 
 	static ValueType const& Get(TDUType const& obj)
 	{
-		return { obj, obj.*discriminator };
+		return { obj, uint32_t(obj.*discriminator) };
 	}
 
 	template<typename TDeclaring, typename TDeserializerClass>
