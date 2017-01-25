@@ -55,11 +55,12 @@ struct DiscriminatedUnionSelector<TDUType, TCurrent, TTail...>
 	template<typename TSerializerClass>
 	static void Serialize(TSerializerClass& ser, TDUType const& obj, uint32_t discriminator)
 	{
-		dlog_print(DLOG_DEBUG, "TFC-Debug", "Try serializing with type %s", typeid(decltype(TCurrent::Get(obj))).name());
 
 		if(TCurrent::Match(discriminator))
+		{
 			SerializerSelect<TSerializerClass, typename TCurrent::ValueType>::Serialize(ser, TCurrent::Get(obj));
 			//ser.Serialize();
+		}
 		else
 			DiscriminatedUnionSelector<TDUType, TTail...>::Serialize(ser, obj, discriminator);
 	}
@@ -117,6 +118,14 @@ struct GenericDeserializer<TDeserializerClass, TDeclaring, typename std::enable_
 {
 	typedef typename DiscriminatedUnionTypeInfoSelector<TDeclaring>::Type DUTypeInfo;
 
+	static TDeclaring Deserialize(typename TDeserializerClass::SerializedType p, int discriminator, bool finalizePackedObject = true)
+	{
+		TDeserializerClass deser(p);
+		auto ret = DUTypeInfo::Deserialize(p, discriminator);
+		p.Finalize();
+		return ret;
+	}
+
 	static TDeclaring Deserialize(typename TDeserializerClass::SerializedType p, bool finalizePackedObject = true)
 	{
 		TDeserializerClass deser(p);
@@ -128,6 +137,11 @@ struct GenericDeserializer<TDeserializerClass, TDeclaring, typename std::enable_
 	static TDeclaring Deserialize(TDeserializerClass& unpacker)
 	{
 		return DUTypeInfo::Deserialize(unpacker);
+	}
+
+	static TDeclaring Deserialize(TDeserializerClass& unpacker, int discriminator)
+	{
+		return DUTypeInfo::Deserialize(unpacker, discriminator);
 	}
 };
 
