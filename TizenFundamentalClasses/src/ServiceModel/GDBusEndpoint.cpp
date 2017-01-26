@@ -226,9 +226,9 @@ GVariant* TFC::ServiceModel::GDBusClient::RemoteCall(const char* methodName, GVa
 
 	// Call the remote method based on the bus type
 	if(busType == G_BUS_TYPE_NONE)
-		ptr = g_dbus_connection_call_sync((GDBusConnection*)this->handle, nullptr, objectPath.c_str(), interfaceName.c_str(), methodName, parameter, nullptr, G_DBUS_CALL_FLAGS_NONE, -1, nullptr, &err);
+		ptr = g_dbus_connection_call_sync((GDBusConnection*)this->handle, nullptr, objectPath.c_str(), interfaceName.c_str(), methodName, parameter, nullptr, G_DBUS_CALL_FLAGS_NONE, G_MAXINT, nullptr, &err);
 	else
-		ptr = g_dbus_proxy_call_sync((GDBusProxy*)this->handle, methodName, parameter, G_DBUS_CALL_FLAGS_NONE, -1, nullptr, &err);
+		ptr = g_dbus_proxy_call_sync((GDBusProxy*)this->handle, methodName, parameter, G_DBUS_CALL_FLAGS_NONE, G_MAXINT, nullptr, &err);
 
 	dlog_print(DLOG_DEBUG, "RPC-Test", "Result: %d", ptr);
 

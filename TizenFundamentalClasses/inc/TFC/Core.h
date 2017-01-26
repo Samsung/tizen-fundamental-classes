@@ -208,10 +208,17 @@ inline T* ThrowIfNull(T* ptr)
 	return ptr;
 }
 
-template<typename TExcept>
+template<typename TExcept = TFC::TFCException>
 inline void TFCAssert(bool value, char const* message = "")
 {
 	if(!value)
+		throw TExcept(message);
+}
+
+template<typename TExcept = TFC::TFCException>
+inline void TFCAssertZero(int value, char const* message = "")
+{
+	if(value != 0)
 		throw TExcept(message);
 }
 
