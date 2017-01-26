@@ -16,6 +16,12 @@ LIBAPI MVCApplicationBase::MVCApplicationBase(char const* appPackage, char const
 {
 }
 
+LIBAPI MVCApplicationBase::MVCApplicationBase(char const* appPackage) :
+	UIApplicationBase(appPackage)
+{
+}
+
+
 LIBAPI bool MVCApplicationBase::OnBackButtonPressed()
 {
 	return !this->NavigateBack();
@@ -24,9 +30,12 @@ LIBAPI bool MVCApplicationBase::OnBackButtonPressed()
 LIBAPI void MVCApplicationBase::OnApplicationCreated()
 {
 	this->SetApplicationContent(this->CreateViewContainer(this->GetApplicationConformant()));
-	this->NavigateTo(mainController, nullptr);
+
+	if(!mainController.empty())
+		this->NavigateTo(mainController.c_str(), nullptr);
 }
 
 LIBAPI MVCApplicationBase::~MVCApplicationBase()
 {
+
 }

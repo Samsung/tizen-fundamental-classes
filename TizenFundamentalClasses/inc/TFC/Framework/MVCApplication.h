@@ -19,8 +19,9 @@ class LIBAPI MVCApplicationBase:
 	public StackingControllerManager
 {
 private:
-	char const* mainController;
+	std::string mainController;
 public:
+	MVCApplicationBase(char const* appPackage);
 	MVCApplicationBase(char const* appPackage, char const* mainController);
 	virtual bool OnBackButtonPressed() final;
 	virtual void OnApplicationCreated();
