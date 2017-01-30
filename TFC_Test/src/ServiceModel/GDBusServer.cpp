@@ -281,12 +281,14 @@ public:
 	int 	a;
 	double	b;
 	int 	c;
+	std::string d;
 };
 
 TFC_DefineTypeSerializationInfo(SomeClass,
 			TFC_FieldInfo(SomeClass::a),
 			TFC_FieldInfo(SomeClass::b),
-			TFC_FieldInfo(SomeClass::c));
+			TFC_FieldInfo(SomeClass::c),
+			TFC_FieldInfo(SomeClass::d));
 
 template<typename TSerializerClass>
 using SomeClassSerializer = TFC::Serialization::ClassSerializer<TSerializerClass, SomeClass>;
@@ -385,3 +387,30 @@ TEST_F(GDBusServerTest, ReflectionConstructor)
 	ASSERT_FALSE(fail) << "Using Throw failed";
 }
 
+#include "TFC/ServiceModel/BinarySerializer.h"
+
+TEST_F(GDBusServerTest, BinarySerializer)
+{
+	using namespace GDBusServerTestNS;
+
+	SomeClass p;
+	p.a = 5;
+	p.b = 12.4;
+	p.c = 16;
+	p.d = "Gilang Ganteng";
+
+	auto packed = SomeClassSerializer<TFC::ServiceModel::BinarySerializer>::Serialize(p);
+
+	for(auto byte : packed)
+	{
+		std::cout << (int)byte << ' ';
+	}
+	std::cout << '\n';
+
+	auto d = SomeClassDeserializer<TFC::ServiceModel::BinaryDeserializer>::Deserialize(packed);
+
+	ASSERT_EQ(p.a, d.a) << "Variable a is incorrect";
+	ASSERT_DOUBLE_EQ(p.b, d.b) << "Variable b is incorrect";
+	ASSERT_EQ(p.c, d.c) << "Variable c is incorrect";
+	ASSERT_STREQ(p.d.c_str(), d.d.c_str()) << "Variable d is incorrect";
+}
