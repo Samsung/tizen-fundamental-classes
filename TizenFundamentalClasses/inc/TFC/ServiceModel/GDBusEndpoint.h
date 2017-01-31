@@ -181,6 +181,7 @@ private:
 public:
 	GDBusClient(GDBusConfiguration const& config, char const* objectPath, char const* interfaceName);
 	GVariant* RemoteCall(char const* methodName, GVariant* parameter);
+	~GDBusClient();
 };
 
 class GDBusServerObjectList

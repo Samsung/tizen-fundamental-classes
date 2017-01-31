@@ -15,7 +15,7 @@
 namespace TFC {
 namespace Core {
 
-TFC_ExceptionDeclare	(InvocationException, RuntimeException);
+
 
 std::string GetInterfaceName(char const* prefix, std::type_info const& i);
 

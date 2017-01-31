@@ -13,9 +13,13 @@
 #include <iostream>
 #include <map>
 
+LIBAPI
+std::tuple<> TFC::Core::Async::emptyTuple;
+
 namespace {
 
 using namespace TFC::Core::Async;
+
 
 
 struct AsyncContext

@@ -163,6 +163,8 @@ struct AsyncCompleteOperand
 	};
 };
 
+extern std::tuple<> emptyTuple;
+
 /**
  * Specialization for AsyncCompleteOperand with void parameter.
  */
@@ -177,7 +179,7 @@ struct AsyncCompleteOperand<TLambda, TCatchList, TIntrospect, false, true>
 	TCatchList&& catchList;
 
 	AsyncCompleteOperand(TLambda&& completeLambda) :
-		completeLambda(std::forward<TLambda>(completeLambda)), catchListValid(false), catchList(TCatchList())
+		completeLambda(std::forward<TLambda>(completeLambda)), catchListValid(false), catchList(std::move(emptyTuple))
 	{
 
 	}

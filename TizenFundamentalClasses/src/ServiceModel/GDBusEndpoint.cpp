@@ -158,6 +158,7 @@ TFC::ServiceModel::GDBusClient::GDBusClient(GDBusConfiguration const& config,
 
 		// Create connection using direct addressing
 		this->handle = g_dbus_connection_new_for_address_sync(realPath.c_str(), G_DBUS_CONNECTION_FLAGS_AUTHENTICATION_CLIENT, nullptr, nullptr, &err);
+		g_dbus_connection_set_exit_on_close((GDBusConnection*)this->handle, false);
 	}
 	else if(this->busType == G_BUS_TYPE_SYSTEM || this->busType == G_BUS_TYPE_SESSION)
 	{
@@ -283,6 +284,22 @@ GVariant* TFC::ServiceModel::GDBusClient::RemoteCall(const char* methodName, GVa
 
 	return ptr;
 }
+
+LIBAPI
+TFC::ServiceModel::GDBusClient::~GDBusClient()
+{
+	if(this->handle)
+	{
+		if(this->busType == G_BUS_TYPE_NONE)
+		{
+			g_dbus_connection_close_sync((GDBusConnection*) this->handle, nullptr, nullptr);
+		}
+
+		g_object_unref(this->handle);
+		this->handle = nullptr;
+	}
+}
+
 
 LIBAPI
 void TFC::ServiceModel::GVariantDeserializer::Finalize()

@@ -219,7 +219,13 @@ template<typename TExcept = TFC::TFCException>
 inline void TFCAssertZero(int value, char const* message = "")
 {
 	if(value != 0)
-		throw TExcept(message);
+	{
+		std::string msg(message);
+		msg += " (Assertion failed: ";
+		msg += std::to_string(value);
+		msg += ")";
+		throw TExcept(std::move(msg));
+	}
 }
 
 namespace Core {
@@ -318,6 +324,11 @@ namespace TFC {
 TFC_ExceptionDeclare	(RuntimeException, TFCException);
 TFC_ExceptionDeclare	(ArgumentException, TFCException);
 
+namespace Core {
+
+TFC_ExceptionDeclare	(InvocationException, RuntimeException);
+
+}
 }
 
 #include "TFC/Core/Event.inc.h"

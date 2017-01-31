@@ -197,11 +197,11 @@ bool TFC::ServiceModel::BinaryDeserializer::DeserializeImpl<bool>()
 LIBAPI
 void TFC::ServiceModel::BinarySerializer::Serialize(const SerializedType& p)
 {
-	auto len = p.size();
+	if(p == this->buffer)
+		return;
 
-	uint8_t* ref = (uint8_t*)&len;
-	for(size_t i = 0; i < sizeof(len); i++)
-		buffer.push_back(ref[i]);
+
+	auto len = p.size();
 
 	for(size_t i = 0; i < len; i++)
 		buffer.push_back(p[i]);
