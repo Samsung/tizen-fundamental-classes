@@ -113,6 +113,24 @@ struct GenericSerializer<TSerializerClass, TDUType, typename std::enable_if<Disc
 	}
 };
 
+template<typename TSerializerClass, typename TDUType, typename... TCase>
+struct GenericSerializer<TSerializerClass, const DiscriminatedUnionField<TDUType, TCase...>, typename std::enable_if<DiscriminatedUnionTypeInfoSelector<TDUType>::isDiscriminatedUnion>::type>
+{
+	typedef typename DiscriminatedUnionTypeInfoSelector<TDUType>::Type DUTypeInfo;
+
+	static typename TSerializerClass::SerializedType Serialize(const DiscriminatedUnionField<TDUType, TCase...>& ptr)
+	{
+		TSerializerClass packer;
+		ptr.Serialize(packer);
+		return packer.EndPack();
+	}
+
+	static void Serialize(TSerializerClass& packer, const DiscriminatedUnionField<TDUType, TCase...>& ptr)
+	{
+		ptr.Serialize(packer);
+	}
+};
+
 template<typename TDeserializerClass, typename TDeclaring>
 struct GenericDeserializer<TDeserializerClass, TDeclaring, typename std::enable_if<DiscriminatedUnionTypeInfoSelector<TDeclaring>::isDiscriminatedUnion>::type>
 {

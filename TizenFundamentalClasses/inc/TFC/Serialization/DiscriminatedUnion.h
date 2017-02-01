@@ -77,9 +77,9 @@ struct FieldInfo<TDeclaring, TValueType, memPtr, TPredicates, Core::Metaprogramm
 {
 	typedef typename DiscriminatedUnionTypeInfoSelector<TValueType>::Type DUTypeInfo;
 
-	typedef typename DUTypeInfo::ValueType ValueType;
+	typedef typename DUTypeInfo::ValueType const ValueType;
 
-	static ValueType const& Get(TDeclaring const& ptr)
+	static ValueType Get(TDeclaring const& ptr)
 	{
 		return DUTypeInfo::Get(memPtr, ptr);
 	}

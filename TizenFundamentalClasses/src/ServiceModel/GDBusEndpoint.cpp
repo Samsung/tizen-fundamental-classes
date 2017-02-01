@@ -67,6 +67,34 @@ void GVariantSerializer::Serialize(std::string args)
 }
 
 LIBAPI
+void GVariantSerializer::Serialize(std::vector<int> const& args)
+{
+	GVariantBuilder arrayBuilder;
+	g_variant_builder_init(&arrayBuilder, G_VARIANT_TYPE_ARRAY);
+
+	for(auto& obj : args)
+	{
+		g_variant_builder_add(&arrayBuilder, "i", obj);
+	}
+
+	g_variant_builder_add_value(&builder, g_variant_builder_end(&arrayBuilder));
+}
+
+LIBAPI
+void GVariantSerializer::Serialize(std::vector<uint8_t> const& args)
+{
+	GVariantBuilder arrayBuilder;
+	g_variant_builder_init(&arrayBuilder, G_VARIANT_TYPE_ARRAY);
+
+	for(auto& obj : args)
+	{
+		g_variant_builder_add(&arrayBuilder, "y", obj);
+	}
+
+	g_variant_builder_add_value(&builder, g_variant_builder_end(&arrayBuilder));
+}
+
+LIBAPI
 GVariantDeserializer::GVariantDeserializer(SerializedType p) : variant(p) {
 	dlog_print(DLOG_DEBUG, "TFC-RPC", "Got to serialize: %d", p);
 	auto str = g_variant_print(p, true);

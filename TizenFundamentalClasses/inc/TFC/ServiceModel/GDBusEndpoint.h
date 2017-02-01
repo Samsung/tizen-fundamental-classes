@@ -49,6 +49,9 @@ struct GVariantSerializer
 	void Serialize(double args);
 	void Serialize(std::string args);
 
+	void Serialize(std::vector<int> const& args);
+	void Serialize(std::vector<uint8_t> const& args);
+
 	void Serialize(SerializedType p);
 
 	template<typename T>
@@ -56,15 +59,24 @@ struct GVariantSerializer
 	{
 		using namespace TFC::Serialization;
 
-		GVariantBuilder arrayBuilder;
-		g_variant_builder_init(&arrayBuilder, G_VARIANT_TYPE_ARRAY);
+		SerializedType tmp = nullptr;
 
-		for(auto& obj : args)
+		if(args.empty())
 		{
-			g_variant_builder_add_value(&arrayBuilder, GenericSerializer<GVariantSerializer, T>::Serialize(obj));
+			tmp = g_variant_new_array(G_VARIANT_TYPE_INT64, nullptr, 0);
 		}
+		else
+		{
+			GVariantBuilder arrayBuilder;
+			g_variant_builder_init(&arrayBuilder, G_VARIANT_TYPE_ARRAY);
 
-		Serialize(g_variant_builder_end(&arrayBuilder));
+			for(auto& obj : args)
+			{
+				g_variant_builder_add_value(&arrayBuilder, GenericSerializer<GVariantSerializer, T>::Serialize(obj));
+			}
+			tmp = g_variant_builder_end(&arrayBuilder);
+		}
+		Serialize(tmp);
 	}
 
 	SerializedType EndPack();
