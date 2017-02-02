@@ -56,7 +56,9 @@ struct DiscriminatedUnionTypeInfo
 	static TDUType Deserialize(TDeserializerClass& deser)
 	{
 		TDUType ret;
-		auto discriminatorVal = deser.template Deserialize<uint32_t>(0);
+		uint32_t discriminatorVal = 0;
+		deser.Deserialize(discriminatorVal);
+
 		ret.*discriminator = (TDiscriminator)discriminatorVal;
 		DiscriminatedUnionSelector<TDUType, TCase...>::DeserializeAndSet(deser, ret, discriminatorVal, 0);
 		return ret;

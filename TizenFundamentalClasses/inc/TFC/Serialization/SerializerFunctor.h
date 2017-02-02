@@ -52,10 +52,9 @@ struct SerializerSelect<TSerializerClass, TCurrent, TVoid, false>
 {
 	static void Serialize(TSerializerClass& p, TCurrent t)
 	{
-		TSerializerClass ip;
+		TSerializerClass ip = p.CreateScope();
 		GenericSerializer<TSerializerClass, TCurrent>::Serialize(ip, t);
-		auto v = ip.EndPack();
-		p.Serialize(v);
+		p.Serialize(ip);
 	}
 };
 

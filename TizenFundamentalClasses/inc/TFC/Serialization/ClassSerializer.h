@@ -76,7 +76,9 @@ struct ClassDeserializerSelect
 	static void DeserializeAndSet(TDeserializerClass& p, TDeclaring& obj, int curIdx = 0)
 	{
 		if(TField::Evaluate(obj))
-			TField::Set(obj, p.template Deserialize<typename TField::ValueType>(curIdx));
+		{
+			TField::DeserializeAndSet(obj, p);//.template Deserialize<typename TField::ValueType>(curIdx));
+		}
 	}
 };
 
@@ -126,6 +128,26 @@ struct ClassDeserializer<TDeserializerClass, TDeclaring, TypeSerializationInfo<T
 		return ret;
 	}
 };
+
+template<typename TDeclaring, typename TValueType, TValueType TDeclaring::* memPtr, typename TPredicates>
+struct FieldInfo<TDeclaring, TValueType, memPtr, TPredicates, Core::Metaprogramming::Void_T<typename TypeSerializationInfoSelector<TValueType>::Type>>
+{
+	typedef typename TypeSerializationInfoSelector<TValueType>::Type TypeInfo;
+
+	typedef TValueType ValueType;
+
+	static TValueType const& Get(TDeclaring const& ptr) 			{ return ptr.*memPtr; }
+	static void 			 Set(TDeclaring& ptr, TValueType&& val) { ptr.*memPtr = std::move(val); }
+	static bool 			 Evaluate(TDeclaring const& ptr) 		{ return PredicateEvaluator<TPredicates>::Evaluate(ptr); }
+
+	template<typename TDeserializerClass>
+	static void DeserializeAndSet(TDeclaring& ptr, TDeserializerClass& deser)
+	{
+		decltype(auto) deserInner = deser.DeserializeScope();
+		ptr.*memPtr = GenericDeserializer<TDeserializerClass, TValueType>::Deserialize(deserInner);
+	}
+};
+
 
 }}
 

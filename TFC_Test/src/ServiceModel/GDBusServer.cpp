@@ -43,7 +43,7 @@ class GDBusServerTest : public testing::Test
 };
 
 #define RPCTEST_BUS_NAME "com.srin.tfc.RPCTest"
-#define RPCTEST_OBJECT_PATH "/opt/usr/apps/org/example/tfc_test/data/mydbus/MyObject"//"/com/srin/tfc/RPCTest/MyObject"
+#define RPCTEST_OBJECT_PATH /*"/opt/usr/apps/org/example/tfc_test/data/mydbus/MyObject"*/"/com/srin/tfc/RPCTest/MyObject"
 #define RPCTEST_BUS_PATH "/opt/usr/apps/org.example.tfc_test/data/mydbus"
 static int testStore;
 
@@ -58,7 +58,7 @@ struct ServiceEndpoint
 };
 
 TFC::ServiceModel::GDBusConfiguration ServiceEndpoint::configuration {
-	"unix:path=" RPCTEST_BUS_PATH,
+	RPCTEST_BUS_NAME,
 	G_BUS_TYPE_SYSTEM,
 	G_BUS_NAME_OWNER_FLAGS_NONE,
 	G_DBUS_PROXY_FLAGS_NONE
@@ -232,7 +232,7 @@ TEST_F(GDBusServerTest, GDBusServerCall)
 {
 	using namespace GDBusServerTestNS;
 
-	TFC::ServiceModel::GDBusServer server({ "com.srin.tfc.RPCTest", RPCTEST_BUS_PATH,  G_BUS_TYPE_SYSTEM, G_BUS_NAME_OWNER_FLAGS_NONE });
+	TFC::ServiceModel::GDBusServer server({ "com.srin.tfc.RPCTest", RPCTEST_BUS_NAME,  G_BUS_TYPE_SYSTEM, G_BUS_NAME_OWNER_FLAGS_NONE });
 	auto ptr = new ServerTest;
 	ptr->SetName("MyObject");
 

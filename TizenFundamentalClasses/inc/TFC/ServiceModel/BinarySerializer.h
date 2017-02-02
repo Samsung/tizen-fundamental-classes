@@ -22,11 +22,12 @@
 namespace TFC {
 namespace ServiceModel {
 
-struct BinarySerializer
+class BinarySerializer
 {
+public:
 	typedef std::vector<uint8_t> SerializedType;
 
-	SerializedType buffer;
+
 
 	BinarySerializer();
 
@@ -37,9 +38,17 @@ struct BinarySerializer
 	void Serialize(double args);
 	void Serialize(std::string const& args);
 
-	void Serialize(SerializedType const& p);
+	BinarySerializer CreateScope();
+	void Serialize(BinarySerializer& p);
 
 	SerializedType EndPack();
+
+	~BinarySerializer();
+
+private:
+	bool doDestruction;
+	SerializedType* buffer;
+	BinarySerializer(SerializedType* bufferRef);
 };
 
 struct BinaryDeserializer
@@ -53,7 +62,21 @@ private:
 
 
 	template<typename T>
-	T DeserializeImpl();
+	T DeserializeImpl()
+	{
+		T tmp = 0;
+		uint8_t* ref = (uint8_t*)&tmp;
+
+		for(size_t i = 0; i < sizeof(tmp); i++)
+		{
+			ref[i] = bufferRef[currentPos + i];
+		}
+
+		currentPos += sizeof(tmp);
+		return tmp;
+	}
+
+	BinaryDeserializer(SerializedType const& p, size_t currentPos);
 
 public:
 	BinaryDeserializer(SerializedType const& p);
@@ -69,11 +92,23 @@ public:
 		}
 	};
 
-	template<typename T>
-	T Deserialize(int index)
-	{
-		return DeserializerSelector<T>::Deserialize(*this);
-	}
+	void Deserialize(int8_t& target);
+	void Deserialize(int16_t& target);
+	void Deserialize(int32_t& target);
+	void Deserialize(int64_t& target);
+
+	void Deserialize(uint8_t& target);
+	void Deserialize(uint16_t& target);
+	void Deserialize(uint32_t& target);
+	void Deserialize(uint64_t& target);
+
+	void Deserialize(std::string& target);
+	void Deserialize(bool& target);
+	void Deserialize(double& target);
+
+	//void Deserialize(SerializedType& composite);
+
+	BinaryDeserializer& DeserializeScope() { return *this; }
 
 	void Finalize();
 };

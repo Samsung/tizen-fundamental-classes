@@ -36,7 +36,8 @@ struct InPlaceConstructorHelper
 {
 	static void Assign(T* ptr, T&& val)
 	{
-		new (ptr) T(val);
+		ptr->~T();
+		new (ptr) T(std::move(val));
 	}
 };
 
@@ -46,6 +47,27 @@ struct InPlaceConstructorHelper<T, true>
 	static void Assign(T* ptr, T&& val)
 	{
 		*ptr = val;
+	}
+};
+
+template<typename TValueType, typename = void>
+struct DiscriminatedUnionDeserializerSelector
+{
+	template<typename TDeserializerClass>
+	static void DeserializeAndSet(TDeserializerClass& ser, TValueType& ref)
+	{
+		ser.Deserialize(ref);
+	}
+};
+
+template<typename TValueType>
+struct DiscriminatedUnionDeserializerSelector<TValueType, Core::Metaprogramming::Void_T<typename TypeSerializationInfoSelector<TValueType>::Type>>
+{
+	template<typename TDeserializerClass>
+	static void DeserializeAndSet(TDeserializerClass& ser, TValueType& ref)
+	{
+		decltype(auto) innerContainer = ser.DeserializeScope();
+		InPlaceConstructorHelper<TValueType>::Assign(&ref, GenericDeserializer<TDeserializerClass, TValueType>::Deserialize(innerContainer));
 	}
 };
 
@@ -70,7 +92,17 @@ struct DiscriminatedUnionSelector<TDUType, TCurrent, TTail...>
 	{
 		if(TCurrent::Match(discriminator))
 		{
-			InPlaceConstructorHelper<typename TCurrent::ValueType>::Assign(&(obj.*(TCurrent::targetPointer)), ser.template Deserialize<typename TCurrent::ValueType>(curIdx));
+			//typename TCurrent::ValueType ret;
+			//ser.Deserialize(ret);
+
+			auto& storage = obj.*(TCurrent::targetPointer);
+
+			// Initialize the value
+			new (&storage) typename TCurrent::ValueType;
+
+			DiscriminatedUnionDeserializerSelector<typename TCurrent::ValueType>::DeserializeAndSet(ser, obj.*(TCurrent::targetPointer));
+
+			//InPlaceConstructorHelper<typename TCurrent::ValueType>::Assign(&(), std::move(ret));
 		}
 		else
 			DiscriminatedUnionSelector<TDUType, TTail...>::DeserializeAndSet(ser, obj, discriminator, curIdx);
@@ -139,16 +171,16 @@ struct GenericDeserializer<TDeserializerClass, TDeclaring, typename std::enable_
 	static TDeclaring Deserialize(typename TDeserializerClass::SerializedType p, int discriminator, bool finalizePackedObject = true)
 	{
 		TDeserializerClass deser(p);
-		auto ret = DUTypeInfo::Deserialize(p, discriminator);
-		p.Finalize();
+		auto ret = DUTypeInfo::Deserialize(deser, discriminator);
+		deser.Finalize();
 		return ret;
 	}
 
 	static TDeclaring Deserialize(typename TDeserializerClass::SerializedType p, bool finalizePackedObject = true)
 	{
 		TDeserializerClass deser(p);
-		auto ret = DUTypeInfo::Deserialize(p);
-		p.Finalize();
+		auto ret = DUTypeInfo::Deserialize(deser);
+		deser.Finalize();
 		return ret;
 	}
 
@@ -185,7 +217,9 @@ struct ClassDeserializerSelect<TDeserializerClass, TDeclaring, TFC::Serializatio
 	{
 		if(FieldInfo::Evaluate(obj))
 		{
-			uint32_t discriminator = p.template Deserialize<uint32_t>(curIdx);
+
+			uint32_t discriminator = 0;
+			p.Deserialize(discriminator);
 			DUTypeInfo::DeserializeAndSet(ptrMem, obj, discriminator, p, curIdx + 1);
 		}
 		//TField::Set(obj, p.template Deserialize<typename TField::ValueType>(curIdx));

@@ -57,13 +57,42 @@ struct FieldInfo
 	static TValueType const& Get(TDeclaring const& ptr) 			{ return ptr.*memPtr; }
 	static void 			 Set(TDeclaring& ptr, TValueType&& val) { ptr.*memPtr = std::move(val); }
 	static bool 			 Evaluate(TDeclaring const& ptr) 		{ return PredicateEvaluator<TPredicates>::Evaluate(ptr); }
+
+	template<typename TDeserializerClass>
+	static void DeserializeAndSet(TDeclaring& ptr, TDeserializerClass& deser) { deser.Deserialize(ptr.*memPtr); }
 };
+
+template<typename TDeclaring,
+		 typename TValueType,
+		 TValueType TDeclaring::* memPtr,
+		 typename TPredicates>
+struct FieldInfo<TDeclaring, TValueType, memPtr, TPredicates, typename std::enable_if<std::is_enum<TValueType>::value>::type>
+{
+	typedef TValueType ValueType;
+
+	static TValueType const& Get(TDeclaring const& ptr) 			{ return ptr.*memPtr; }
+	static void 			 Set(TDeclaring& ptr, TValueType&& val) { ptr.*memPtr = std::move(val); }
+	static bool 			 Evaluate(TDeclaring const& ptr) 		{ return PredicateEvaluator<TPredicates>::Evaluate(ptr); }
+
+	template<typename TDeserializerClass>
+	static void DeserializeAndSet(TDeclaring& ptr, TDeserializerClass& deser) { deser.Deserialize(*reinterpret_cast<typename std::underlying_type<TValueType>::type*>(&(ptr.*memPtr))); }
+};
+
 
 template<typename TSerializerClass, typename TDeclaring, typename = void>
 struct GenericSerializer;
 
-template<typename TSerializerClass, typename TDeclaring, typename = void>
-struct GenericDeserializer;
+template<typename TDeserializerClass, typename TDeclaring, typename = void>
+struct GenericDeserializer
+{
+
+	static TDeclaring Deserialize(TDeserializerClass& deser)
+	{
+		TDeclaring ret;
+		deser.Deserialize(ret);
+		return ret;
+	}
+};
 
 template<typename TDeserializerClass, typename... TArgs>
 struct ParameterDeserializerFunctor
@@ -73,7 +102,12 @@ struct ParameterDeserializerFunctor
 	template<int... S>
 	static std::tuple<typename std::decay<TArgs>::type...> Func(TDeserializerClass& p, Core::Metaprogramming::Sequence<S...>)
 	{
-		return std::make_tuple(p.template Deserialize<typename std::decay<TArgs>::type>(S)...);
+		std::tuple<typename std::decay<TArgs>::type...> ret;
+
+		int list[] = {(p.Deserialize(std::get<S>(ret)), 0)...};
+		(void)list;
+
+		return ret;
 	}
 
 	static std::tuple<typename std::decay<TArgs>::type...> Func(TDeserializerClass& p)

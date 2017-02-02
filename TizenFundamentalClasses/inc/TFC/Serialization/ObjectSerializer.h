@@ -41,7 +41,7 @@ struct ObjectDeserializer
 	static TObj Deserialize(typename TDeserializerClass::SerializedType p)
 	{
 		TDeserializerClass unpacker(p);
-		return std::get<0>(ParameterDeserializerFunctor<TDeserializerClass, TObj>::Func(unpacker));
+		return GenericDeserializer<TDeserializerClass, TObj>::Deserialize(unpacker); //std::get<0>(ParameterDeserializerFunctor<TDeserializerClass, TObj>::Func(unpacker));
 	}
 };
 

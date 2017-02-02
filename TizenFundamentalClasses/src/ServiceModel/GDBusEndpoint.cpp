@@ -186,7 +186,7 @@ TFC::ServiceModel::GDBusClient::GDBusClient(GDBusConfiguration const& config,
 
 		// Create connection using direct addressing
 		this->handle = g_dbus_connection_new_for_address_sync(realPath.c_str(), G_DBUS_CONNECTION_FLAGS_AUTHENTICATION_CLIENT, nullptr, nullptr, &err);
-		g_dbus_connection_set_exit_on_close((GDBusConnection*)this->handle, false);
+		//g_dbus_connection_set_exit_on_close((GDBusConnection*)this->handle, false);
 	}
 	else if(this->busType == G_BUS_TYPE_SYSTEM || this->busType == G_BUS_TYPE_SESSION)
 	{
@@ -308,6 +308,20 @@ GVariant* TFC::ServiceModel::GDBusClient::RemoteCall(const char* methodName, GVa
 				throw Core::InvocationException(err->message);
 			}
 		}
+	}
+
+
+	int child = g_variant_n_children(ptr);
+	if(child != 0)
+	{
+		auto child = g_variant_get_child_value(ptr, 0);
+		g_variant_unref(ptr);
+
+		auto debug = g_variant_print(child, true);
+		dlog_print(DLOG_DEBUG, "TFC-RPC", "Client receive response: %s", debug);
+		g_free(debug);
+
+		return child;
 	}
 
 	return ptr;
@@ -691,9 +705,79 @@ TFC::ServiceModel::GDBusServer::~GDBusServer() {
 		g_dbus_server_stop(this->server);
 }
 
+
 LIBAPI
-void TFC::ServiceModel::GVariantSerializer::Serialize(SerializedType p)
+void TFC::ServiceModel::GVariantDeserializer::Deserialize(int8_t& target) {
+	g_variant_iter_next(&iter, "y", &target);
+}
+
+LIBAPI
+void TFC::ServiceModel::GVariantDeserializer::Deserialize(int16_t& target) {
+	g_variant_iter_next(&iter, "n", &target);
+}
+
+LIBAPI
+void TFC::ServiceModel::GVariantDeserializer::Deserialize(int32_t& target) {
+	g_variant_iter_next(&iter, "i", &target);
+}
+
+LIBAPI
+void TFC::ServiceModel::GVariantDeserializer::Deserialize(int64_t& target) {
+	g_variant_iter_next(&iter, "x", &target);
+}
+
+LIBAPI
+void TFC::ServiceModel::GVariantDeserializer::Deserialize(uint8_t& target) {
+	g_variant_iter_next(&iter, "y", &target);
+}
+
+LIBAPI
+void TFC::ServiceModel::GVariantDeserializer::Deserialize(uint16_t& target) {
+	g_variant_iter_next(&iter, "q", &target);
+}
+
+LIBAPI
+void TFC::ServiceModel::GVariantDeserializer::Deserialize(uint32_t& target) {
+	g_variant_iter_next(&iter, "u", &target);
+}
+
+LIBAPI
+void TFC::ServiceModel::GVariantDeserializer::Deserialize(uint64_t& target) {
+	g_variant_iter_next(&iter, "t", &target);
+}
+
+LIBAPI
+void TFC::ServiceModel::GVariantDeserializer::Deserialize(std::string& target) {
+	auto strVariant = g_variant_iter_next_value(&iter);
+	gsize len = 0;
+	auto theStr = g_variant_get_string(strVariant, &len);
+	target = std::string(theStr, len);
+	g_variant_unref(strVariant);
+}
+
+LIBAPI
+void TFC::ServiceModel::GVariantDeserializer::Deserialize(bool& target) {
+	gboolean tmp;
+	g_variant_iter_next(&iter, "b", &tmp);
+	target = tmp;
+}
+
+LIBAPI
+void TFC::ServiceModel::GVariantDeserializer::Deserialize(double& target) {
+	g_variant_iter_next(&iter, "d", &target);
+}
+
+LIBAPI
+GVariantSerializer TFC::ServiceModel::GVariantSerializer::CreateScope()
 {
+	// Just construct new object
+	return {};
+}
+
+LIBAPI
+void TFC::ServiceModel::GVariantSerializer::Serialize(GVariantSerializer& ser) {
+	auto p = ser.EndPack();
+
 	if(g_variant_n_children(p) == 0)
 	{
 		// Compability for GDBus which is angry if it is passed an empty tuple
@@ -706,5 +790,13 @@ void TFC::ServiceModel::GVariantSerializer::Serialize(SerializedType p)
 	}
 
 	g_variant_builder_add_value(&builder, p);
+
 }
 
+LIBAPI
+GVariantDeserializer::SerializedType TFC::ServiceModel::GVariantDeserializer::DeserializeScope()
+{
+	auto val = g_variant_iter_next_value(&iter);
+	TFCAssert(g_variant_type_is_tuple(g_variant_get_type(val)), "Invalid value. Scope value is not tuple.");
+	return val;
+}

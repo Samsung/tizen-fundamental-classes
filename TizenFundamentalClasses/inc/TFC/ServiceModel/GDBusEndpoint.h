@@ -52,7 +52,8 @@ struct GVariantSerializer
 	void Serialize(std::vector<int> const& args);
 	void Serialize(std::vector<uint8_t> const& args);
 
-	void Serialize(SerializedType p);
+	GVariantSerializer CreateScope();
+	void Serialize(GVariantSerializer& p);
 
 	template<typename T>
 	void Serialize(std::vector<T> const& args)
@@ -107,12 +108,31 @@ struct GVariantDeserializer
 		}
 	};
 
+	/*
 	template<typename T>
 	T Deserialize(int index)
 	{
 		dlog_print(DLOG_DEBUG, "TFC-RPC", "Index %d", index);
 		return DeserializerSelector<T>::Deserialize(*this, index);
 	}
+	*/
+	void Deserialize(int8_t& target);
+	void Deserialize(int16_t& target);
+	void Deserialize(int32_t& target);
+	void Deserialize(int64_t& target);
+
+	void Deserialize(uint8_t& target);
+	void Deserialize(uint16_t& target);
+	void Deserialize(uint32_t& target);
+	void Deserialize(uint64_t& target);
+
+	void Deserialize(std::string& target);
+	void Deserialize(bool& target);
+	void Deserialize(double& target);
+
+	void Deserialize(SerializedType& composite);
+
+	SerializedType DeserializeScope();
 
 	void Finalize();
 
@@ -193,6 +213,7 @@ private:
 public:
 	GDBusClient(GDBusConfiguration const& config, char const* objectPath, char const* interfaceName);
 	GVariant* RemoteCall(char const* methodName, GVariant* parameter);
+	bool IsClosed() { return busType != G_BUS_TYPE_NONE || g_dbus_connection_is_closed((GDBusConnection*)handle); }
 	~GDBusClient();
 };
 
