@@ -86,6 +86,8 @@ public:
 	 */
 	void SetAsPasswordField();
 
+	void SetCursorAtEnd();
+
 	/**
 	 * Event that will be triggered when user input return key.
 	 */

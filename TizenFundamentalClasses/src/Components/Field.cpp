@@ -169,6 +169,11 @@ void TFC::Components::Field::SetKeyboardType(Elm_Input_Panel_Layout const& type)
 	elm_entry_input_panel_layout_set(field, type);
 }
 
+void TFC::Components::Field::SetCursorAtEnd()
+{
+	elm_entry_cursor_end_set(field);
+}
+
 LIBAPI void TFC::Components::Field::SetAsPasswordField()
 {
 	elm_entry_password_set(field, EINA_TRUE);
