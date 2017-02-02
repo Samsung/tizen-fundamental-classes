@@ -263,6 +263,7 @@ namespace Components {
 		virtual Evas_Object* CreateComponent(Evas_Object* root) override;
 
 	private:
+		int currentPosY;
 		int backToTopThreshold;
 		Evas_Object* genlist;
 		Elm_Object_Item* dummyBottom;

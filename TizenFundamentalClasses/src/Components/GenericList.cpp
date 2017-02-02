@@ -48,6 +48,7 @@ LIBAPI TFC::Components::GenericListItemClassBase::GenericListItemClassBase(char 
 	{
 		auto pkg = reinterpret_cast<GenlistItemClassPackage*>(data);
 		std::string ret = pkg->base->GetString(pkg->data, obj, part);
+		if(ret.empty()) return nullptr;
 		return strdup(ret.c_str());
 	};
 
@@ -343,6 +344,15 @@ void TFC::Components::GenericList::OnScrolledInternal(Evas_Object* obj, void* ev
 {
 	int x, y, w, h;
 	elm_scroller_region_get(genlist, &x, &y, &w, &h);
+
+	if(currentPosY>y){
+		eventScrolledUp(this, eventData);
+	}else{
+		eventScrolledDown(this, eventData);
+	}
+
+	currentPosY = y;
+
 	if (backToTopThreshold < 0) {
 		evas_object_geometry_get(genlist, nullptr, nullptr, nullptr, &backToTopThreshold);
 	}
@@ -372,7 +382,7 @@ void TFC::Components::GenericList::OnScrolledBottomInternal(Evas_Object* obj, vo
 
 void TFC::Components::GenericList::OnScrolledTopInternal(Evas_Object* obj, void* eventData)
 {
-
+	eventScrolledTop(this, eventData);
 }
 
 void TFC::Components::GenericList::OnDummyRealized(Evas_Object* obj, void* eventData)
