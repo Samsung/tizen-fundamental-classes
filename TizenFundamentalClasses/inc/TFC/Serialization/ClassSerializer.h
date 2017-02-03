@@ -52,6 +52,11 @@ struct GenericDeserializer<TDeserializerClass, TDeclaring, typename std::enable_
 	{
 		return Deserializer::Deserialize(unpacker);
 	}
+
+	static void Deserialize(TDeserializerClass& unpacker, TDeclaring& ret)
+	{
+		Deserializer::Deserialize(unpacker, ret);
+	}
 };
 
 template<typename TSerializerClass, typename TDeclaring, typename... TField>
@@ -127,6 +132,11 @@ struct ClassDeserializer<TDeserializerClass, TDeclaring, TypeSerializationInfo<T
 		ClassDeserializerFunctor<TDeserializerClass, TDeclaring, TFieldArgs...>::Func(unpacker, ret);
 		return ret;
 	}
+
+	static void Deserialize(TDeserializerClass& unpacker, TDeclaring& ret)
+	{
+		ClassDeserializerFunctor<TDeserializerClass, TDeclaring, TFieldArgs...>::Func(unpacker, ret);
+	}
 };
 
 template<typename TDeclaring, typename TValueType, TValueType TDeclaring::* memPtr, typename TPredicates>
@@ -144,7 +154,7 @@ struct FieldInfo<TDeclaring, TValueType, memPtr, TPredicates, Core::Metaprogramm
 	static void DeserializeAndSet(TDeclaring& ptr, TDeserializerClass& deser)
 	{
 		decltype(auto) deserInner = deser.DeserializeScope();
-		ptr.*memPtr = GenericDeserializer<TDeserializerClass, TValueType>::Deserialize(deserInner);
+		GenericDeserializer<TDeserializerClass, TValueType>::Deserialize(deserInner, ptr.*memPtr);
 	}
 };
 
