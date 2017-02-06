@@ -184,6 +184,11 @@ struct GenericDeserializer<TDeserializerClass, TDeclaring, typename std::enable_
 		return ret;
 	}
 
+	static void Deserialize(TDeserializerClass& deser, TDeclaring& ret)
+	{
+		DUTypeInfo::DeserializeAndSet(ret, deser);
+	}
+
 	static TDeclaring Deserialize(TDeserializerClass& unpacker)
 	{
 		return DUTypeInfo::Deserialize(unpacker);

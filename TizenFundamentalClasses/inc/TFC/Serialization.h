@@ -103,19 +103,43 @@ struct ConstantValue
 	}
 };
 
+template<typename TDeserializer, typename TValue>
+class DeserializationAvailable
+{
+	typedef char Correct;
+	typedef long long Incorrect;
+
+
+	template<typename T>
+	static typename std::add_lvalue_reference<T>::type declref();
+
+
+	template<typename T1, typename T2> static Correct Test(decltype(std::declval<T1>().Deserialize(declref<T2>()))*);
+	template<typename T1, typename T2> static Incorrect Test(...);
+
+public:
+	static constexpr bool value = sizeof(Test<TDeserializer, TValue>(0)) == sizeof(Correct);
+};
 
 template<typename TSerializerClass, typename TDeclaring, typename = void>
 struct GenericSerializer;
 
-template<typename TDeserializerClass, typename TDeclaring, typename = void>
-struct GenericDeserializer
-{
+template<typename TSerializerClass, typename TDeclaring, typename = void>
+struct GenericDeserializer;
 
+template<typename TDeserializerClass, typename TDeclaring>
+struct GenericDeserializer<TDeserializerClass, TDeclaring, typename std::enable_if<DeserializationAvailable<TDeserializerClass, TDeclaring>::value>::type>
+{
 	static TDeclaring Deserialize(TDeserializerClass& deser)
 	{
 		TDeclaring ret;
 		deser.Deserialize(ret);
 		return ret;
+	}
+
+	static void Deserialize(TDeserializerClass& deser, TDeclaring& ret)
+	{
+		deser.Deserialize(ret);
 	}
 };
 
@@ -127,10 +151,17 @@ struct ParameterDeserializerFunctor
 	template<int... S>
 	static std::tuple<typename std::decay<TArgs>::type...> Func(TDeserializerClass& p, Core::Metaprogramming::Sequence<S...>)
 	{
+		//typedef
+
 		std::tuple<typename std::decay<TArgs>::type...> ret;
 
+		int list[] = {(GenericDeserializer<TDeserializerClass, TArgs>::Deserialize(p, std::get<S>(ret)), 0)...};
+		(void)list;
+
+		/*
 		int list[] = {(p.Deserialize(std::get<S>(ret)), 0)...};
 		(void)list;
+		*/
 
 		return ret;
 	}

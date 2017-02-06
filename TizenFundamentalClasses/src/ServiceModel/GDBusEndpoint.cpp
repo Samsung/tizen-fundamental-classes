@@ -768,6 +768,18 @@ void TFC::ServiceModel::GVariantDeserializer::Deserialize(double& target) {
 }
 
 LIBAPI
+void TFC::ServiceModel::GVariantDeserializer::Deserialize(std::vector<uint8_t>& target) {
+	target.clear();
+	auto arrVariant = g_variant_iter_next_value(&iter);
+	auto arrIter = g_variant_iter_new(arrVariant);
+	uint8_t value;
+	while (g_variant_iter_next(arrIter, "y", &value)) {
+		target.push_back(value);
+	}
+	g_variant_iter_free(arrIter);
+}
+
+LIBAPI
 GVariantSerializer TFC::ServiceModel::GVariantSerializer::CreateScope()
 {
 	// Just construct new object
@@ -794,9 +806,9 @@ void TFC::ServiceModel::GVariantSerializer::Serialize(GVariantSerializer& ser) {
 }
 
 LIBAPI
-GVariantDeserializer::SerializedType TFC::ServiceModel::GVariantDeserializer::DeserializeScope()
+GVariantDeserializer TFC::ServiceModel::GVariantDeserializer::DeserializeScope()
 {
 	auto val = g_variant_iter_next_value(&iter);
 	TFCAssert(g_variant_type_is_tuple(g_variant_get_type(val)), "Invalid value. Scope value is not tuple.");
-	return val;
+	return { val };
 }

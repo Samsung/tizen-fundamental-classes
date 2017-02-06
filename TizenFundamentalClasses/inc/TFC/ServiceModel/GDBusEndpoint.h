@@ -130,9 +130,28 @@ struct GVariantDeserializer
 	void Deserialize(bool& target);
 	void Deserialize(double& target);
 
+	void Deserialize(std::vector<uint8_t>& target);
+
+	template<typename T>
+	void Deserialize(std::vector<T>& target)
+	{
+		target.clear();
+		auto arrVariant = g_variant_iter_next_value(&iter);
+		auto arrIter = g_variant_iter_new(arrVariant);
+		while (auto value = g_variant_iter_next_value(arrIter)) {
+
+			typedef TFC::Serialization::GenericDeserializer<GVariantDeserializer, T> Deserializer;
+
+			GVariantDeserializer ser(value);
+			target.push_back(Deserializer::Deserialize(ser));
+			g_variant_unref(value);
+		}
+		g_variant_iter_free(arrIter);
+	}
+
 	void Deserialize(SerializedType& composite);
 
-	SerializedType DeserializeScope();
+	GVariantDeserializer DeserializeScope();
 
 	void Finalize();
 
