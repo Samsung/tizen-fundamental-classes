@@ -78,6 +78,31 @@ struct FieldInfo<TDeclaring, TValueType, memPtr, TPredicates, typename std::enab
 	static void DeserializeAndSet(TDeclaring& ptr, TDeserializerClass& deser) { deser.Deserialize(*reinterpret_cast<typename std::underlying_type<TValueType>::type*>(&(ptr.*memPtr))); }
 };
 
+template<typename TValueType,
+		 TValueType theValue,
+		 typename TPredicates>
+struct ConstantValue
+{
+	typedef TValueType ValueType;
+
+	template<typename T>
+	static TValueType const& Get(T& ptr) 						{ return theValue; }
+
+	template<typename T>
+	static void 			 Set(T& ptr, TValueType&& val) 		{  }
+
+	template<typename TDeclaring>
+	static bool 			 Evaluate(TDeclaring const& ptr) 		{ return PredicateEvaluator<TPredicates>::Evaluate(ptr); }
+
+	template<typename TDeclaring, typename TDeserializerClass>
+	static void DeserializeAndSet(TDeclaring& ptr, TDeserializerClass& deser)
+	{
+		TValueType val;
+		deser.Deserialize(val);
+		TFCAssert<SerializationException>(val == theValue, "Unexpected constant value retrieved");
+	}
+};
+
 
 template<typename TSerializerClass, typename TDeclaring, typename = void>
 struct GenericSerializer;
@@ -130,6 +155,8 @@ struct ParameterDeserializerFunctor
 	}
 
 #define TFC_FieldInfo(MEMPTR, ...) TFC::Serialization::FieldInfo<typename TFC::Core::Introspect::MemberField<decltype( & MEMPTR )>::DeclaringType, decltype( MEMPTR ), & MEMPTR, std::tuple < __VA_ARGS__ > >
+
+#define TFC_ConstantValue(CONSTANT, ...) TFC::Serialization::ConstantValue< decltype( CONSTANT ), CONSTANT, std::tuple < __VA_ARGS__ > >
 
 
 #endif /* TFC_SERIALIZATION_H_ */
