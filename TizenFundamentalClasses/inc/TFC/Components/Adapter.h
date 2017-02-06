@@ -137,7 +137,7 @@ public:
 	/**
 	 * Forbid copy constructor of Adapter.
 	 */
-	Adapter(Adapter&) = delete;
+	Adapter(Adapter const& that);
 
 	/**
 	 * Destructor of Adapter.
@@ -151,7 +151,7 @@ public:
 	 * @param itemClass Class of the item.
 	 */
 	template<class T>
-	void AddItem(T* data, AdapterItemClass<T>* itemClass);
+	TFC::Components::Adapter::AdapterItem& AddItem(T* data, AdapterItemClass<T>* itemClass);
 
 	/**
 	 * Method to remove item from adapter's list.
@@ -195,7 +195,7 @@ public:
 	Event<AdapterItem*> eventItemRemove;
 
 protected:
-	void AddItemInternal(void* data, AdapterItemClassBase* itemClass);
+	TFC::Components::Adapter::AdapterItem& AddItemInternal(void* data, AdapterItemClassBase* itemClass);
 	void RemoveItemInternal(void* data);
 private:
 	std::vector<AdapterItem> adapterItems;
@@ -282,9 +282,9 @@ inline void TFC::Components::AdapterItemClass<T>::Deallocator(void* data)
 }
 
 template<class T>
-inline void TFC::Components::Adapter::AddItem(T* data, AdapterItemClass<T>* itemClass)
+inline TFC::Components::Adapter::AdapterItem& TFC::Components::Adapter::AddItem(T* data, AdapterItemClass<T>* itemClass)
 {
-	AddItemInternal(data, itemClass);
+	return AddItemInternal(data, itemClass);
 }
 
 template<class T>

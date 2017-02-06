@@ -34,11 +34,13 @@ LIBAPI TFC::Components::Adapter::~Adapter()
 	Clear();
 }
 
-LIBAPI void TFC::Components::Adapter::AddItemInternal(void* data, AdapterItemClassBase* itemClass)
+LIBAPI TFC::Components::Adapter::AdapterItem& TFC::Components::Adapter::AddItemInternal(void* data, AdapterItemClassBase* itemClass)
 {
 	adapterItems.push_back({data, itemClass, nullptr});
 	auto& lastItem = adapterItems.back();
 	eventItemAdd(this, &lastItem);
+
+	return lastItem;
 }
 
 LIBAPI void TFC::Components::Adapter::RemoveItemInternal(void* data)
@@ -128,4 +130,14 @@ Evas_Object* TFC::Components::BasicListAdapter::BasicListItemClass::GetContent(B
 	const char* part)
 {
 	return nullptr;
+}
+
+TFC::Components::Adapter::Adapter(const Adapter& that)
+{
+	this->adapterItems = that.adapterItems;
+
+	for(auto item : adapterItems)
+	{
+		item.objectItem = nullptr;
+	}
 }
