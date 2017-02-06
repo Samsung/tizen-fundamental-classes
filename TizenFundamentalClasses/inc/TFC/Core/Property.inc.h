@@ -106,8 +106,8 @@ struct TFC::Core::PropertySetterFunction<TDefining, TValue*>
 template<typename TDefining, typename TValue>
 struct TFC::Core::PropertySetterFunction<TDefining, TValue const*>
 {
-	typedef void (TDefining::*Type)(TValue*);
-	typedef TValue* OperatorParam;
+	typedef void (TDefining::*Type)(TValue const*);
+	typedef TValue const* OperatorParam;
 };
 
 template<typename TDefining, typename TValue>
