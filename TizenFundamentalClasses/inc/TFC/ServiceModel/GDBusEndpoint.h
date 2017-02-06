@@ -23,7 +23,23 @@ namespace ServiceModel {
 
 TFC_ExceptionDeclare	(GDBusException, EndpointException);
 
-struct GDBusChannel;
+class GVariantSerializer;
+class GVariantDeserializer;
+class GDBusClient;
+class GDBusServer;
+class GDBusConfiguration;
+class GDBusInterfaceDefinition;
+
+struct GDBusChannel
+{
+	typedef GVariantSerializer 	 	 Serializer;
+	typedef GVariantDeserializer 	 Deserializer;
+	typedef GDBusClient			 	 Client;
+	typedef GDBusServer			 	 Server;
+	typedef GVariant* 			 	 SerializedType;
+	typedef GDBusConfiguration		 ConfigurationType;
+	typedef GDBusInterfaceDefinition InterfaceDefinition;
+};
 
 class GVariantDeleter
 {
@@ -254,6 +270,8 @@ public:
 	};
 
 private:
+
+	static void	OnConnectionClosedCallback(GDBusConnection* connection, gboolean remote_peer_vanished, GError* error, gpointer user_data);
 	static void OnBusAcquiredCallback(GDBusConnection *connection, const gchar* name, gpointer user_data);
 	static void OnNameAcquiredCallback(GDBusConnection *connection, const gchar* name, gpointer user_data);
 	static void OnNameLostCallback(GDBusConnection *connection, const gchar* name, gpointer user_data);
@@ -282,7 +300,12 @@ private:
 
 	static constexpr GDBusInterfaceVTable defaultVtable { OnMethodCallCallback, nullptr, nullptr };
 
+	void EventCaptureHandler(IServerObject<GDBusChannel>* source, IServerObject<GDBusChannel>::EventEmissionInfo const& eventInfo);
+
 	std::map<std::string, std::unique_ptr<IServerObject<GDBusChannel>>> objectList;
+	std::vector<GDBusConnection*> connectionList;
+	std::string rootPath;
+
 	guint busId;
 	::GDBusServer* server;
 	Configuration config;
@@ -309,6 +332,9 @@ public:
 	template<typename TFuncPtr>
 	void RegisterFunction(TFuncPtr ptr);
 
+	template<typename TDeclaring, typename TArgs>
+	void RegisterEvent(TFC::Core::EventObject<TDeclaring*, TArgs> TDeclaring::* eventPtr);
+
 	~GDBusInterfaceDefinition();
 
 private:
@@ -316,8 +342,11 @@ private:
 	std::string interfaceNameStd;
 
 	std::vector<GDBusMethodInfo*> methodInfoList;
+	std::vector<GDBusSignalInfo*> signalInfoList;
 
 	void RegisterFunction(std::string const& funcName, std::vector<std::string> const& args, std::string const& retType);
+
+	void RegisterEvent(std::string const& eventName, std::string const& args);
 
 public:
 	GDBusInterfaceInfo const& GetInterfaceInfo() const { return this->interfaceInfo; };
@@ -394,16 +423,7 @@ struct GDBusSignatureFiller<>
 
 
 
-struct GDBusChannel
-{
-	typedef GVariantSerializer 	 	 Serializer;
-	typedef GVariantDeserializer 	 Deserializer;
-	typedef GDBusClient			 	 Client;
-	typedef GDBusServer			 	 Server;
-	typedef GVariant* 			 	 SerializedType;
-	typedef GDBusConfiguration		 ConfigurationType;
-	typedef GDBusInterfaceDefinition InterfaceDefinition;
-};
+
 
 }
 }
@@ -422,5 +442,13 @@ inline void TFC::ServiceModel::GDBusInterfaceDefinition::RegisterFunction(
 			GDBusTypeCode<typename Introspect::ReturnType>::value);
 }
 
+template<typename TDeclaring, typename TArgs>
+inline void TFC::ServiceModel::GDBusInterfaceDefinition::RegisterEvent(
+		TFC::Core::EventObject<TDeclaring*, TArgs> TDeclaring::*eventPtr)
+{
+	auto& typeDescription = Core::TypeInfo<TDeclaring>::typeDescription;
+
+	RegisterEvent(typeDescription.GetEventNameByPointer(eventPtr), GDBusTypeCode<TArgs>::value);
+}
 
 #endif /* TFC_SERVICEMODEL_GDBUSENDPOINT_H_ */

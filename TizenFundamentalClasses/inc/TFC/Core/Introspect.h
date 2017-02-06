@@ -10,12 +10,16 @@
 #define TFC_CORE_INTROSPECT_H_
 
 #include <type_traits>
-//#include "TFC/Core.h"
 #include <tuple>
 #include <functional>
 
 namespace TFC {
 namespace Core {
+
+// Forward declaration
+template<typename, typename>
+class EventObject;
+
 namespace Introspect {
 
 /*
@@ -220,7 +224,7 @@ public:
 	StorageSelector<pointerSize>::Type value;
 
 	template<typename TPtrType>
-	static PointerToMemberFunction Get(TPtrType ptr)
+	static constexpr PointerToMemberFunction Get(TPtrType ptr)
 	{
 		PointerToMemberFunctionValue<TPtrType> obj { ptr };
 		return { obj.value };
@@ -241,6 +245,61 @@ struct PointerToMemberFunctionHash
 	}
 };
 
+struct PointerToMember
+{
+private:
+	class Dummy { };
+	static constexpr auto pointerSize = sizeof(int (Dummy::*));
+
+	template<typename TPtrType>
+	union PointerToMemberValue;
+
+	template<typename TDeclaring, typename TValueType>
+	union PointerToMemberValue<TValueType (TDeclaring::*)>
+	{
+		TValueType (TDeclaring::* pointerValue);
+		StorageSelector<pointerSize>::Type value;
+	};
+
+public:
+	typedef typename StorageSelector<pointerSize>::Type UnderlyingType;
+
+	StorageSelector<pointerSize>::Type value;
+
+	template<typename TPtrType>
+	static constexpr PointerToMember Get(TPtrType ptr)
+	{
+		PointerToMemberValue<TPtrType> obj { ptr };
+		return { obj.value };
+	}
+
+	bool operator==(PointerToMember const& other)
+	{
+		return value == other.value;
+	}
+};
+
+struct PointerToMemberHash
+{
+	size_t operator()(PointerToMember const& obj) const
+	{
+		auto val = obj.value;
+		return std::hash<decltype(val)>()(val);
+	}
+};
+
+template<typename TPtr>
+struct MemberEvent
+{
+
+};
+
+template<typename TDeclaring, typename TArgs>
+struct MemberEvent<TFC::Core::EventObject<TDeclaring*, TArgs> TDeclaring::*>
+{
+	typedef TArgs EventArgType;
+	typedef TDeclaring DeclaringType;
+};
 
 
 }}}

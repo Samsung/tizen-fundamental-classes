@@ -24,9 +24,12 @@ namespace TFC {
 namespace ServiceModel {
 
 template<typename TChannel>
-class IServerObject
+class IServerObject : public EventEmitterClass<IServerObject<TChannel>>
 {
 public:
+	template<typename TArg>
+	using Event = typename EventEmitterClass<IServerObject<TChannel>>::template Event<TArg>;
+
 	typedef typename TChannel::InterfaceDefinition InterfaceDefinition;
 	typedef typename TChannel::SerializedType SerializedType;
 
@@ -46,6 +49,14 @@ public:
 		}
 	};
 
+	struct EventEmissionInfo
+	{
+		std::string const& eventName;
+		SerializedType const& eventArgument;
+	};
+
+	Event<EventEmissionInfo const&> eventEventRaised;
+
 private:
 	std::string name;
 	std::map<std::string, InterfaceEntry> ifaceVtable;
@@ -56,8 +67,15 @@ protected:
 		ifaceVtable.emplace(interfaceName, std::move(ifaceInfo));
 	}
 
+	void NotifyEventRaised(std::string const& eventName, SerializedType eventArg)
+	{
+		eventEventRaised(this, { eventName, eventArg });
+	}
+
 public:
 	IServerObject() { this->name = Core::GetInterfaceName(nullptr, typeid(this)); }
+
+
 	virtual ~IServerObject() { }
 
 	std::vector<InterfaceDefinition*> GetInterfaceList()
@@ -98,6 +116,7 @@ private:
 	typedef typename Channel::Serializer 		Serializer;
 
 	typedef void (T::* PointerToMemberFunctionType)();
+	typedef int (T::* PointerToMemberType);
 
 	struct FunctionDelegate
 	{
@@ -105,11 +124,26 @@ private:
 		typename Channel::SerializedType (*delegateFunc)(T* instance, PointerToMemberFunctionType targetFunc, typename Channel::SerializedType p);
 	};
 
+	struct EventRegistration
+	{
+		std::string eventName;
+		PointerToMemberType targetEvent;
+		ObjectClass* (* registerEventFunc)(ServerObject<TEndpoint, T>&, EventRegistration const&);
+
+		ObjectClass* RegisterEvent(ServerObject<TEndpoint, T>& obj)
+		{
+			return registerEventFunc(obj, *this);
+		}
+	};
+
 	std::string objectPath;
 
 	static typename Channel::InterfaceDefinition definition;
 	static std::unordered_map<std::string, FunctionDelegate> functionMap;
+	static std::unordered_map<std::string, EventRegistration> eventMap;
 	static bool initialized;
+
+	std::vector<std::unique_ptr<ObjectClass>> eventClosure;
 
 	class ServerObjectInvoker : public IServerObject<typename TEndpoint::Channel>::ServerObjectInvoker
 	{
@@ -139,6 +173,11 @@ protected:
 		}
 
 		IServerObject<typename TEndpoint::Channel>::RegisterInterface(ifaceName, { new ServerObjectInvoker(this), definition });
+
+		for(auto& eventReg : eventMap)
+		{
+			eventClosure.push_back(std::unique_ptr<ObjectClass> { eventReg.second.RegisterEvent(*this) });
+		}
 	}
 
 	template<typename TFuncPtr, typename = typename Core::Introspect::MemberFunction<TFuncPtr>::ReturnType>
@@ -174,14 +213,55 @@ protected:
 		}
 	};
 
+	template<typename>
+	friend struct EventHandlerClosure;
+
+	template<typename TArg>
+	struct EventHandlerClosure : ObjectClass
+	{
+		ServerObject<TEndpoint, T>& serverRef;
+		EventRegistration const& eventRef;
+
+		EventHandlerClosure(ServerObject<TEndpoint, T>& serverRef, EventRegistration const& eventRef) :
+			serverRef(serverRef), eventRef(eventRef)
+		{
+			auto targetEvent = reinterpret_cast<Core::EventObject<T*, TArg> T::*>(eventRef.targetEvent);
+
+			(serverRef.*targetEvent) += EventHandler(EventHandlerClosure::EventHandlerFunc);
+		}
+
+		void EventHandlerFunc(T* source, TArg value)
+		{
+			typedef Serialization::ObjectSerializer<Serializer, TArg> Serializer;
+			auto serializedArg = Serializer::Serialize(value);
+
+			serverRef.NotifyEventRaised(eventRef.eventName, serializedArg);
+		}
+
+		~EventHandlerClosure()
+		{
+
+		}
+	};
+
+
+
+	template<typename TArg>
+	static ObjectClass* RegisterEventHandler(ServerObject<TEndpoint, T>& server, EventRegistration const& eventName)
+	{
+		return new EventHandlerClosure<TArg> { server, eventName };
+	}
+
 	static void InitializeInterface();
 
 	template<typename TFuncPtr>
 	static void RegisterFunction(TFuncPtr ptr, char const* name)
 	{
+		auto& typeDescription = Core::TypeInfo<T>::typeDescription;
+
 		functionMap.emplace(
 			std::make_pair<std::string, FunctionDelegate>(
-				name,
+				typeDescription.GetFunctionNameByPointer(ptr),
 				{
 					reinterpret_cast<PointerToMemberFunctionType>(ptr),
 					InvokerSelector<TFuncPtr>::Func
@@ -189,6 +269,28 @@ protected:
 		));
 
 		definition.RegisterFunction(ptr);
+	}
+
+	template<typename TArg>
+	static void RegisterEvent(TFC::Core::EventObject<T*, TArg> T::* eventPtr, char const* name)
+	{
+		dlog_print(DLOG_DEBUG, "RPC-Test", "RegisterEvent");
+
+		auto& typeDescription = Core::TypeInfo<T>::typeDescription;
+
+		auto eventName = typeDescription.GetEventNameByPointer(eventPtr);
+		eventMap.emplace(
+			std::make_pair<std::string, EventRegistration>(
+				eventName,
+				{
+						eventName,
+						reinterpret_cast<PointerToMemberType>(eventPtr),
+						RegisterEventHandler<TArg>
+				}
+		));
+
+
+		definition.RegisterEvent(eventPtr);
 	}
 
 
@@ -204,6 +306,9 @@ typename ServerObject<TEndpoint, T>::Channel::InterfaceDefinition ServerObject<T
 
 template<typename TEndpoint, typename T>
 std::unordered_map<std::string, typename ServerObject<TEndpoint, T>::FunctionDelegate> ServerObject<TEndpoint, T>::functionMap;
+
+template<typename TEndpoint, typename T>
+std::unordered_map<std::string, typename ServerObject<TEndpoint, T>::EventRegistration> ServerObject<TEndpoint, T>::eventMap;
 
 template<typename TEndpoint>
 class IServerObjectManager

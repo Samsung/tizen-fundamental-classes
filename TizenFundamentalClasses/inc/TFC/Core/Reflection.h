@@ -86,12 +86,23 @@ public:
 	size_t GetHash() { return this->hash; }
 
 protected:
-	FunctionInfo(char const* name, size_t hash) :  hash(hash), functionName(name)
-	{
-
-	}
+	FunctionInfo(char const* name, size_t hash) :  hash(hash), functionName(name) {	}
 };
 
+class EventInfo : public ObjectClass
+{
+private:
+	size_t hash;
+
+public:
+	char const* eventName;
+	virtual bool Equals(EventInfo const& other) const = 0;
+	virtual void Raise(void* object, void* param) const = 0;
+	size_t GetHash() { return this->hash; }
+
+protected:
+	EventInfo(char const* name, size_t hash) : hash(hash), eventName(name) { }
+};
 
 class ConstructorInfo : public ObjectClass
 {
@@ -99,9 +110,6 @@ private:
 	std::unique_ptr<FunctionSignatureBase> signature;
 public:
 	char const* constructorName;
-
-
-
 
 	virtual bool Equals(ConstructorInfo const& other) const = 0;
 
@@ -220,6 +228,57 @@ public:
 	}
 };
 
+template<typename T>
+class EventInfoTemplate : public EventInfo
+{
+private:
+	T ptr;
+
+	static size_t Hash(T ptr)
+	{
+		auto val = Core::Introspect::PointerToMember::Get(ptr);
+		return Core::Introspect::PointerToMemberHash()(val);
+	}
+
+public:
+	typedef typename Core::Introspect::MemberEvent<T>::EventArgType EventArgType;
+	typedef typename Core::Introspect::MemberEvent<T>::DeclaringType DeclaringType;
+
+	EventInfoTemplate(char const* name, T ptr) :
+		EventInfo(name, Hash(ptr)),
+		ptr(ptr)
+	{
+
+	}
+
+	bool Equals(EventInfo const& other) const override
+	{
+		try
+		{
+			dlog_print(DLOG_DEBUG, "RPC-Test", "Try cast");
+
+			auto casted = dynamic_cast<EventInfoTemplate<T> const&>(other);
+			if(casted.ptr == this->ptr)
+				return true;
+			else
+				return false;
+		}
+		catch(std::bad_cast& t)
+		{
+			dlog_print(DLOG_DEBUG, "RPC-Test", "Bad typeid");
+			return false;
+		}
+	}
+
+	void Raise(void* object, void* param) const override
+	{
+		auto obj = reinterpret_cast<DeclaringType*>(object);
+		auto arg = reinterpret_cast<EventArgType*>(param);
+
+		(obj->*ptr)(obj, *arg);
+	}
+};
+
 template<typename TInfo>
 class ConstructorInfoTemplate : public ConstructorInfo
 {
@@ -257,11 +316,6 @@ public:
 	{
 
 	}
-};
-
-class EventInfo : public ObjectClass
-{
-
 };
 
 class PropertyInfo : public ObjectClass
@@ -375,6 +429,22 @@ public:
 			}
 		};
 
+		template<typename T>
+		struct InitializerFunctor<T, TypeMemberKind::Event>
+		{
+			static void Initialize(
+					T member,
+					char const* name,
+					TypeMemberKind& kind,
+					ObjectClass*& ptr)
+			{
+				//ptr = new DestructorInfoTemplate<typename T::Type>();
+				dlog_print(DLOG_DEBUG, "RPC-Test", "Initialize event: %s", name);
+				ptr = new EventInfoTemplate<T>(name, member);
+				kind = TypeMemberKind::Event;
+			}
+		};
+
 
 	private:
 		friend class TypeDescription;
@@ -389,6 +459,7 @@ public:
 	std::map<std::string, ConstructorInfo*> constructorMap;
 	std::map<std::string, FunctionInfo*> const& GetFunctionMap() const { return functionMap; }
 	DestructorInfo* destructor;
+	std::map<std::string, EventInfo*> eventMap;
 
 	template<typename TMemPtr>
 	char const* GetFunctionNameByPointer(TMemPtr ptr) const
@@ -409,6 +480,27 @@ public:
 			throw FunctionNotFoundException("Function specified is not found");
 
 		return res->second->functionName;
+	}
+
+	template<typename TEvPtr>
+	char const* GetEventNameByPointer(TEvPtr ptr) const
+	{
+		EventInfoTemplate<TEvPtr> prototype(nullptr, ptr);
+
+		dlog_print(DLOG_DEBUG, "RPC-Test", "GetEventNameByPointer");
+
+		auto res = std::find_if(eventMap.begin(), eventMap.end(), [&] (typename decltype(eventMap)::value_type const& w)
+		{
+			if(w.second->Equals(prototype))
+				return true;
+			else
+				return false;
+		});
+
+		if(res == eventMap.end())
+			throw FunctionNotFoundException("Event specified is not found");
+
+		return res->second->eventName;
 	}
 
 	FunctionInfo const& GetFunctionByName(std::string const& name) const
@@ -500,6 +592,11 @@ struct TFC::Core::TypeMemberKindSelector<TFC::Core::Destructor<T>, void>
 	static constexpr TypeMemberKind value = TypeMemberKind::Destructor;
 };
 
+template<typename TDeclaring, typename TArg>
+struct TFC::Core::TypeMemberKindSelector<TFC::Core::EventObject<TDeclaring*, TArg> TDeclaring::*, void>
+{
+	static constexpr TypeMemberKind value = TypeMemberKind::Event;
+};
 
 
 #define TFC_DefineTypeInfo(TYPENAME) \

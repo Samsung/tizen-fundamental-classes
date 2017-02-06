@@ -101,6 +101,12 @@ GVariantDeserializer::GVariantDeserializer(SerializedType p) : variant(p) {
 	dlog_print(DLOG_DEBUG, "TFC-RPC", "The value is: %s", str);
 	g_free(str);
 
+	if(!g_variant_type_is_tuple(g_variant_get_type(p)))
+	{
+		GVariant* arr[] = { p };
+		p = g_variant_new_tuple(arr, 1);
+	}
+
 	this->maxChild = g_variant_n_children(p);
 	this->currentChild = 0;
 
@@ -353,11 +359,13 @@ LIBAPI
 TFC::ServiceModel::GDBusInterfaceDefinition::GDBusInterfaceDefinition() {
 	this->interfaceInfo.ref_count = -1;
 	this->interfaceInfo.name = nullptr;
+
 	this->methodInfoList.push_back(nullptr);
+	this->signalInfoList.push_back(nullptr);
 
 	this->interfaceInfo.methods = &this->methodInfoList[0];
 	this->interfaceInfo.properties = nullptr;
-	this->interfaceInfo.signals = nullptr;
+	this->interfaceInfo.signals = &this->signalInfoList[0];
 	this->interfaceInfo.annotations = nullptr;
 }
 
@@ -426,9 +434,38 @@ void TFC::ServiceModel::GDBusInterfaceDefinition::RegisterFunction(
 }
 
 LIBAPI
+void TFC::ServiceModel::GDBusInterfaceDefinition::RegisterEvent(
+		const std::string& eventName, const std::string& arg)
+{
+	GDBusSignalInfo* s = new GDBusSignalInfo;
+
+	s->ref_count = -1;
+	s->name = g_strdup(eventName.c_str());
+	s->annotations = nullptr;
+
+	// Store argument
+	s->args = new GDBusArgInfo*[2] {};
+
+	auto store = new GDBusArgInfo;
+	store->name = "arg";
+	store->ref_count = -1;
+	store->signature = g_strdup(arg.c_str());
+	store->annotations = nullptr;
+
+	s->args[0] = store;
+
+	int lastIndex = this->signalInfoList.size();
+	this->signalInfoList[lastIndex - 1] = s;
+	this->signalInfoList.push_back(nullptr);
+
+	// Refresh the address
+	this->interfaceInfo.signals = &this->signalInfoList[0];
+}
+
+LIBAPI
 TFC::ServiceModel::GDBusInterfaceDefinition::~GDBusInterfaceDefinition()
 {
-	for(auto& methodInfo : this->methodInfoList)
+	for(auto methodInfo : this->methodInfoList)
 	{
 		if(methodInfo == nullptr)
 			break;
@@ -457,7 +494,7 @@ TFC::ServiceModel::GDBusInterfaceDefinition::~GDBusInterfaceDefinition()
 			inArgs++;
 		}
 
-		delete methodInfo->in_args;
+		delete[] methodInfo->in_args;
 
 		auto& outArg = methodInfo->out_args[0];
 
@@ -468,10 +505,20 @@ TFC::ServiceModel::GDBusInterfaceDefinition::~GDBusInterfaceDefinition()
 			delete outArg;
 		}
 		dlog_print(DLOG_DEBUG, "TFC-Debug", "Destroy outArgs completely");
-		delete methodInfo->out_args;
+		delete[] methodInfo->out_args;
 
 		dlog_print(DLOG_DEBUG, "TFC-Debug", "Destroy methodInfo completely");
 		delete methodInfo;
+	}
+
+	for(auto signalInfo : signalInfoList)
+	{
+		if(signalInfo == nullptr)
+			break;
+
+		g_free(signalInfo->name);
+		g_free(signalInfo->args[0]->signature);
+		delete[] signalInfo->args;
 	}
 
 	dlog_print(DLOG_DEBUG, "TFC-Debug", "Complete destructor");
@@ -493,14 +540,10 @@ void TFC::ServiceModel::GDBusServer::OnNameLostCallback(
 }
 
 GDBusInterfaceVTable const TFC::ServiceModel::GDBusServer::defaultVtable;
+std::regex dotRegex("\\.");
 
 void TFC::ServiceModel::GDBusServer::OnBusAcquired(GDBusConnection* connection,
 		const gchar* name) {
-	std::regex dotRegex("\\.");
-
-	std::string rootPath("/");
-	rootPath += std::regex_replace(this->config.busName, dotRegex, "/");
-	rootPath += "/";
 
 	std::cout << "Bus acq\n";
 
@@ -568,7 +611,7 @@ GDBusServerAuthorizePeers (GDBusAuthObserver *observer,
                            GCredentials      *credentials,
                            gpointer           user_data)
 {
-  return true;
+	return true;
 }
 
 LIBAPI
@@ -576,12 +619,16 @@ void TFC::ServiceModel::GDBusServer::Initialize()
 {
 	GError* err = nullptr;
 
+	rootPath = "/";
+	rootPath += std::regex_replace(this->config.busName, dotRegex, "/");
+	rootPath += "/";
+
 	if(config.busType == GBusType::G_BUS_TYPE_NONE)
 	{
 		// Not a message bus
 		std::unique_ptr<gchar, GDeleter> guid(g_dbus_generate_guid());
 
-		auto serverFlags = G_DBUS_SERVER_FLAGS_NONE;
+		auto serverFlags = G_DBUS_SERVER_FLAGS_RUN_IN_THREAD;
 
 		std::string serverAddress("unix:path=");
 		serverAddress.append(config.busPath);
@@ -612,9 +659,12 @@ void TFC::ServiceModel::GDBusServer::Initialize()
 					auto thiz = reinterpret_cast<GDBusServer*>(user_data);
 					std::cout << "Registering names \n";
 					thiz->OnBusAcquired(connection, nullptr);
+
+					thiz->connectionList.push_back(connection);
+					g_signal_connect(connection, "closed", G_CALLBACK (&GDBusServer::OnConnectionClosedCallback), user_data);
 				};
 
-		g_signal_connect (server, "new-connection", G_CALLBACK (func), (gpointer)this);
+		g_signal_connect(server, "new-connection", G_CALLBACK (func), (gpointer)this);
 
 	}
 	else if(config.busType == G_BUS_TYPE_SESSION || config.busType == G_BUS_TYPE_SYSTEM)
@@ -687,6 +737,8 @@ void TFC::ServiceModel::GDBusServer::AddServerObject(IServerObject<GDBusChannel>
 {
 	std::string const& name = obj->GetName();
 	this->objectList.emplace(name, std::unique_ptr<IServerObject<GDBusChannel>>(obj));
+
+	obj->eventEventRaised += EventHandler(GDBusServer::EventCaptureHandler);
 }
 
 LIBAPI
@@ -811,4 +863,51 @@ GVariantDeserializer TFC::ServiceModel::GVariantDeserializer::DeserializeScope()
 	auto val = g_variant_iter_next_value(&iter);
 	TFCAssert(g_variant_type_is_tuple(g_variant_get_type(val)), "Invalid value. Scope value is not tuple.");
 	return { val };
+}
+
+void TFC::ServiceModel::GDBusServer::OnConnectionClosedCallback(
+		GDBusConnection* connection, gboolean remote_peer_vanished,
+		GError* error, gpointer user_data) {
+	auto thiz = static_cast<GDBusServer*>(user_data);
+
+	std::remove_if(thiz->connectionList.begin(), thiz->connectionList.end(), [user_data] (GDBusConnection* data) { return data == user_data; });
+}
+
+void TFC::ServiceModel::GDBusServer::EventCaptureHandler(IServerObject<GDBusChannel>* source, IServerObject<GDBusChannel>::EventEmissionInfo const& eventInfo)
+{
+	decltype(auto) name = source->GetName();
+
+	dlog_print(DLOG_DEBUG, LOG_TAG, "EventCaptureHandler %s", name.c_str());
+
+	std::string objPath = rootPath;
+	objPath += std::regex_replace(name, dotRegex, "/");
+
+	char const* ifaceName = nullptr;
+
+
+	// Find interface
+	for(auto& iface : source->GetInterfaceList())
+	{
+		auto signalPtr = iface->GetInterfaceInfo().signals;
+
+		while(auto currSignal = *signalPtr)
+		{
+			if(eventInfo.eventName.compare(currSignal->name) == 0)
+			{
+				ifaceName = iface->GetInterfaceInfo().name;
+				break;
+			}
+			else
+				++signalPtr;
+		}
+	}
+
+	dlog_print(DLOG_DEBUG, LOG_TAG, "Found interface %s and object path %s", ifaceName, objPath.c_str());
+
+	for(auto connection : this->connectionList)
+	{
+		GError* err = nullptr;
+		g_dbus_connection_emit_signal(connection, nullptr, objPath.c_str(), ifaceName, eventInfo.eventName.c_str(), eventInfo.eventArgument, &err);
+	}
+
 }

@@ -39,6 +39,14 @@ TypeDescription::TypeDescription(std::initializer_list<TypeDescriptionBuilder>& 
 			{
 				destructor = dynamic_cast<DestructorInfo*>(i.infoObject);
 			}
+			break;
+		case TypeMemberKind::Event:
+			{
+				auto eventInfo = dynamic_cast<EventInfo*>(i.infoObject);
+				eventMap.emplace(std::make_pair(eventInfo->eventName, eventInfo));
+				dlog_print(DLOG_DEBUG, "RPC-Test", "Event info registration completed");
+			}
+			break;
 		}
 	}
 
