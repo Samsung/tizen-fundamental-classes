@@ -8,20 +8,31 @@
 #ifndef TFC_SERVICEMODEL_GDBUSENDPOINT_H_
 #define TFC_SERVICEMODEL_GDBUSENDPOINT_H_
 
-#include <glib-2.0/glib.h>
-#include <glib-2.0/gio/gio.h>
+#include <gio/gio.h>
+
+#include "TFC/Core.h"
+#include "TFC/Core/Metaprogramming.h"
+#include "TFC/Core/Reflection.h"
+#include "TFC/Serialization/ClassSerializer.h"
+#include "TFC/Serialization.h"
+#include "TFC/ServiceModel/Includes.h"
+#include "TFC/ServiceModel/ClientEndpoint.h"
+#include "TFC/ServiceModel/ServerEndpoint.h"
+
+#include <cstdint>
+#include <map>
+#include <memory>
+#include <string>
+#include <tuple>
+#include <type_traits>
 #include <vector>
 
-#include "TFC/Core/Introspect.h"
-#include "TFC/Core/Reflection.h"
-#include "TFC/ServiceModel/Includes.h"
-#include "TFC/ServiceModel/ServerEndpoint.h"
-#include "TFC/Serialization/ClassSerializer.h"
+namespace TFC
+{
+namespace ServiceModel
+{
 
-namespace TFC {
-namespace ServiceModel {
-
-TFC_ExceptionDeclare	(GDBusException, EndpointException);
+TFC_ExceptionDeclare(GDBusException, EndpointException);
 
 class GVariantSerializer;
 class GVariantDeserializer;
@@ -32,12 +43,12 @@ class GDBusInterfaceDefinition;
 
 struct GDBusChannel
 {
-	typedef GVariantSerializer 	 	 Serializer;
-	typedef GVariantDeserializer 	 Deserializer;
-	typedef GDBusClient			 	 Client;
-	typedef GDBusServer			 	 Server;
-	typedef GVariant* 			 	 SerializedType;
-	typedef GDBusConfiguration		 ConfigurationType;
+	typedef GVariantSerializer Serializer;
+	typedef GVariantDeserializer Deserializer;
+	typedef GDBusClient Client;
+	typedef GDBusServer Server;
+	typedef GVariant* SerializedType;
+	typedef GDBusConfiguration ConfigurationType;
 	typedef GDBusInterfaceDefinition InterfaceDefinition;
 };
 
@@ -46,7 +57,7 @@ class GVariantDeleter
 public:
 	void operator()(GVariant* ptr)
 	{
-		if(ptr != nullptr)
+		if (ptr != nullptr)
 			g_variant_unref(ptr);
 	}
 };
@@ -78,7 +89,7 @@ struct GVariantSerializer
 
 		SerializedType tmp = nullptr;
 
-		if(args.empty())
+		if (args.empty())
 		{
 			tmp = g_variant_new_array(G_VARIANT_TYPE_INT64, nullptr, 0);
 		}
@@ -87,7 +98,7 @@ struct GVariantSerializer
 			GVariantBuilder arrayBuilder;
 			g_variant_builder_init(&arrayBuilder, G_VARIANT_TYPE_ARRAY);
 
-			for(auto& obj : args)
+			for (auto& obj : args)
 			{
 				g_variant_builder_add_value(&arrayBuilder, GenericSerializer<GVariantSerializer, T>::Serialize(obj));
 			}
@@ -111,7 +122,7 @@ struct GVariantDeserializer
 	template<typename T>
 	T DeserializeImpl(SerializedType index);
 
-	template<typename, typename> friend struct DeserializeSelector;
+	template<typename, typename > friend struct DeserializeSelector;
 
 	template<typename T, typename = void>
 	struct DeserializerSelector
@@ -125,13 +136,13 @@ struct GVariantDeserializer
 	};
 
 	/*
-	template<typename T>
-	T Deserialize(int index)
-	{
-		dlog_print(DLOG_DEBUG, "TFC-RPC", "Index %d", index);
-		return DeserializerSelector<T>::Deserialize(*this, index);
-	}
-	*/
+	 template<typename T>
+	 T Deserialize(int index)
+	 {
+	 dlog_print(DLOG_DEBUG, "TFC-RPC", "Index %d", index);
+	 return DeserializerSelector<T>::Deserialize(*this, index);
+	 }
+	 */
 	void Deserialize(int8_t& target);
 	void Deserialize(int16_t& target);
 	void Deserialize(int32_t& target);
@@ -154,7 +165,8 @@ struct GVariantDeserializer
 		target.clear();
 		auto arrVariant = g_variant_iter_next_value(&iter);
 		auto arrIter = g_variant_iter_new(arrVariant);
-		while (auto value = g_variant_iter_next_value(arrIter)) {
+		while (auto value = g_variant_iter_next_value(arrIter))
+		{
 
 			typedef TFC::Serialization::GenericDeserializer<GVariantDeserializer, T> Deserializer;
 
@@ -181,7 +193,8 @@ private:
 };
 
 template<typename T>
-struct GVariantDeserializer::DeserializerSelector<T, Core::Metaprogramming::Void_T<typename Serialization::TypeSerializationInfoSelector<T>::Type>>
+struct GVariantDeserializer::DeserializerSelector<T,
+		Core::Metaprogramming::Void_T<typename Serialization::TypeSerializationInfoSelector<T>::Type>>
 {
 	static T Deserialize(GVariantDeserializer& deser, int index)
 	{
@@ -193,30 +206,34 @@ struct GVariantDeserializer::DeserializerSelector<T, Core::Metaprogramming::Void
 };
 
 template<typename T>
-struct GVariantDeserializer::DeserializerSelector<T, Core::Metaprogramming::Void_T<typename std::enable_if<std::is_enum<T>::value>::type>>
+struct GVariantDeserializer::DeserializerSelector<T,
+		Core::Metaprogramming::Void_T<typename std::enable_if<std::is_enum<T>::value>::type>>
 {
 	static T Deserialize(GVariantDeserializer& deser, int index)
 	{
 		auto innerVar = deser.NextField();
-		return (T)deser.DeserializeImpl<typename std::underlying_type<T>::type>(innerVar.get());
+		return (T) deser.DeserializeImpl<typename std::underlying_type<T>::type>(innerVar.get());
 	}
 };
 
 template<typename T>
-struct GVariantDeserializer::DeserializerSelector<std::vector<T>, Core::Metaprogramming::Void_T<typename Serialization::TypeSerializationInfoSelector<T>::Type>>
+struct GVariantDeserializer::DeserializerSelector<std::vector<T>,
+		Core::Metaprogramming::Void_T<typename Serialization::TypeSerializationInfoSelector<T>::Type>>
 {
 	static std::vector<T> Deserialize(GVariantDeserializer& deser, int index)
 	{
 		using namespace TFC::Serialization;
 
 		auto innerVar = deser.NextField();
-		TFCAssert<Serialization::SerializationException>(g_variant_get_type(innerVar.get()) == G_VARIANT_TYPE_ARRAY, "The specified field is not an array type");
+		TFCAssert<Serialization::SerializationException>(g_variant_get_type(innerVar.get()) == G_VARIANT_TYPE_ARRAY,
+				"The specified field is not an array type");
 
 		std::vector<T> ret;
 
 		auto iter = g_variant_iter_new(innerVar.get());
 
-		for(auto current = g_variant_iter_next_value(iter); current != nullptr; current = g_variant_iter_next_value(iter))
+		for (auto current = g_variant_iter_next_value(iter); current != nullptr;
+				current = g_variant_iter_next_value(iter))
 		{
 			ret.push_back(GenericDeserializer<GVariantDeserializer, T>::Deserialize(current));
 		}
@@ -227,8 +244,6 @@ struct GVariantDeserializer::DeserializerSelector<std::vector<T>, Core::Metaprog
 	}
 };
 
-
-
 struct GDBusConfiguration
 {
 	char const* busName;
@@ -238,17 +253,34 @@ struct GDBusConfiguration
 	char const* busPath;
 };
 
-class GDBusClient
+class GDBusClient: public TFC::EventEmitterClass<GDBusClient>
 {
 private:
 	void* handle;
 	std::string objectPath;
 	std::string interfaceName;
 	GBusType busType;
+
+	void ReceiveEvent(char const* eventName, GVariant* eventArg);
 public:
+
+
 	GDBusClient(GDBusConfiguration const& config, char const* objectPath, char const* interfaceName);
 	GVariant* RemoteCall(char const* methodName, GVariant* parameter);
-	bool IsClosed() { return busType != G_BUS_TYPE_NONE || g_dbus_connection_is_closed((GDBusConnection*)handle); }
+	void RegisterEvent();
+	bool IsClosed()
+	{
+		return busType != G_BUS_TYPE_NONE || g_dbus_connection_is_closed((GDBusConnection*) handle);
+	}
+
+	static void GDBusProxyReceiveSignal(GDBusProxy* proxy, gchar* sender_name, gchar* signal_name, GVariant* parameters,
+			gpointer user_data);
+	static void GDBusConnectionReceiveSignal(GDBusConnection *connection, const gchar* sender_name,
+			const gchar* object_path, const gchar* interface_name, const gchar* signal_name, GVariant* parameters,
+			gpointer user_data);
+
+	Event<EventEmissionInfo<GVariant*> const&> eventEventReceived;
+
 	~GDBusClient();
 };
 
@@ -271,38 +303,31 @@ public:
 
 private:
 
-	static void	OnConnectionClosedCallback(GDBusConnection* connection, gboolean remote_peer_vanished, GError* error, gpointer user_data);
+	static void OnConnectionClosedCallback(GDBusConnection* connection, gboolean remote_peer_vanished, GError* error,
+			gpointer user_data);
 	static void OnBusAcquiredCallback(GDBusConnection *connection, const gchar* name, gpointer user_data);
 	static void OnNameAcquiredCallback(GDBusConnection *connection, const gchar* name, gpointer user_data);
 	static void OnNameLostCallback(GDBusConnection *connection, const gchar* name, gpointer user_data);
 
-	static void OnMethodCallCallback(GDBusConnection       *connection,
-			const gchar           *sender,
-            const gchar           *object_path,
-            const gchar           *interface_name,
-            const gchar           *method_name,
-            GVariant              *parameters,
-            GDBusMethodInvocation *invocation,
-            gpointer               user_data);
-
+	static void OnMethodCallCallback(GDBusConnection *connection, const gchar *sender, const gchar *object_path,
+			const gchar *interface_name, const gchar *method_name, GVariant *parameters,
+			GDBusMethodInvocation *invocation, gpointer user_data);
 
 	void OnBusAcquired(GDBusConnection *connection, const gchar* name);
 	void OnNameAcquired(GDBusConnection *connection, const gchar* name);
 	void OnNameLost(GDBusConnection *connection, const gchar* name);
 
-	void OnMethodCall(GDBusConnection       *connection,
-			const gchar           *sender,
-            const gchar           *object_path,
-            const gchar           *interface_name,
-            const gchar           *method_name,
-            GVariant              *parameters,
-            GDBusMethodInvocation *invocation);
+	void OnMethodCall(GDBusConnection *connection, const gchar *sender, const gchar *object_path,
+			const gchar *interface_name, const gchar *method_name, GVariant *parameters,
+			GDBusMethodInvocation *invocation);
 
-	static constexpr GDBusInterfaceVTable defaultVtable { OnMethodCallCallback, nullptr, nullptr };
+	static constexpr GDBusInterfaceVTable defaultVtable
+	{ OnMethodCallCallback, nullptr, nullptr };
 
-	void EventCaptureHandler(IServerObject<GDBusChannel>* source, IServerObject<GDBusChannel>::EventEmissionInfo const& eventInfo);
+	void EventCaptureHandler(IServerObject<GDBusChannel>* source,
+			IServerObject<GDBusChannel>::EventEmissionInfo const& eventInfo);
 
-	std::map<std::string, std::unique_ptr<IServerObject<GDBusChannel>>> objectList;
+	std::map<std::string, std::unique_ptr<IServerObject<GDBusChannel>>>objectList;
 	std::vector<GDBusConnection*> connectionList;
 	std::string rootPath;
 
@@ -344,18 +369,23 @@ private:
 	std::vector<GDBusMethodInfo*> methodInfoList;
 	std::vector<GDBusSignalInfo*> signalInfoList;
 
-	void RegisterFunction(std::string const& funcName, std::vector<std::string> const& args, std::string const& retType);
+	void RegisterFunction(std::string const& funcName, std::vector<std::string> const& args,
+			std::string const& retType);
 
 	void RegisterEvent(std::string const& eventName, std::string const& args);
 
 public:
-	GDBusInterfaceInfo const& GetInterfaceInfo() const { return this->interfaceInfo; };
+	GDBusInterfaceInfo const& GetInterfaceInfo() const
+	{
+		return this->interfaceInfo;
+	}
+	;
 };
 
 template<typename T>
 struct GDBusSignatureBuilder;
 
-template<typename... TArgs>
+template<typename ... TArgs>
 struct GDBusSignatureFiller;
 
 template<typename T>
@@ -389,7 +419,7 @@ GDBus_TypeCode_Define(double, "d");
 GDBus_TypeCode_Define(std::string, "s");
 GDBus_TypeCode_Define(void, "");
 
-template<typename... TArgs>
+template<typename ... TArgs>
 struct GDBusSignatureBuilder<std::tuple<TArgs...>>
 {
 	static std::vector<std::string> GetSignatureList()
@@ -400,9 +430,7 @@ struct GDBusSignatureBuilder<std::tuple<TArgs...>>
 	}
 };
 
-
-
-template<typename TCurrent, typename... TArgs>
+template<typename TCurrent, typename ... TArgs>
 struct GDBusSignatureFiller<TCurrent, TArgs...>
 {
 	static void GetSignature(std::vector<std::string>& param)
@@ -421,23 +449,18 @@ struct GDBusSignatureFiller<>
 	}
 };
 
-
-
-
-
 }
 }
 
 template<typename TFuncPtr>
-inline void TFC::ServiceModel::GDBusInterfaceDefinition::RegisterFunction(
-		TFuncPtr ptr) {
+inline void TFC::ServiceModel::GDBusInterfaceDefinition::RegisterFunction(TFuncPtr ptr)
+{
 
 	typedef Core::Introspect::MemberFunction<TFuncPtr> Introspect;
 
 	auto& typeDescription = Core::TypeInfo<typename Introspect::DeclaringType>::typeDescription;
 
-	RegisterFunction(
-			typeDescription.GetFunctionNameByPointer(ptr),
+	RegisterFunction(typeDescription.GetFunctionNameByPointer(ptr),
 			GDBusSignatureBuilder<typename Introspect::ArgsTuple>::GetSignatureList(),
 			GDBusTypeCode<typename Introspect::ReturnType>::value);
 }

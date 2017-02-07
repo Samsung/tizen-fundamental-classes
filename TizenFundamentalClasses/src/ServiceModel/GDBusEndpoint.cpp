@@ -212,6 +212,8 @@ TFC::ServiceModel::GDBusClient::GDBusClient(GDBusConfiguration const& config,
 
 		throw GDBusException(std::move(errStr));
 	}
+
+	RegisterEvent();
 }
 
 namespace {
@@ -341,6 +343,10 @@ TFC::ServiceModel::GDBusClient::~GDBusClient()
 		if(this->busType == G_BUS_TYPE_NONE)
 		{
 			g_dbus_connection_close_sync((GDBusConnection*) this->handle, nullptr, nullptr);
+		}
+		else
+		{
+			g_signal_handlers_disconnect_by_data(this->handle, this);
 		}
 
 		g_object_unref(this->handle);
@@ -585,6 +591,8 @@ void TFC::ServiceModel::GDBusServer::OnBusAcquired(GDBusConnection* connection,
 			}
 		}
 	}
+
+	this->connectionList.push_back(connection);
 }
 
 void TFC::ServiceModel::GDBusServer::OnNameAcquired(GDBusConnection* connection,
@@ -908,6 +916,43 @@ void TFC::ServiceModel::GDBusServer::EventCaptureHandler(IServerObject<GDBusChan
 	{
 		GError* err = nullptr;
 		g_dbus_connection_emit_signal(connection, nullptr, objPath.c_str(), ifaceName, eventInfo.eventName.c_str(), eventInfo.eventArgument, &err);
-	}
 
+		if(err != nullptr)
+		{
+			g_error_free(err);
+		}
+	}
+}
+
+void TFC::ServiceModel::GDBusClient::ReceiveEvent(const char* eventName,
+		GVariant* eventArg) {
+	std::cout << "Here in Event Received in Endpoint\n";
+	this->eventEventReceived(this, { eventName, eventArg });
+}
+
+void TFC::ServiceModel::GDBusClient::RegisterEvent()
+{
+	if(busType == G_BUS_TYPE_NONE)
+	{
+		auto conn = (GDBusConnection*)this->handle;
+		g_dbus_connection_signal_subscribe(conn, nullptr, interfaceName.c_str(), nullptr, objectPath.c_str(), nullptr, G_DBUS_SIGNAL_FLAGS_NONE, GDBusClient::GDBusConnectionReceiveSignal, this, nullptr);
+	}
+	else
+	{
+		auto proxy = (GDBusProxy*)this->handle;
+		g_signal_connect(proxy, "g-signal", G_CALLBACK(GDBusClient::GDBusProxyReceiveSignal), this);
+	}
+}
+
+void TFC::ServiceModel::GDBusClient::GDBusProxyReceiveSignal(GDBusProxy* proxy,
+		gchar* sender_name, gchar* signal_name, GVariant* parameters,
+		gpointer user_data) {
+	static_cast<GDBusClient*>(user_data)->ReceiveEvent(signal_name, parameters);
+}
+
+void TFC::ServiceModel::GDBusClient::GDBusConnectionReceiveSignal(
+		GDBusConnection* connection, const gchar* sender_name,
+		const gchar* object_path, const gchar* interface_name,
+		const gchar* signal_name, GVariant* parameters, gpointer user_data) {
+	static_cast<GDBusClient*>(user_data)->ReceiveEvent(signal_name, parameters);
 }

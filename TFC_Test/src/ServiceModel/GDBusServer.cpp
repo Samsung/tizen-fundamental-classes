@@ -43,7 +43,7 @@ class GDBusServerTest : public testing::Test
 };
 
 #define RPCTEST_BUS_NAME "com.srin.tfc.RPCTest"
-#define RPCTEST_OBJECT_PATH /*"/opt/usr/apps/org/example/tfc_test/data/mydbus/MyObject"*/"/com/srin/tfc/RPCTest/MyObject"
+#define RPCTEST_OBJECT_PATH /*"/opt/usr/apps/org/example/tfc_test/data/mydbus/MyObject"*/ "/com/srin/tfc/RPCTest/MyObject"
 #define RPCTEST_BUS_PATH "/opt/usr/apps/org.example.tfc_test/data/mydbus"
 static int testStore;
 
@@ -64,11 +64,14 @@ TFC::ServiceModel::GDBusConfiguration ServiceEndpoint::configuration {
 	G_DBUS_PROXY_FLAGS_NONE
 };
 
-class ITest
+class ITest : public TFC::EventEmitterClass<ITest>
 {
 public:
 	virtual std::string FunctionA(int a, int b, double c, std::string d) = 0;
 	virtual void FunctionB(int s) = 0;
+
+	Event<int> eventSomething;
+
 	virtual ~ITest() { }
 };
 
@@ -105,7 +108,10 @@ public:
 	{
 		std::cout << "FunctionB in ServerTest is called with args: " << s << std::endl;
 		::testStore = s;
-		throw MyException("Anything aah");
+
+		eventSomething(this, s);
+
+		//throw MyException("Anything aah");
 	}
 };
 
@@ -138,9 +144,14 @@ public:
 class TestClient : TFC::ServiceModel::ClientEndpoint<ServiceEndpoint, ITest>
 {
 public:
+	void EventHandlerTest(ITest* sender, int event);
+
 	TestClient() :
 		ClientEndpoint(RPCTEST_OBJECT_PATH)
 	{
+		RegisterEvent(&ITest::eventSomething);
+
+		this->eventSomething += EventHandler(TestClient::EventHandlerTest);
 	}
 
 	virtual std::string FunctionA(int a, int b, double c, std::string d) override
@@ -155,11 +166,17 @@ public:
 };
 
 
+void TestClient::EventHandlerTest(ITest* sender, int event)
+{
+	std::cout << "Event raised: " << event << '\n';
+}
+
 }
 
 TFC_DefineTypeInfo(GDBusServerTestNS::ITest) {
 	{ &GDBusServerTestNS::ITest::FunctionA, "FunctionA" },
-	{ &GDBusServerTestNS::ITest::FunctionB, "FunctionB" }
+	{ &GDBusServerTestNS::ITest::FunctionB, "FunctionB" },
+	{ &GDBusServerTestNS::ITest::eventSomething, "eventSomething" }
 };
 
 TFC_DefineTypeInfo(GDBusServerTestNS::ITestAgain) {
@@ -270,6 +287,8 @@ TEST_F(GDBusServerTest, GDBusServerCall)
 		ASSERT_TRUE(false) << "Exception was not propagated.";
 	}
 
+	std::this_thread::sleep_for(Ms(1000));
+
 	auto actualStr = client.FunctionA(1, 2, 3.5, "some");
 	std::this_thread::sleep_for(Ms(1000));
 	ASSERT_STREQ("some123.500000", actualStr.c_str()) << "Invocation via GDBus client server returning string failed";
@@ -282,9 +301,12 @@ public:
 	double	b;
 	int 	c;
 	std::string d;
+
+
 };
 
 TFC_DefineTypeSerializationInfo(SomeClass,
+			TFC_ConstantValue(0x123456),
 			TFC_FieldInfo(SomeClass::a),
 			TFC_FieldInfo(SomeClass::b),
 			TFC_FieldInfo(SomeClass::c),
@@ -307,12 +329,14 @@ TEST_F(GDBusServerTest, ClassSerializer)
 
 	auto packed = SomeClassSerializer<TFC::ServiceModel::GVariantSerializer>::Serialize(p);
 
+	int constructor;
 	int actualA, actualC;
 	double actualB;
 
-	g_variant_get_child(packed, 0, "i", &actualA);
-	g_variant_get_child(packed, 1, "d", &actualB);
-	g_variant_get_child(packed, 2, "i", &actualC);
+	g_variant_get_child(packed, 0, "i", &constructor);
+	g_variant_get_child(packed, 1, "i", &actualA);
+	g_variant_get_child(packed, 2, "d", &actualB);
+	g_variant_get_child(packed, 3, "i", &actualC);
 
 	ASSERT_EQ(p.a, actualA) << "Variable a is incorrect";
 	ASSERT_DOUBLE_EQ(p.b, actualB) << "Variable b is incorrect";
@@ -331,6 +355,7 @@ void TFC::ServiceModel::ServerObject<GDBusServerTestNS::ServiceEndpoint, GDBusSe
 {
 	RegisterFunction(&ITest::FunctionA, "FunctionA");
 	RegisterFunction(&ITest::FunctionB, "FunctionB");
+	RegisterEvent(&ITest::eventSomething, "eventSomething");
 }
 
 template<>
