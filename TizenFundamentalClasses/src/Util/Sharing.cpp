@@ -99,6 +99,9 @@ LIBAPI void TFC::Util::ShareData(const std::string& text, const std::string& ima
     std::ifstream  src(imagePath, std::ios::binary);
     std::ofstream  dst(filename,   std::ios::binary);
     dst << src.rdbuf();
+    dst.close();
+    src.close();
+
     dlog_print(DLOG_ERROR, LOG_TAG, "filename = %s", filename.c_str());
 
     media_content_connect();
@@ -125,5 +128,6 @@ LIBAPI void TFC::Util::ShareData(const std::string& text, const std::string& ima
 
 	app_control_send_launch_request(appControl, NULL, NULL);
 
+	media_info_destroy(mediaInfo);
 	app_control_destroy(appControl);
 }
