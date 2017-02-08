@@ -77,7 +77,6 @@ private:
 		auto& typeDescription = Core::TypeInfo<T>::typeDescription;
 
 		auto serialized = Serializer::Serialize(args...);
-		dlog_print(DLOG_DEBUG, "RPC-Test", "In InvokeInternal");
 		return ReturnTypeDeserializer::Deserialize(endpoint.RemoteCall(typeDescription.GetFunctionNameByPointer(ptr), serialized));
 	}
 
@@ -85,12 +84,8 @@ private:
 	{
 		auto data = eventMap.find(info.eventName);
 		if(data != eventMap.end())
-		{
 			data->second.raiseFunc(this, data->second.event, info.eventArg);
-		}
 	}
-
-
 
 	template<typename TArg>
 	static void RaiseFunction(T* thiz, void* eventPtr, typename Channel::SerializedType dataPtr)
@@ -98,7 +93,6 @@ private:
 		auto event = static_cast<TFC::Core::EventObject<T*, TArg>*>(eventPtr);
 		typename Channel::Deserializer deser(dataPtr);
 		auto data = Serialization::GenericDeserializer<typename Channel::Deserializer, TArg>::Deserialize(deser);
-		// Raise the event
 		(*event)(thiz, data);
 	}
 

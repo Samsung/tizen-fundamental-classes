@@ -45,6 +45,7 @@ class GDBusServerTest : public testing::Test
 #define RPCTEST_BUS_NAME "com.srin.tfc.RPCTest"
 #define RPCTEST_OBJECT_PATH /*"/opt/usr/apps/org/example/tfc_test/data/mydbus/MyObject"*/ "/com/srin/tfc/RPCTest/MyObject"
 #define RPCTEST_BUS_PATH "/opt/usr/apps/org.example.tfc_test/data/mydbus"
+
 static int testStore;
 
 namespace GDBusServerTestNS
@@ -59,9 +60,10 @@ struct ServiceEndpoint
 
 TFC::ServiceModel::GDBusConfiguration ServiceEndpoint::configuration {
 	RPCTEST_BUS_NAME,
-	G_BUS_TYPE_SYSTEM,
+	G_BUS_TYPE_NONE,
 	G_BUS_NAME_OWNER_FLAGS_NONE,
-	G_DBUS_PROXY_FLAGS_NONE
+	G_DBUS_PROXY_FLAGS_NONE,
+	RPCTEST_BUS_PATH
 };
 
 class ITest : public TFC::EventEmitterClass<ITest>
@@ -152,6 +154,8 @@ public:
 		RegisterEvent(&ITest::eventSomething);
 
 		this->eventSomething += EventHandler(TestClient::EventHandlerTest);
+
+		storedValueAfterEvent = 0;
 	}
 
 	virtual std::string FunctionA(int a, int b, double c, std::string d) override
@@ -163,12 +167,14 @@ public:
 	{
 		Invoke(&ITest::FunctionB, s);
 	}
+
+	int storedValueAfterEvent;
 };
 
 
 void TestClient::EventHandlerTest(ITest* sender, int event)
 {
-	std::cout << "Event raised: " << event << '\n';
+	storedValueAfterEvent = event;
 }
 
 }
@@ -249,7 +255,7 @@ TEST_F(GDBusServerTest, GDBusServerCall)
 {
 	using namespace GDBusServerTestNS;
 
-	TFC::ServiceModel::GDBusServer server({ "com.srin.tfc.RPCTest", RPCTEST_BUS_NAME,  G_BUS_TYPE_SYSTEM, G_BUS_NAME_OWNER_FLAGS_NONE });
+	TFC::ServiceModel::GDBusServer server({ "com.srin.tfc.RPCTest", RPCTEST_BUS_NAME,  G_BUS_TYPE_NONE, G_BUS_NAME_OWNER_FLAGS_NONE, RPCTEST_BUS_PATH });
 	auto ptr = new ServerTest;
 	ptr->SetName("MyObject");
 
@@ -288,6 +294,8 @@ TEST_F(GDBusServerTest, GDBusServerCall)
 	}
 
 	std::this_thread::sleep_for(Ms(1000));
+	ASSERT_EQ(client.storedValueAfterEvent, random) << "Event args received is not correct";
+
 
 	auto actualStr = client.FunctionA(1, 2, 3.5, "some");
 	std::this_thread::sleep_for(Ms(1000));

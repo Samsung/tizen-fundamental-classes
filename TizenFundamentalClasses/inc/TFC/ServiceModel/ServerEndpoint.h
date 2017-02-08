@@ -234,14 +234,10 @@ protected:
 		{
 			typedef Serialization::ObjectSerializer<Serializer, TArg> Serializer;
 			auto serializedArg = Serializer::Serialize(value);
-
 			serverRef.NotifyEventRaised(eventRef.eventName, serializedArg);
 		}
 
-		~EventHandlerClosure()
-		{
-
-		}
+		~EventHandlerClosure() { }
 	};
 
 

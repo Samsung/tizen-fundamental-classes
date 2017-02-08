@@ -667,8 +667,6 @@ void TFC::ServiceModel::GDBusServer::Initialize()
 					auto thiz = reinterpret_cast<GDBusServer*>(user_data);
 					std::cout << "Registering names \n";
 					thiz->OnBusAcquired(connection, nullptr);
-
-					thiz->connectionList.push_back(connection);
 					g_signal_connect(connection, "closed", G_CALLBACK (&GDBusServer::OnConnectionClosedCallback), user_data);
 				};
 
