@@ -104,7 +104,8 @@ struct GVariantSerializer
 			}
 			tmp = g_variant_builder_end(&arrayBuilder);
 		}
-		Serialize(tmp);
+
+		g_variant_builder_add_value(&builder, tmp);
 	}
 
 	SerializedType EndPack();
