@@ -35,6 +35,7 @@ void TFC::Components::SlidePresenter::OnPageScrolled(Evas_Object* source, void* 
 
 	auto item = elm_index_item_find(this->index, this->pageList[pageH]);
 	elm_index_item_selected_set(item, EINA_TRUE);
+	eventPageChanged(this, pageH);
 }
 
 Evas_Object* TFC::Components::SlidePresenter::CreateComponent(
@@ -45,8 +46,8 @@ Evas_Object* TFC::Components::SlidePresenter::CreateComponent(
 	evas_object_size_hint_weight_set(layout, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
 	evas_object_size_hint_align_set(layout, EVAS_HINT_FILL, EVAS_HINT_FILL);
 
-	//evas_object_event_callback_add(layout, EVAS_CALLBACK_RESIZE, EFL::EvasObjectEventHandler, &this->eventLayoutResize);
-	eventLayoutResize.Bind(layout, EVAS_CALLBACK_RESIZE);
+	//evas_object_event_callback_add(layout, EVAS_CALLBACK_RESIZE, EFL::EvasObjectEventHandler, &this->eventLayoutResizeInternal);
+	eventLayoutResizeInternal.Bind(layout, EVAS_CALLBACK_RESIZE);
 
 	this->scroller = elm_scroller_add(layout);
 	elm_scroller_loop_set(this->scroller, EINA_FALSE, EINA_FALSE);
@@ -59,8 +60,8 @@ Evas_Object* TFC::Components::SlidePresenter::CreateComponent(
 	evas_object_size_hint_weight_set(this->scroller, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
 	evas_object_size_hint_align_set(this->scroller, EVAS_HINT_FILL, EVAS_HINT_FILL);
 	evas_object_show(this->scroller);
-	//evas_object_smart_callback_add(this->scroller, "scroll,page,changed", EFL::EvasSmartEventHandler, &this->eventPageScrolled);
-	eventPageScrolled.Bind(this->scroller, "scroll,page,changed");
+	//evas_object_smart_callback_add(this->scroller, "scroll,page,changed", EFL::EvasSmartEventHandler, &this->eventPageScrolledInternal);
+	eventPageScrolledInternal.Bind(this->scroller, "scroll,page,changed");
 
 	elm_object_part_content_set(layout, "scroller", this->scroller);
 
@@ -81,8 +82,8 @@ Evas_Object* TFC::Components::SlidePresenter::CreateComponent(
 	elm_index_horizontal_set(this->index, EINA_TRUE);
 	elm_index_autohide_disabled_set(this->index, EINA_TRUE);
 	elm_object_part_content_set(layout, "index", this->index);
-	//evas_object_smart_callback_add(this->index, "changed", EFL::EvasSmartEventHandler, &this->eventIndexSelected);
-	eventIndexSelected.Bind(this->index, "changed");
+	//evas_object_smart_callback_add(this->index, "changed", EFL::EvasSmartEventHandler, &this->eventIndexSelectedInternal);
+	eventIndexSelectedInternal.Bind(this->index, "changed");
 
 	return layout;
 }
@@ -90,9 +91,9 @@ Evas_Object* TFC::Components::SlidePresenter::CreateComponent(
 TFC::Components::SlidePresenter::SlidePresenter() :
 	box(nullptr), scroller(nullptr), index(nullptr){
 
-	this->eventLayoutResize += EventHandler(SlidePresenter::OnLayoutResize);
-	this->eventPageScrolled += EventHandler(SlidePresenter::OnPageScrolled);
-	this->eventIndexSelected += EventHandler(SlidePresenter::OnIndexSelected);
+	this->eventLayoutResizeInternal += EventHandler(SlidePresenter::OnLayoutResize);
+	this->eventPageScrolledInternal += EventHandler(SlidePresenter::OnPageScrolled);
+	this->eventIndexSelectedInternal += EventHandler(SlidePresenter::OnIndexSelected);
 }
 
 TFC::Components::SlidePresenter::~SlidePresenter() {
@@ -143,5 +144,6 @@ void TFC::Components::SlidePresenter::OnIndexSelected(Evas_Object* source, void*
 	{
 		int index = it - this->pageList.begin();
 		elm_scroller_page_show(this->scroller, index, 0);
+//		eventPageChanged(this, index);
 	}
 }

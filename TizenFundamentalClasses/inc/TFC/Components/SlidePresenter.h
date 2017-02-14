@@ -1,5 +1,5 @@
 /*
- * SlidePresenter.h
+ *SlidePresenter.h
  *
  *  Created on: Sep 13, 2016
  *      Contributor:
@@ -18,8 +18,10 @@ namespace Components {
 
 class LIBAPI SlidePresenter :
 		public ComponentBase,
-		public EFL::EFLProxyClass
+		public EFL::EFLProxyClass,
+		public EventEmitterClass<SlidePresenter>
 {
+using EventEmitterClass<SlidePresenter>::Event;
 public:
 	SlidePresenter();
 	virtual ~SlidePresenter();
@@ -27,6 +29,8 @@ public:
 	void InsertPage(Evas_Object* page);
 	void InsertPageAt(Evas_Object* page, int index);
 	void Remove(int index);
+
+	Event<int> eventPageChanged;
 protected:
 	virtual Evas_Object* CreateComponent(Evas_Object* root) override;
 private:
@@ -36,9 +40,9 @@ private:
 	Evas_Object* scroller;
 	Evas_Object* index;
 
-	EvasObjectEvent eventLayoutResize;
-	EvasSmartEvent eventPageScrolled;
-	EvasSmartEvent eventIndexSelected;
+	EvasObjectEvent eventLayoutResizeInternal;
+	EvasSmartEvent eventPageScrolledInternal;
+	EvasSmartEvent eventIndexSelectedInternal;
 
 	void OnLayoutResize(EFL::EvasEventSourceInfo objSource, void* event_data);
 	void OnPageScrolled(Evas_Object* source, void* event_data);
