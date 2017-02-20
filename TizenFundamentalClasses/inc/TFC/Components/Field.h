@@ -39,7 +39,7 @@ public:
 	 * @param disable If true, then the field will be disabled (can't be inputted to).
 	 * 				  If false, then the field will be restored to normal.
 	 */
-	void SetDisable(bool const& disable);
+	//void SetDisable(bool const& disable);
 
 	/**
 	 * Set the field's hint text.
@@ -99,6 +99,8 @@ public:
 	EvasSmartEvent eventTextChanged;
 private:
 	mutable std::string text;
+	mutable std::string guideText;
+
 	Evas_Object* field;
 
 	bool multiline;
@@ -114,6 +116,11 @@ protected:
 	virtual Evas_Object* CreateComponent(Evas_Object* root) override;
 	void SetText(std::string const& text);
 	std::string const& GetText() const;
+
+
+	void SetGuideText(std::string const& text);
+	std::string const& GetGuideText() const;
+
 	void SetMultiline(bool const& val);
 	bool GetMultiline() const;
 	void SetBottomBorderVisible(bool const& visible);
@@ -136,6 +143,12 @@ public:
 	 * The return/parameter type is bool.
 	 */
 	Property<bool>::Get<&Field::GetBottomBorderVisible>::Set<&Field::SetBottomBorderVisible> BottomBorderVisible;
+
+	/**
+	 * Property that enables getting & setting bottom border visibility of the field.
+	 * The return/parameter type is bool.
+	 */
+	Property<std::string const&>::Get<&Field::GetGuideText>::Set<&Field::SetGuideText> GuideText;
 };
 }
 }

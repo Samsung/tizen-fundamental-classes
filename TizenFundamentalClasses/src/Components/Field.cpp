@@ -68,7 +68,8 @@ LIBAPI void TFC::Components::Field::SetText(std::string const& text)
 	this->text = text;
 
 	if (field)
-		elm_object_text_set(this->field, this->text.c_str());
+		elm_object_translatable_text_set(this->field, text.c_str());
+		//elm_object_text_set(this->field, this->text.c_str());
 }
 
 LIBAPI std::string const& TFC::Components::Field::GetText() const
@@ -118,10 +119,11 @@ LIBAPI bool TFC::Components::Field::GetBottomBorderVisible() const
 
 LIBAPI TFC::Components::Field::Field() :
 		text(""), field(nullptr), multiline(false), bottomBorder(false),
-		Text(this), Multiline(this), BottomBorderVisible(this)
+		Text(this), Multiline(this), BottomBorderVisible(this), GuideText(this)
 {
 }
 
+/*
 LIBAPI void TFC::Components::Field::SetDisable(bool const& disable)
 {
 	if (disable)
@@ -133,6 +135,7 @@ LIBAPI void TFC::Components::Field::SetDisable(bool const& disable)
 		elm_object_disabled_set(field, EINA_FALSE);
 	}
 }
+*/
 
 LIBAPI void TFC::Components::Field::SetHint(char const* hint)
 {
@@ -177,4 +180,23 @@ void TFC::Components::Field::SetCursorAtEnd()
 LIBAPI void TFC::Components::Field::SetAsPasswordField()
 {
 	elm_entry_password_set(field, EINA_TRUE);
+}
+
+void TFC::Components::Field::SetGuideText(const std::string& text)
+{
+	this->guideText = text;
+
+	if (field)
+		elm_object_translatable_part_text_set(this->field, "guide", text.c_str());
+}
+
+const std::string& TFC::Components::Field::GetGuideText() const
+{
+	if (field)
+	{
+		auto textStr = elm_object_text_get(this->field);
+		this->guideText = textStr;
+	}
+
+	return this->guideText;
 }
