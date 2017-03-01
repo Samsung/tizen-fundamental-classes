@@ -103,6 +103,19 @@ struct ConstantValue
 	}
 };
 
+template<typename TSerializer, typename TValue>
+class SerializationAvailable
+{
+	typedef char Correct;
+	typedef long long Incorrect;
+
+	template<typename T1, typename T2> static Correct Test(decltype(std::declval<T1>().Serialize(std::declval<T2>()))*);
+	template<typename T1, typename T2> static Incorrect Test(...);
+
+public:
+	static constexpr bool value = sizeof(Test<TSerializer, TValue>(0)) == sizeof(Correct);
+};
+
 template<typename TDeserializer, typename TValue>
 class DeserializationAvailable
 {
@@ -123,6 +136,15 @@ public:
 
 template<typename TSerializerClass, typename TDeclaring, typename = void>
 struct GenericSerializer;
+
+template<typename TSerializerClass, typename TDeclaring>
+struct GenericSerializer<TSerializerClass, TDeclaring, typename std::enable_if<SerializationAvailable<TSerializerClass, TDeclaring>::value>::type>
+{
+	static void Serialize(TSerializerClass& packer, TDeclaring const& ref)
+	{
+		packer.Serialize(ref);
+	}
+};
 
 template<typename TSerializerClass, typename TDeclaring, typename = void>
 struct GenericDeserializer;

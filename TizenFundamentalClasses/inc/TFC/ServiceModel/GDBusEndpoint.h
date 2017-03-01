@@ -71,13 +71,14 @@ struct GVariantSerializer
 
 	void Serialize(uint32_t args);
 	void Serialize(int64_t args);
-	void Serialize(int args);
+	void Serialize(int32_t args);
 	void Serialize(bool args);
 	void Serialize(double args);
 	void Serialize(std::string args);
 
-	void Serialize(std::vector<int> const& args);
 	void Serialize(std::vector<uint8_t> const& args);
+	void Serialize(std::vector<int32_t> const& args);
+	void Serialize(std::vector<int64_t> const& args);
 
 	GVariantSerializer CreateScope();
 	void Serialize(GVariantSerializer& p);
@@ -159,6 +160,8 @@ struct GVariantDeserializer
 	void Deserialize(double& target);
 
 	void Deserialize(std::vector<uint8_t>& target);
+	void Deserialize(std::vector<int32_t>& target);
+	void Deserialize(std::vector<int64_t>& target);
 
 	template<typename T>
 	void Deserialize(std::vector<T>& target)
