@@ -153,6 +153,8 @@ std::string TFC::ServiceModel::BinaryDeserializer::DeserializeImpl<std::string>(
 	for(size_t i = 0; i < len; i++)
 		buf[i] = bufferRef[currentPos + i];
 
+
+
 	std::string ret(buf);
 
 	currentPos += len;
@@ -301,4 +303,44 @@ TFC::ServiceModel::BinarySerializer::BinarySerializer(
 		SerializedType* bufferRef) {
 	this->buffer = bufferRef;
 	this->doDestruction = false;
+}
+
+LIBAPI
+void TFC::ServiceModel::BinarySerializer::Serialize(unsigned char args)
+{
+	this->buffer->push_back(args);
+}
+
+LIBAPI
+void TFC::ServiceModel::BinarySerializer::Serialize(const std::vector<uint8_t>& args)
+{
+	if (args.empty())
+	{
+		Serialize((uint32_t)0);
+	}
+	else
+	{
+		Serialize(args.size());
+
+		for (auto obj : args)
+		{
+			Serialize(obj);
+		}
+	}
+}
+
+LIBAPI
+void TFC::ServiceModel::BinaryDeserializer::Deserialize(std::vector<uint8_t>& target)
+{
+	target.clear();
+
+	uint32_t size = 0;
+	Deserialize(size);
+
+	for(int i = 0; i < size; i++)
+	{
+		uint8_t tmp = 0;
+		Deserialize(tmp);
+		target.push_back(tmp);
+	}
 }

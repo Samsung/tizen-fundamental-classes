@@ -58,15 +58,35 @@ struct SerializerSelect<TSerializerClass, TCurrent, TVoid, false>
 	}
 };
 
+template<typename T>
+struct SerializerField
+{
+	T const& value;
+	bool serialize;
+};
+
 /**
  * Recursion case for SerializerFunctor
  */
 template<typename TSerializerClass, typename TCurrent, typename... TArgs>
 struct SerializerFunctor<TSerializerClass, TCurrent, TArgs...>
 {
+
 	static void Func(TSerializerClass& p, TCurrent t, TArgs... next)
 	{
 		SerializerSelect<TSerializerClass, TCurrent>::Serialize(p, t);
+		// Call SerializerFunctor recursive by passing the TArgs tails as arguments
+		SerializerFunctor<TSerializerClass, TArgs...>::Func(p, next...);
+	}
+
+
+	static void Func(TSerializerClass& p, SerializerField<TCurrent> t, SerializerField<TArgs>... next)
+	{
+		if(t.serialize)
+		{
+			SerializerSelect<TSerializerClass, TCurrent>::Serialize(p, t.value);
+		}
+
 		// Call SerializerFunctor recursive by passing the TArgs tails as arguments
 		SerializerFunctor<TSerializerClass, TArgs...>::Func(p, next...);
 	}

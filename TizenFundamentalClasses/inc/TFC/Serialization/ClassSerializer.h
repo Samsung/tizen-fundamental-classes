@@ -37,6 +37,8 @@ struct GenericSerializer<TSerializerClass, TDeclaring, typename std::enable_if<T
 	}
 };
 
+
+
 template<typename TDeserializerClass, typename TDeclaring>
 struct GenericDeserializer<TDeserializerClass, TDeclaring, typename std::enable_if<TypeSerializationInfoSelector<TDeclaring>::available>::type>
 {
@@ -65,13 +67,13 @@ struct ClassSerializer<TSerializerClass, TDeclaring, TypeSerializationInfo<TDecl
 	static typename TSerializerClass::SerializedType Serialize(TDeclaring const& ptr)
 	{
 		TSerializerClass packer;
-		SerializerFunctor<TSerializerClass, typename TField::ValueType...>::Func(packer, TField::Get(ptr)...);
+		SerializerFunctor<TSerializerClass, typename TField::ValueType...>::Func(packer, SerializerField<typename TField::ValueType> { TField::Get(ptr), TField::Evaluate(ptr) }...);
 		return packer.EndPack();
 	}
 
 	static void Serialize(TSerializerClass& packer, TDeclaring const& ptr)
 	{
-		SerializerFunctor<TSerializerClass, typename TField::ValueType...>::Func(packer, TField::Get(ptr)...);
+		SerializerFunctor<TSerializerClass, typename TField::ValueType...>::Func(packer, SerializerField<typename TField::ValueType> { TField::Get(ptr), TField::Evaluate(ptr) }...);
 	}
 };
 

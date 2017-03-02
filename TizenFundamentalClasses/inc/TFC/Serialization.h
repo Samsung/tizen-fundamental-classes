@@ -84,9 +84,10 @@ template<typename TValueType,
 struct ConstantValue
 {
 	typedef TValueType ValueType;
+	static TValueType theValueStorage;
 
 	template<typename T>
-	static TValueType const& Get(T& ptr) 						{ return theValue; }
+	static TValueType const& Get(T& ptr) 						{ return theValueStorage; }
 
 	template<typename T>
 	static void 			 Set(T& ptr, TValueType&& val) 		{  }
@@ -195,6 +196,9 @@ struct ParameterDeserializerFunctor
 };
 
 }}
+
+template<typename TValueType, TValueType theValue, typename TPredicates>
+TValueType TFC::Serialization::ConstantValue<TValueType, theValue, TPredicates>::theValueStorage = theValue;
 
 #include "TFC/Serialization/SerializerFunctor.h"
 #include "TFC/Serialization/PredicateEvaluator.h"

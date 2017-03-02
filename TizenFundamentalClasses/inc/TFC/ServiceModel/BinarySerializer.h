@@ -30,9 +30,10 @@ public:
 
 
 	BinarySerializer();
-
+	BinarySerializer(SerializedType* bufferRef);
 	void Serialize(uint32_t args);
 	void Serialize(int64_t args);
+	void Serialize(unsigned char args);
 	void Serialize(int args);
 	void Serialize(bool args);
 	void Serialize(double args);
@@ -43,12 +44,36 @@ public:
 
 	SerializedType EndPack();
 
+	void Serialize(std::vector<uint8_t> const& arg);
+
+	template<typename T>
+	void Serialize(std::vector<T> const& args)
+	{
+		using namespace TFC::Serialization;
+		auto ser = CreateScope();
+
+		if (args.empty())
+		{
+			ser.Serialize((uint32_t)0);
+		}
+		else
+		{
+			ser.Serialize((uint32_t)args.size());
+
+			for (auto& obj : args)
+			{
+				GenericSerializer<BinarySerializer, T>::Serialize(ser, obj);
+			}
+		}
+		Serialize(ser);
+	}
+
 	~BinarySerializer();
 
 private:
 	bool doDestruction;
 	SerializedType* buffer;
-	BinarySerializer(SerializedType* bufferRef);
+
 };
 
 struct BinaryDeserializer
@@ -109,6 +134,26 @@ public:
 	//void Deserialize(SerializedType& composite);
 
 	BinaryDeserializer& DeserializeScope() { return *this; }
+
+	void Deserialize(std::vector<uint8_t>& target);
+
+	template<typename T>
+	void Deserialize(std::vector<T>& target)
+	{
+		target.clear();
+
+		uint32_t size = 0;
+		Deserialize(size);
+
+		auto& scope = DeserializeScope();
+
+		for(int i = 0; i < size; i++)
+		{
+
+			typedef TFC::Serialization::GenericDeserializer<BinaryDeserializer, T> Deserializer;
+			target.push_back(Deserializer::Deserialize(scope));
+		}
+	}
 
 	void Finalize();
 };
