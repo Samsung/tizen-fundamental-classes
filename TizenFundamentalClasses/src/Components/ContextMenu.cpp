@@ -168,5 +168,5 @@ void TFC::Components::ContextMenu::ContextMenuPackage::RaiseEvent() {
 
 void TFC::Components::ContextMenu::RaiseOnClickEvent(MenuItem* menuItemRef) {
 	elm_ctxpopup_dismiss(this->contextMenu);
-	menuItemRef->OnMenuItemClick(menuItemRef, nullptr);
+	menuItemRef->eventMenuItemClick(menuItemRef, nullptr);
 }

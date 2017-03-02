@@ -129,7 +129,7 @@ public:
 	Elm_Object_Item* GetGenlistItem();
 
 	friend class TreeMenu;
-	Event<Elm_Object_Item*> OnMenuItemClick;
+	Event<Elm_Object_Item*> eventMenuItemClick;
 private:
 	std::string 			menuText;
 	std::string 			menuIcon;

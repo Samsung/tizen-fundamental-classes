@@ -100,7 +100,7 @@ namespace Components {
 			bool isFunction;
 			union {
 				PointerToMemberString ptrMember;
-				PointerToGetterString ptrGetter;
+				PointerToGetterStringConst ptrGetter;
 			};
 		};
 	public:
@@ -415,7 +415,7 @@ void TFC::Components::SimpleGenericListItemClass<T>::AddToMap(PointerToGetterStr
 {
 	Pointer ptr;
 	ptr.isFunction = true;
-	ptr.ptrGetter = ptrGetter;
+	ptr.ptrGetter = reinterpret_cast<PointerToGetterStringConst>(ptrGetter);;
 	mappingMap[mapTo] = ptr;
 }
 
@@ -424,7 +424,7 @@ inline void TFC::Components::SimpleGenericListItemClass<T>::AddToMap(PointerToGe
 {
 	Pointer ptr;
 	ptr.isFunction = true;
-	ptr.ptrGetter = reinterpret_cast<PointerToGetterString>(ptrGetter);
+	ptr.ptrGetter = ptrGetter;
 	mappingMap[mapTo] = ptr;
 }
 

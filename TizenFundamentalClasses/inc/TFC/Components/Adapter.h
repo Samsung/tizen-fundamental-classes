@@ -161,6 +161,7 @@ public:
 	template<class T>
 	void RemoveItem(T* data);
 
+
 	/**
 	 * Method to clear all items in the adapter's list.
 	 *
@@ -284,7 +285,7 @@ inline void TFC::Components::AdapterItemClass<T>::Deallocator(void* data)
 template<class T>
 inline TFC::Components::Adapter::AdapterItem& TFC::Components::Adapter::AddItem(T* data, AdapterItemClass<T>* itemClass)
 {
-	return AddItemInternal(data, itemClass);
+	return AddItemInternal(const_cast<typename std::remove_const<T>::type*>(data), itemClass);
 }
 
 template<class T>

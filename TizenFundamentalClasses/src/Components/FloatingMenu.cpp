@@ -171,7 +171,7 @@ void TFC::Components::FloatingMenu::ContextMenuPackage::RaiseEvent() {
 
 void TFC::Components::FloatingMenu::RaiseOnClickEvent(MenuItem* menuItemRef) {
 	elm_ctxpopup_dismiss(this->contextMenu);
-	menuItemRef->OnMenuItemClick(menuItemRef, nullptr);
+	menuItemRef->eventMenuItemClick(menuItemRef, nullptr);
 }
 
 
