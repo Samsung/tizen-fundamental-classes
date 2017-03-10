@@ -329,8 +329,7 @@ namespace Components {
 		void OnLongPressedInternal(Evas_Object* obj, void* eventData);
 		void OnItemSignalEmit(Elm_Object_Item* obj, EFL::EdjeSignalInfo eventData);
 		void OnItemUnrealized(Evas_Object* obj, void* eventData);
-
-
+		void ScrollToBottom();
 	public:
 		// Property Declaration
 		/**

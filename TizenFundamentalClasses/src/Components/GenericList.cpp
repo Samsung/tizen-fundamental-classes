@@ -534,3 +534,22 @@ void TFC::Components::GenericList::OnLongPressedInternal(
 bool TFC::Components::GenericListItemClassBase::IsItemClickEnabled() const {
 	return this->itemClickEnabled;
 }
+
+void TFC::Components::GenericList::ScrollToBottom()
+{
+	/*
+	int v = 0, h = 0;
+	elm_scroller_last_page_get(this->genlist, &h, &v);
+	elm_scroller_page_bring_in(this->genlist, h, v);
+	*/
+	if(!this->dummyBottom)
+	{
+		auto lastItem = elm_genlist_last_item_get(this->genlist);
+		elm_genlist_item_bring_in(lastItem, Elm_Genlist_Item_Scrollto_Type::ELM_GENLIST_ITEM_SCROLLTO_IN);
+	}
+	else
+	{
+		auto lastItem = elm_genlist_item_prev_get(this->dummyBottom);
+		elm_genlist_item_bring_in(lastItem, Elm_Genlist_Item_Scrollto_Type::ELM_GENLIST_ITEM_SCROLLTO_IN);
+	}
+}
