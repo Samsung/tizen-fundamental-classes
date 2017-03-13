@@ -195,9 +195,9 @@ LIBAPI void TFC::Components::GenericGrid::AppendItemToGengrid(Adapter::AdapterIt
 	*/
 }
 
-LIBAPI void TFC::Components::GenericGrid::OnItemAdd(Adapter* adapter, Adapter::AdapterItem* data)
+LIBAPI void TFC::Components::GenericGrid::OnItemAdd(Adapter* adapter, Adapter::ItemAddEventArgs data)
 {
-	AppendItemToGengrid(data);
+	AppendItemToGengrid(&*data.item);
 }
 
 LIBAPI void TFC::Components::GenericGrid::OnItemRemove(Adapter* adapter, Adapter::AdapterItem* data)

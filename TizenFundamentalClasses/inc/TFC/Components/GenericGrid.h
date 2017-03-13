@@ -292,7 +292,7 @@ namespace Components {
 
 		void OnItemAdd(
 				Adapter* adapter,
-				Adapter::AdapterItem* data);
+				Adapter::ItemAddEventArgs data);
 
 		void OnItemRemove(
 				Adapter* adapter,

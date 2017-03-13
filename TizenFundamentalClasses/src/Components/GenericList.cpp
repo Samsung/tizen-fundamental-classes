@@ -161,7 +161,8 @@ LIBAPI TFC::Components::GenericList::GenericList() :
 	};
 }
 
-LIBAPI TFC::Components::GenericList::~GenericList()
+LIBAPI
+TFC::Components::GenericList::~GenericList()
 {
 	/*
 	evas_object_smart_callback_del(genlist, "scroll", EFL::EvasSmartEventHandler);
@@ -194,7 +195,8 @@ LIBAPI void TFC::Components::GenericList::ResetScroll(bool animated)
 	}
 }
 
-LIBAPI void TFC::Components::GenericList::SetDataSource(Adapter* newAdapter)
+LIBAPI
+void TFC::Components::GenericList::SetDataSource(Adapter* newAdapter)
 {
 	// Unbind the old adapter
 	if(dataSource != nullptr)
@@ -230,7 +232,8 @@ LIBAPI void TFC::Components::GenericList::SetDataSource(Adapter* newAdapter)
 	dataSource->eventItemRemove += EventHandler(GenericList::OnItemRemove);
 }
 
-LIBAPI void TFC::Components::GenericList::AppendItemToGenlist(Adapter::AdapterItem* data)
+LIBAPI
+void TFC::Components::GenericList::AppendItemToGenlist(Adapter::AdapterItem* data)
 {
 	auto itemClass = dynamic_cast<GenericListItemClassBase*>(data->itemClass);
 	if(itemClass == nullptr)
@@ -283,9 +286,70 @@ LIBAPI void TFC::Components::GenericList::AppendItemToGenlist(Adapter::AdapterIt
 	*/
 }
 
-LIBAPI void TFC::Components::GenericList::OnItemAdd(Adapter* adapter, Adapter::AdapterItem* data)
+LIBAPI
+void TFC::Components::GenericList::PrependItemToGenlist(Adapter::AdapterItem* data)
 {
-	AppendItemToGenlist(data);
+	auto itemClass = dynamic_cast<GenericListItemClassBase*>(data->itemClass);
+	if(itemClass == nullptr)
+		throw std::runtime_error("Invalid item class specified for generic list. Use GenericListItemClass type");
+
+	auto package = (*(itemClass))(this, data->data);
+
+	decltype(Genlist_ClickedEventHandler)* handlerPtr = nullptr;
+	void* eventPackage = nullptr;
+
+	Elm_Object_Item* inserted = nullptr;
+
+	if(itemClass->IsItemClickEnabled())
+	{
+		handlerPtr = &Genlist_ClickedEventHandler;
+		eventPackage = package;
+	}
+
+	if (elm_genlist_items_count(genlist) == 0)
+	{
+		if (underscroll)
+			dummyTop = elm_genlist_item_prepend(genlist, dummyTopItemClass, this, nullptr, ELM_GENLIST_ITEM_NONE, nullptr, nullptr);
+	}
+
+
+	if(!underscroll)
+	{
+		inserted = elm_genlist_item_prepend(genlist, *(itemClass), package, nullptr, ELM_GENLIST_ITEM_NONE, handlerPtr, eventPackage);
+		//data->objectItem = realBottom;
+	}
+	else
+	{
+		inserted = elm_genlist_item_insert_after(genlist, *(itemClass), (*(itemClass))(this, data->data), nullptr, dummyTop, ELM_GENLIST_ITEM_NONE, handlerPtr, eventPackage);
+	}
+
+
+
+	this->itemIndex.insert({ data, inserted });
+
+	/*
+	elm_object_item_signal_callback_add(realBottom, "*", "*", [] (void *data, Evas_Object *obj, const char *emission, const char *source) {
+			dlog_print(DLOG_DEBUG, "TFCFW-Signal", "Signal TFC %s, source %s", emission, source);
+	}, nullptr);
+	*/
+}
+
+LIBAPI void TFC::Components::GenericList::OnItemAdd(Adapter* adapter, Adapter::ItemAddEventArgs data)
+{
+	auto theItem = data.item;
+	++theItem;
+	if(theItem == data.back)
+	{
+		// If it is in behind
+		auto& ref = *(data.item);
+		AppendItemToGenlist(&ref);
+	}
+	else if(data.item == data.front)
+	{
+		// If it is in front
+		auto& ref = *(data.item);
+		PrependItemToGenlist(&ref);
+	}
 }
 
 LIBAPI void TFC::Components::GenericList::OnItemRemove(Adapter* adapter, Adapter::AdapterItem* data)

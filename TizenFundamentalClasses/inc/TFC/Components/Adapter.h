@@ -129,6 +129,13 @@ public:
 		//Elm_Object_Item* objectItem;
 	};
 
+	struct ItemAddEventArgs
+	{
+		std::list<AdapterItem>::iterator item;
+		std::list<AdapterItem>::iterator front;
+		std::list<AdapterItem>::iterator back;
+	};
+
 	/**
 	 * Constructor of Adapter.
 	 */
@@ -152,6 +159,9 @@ public:
 	 */
 	template<class T>
 	TFC::Components::Adapter::AdapterItem& AddItem(T* data, AdapterItemClass<T>* itemClass);
+
+	template<class T>
+	TFC::Components::Adapter::AdapterItem& AddItemFront(T* data, AdapterItemClass<T>* itemClass);
 
 	/**
 	 * Method to remove item from adapter's list.
@@ -188,7 +198,7 @@ public:
 	/**
 	 * Event that will be triggered when an item is added to the list.
 	 */
-	Event<AdapterItem*> eventItemAdd;
+	Event<ItemAddEventArgs> eventItemAdd;
 
 	/**
 	 * Event that will be triggered when items are removed from the list.
@@ -198,6 +208,8 @@ public:
 protected:
 	TFC::Components::Adapter::AdapterItem& AddItemInternal(void* data, AdapterItemClassBase* itemClass);
 	void RemoveItemInternal(void* data);
+
+	TFC::Components::Adapter::AdapterItem& AddItemFrontInternal(void* data, AdapterItemClassBase* itemClass);
 
 private:
 	std::list<AdapterItem> adapterItems;
@@ -287,6 +299,12 @@ template<class T>
 inline TFC::Components::Adapter::AdapterItem& TFC::Components::Adapter::AddItem(T* data, AdapterItemClass<T>* itemClass)
 {
 	return AddItemInternal(const_cast<typename std::remove_const<T>::type*>(data), itemClass);
+}
+
+template<class T>
+inline TFC::Components::Adapter::AdapterItem& TFC::Components::Adapter::AddItemFront(T* data, AdapterItemClass<T>* itemClass)
+{
+	return AddItemFrontInternal(const_cast<typename std::remove_const<T>::type*>(data), itemClass);
 }
 
 template<class T>

@@ -325,10 +325,11 @@ namespace Components {
 		int GetBackToTopThreshold() const;
 
 		void AppendItemToGenlist(Adapter::AdapterItem* data);
+		void PrependItemToGenlist(Adapter::AdapterItem* data);
 
 		void OnItemAdd(
 				Adapter* adapter,
-				Adapter::AdapterItem* data);
+				Adapter::ItemAddEventArgs data);
 
 		void OnItemRemove(
 				Adapter* adapter,

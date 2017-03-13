@@ -38,7 +38,7 @@ LIBAPI TFC::Components::Adapter::AdapterItem& TFC::Components::Adapter::AddItemI
 {
 	adapterItems.push_back({ data, itemClass });
 	auto& lastItem = adapterItems.back();
-	eventItemAdd(this, &lastItem);
+	eventItemAdd(this, { --(adapterItems.end()), adapterItems.begin(), adapterItems.end() });
 
 	return lastItem;
 }
@@ -153,4 +153,13 @@ TFC::Components::Adapter::Adapter(const Adapter& that)
 		item.objectItem = nullptr;
 	}
 	*/
+}
+
+TFC::Components::Adapter::AdapterItem& TFC::Components::Adapter::AddItemFrontInternal(
+		void* data, AdapterItemClassBase* itemClass) {
+	adapterItems.push_front({ data, itemClass });
+	auto& frontItem = adapterItems.front();
+	eventItemAdd(this, { adapterItems.begin(), adapterItems.begin(), adapterItems.end() });
+
+	return frontItem;
 }
