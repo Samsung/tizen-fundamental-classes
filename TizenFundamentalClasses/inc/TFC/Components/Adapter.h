@@ -126,7 +126,7 @@ public:
 	{
 		void* data;
 		AdapterItemClassBase* itemClass;
-		Elm_Object_Item* objectItem;
+		//Elm_Object_Item* objectItem;
 	};
 
 	/**
@@ -175,7 +175,7 @@ public:
 	 *
 	 * @return Reference to vector that contains the items.
 	 */
-	std::vector<AdapterItem>& GetAll();
+	std::list<AdapterItem>& GetAll();
 
 	/**
 	 * Method to get number of items in adapter's list.
@@ -198,8 +198,9 @@ public:
 protected:
 	TFC::Components::Adapter::AdapterItem& AddItemInternal(void* data, AdapterItemClassBase* itemClass);
 	void RemoveItemInternal(void* data);
+
 private:
-	std::vector<AdapterItem> adapterItems;
+	std::list<AdapterItem> adapterItems;
 
 
 };

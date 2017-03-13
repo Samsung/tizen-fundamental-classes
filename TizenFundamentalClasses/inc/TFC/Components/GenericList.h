@@ -172,6 +172,30 @@ namespace Components {
 	public:
 		struct ItemSignalEventInfo;
 
+		class ListItem : PropertyClass<ListItem>
+		{
+		private:
+			Elm_Object_Item* item;
+
+			friend class GenericList;
+			using PropertyClass<ListItem>::Property;
+
+			ListItem(Elm_Object_Item* obj);
+
+			void SetSelected(bool const& sel);
+			bool GetSelected() const;
+
+
+
+		public:
+			ListItem(ListItem const& other) : item(other.item), Selected(this) { }
+
+			operator Elm_Object_Item*();
+			void Update();
+
+			Property<bool>::Get<&ListItem::GetSelected>::Set<&ListItem::SetSelected> Selected;
+		};
+
 		/**
 		 * Constructor for GenericList.
 		 */
@@ -186,6 +210,8 @@ namespace Components {
 		 * @param animated If true, the resetting procedure will be animated.
 		 */
 		void ResetScroll(bool animated);
+
+		ListItem operator[](Adapter::AdapterItem const& item);
 
 		/**
 		 * Event that will be triggered when the list is scrolled.
@@ -216,6 +242,8 @@ namespace Components {
 		 * Event that will be triggered when the dummy bottom-most item on the list is realized.
 		 */
 		Event<void*> eventReachingBottom;
+
+		Event<void*> eventReachingTop;
 
 		/**
 		 * Event that will be triggered when an item on the list is clicked.
@@ -263,6 +291,8 @@ namespace Components {
 		virtual Evas_Object* CreateComponent(Evas_Object* root) override;
 
 	private:
+		std::unordered_map<Adapter::AdapterItem const*, Elm_Object_Item*> itemIndex;
+
 		int currentPosY;
 		int backToTopThreshold;
 		Evas_Object* genlist;
@@ -317,7 +347,6 @@ namespace Components {
 		EvasSmartEvent eventItemUnrealized;
 		ObjectItemEdjeSignalEvent eventItemSignalInternal;
 
-
 		void OnScrolledInternal(Evas_Object* obj, void* eventData);
 		void OnScrolledDownInternal(Evas_Object* obj, void* eventData);
 		void OnScrolledUpInternal(Evas_Object* obj, void* eventData);
@@ -330,6 +359,7 @@ namespace Components {
 		void OnItemSignalEmit(Elm_Object_Item* obj, EFL::EdjeSignalInfo eventData);
 		void OnItemUnrealized(Evas_Object* obj, void* eventData);
 		void ScrollToBottom();
+
 	public:
 		// Property Declaration
 		/**

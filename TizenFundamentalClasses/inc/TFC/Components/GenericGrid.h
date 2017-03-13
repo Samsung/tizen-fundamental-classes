@@ -261,6 +261,8 @@ namespace Components {
 		virtual Evas_Object* CreateComponent(Evas_Object* root) override;
 
 	private:
+		std::unordered_map<Adapter::AdapterItem*, Elm_Object_Item*> itemIndex;
+
 		Evas_Object* gengrid;
 		Elm_Object_Item* firstItem;
 		Elm_Object_Item* lastItem;

@@ -134,12 +134,12 @@ LIBAPI void TFC::Components::GenericGrid::SetDataSource(Adapter* newAdapter)
 	// Unbind the old adapter
 	if(dataSource != nullptr)
 	{
-		auto oldGrid = dataSource->GetAll();
-		for(auto& item : oldGrid)
+		//auto oldGrid = dataSource->GetAll();
+		for(auto& item : this->itemIndex)
 		{
 			// Remove all item
-			elm_object_item_del(item.objectItem);
-			item.objectItem = nullptr;
+			elm_object_item_del(item.second);
+			//item.objectItem = nullptr;
 		}
 
 		// Remove event
@@ -150,7 +150,7 @@ LIBAPI void TFC::Components::GenericGrid::SetDataSource(Adapter* newAdapter)
 	// Assign new adapter
 	this->dataSource = newAdapter;
 	// Append all existing item in adapter
-	auto all = dataSource->GetAll();
+	auto& all = dataSource->GetAll();
 	for(auto& item : all)
 	{
 		AppendItemToGengrid(&item);
@@ -180,17 +180,19 @@ LIBAPI void TFC::Components::GenericGrid::AppendItemToGengrid(Adapter::AdapterIt
 	if (elm_gengrid_items_count(gengrid) == 0)
 	{
 		firstItem = lastItem = elm_gengrid_item_append(gengrid, *(itemClass), package,  handlerPtr, eventPackage);
-	}else{
+	} else {
 		lastItem = elm_gengrid_item_append(gengrid, *(itemClass), package, handlerPtr, eventPackage);
 	}
-	data->objectItem = lastItem;
+	//data->objectItem = lastItem;
+
+	this->itemIndex.emplace(data, lastItem);
 
 
-
-
+	/*
 	elm_object_item_signal_callback_add(lastItem, "*", "*", [] (void *data, Evas_Object *obj, const char *emission, const char *source) {
 			dlog_print(DLOG_DEBUG, "TFCFW-Signal", "Signal TFC %s, source %s", emission, source);
 	}, nullptr);
+	*/
 }
 
 LIBAPI void TFC::Components::GenericGrid::OnItemAdd(Adapter* adapter, Adapter::AdapterItem* data)
@@ -200,16 +202,22 @@ LIBAPI void TFC::Components::GenericGrid::OnItemAdd(Adapter* adapter, Adapter::A
 
 LIBAPI void TFC::Components::GenericGrid::OnItemRemove(Adapter* adapter, Adapter::AdapterItem* data)
 {
-	if(data->objectItem == lastItem)
-		lastItem = elm_gengrid_item_prev_get(lastItem);
-
-	elm_object_item_del(data->objectItem);
-	data->objectItem = nullptr;
-
-	if(adapter->GetCount() == 1)
+	try
 	{
-		lastItem = firstItem;
+		auto objectItem = this->itemIndex.at(data);
+		if(objectItem == lastItem)
+			lastItem = elm_gengrid_item_prev_get(lastItem);
 
+		elm_object_item_del(objectItem);
+
+		if(adapter->GetCount() == 1)
+		{
+			lastItem = firstItem;
+		}
+	}
+	catch(std::out_of_range const& ex)
+	{
+		throw TFC::TFCException("Invalid item removal");
 	}
 }
 

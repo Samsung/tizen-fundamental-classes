@@ -58,6 +58,8 @@ protected:
 	 */
 	virtual Evas_Object* CreateComponent(Evas_Object* root) override;
 private:
+	std::unordered_map<Adapter::AdapterItem*, Elm_Object_Item*> itemIndex;
+
 	std::string text;
 
 	EvasSmartEvent eventDropdownButtonClick;

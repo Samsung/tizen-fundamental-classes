@@ -70,8 +70,8 @@ LIBAPI void TFC::Components::DropDown::ShowDropdown()
 			auto icon = item.itemClass->GetContent(item.data, dropdownComponent, "icon");
 			auto package = new DropdownCallbackPackage({ this, &item });
 
-			item.objectItem = elm_ctxpopup_item_append(dropdownComponent, text.c_str(), icon, DropdownAdapter_ClickCallback, package);
-			elm_object_item_del_cb_set(item.objectItem, DropdownAdapter_DeleteCallback);
+			auto objectItem = elm_ctxpopup_item_append(dropdownComponent, text.c_str(), icon, DropdownAdapter_ClickCallback, package);
+			elm_object_item_del_cb_set(objectItem, DropdownAdapter_DeleteCallback);
 		}
 	}
 
@@ -114,10 +114,12 @@ LIBAPI void TFC::Components::DropDown::ItemClick(Adapter::AdapterItem* item)
 	}
 
 	// Dereference the pointer to object item as now it is invalid
+	/*
 	for(auto& item : this->dataSource->GetAll())
 	{
 		item.objectItem = nullptr;
 	}
+	*/
 
 	ItemSelectionChanged(this, SelectedItem);
 }

@@ -65,6 +65,7 @@ LIBAPI TFC::Components::GenericListItemClassBase::GenericListItemClassBase(char 
 		auto pkg = reinterpret_cast<GenlistItemClassPackage*>(data);
 		delete pkg;
 	};
+
 }
 
 LIBAPI void* TFC::Components::GenericListItemClassBase::operator ()(GenericList* genlist, void* itemData)
@@ -173,6 +174,9 @@ LIBAPI TFC::Components::GenericList::~GenericList()
 	evas_object_smart_callback_del(genlist, "realized", EFL::EvasSmartEventHandler);
 	evas_object_smart_callback_del(genlist, "unrealized", EFL::EvasSmartEventHandler);
 	*/
+
+	this->dataSource->eventItemAdd -= EventHandler(GenericList::OnItemAdd);
+	this->dataSource->eventItemRemove -= EventHandler(GenericList::OnItemRemove);
 }
 
 LIBAPI void TFC::Components::GenericList::ResetScroll(bool animated)
@@ -195,17 +199,18 @@ LIBAPI void TFC::Components::GenericList::SetDataSource(Adapter* newAdapter)
 	// Unbind the old adapter
 	if(dataSource != nullptr)
 	{
-		auto oldList = dataSource->GetAll();
-		for(auto& item : oldList)
+		for(auto& item : this->itemIndex)
 		{
 			// Remove all item
-			elm_object_item_del(item.objectItem);
-			item.objectItem = nullptr;
+			elm_object_item_del(item.second);
 		}
+
+		itemIndex.clear();
 
 		// Remove event
 		dataSource->eventItemAdd -= EventHandler(GenericList::OnItemAdd);
 		dataSource->eventItemRemove -= EventHandler(GenericList::OnItemRemove);
+
 	}
 
 	// Assign new adapter
@@ -213,11 +218,13 @@ LIBAPI void TFC::Components::GenericList::SetDataSource(Adapter* newAdapter)
 	firstRealize = true;
 
 	// Append all existing item in adapter
-	auto all = dataSource->GetAll();
+	auto& all = dataSource->GetAll();
+
 	for(auto& item : all)
 	{
 		AppendItemToGenlist(&item);
 	}
+
 	// Attach to event
 	dataSource->eventItemAdd += EventHandler(GenericList::OnItemAdd);
 	dataSource->eventItemRemove += EventHandler(GenericList::OnItemRemove);
@@ -233,6 +240,8 @@ LIBAPI void TFC::Components::GenericList::AppendItemToGenlist(Adapter::AdapterIt
 
 	decltype(Genlist_ClickedEventHandler)* handlerPtr = nullptr;
 	void* eventPackage = nullptr;
+
+	Elm_Object_Item* inserted = nullptr;
 
 	if(itemClass->IsItemClickEnabled())
 	{
@@ -251,13 +260,13 @@ LIBAPI void TFC::Components::GenericList::AppendItemToGenlist(Adapter::AdapterIt
 		// BUG ON EFL: insert before dummy bottom will create UI render error if at some point dummy bottom is disabled
 		// so the workaround is to store the realbottom of the list, which is an item before dummy bottom, and insert
 		// after that item
-		realBottom = elm_genlist_item_insert_after(genlist, *(itemClass), (*(itemClass))(this, data->data), nullptr, realBottom, ELM_GENLIST_ITEM_NONE, handlerPtr, eventPackage);
-		data->objectItem = realBottom;
+		inserted = realBottom = elm_genlist_item_insert_after(genlist, *(itemClass), (*(itemClass))(this, data->data), nullptr, realBottom, ELM_GENLIST_ITEM_NONE, handlerPtr, eventPackage);
+		//data->objectItem = realBottom;
 	}
 	else
 	{
-		realBottom = elm_genlist_item_append(genlist, *(itemClass), package, nullptr, ELM_GENLIST_ITEM_NONE, handlerPtr, eventPackage);
-		data->objectItem = realBottom;
+		inserted = realBottom = elm_genlist_item_append(genlist, *(itemClass), package, nullptr, ELM_GENLIST_ITEM_NONE, handlerPtr, eventPackage);
+		//data->objectItem = realBottom;
 
 
 		if(overscroll && !dummyBottom) // Create dummy item if overscroll enabled
@@ -265,9 +274,13 @@ LIBAPI void TFC::Components::GenericList::AppendItemToGenlist(Adapter::AdapterIt
 	}
 
 
+	this->itemIndex.insert({ data, inserted });
+
+	/*
 	elm_object_item_signal_callback_add(realBottom, "*", "*", [] (void *data, Evas_Object *obj, const char *emission, const char *source) {
 			dlog_print(DLOG_DEBUG, "TFCFW-Signal", "Signal TFC %s, source %s", emission, source);
 	}, nullptr);
+	*/
 }
 
 LIBAPI void TFC::Components::GenericList::OnItemAdd(Adapter* adapter, Adapter::AdapterItem* data)
@@ -280,11 +293,22 @@ LIBAPI void TFC::Components::GenericList::OnItemRemove(Adapter* adapter, Adapter
 	// BUG ON EFL: insert before dummy bottom will create UI render error if at some point dummy bottom is disabled
 	// so the workaround is to store the realbottom of the list. Tis part is replacing the realBottom if the item
 	// to be deleted is the real bottom
-	if(data->objectItem == realBottom)
+	Elm_Object_Item* genlistItem = nullptr;
+
+	try
+	{
+		genlistItem = this->itemIndex.at(data);
+	}
+	catch(std::out_of_range const& ex)
+	{
+		throw TFC::TFCException("Invalid removal data");
+	}
+
+	if(genlistItem == realBottom)
 		realBottom = elm_genlist_item_prev_get(realBottom);
 
-	elm_object_item_del(data->objectItem);
-	data->objectItem = nullptr;
+	elm_object_item_del(genlistItem);
+	//data->objectItem = nullptr;
 
 	// If this is last, then just remove the dummy bottom
 	if(adapter->GetCount() == 1)
@@ -401,6 +425,7 @@ void TFC::Components::GenericList::OnDummyRealized(Evas_Object* obj, void* event
 	}
 	else if (dummyTop == nullptr && eventData == elm_genlist_first_item_get(genlist))
 	{
+		eventReachingTop(this, nullptr);
 		ecore_timer_add(1.0, [] (void* data) -> Eina_Bool {
 			GenericList* gl = (GenericList*)data;
 			dlog_print(DLOG_VERBOSE, LOG_TAG, "Prepend dummy top");
@@ -510,16 +535,19 @@ void TFC::Components::GenericList::OnItemSignalEmit(Elm_Object_Item* obj, EFL::E
 	eventItemSignal(this, info);
 }
 
-void TFC::Components::GenericList::SetLongClicked(const bool& o) {
+void TFC::Components::GenericList::SetLongClicked(const bool& o)
+{
 	longpressed = o;
 }
 
-bool TFC::Components::GenericList::GetLongClicked() const {
+bool TFC::Components::GenericList::GetLongClicked() const
+{
 	return longpressed;
 }
 
 void TFC::Components::GenericList::OnLongPressedInternal(
-		Evas_Object* obj, void* eventData) {
+		Evas_Object* obj, void* eventData)
+{
 	if (isScrolling) {
 		IsLongClicked = false;
 	} else {
@@ -531,10 +559,12 @@ void TFC::Components::GenericList::OnLongPressedInternal(
 	}
 }
 
-bool TFC::Components::GenericListItemClassBase::IsItemClickEnabled() const {
+bool TFC::Components::GenericListItemClassBase::IsItemClickEnabled() const
+{
 	return this->itemClickEnabled;
 }
 
+LIBAPI
 void TFC::Components::GenericList::ScrollToBottom()
 {
 	/*
@@ -552,4 +582,40 @@ void TFC::Components::GenericList::ScrollToBottom()
 		auto lastItem = elm_genlist_item_prev_get(this->dummyBottom);
 		elm_genlist_item_bring_in(lastItem, Elm_Genlist_Item_Scrollto_Type::ELM_GENLIST_ITEM_SCROLLTO_IN);
 	}
+}
+
+LIBAPI
+TFC::Components::GenericList::ListItem TFC::Components::GenericList::operator [](Adapter::AdapterItem const& item)
+{
+	return { this->itemIndex.at(&item) };
+}
+
+LIBAPI
+TFC::Components::GenericList::ListItem::operator Elm_Object_Item*()
+{
+	return item;
+}
+
+LIBAPI
+TFC::Components::GenericList::ListItem::ListItem(Elm_Object_Item* obj) :
+	item(obj),
+	Selected(this)
+{
+}
+
+LIBAPI
+void TFC::Components::GenericList::ListItem::Update()
+{
+	elm_genlist_item_update(item);
+}
+
+
+void TFC::Components::GenericList::ListItem::SetSelected(const bool& sel)
+{
+	elm_genlist_item_selected_set(item, sel);
+}
+
+bool TFC::Components::GenericList::ListItem::GetSelected() const
+{
+	return elm_genlist_item_selected_get(item);
 }

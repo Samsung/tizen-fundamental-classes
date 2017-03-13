@@ -36,7 +36,7 @@ LIBAPI TFC::Components::Adapter::~Adapter()
 
 LIBAPI TFC::Components::Adapter::AdapterItem& TFC::Components::Adapter::AddItemInternal(void* data, AdapterItemClassBase* itemClass)
 {
-	adapterItems.push_back({data, itemClass, nullptr});
+	adapterItems.push_back({ data, itemClass });
 	auto& lastItem = adapterItems.back();
 	eventItemAdd(this, &lastItem);
 
@@ -58,13 +58,14 @@ LIBAPI void TFC::Components::Adapter::RemoveItemInternal(void* data)
 	}
 }
 
-LIBAPI std::vector<TFC::Components::Adapter::AdapterItem>& TFC::Components::Adapter::GetAll()
+LIBAPI std::list<TFC::Components::Adapter::AdapterItem>& TFC::Components::Adapter::GetAll()
 {
 	return adapterItems;
 }
 
 LIBAPI void TFC::Components::Adapter::Clear(bool deallocate)
 {
+	/*
 	for(auto iter = adapterItems.begin(); iter != adapterItems.end();)
 	{
 		auto& ref = *iter;
@@ -79,6 +80,17 @@ LIBAPI void TFC::Components::Adapter::Clear(bool deallocate)
 		// Erase the entry
 		iter = adapterItems.erase(iter);
 	}
+	*/
+
+	for(auto& item : adapterItems)
+	{
+		eventItemRemove(this, &item);
+
+		if(deallocate)
+			item.itemClass->Deallocator(item.data);
+	}
+
+	adapterItems.clear();
 }
 
 LIBAPI int TFC::Components::Adapter::GetCount()
@@ -135,9 +147,10 @@ Evas_Object* TFC::Components::BasicListAdapter::BasicListItemClass::GetContent(B
 TFC::Components::Adapter::Adapter(const Adapter& that)
 {
 	this->adapterItems = that.adapterItems;
-
+	/*
 	for(auto item : adapterItems)
 	{
 		item.objectItem = nullptr;
 	}
+	*/
 }
