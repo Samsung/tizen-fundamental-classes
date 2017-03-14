@@ -147,6 +147,15 @@ struct GenericSerializer<TSerializerClass, TDeclaring, typename std::enable_if<S
 	}
 };
 
+template<typename TSerializerClass, typename TDeclaring>
+struct GenericSerializer<TSerializerClass, TDeclaring, typename std::enable_if<std::is_enum<TDeclaring>::value>::type>
+{
+	static void Serialize(TSerializerClass& packer, TDeclaring const& ref)
+	{
+		packer.Serialize((typename std::underlying_type<TDeclaring>::type)ref);
+	}
+};
+
 template<typename TSerializerClass, typename TDeclaring, typename = void>
 struct GenericDeserializer;
 
@@ -163,6 +172,24 @@ struct GenericDeserializer<TDeserializerClass, TDeclaring, typename std::enable_
 	static void Deserialize(TDeserializerClass& deser, TDeclaring& ret)
 	{
 		deser.Deserialize(ret);
+	}
+};
+
+template<typename TDeserializerClass, typename TDeclaring>
+struct GenericDeserializer<TDeserializerClass, TDeclaring, typename std::enable_if<std::is_enum<TDeclaring>::value>::type>
+{
+	static TDeclaring Deserialize(TDeserializerClass& deser)
+	{
+		typename std::underlying_type<TDeclaring>::type ret;
+		deser.Deserialize(ret);
+		return (TDeclaring)ret;
+	}
+
+	static void Deserialize(TDeserializerClass& deser, TDeclaring& ret)
+	{
+		typename std::underlying_type<TDeclaring>::type tmp;
+		deser.Deserialize(tmp);
+		ret = (TDeclaring)tmp;
 	}
 };
 

@@ -392,7 +392,7 @@ struct GDBusSignatureBuilder;
 template<typename ... TArgs>
 struct GDBusSignatureFiller;
 
-template<typename T>
+template<typename T, typename TVoid = void>
 struct GDBusTypeCode
 {
 	static constexpr char const* value = "r";
@@ -400,6 +400,12 @@ struct GDBusTypeCode
 
 template<typename T>
 struct GDBusTypeCode<T const&> : GDBusTypeCode<T>
+{
+
+};
+
+template<typename T>
+struct GDBusTypeCode<T, typename std::enable_if<std::is_enum<T>::value>::type> : GDBusTypeCode<typename std::underlying_type<T>::type>
 {
 
 };
