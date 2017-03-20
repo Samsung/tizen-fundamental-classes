@@ -25,13 +25,6 @@ namespace TFC { namespace Util {
 	void ShareString(const std::string& str);
 
 	/**
-	 * Method to share data text and image by bluetooth, memo, etc.
-	 *
-	 * @param str String reference that will be shared.
-	 */
-	void ShareData(const std::string& text, const std::string& imagePath);
-
-	/**
 	 * Method to store text to clipboard.
 	 *
 	 * @param str String reference that will be copied to clipboard.
