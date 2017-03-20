@@ -213,3 +213,14 @@ const std::string& TFC::Components::Field::GetGuideText() const
 
 	return this->guideText;
 }
+
+void TFC::Components::Field::SetCharLimit(const int& limit)
+{
+	limit_size.max_char_count = limit;
+	elm_entry_markup_filter_append(field, elm_entry_filter_limit_size, &limit_size);
+}
+
+int TFC::Components::Field::GetCharLimit() const
+{
+	return limit_size.max_char_count;
+}
