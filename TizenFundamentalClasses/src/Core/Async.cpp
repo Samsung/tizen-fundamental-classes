@@ -113,7 +113,7 @@ void Async_Thread(void* data, Ecore_Thread* thd)
 			ctx->catchInvoker = catchHandler(c, ctx->payload.catchHandlerData);
 
 			if(!ctx->catchInvoker.handled)
-				throw;
+				goto ForceMarshalException;//throw;
 		}
 		else if(ctx->payload.awaitable)
 		{
@@ -125,8 +125,26 @@ void Async_Thread(void* data, Ecore_Thread* thd)
 
 			ctx->exceptionType = &typeid(c);
 		}
-		else throw;
+		else
+		{
+			ForceMarshalException:
+			SynchronizeContext syncCtx;
+			syncCtx.syncMutex.lock();
+			syncCtx.handlerPayload = SynchronizeHandlerPayload::PackLambda([&c] () {
+				auto tfc = dynamic_cast<TFC::TFCException const*>(&c);
+				if(tfc != nullptr)
+					throw TFC::TFCException(*tfc);
+				else
+					throw c;
+			});
+			ecore_thread_feedback(ctx->threadHandle, &syncCtx);
+
+			syncCtx.syncMutex.lock();
+			// Usually will never reach here as the exception occured internally where user codes can never catch
+			delete syncCtx.handlerPayload;
+		}
 	}
+
 
 	//std::cout << "Thread Completed: " << (int)ctx << std::endl;
 
