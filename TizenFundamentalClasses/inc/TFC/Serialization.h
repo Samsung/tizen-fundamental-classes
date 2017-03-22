@@ -198,6 +198,28 @@ struct ParameterDeserializerFunctor
 {
 	typedef typename Core::Metaprogramming::SequenceGenerator<sizeof...(TArgs)>::Type ArgSequence;
 
+
+	template<typename T, typename TVoid = void>
+	struct DeserializerSelector
+	{
+		static void Deserialize(TDeserializerClass& pOut, T& ref)
+		{
+			auto p = pOut.DeserializeScope();
+			GenericDeserializer<TDeserializerClass, T>::Deserialize(p, ref);
+			//p.Deserialize(p, ref);
+			p.Finalize();
+		}
+	};
+
+	template<typename T>
+	struct DeserializerSelector<T, typename std::enable_if<DeserializationAvailable<TDeserializerClass, T>::value>::type>
+	{
+		static void Deserialize(TDeserializerClass& p, T& ref)
+		{
+			p.Deserialize(ref);
+		}
+	};
+
 	template<int... S>
 	static std::tuple<typename std::decay<TArgs>::type...> Func(TDeserializerClass& p, Core::Metaprogramming::Sequence<S...>)
 	{
@@ -205,7 +227,7 @@ struct ParameterDeserializerFunctor
 
 		std::tuple<typename std::decay<TArgs>::type...> ret;
 
-		int list[] = {(GenericDeserializer<TDeserializerClass, TArgs>::Deserialize(p, std::get<S>(ret)), 0)...};
+		int list[] = {(DeserializerSelector<TArgs>::Deserialize(p, std::get<S>(ret)), 0)...};
 		(void)list;
 
 		/*

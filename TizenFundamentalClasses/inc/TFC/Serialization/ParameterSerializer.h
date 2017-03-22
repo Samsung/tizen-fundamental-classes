@@ -40,14 +40,14 @@ template<typename TSerializerClass,
 		 typename... TArgs>
 struct ParameterSerializer<TSerializerClass, TFunctionType, std::tuple<TArgs...>>
 {
-	static typename TSerializerClass::SerializedType Serialize(TArgs const&... param)
+	static typename TSerializerClass::SerializedType Serialize(TArgs... param)
 	{
 		TSerializerClass packer;
 		SerializerFunctor<TSerializerClass, TArgs...>::Func(packer, param...);
 		return packer.EndPack();
 	}
 
-	static void Serialize(typename TSerializerClass::SerializedType& packer, TArgs const&... param)
+	static void Serialize(typename TSerializerClass::SerializedType& packer, TArgs... param)
 	{
 		SerializerFunctor<TSerializerClass, TArgs...>::Func(packer, param...);
 	}

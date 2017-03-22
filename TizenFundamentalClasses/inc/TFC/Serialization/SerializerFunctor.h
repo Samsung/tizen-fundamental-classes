@@ -74,7 +74,7 @@ struct SerializerFunctor<TSerializerClass, TCurrent, TArgs...>
 
 	static void Func(TSerializerClass& p, TCurrent t, TArgs... next)
 	{
-		SerializerSelect<TSerializerClass, TCurrent>::Serialize(p, t);
+		SerializerSelect<TSerializerClass, typename std::decay<TCurrent>::type>::Serialize(p, t);
 		// Call SerializerFunctor recursive by passing the TArgs tails as arguments
 		SerializerFunctor<TSerializerClass, TArgs...>::Func(p, next...);
 	}
