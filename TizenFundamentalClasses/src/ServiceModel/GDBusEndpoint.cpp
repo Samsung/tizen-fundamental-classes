@@ -947,17 +947,21 @@ void TFC::ServiceModel::GDBusServer::EventCaptureHandler(IServerObject<GDBusChan
 	}
 
 	dlog_print(DLOG_DEBUG, LOG_TAG, "Found interface %s and object path %s", ifaceName, objPath.c_str());
+	auto paramArg = g_variant_ref_sink(eventInfo.eventArgument);
 
 	for(auto connection : this->connectionList)
 	{
 		GError* err = nullptr;
-		g_dbus_connection_emit_signal(connection, nullptr, objPath.c_str(), ifaceName, eventInfo.eventName.c_str(), eventInfo.eventArgument, &err);
+
+		g_dbus_connection_emit_signal(connection, nullptr, objPath.c_str(), ifaceName, eventInfo.eventName.c_str(), paramArg, &err);
 
 		if(err != nullptr)
 		{
 			g_error_free(err);
 		}
 	}
+
+	g_variant_unref(paramArg);
 }
 
 void TFC::ServiceModel::GDBusClient::ReceiveEvent(const char* eventName,
