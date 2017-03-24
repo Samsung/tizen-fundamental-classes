@@ -220,6 +220,17 @@ struct ParameterDeserializerFunctor
 		}
 	};
 
+	template<typename T>
+	struct DeserializerSelector<T, typename std::enable_if<std::is_enum<T>::value>::type>
+	{
+		static void Deserialize(TDeserializerClass& p, T& ref)
+		{
+			typename std::underlying_type<T>::type val;
+			p.Deserialize(val);
+			ref = (T)val;
+		}
+	};
+
 	template<int... S>
 	static std::tuple<typename std::decay<TArgs>::type...> Func(TDeserializerClass& p, Core::Metaprogramming::Sequence<S...>)
 	{
