@@ -104,7 +104,7 @@ namespace Components {
 			};
 		};
 	public:
-		virtual std::string GetString(T* data, Evas_Object *obj, const char *part) final;
+		virtual std::string GetString(T* data, Evas_Object *obj, const char *part);
 
 		/**
 		 * Abstract method for providing Evas_Object representation from a part of a genlist item.
