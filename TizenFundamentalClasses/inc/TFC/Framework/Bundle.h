@@ -12,6 +12,7 @@
 #include "TFC/Core.h"
 #include <stdexcept>
 #include <memory>
+#include <tuple>
 
 namespace TFC {
 namespace Framework {
@@ -44,6 +45,37 @@ namespace Framework {
 		}
 	};
 
+	template<typename... Args>
+	class Tuple : public ObjectClass
+	{
+	private:
+		std::tuple<Args...> values;
+	public:
+		Tuple(Args... args) :
+			values(std::make_tuple(args...))
+		{
+		}
+
+		template<int i>
+		auto Get()
+		{
+			return std::get<i>(values);
+		}
+
+		static Tuple<Args...>* Pack(Args... args)
+		{
+			return new Tuple<Args...>(args...);
+		}
+
+		static std::unique_ptr<Tuple<Args...>> Construct(ObjectClass* data)
+		{
+			auto tuple = dynamic_cast<Tuple<Args...>*>(data);
+			if (tuple == nullptr)
+				throw std::runtime_error("ObjectClass is not a correct tuple instance");
+
+			return std::unique_ptr<Tuple<Args...>>(tuple);
+		}
+	};
 }
 }
 
