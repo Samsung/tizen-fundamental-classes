@@ -28,7 +28,6 @@ namespace Framework {
 		}
 	public:
 
-
 		static Bundle<T>* Pack(T& value)
 		{
 			return new Bundle<T>(value);
@@ -40,42 +39,50 @@ namespace Framework {
 			if(bundle == nullptr)
 				throw std::runtime_error("ObjectClass is not a correct bundle instance");
 
-			std::shared_ptr<Bundle<T>> bundlePtr(bundle);
-			return bundlePtr->value;
+			std::unique_ptr<Bundle<T>> bundlePtr(bundle);
+			return std::move(bundlePtr->value);
 		}
 	};
 
-	template<typename... Args>
+	template<typename... TArgs>
 	class Tuple : public ObjectClass
 	{
 	private:
-		std::tuple<Args...> values;
+		std::tuple<TArgs...> values;
 	public:
-		Tuple(Args... args) :
-			values(std::make_tuple(args...))
+		template<typename... T>
+		Tuple(T&&... args) :
+			values(std::forward<T>(args)...)
 		{
 		}
 
-		template<int i>
+		template<std::size_t i>
 		auto Get()
 		{
 			return std::get<i>(values);
 		}
 
-		static Tuple<Args...>* Pack(Args... args)
+		template<typename T>
+		auto Get()
 		{
-			return new Tuple<Args...>(args...);
+			return std::get<T>(values);
 		}
 
-		static std::unique_ptr<Tuple<Args...>> Construct(ObjectClass* data)
+		static Tuple<TArgs...>* TryCast(ObjectClass* data)
 		{
-			auto tuple = dynamic_cast<Tuple<Args...>*>(data);
+			auto tuple = dynamic_cast<Tuple<TArgs...>*>(data);
 			if (tuple == nullptr)
 				throw std::runtime_error("ObjectClass is not a correct tuple instance");
 
-			return std::unique_ptr<Tuple<Args...>>(tuple);
+			return tuple;
 		}
 	};
+
+	template<typename... TArgs>
+	auto MakeTuple(TArgs&&... args)
+	{
+		return new Tuple<typename std::decay<TArgs>::type...>(std::forward<TArgs>(args)...);
+	}
 }
 }
 
