@@ -367,28 +367,28 @@ namespace Components {
 		 * Property that enables getting & setting the adapter of genlist.
 		 * The return/parameter type is Adapter.
 		 */
-		Property<Adapter*>::Get<&GenericList::GetDataSource>::Set<&GenericList::SetDataSource> DataSource;
+		Property<Adapter*>::Get<&GenericList::GetDataSource>::Set<&GenericList::SetDataSource> DataSource { this };
 
 		/**
 		 * Property that enables getting & setting whether overscrolling (end of list action) is enabled or not.
 		 * The return/parameter type is bool.
 		 */
-		Property<bool>::Get<&GenericList::GetOverscroll>::Set<&GenericList::SetOverscroll> Overscroll;
+		Property<bool>::Get<&GenericList::GetOverscroll>::Set<&GenericList::SetOverscroll> Overscroll { this };
 
-		Property<bool>::Get<&GenericList::GetUnderscroll>::Set<&GenericList::SetUnderscroll> Underscroll;
+		Property<bool>::Get<&GenericList::GetUnderscroll>::Set<&GenericList::SetUnderscroll> Underscroll { this };
 
 
 		/**
 		 * Property that enables getting & setting whether longpressing item is enabled or not.
 		 * The return/parameter type is bool.
 		 */
-		Property<bool>::Get<&GenericList::GetLongClicked>::Set<&GenericList::SetLongClicked> IsLongClicked;
+		Property<bool>::Get<&GenericList::GetLongClicked>::Set<&GenericList::SetLongClicked> IsLongClicked { this };
 
 		/**
 		 * Property that enables getting & setting the threshold for showing back to top action.
 		 * The return/parameter type is int.
 		 */
-		Property<int>::Get<&GenericList::GetBackToTopThreshold>::Set<&GenericList::SetBackToTopThreshold> BackToTopThreshold;
+		Property<int>::Get<&GenericList::GetBackToTopThreshold>::Set<&GenericList::SetBackToTopThreshold> BackToTopThreshold { this };
 	};
 }
 }

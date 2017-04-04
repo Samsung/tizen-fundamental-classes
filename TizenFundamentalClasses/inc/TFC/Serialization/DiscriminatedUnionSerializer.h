@@ -222,10 +222,10 @@ struct ClassDeserializerSelect<TDeserializerClass, TDeclaring, TFC::Serializatio
 	{
 		if(FieldInfo::Evaluate(obj))
 		{
-
+			decltype(auto) scope = p.DeserializeScope();
 			uint32_t discriminator = 0;
-			p.Deserialize(discriminator);
-			DUTypeInfo::DeserializeAndSet(ptrMem, obj, discriminator, p, curIdx + 1);
+			scope.Deserialize(discriminator);
+			DUTypeInfo::DeserializeAndSet(ptrMem, obj, discriminator, scope, curIdx + 1);
 		}
 		//TField::Set(obj, p.template Deserialize<typename TField::ValueType>(curIdx));
 	}

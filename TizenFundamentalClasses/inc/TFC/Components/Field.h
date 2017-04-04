@@ -130,25 +130,25 @@ public:
 	 * Property that enables getting & setting text on the field.
 	 * The return/parameter type is string reference.
 	 */
-	Property<std::string const&>::Get<&Field::GetText>::Set<&Field::SetText> Text;
+	Property<std::string const&>::Get<&Field::GetText>::Set<&Field::SetText> Text { this };
 
 	/**
 	 * Property that enables getting & setting multiline mode of the field.
 	 * The return/parameter type is bool.
 	 */
-	Property<bool>::Get<&Field::GetMultiline>::Set<&Field::SetMultiline> Multiline;
+	Property<bool>::Get<&Field::GetMultiline>::Set<&Field::SetMultiline> Multiline { this };
 
 	/**
 	 * Property that enables getting & setting bottom border visibility of the field.
 	 * The return/parameter type is bool.
 	 */
-	Property<bool>::Get<&Field::GetBottomBorderVisible>::Set<&Field::SetBottomBorderVisible> BottomBorderVisible;
+	Property<bool>::Get<&Field::GetBottomBorderVisible>::Set<&Field::SetBottomBorderVisible> BottomBorderVisible { this };
 
 	/**
 	 * Property that enables getting & setting bottom border visibility of the field.
 	 * The return/parameter type is bool.
 	 */
-	Property<std::string const&>::Get<&Field::GetGuideText>::Set<&Field::SetGuideText> GuideText;
+	Property<std::string const&>::Get<&Field::GetGuideText>::Set<&Field::SetGuideText> GuideText { this };
 };
 }
 }

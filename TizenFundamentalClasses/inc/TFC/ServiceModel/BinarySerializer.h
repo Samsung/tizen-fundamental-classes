@@ -27,8 +27,6 @@ class BinarySerializer
 public:
 	typedef std::vector<uint8_t> SerializedType;
 
-
-
 	BinarySerializer();
 	BinarySerializer(SerializedType* bufferRef);
 	void Serialize(uint32_t args);

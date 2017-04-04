@@ -92,7 +92,7 @@ private:
 	{
 		auto event = static_cast<TFC::Core::EventObject<T*, TArg>*>(eventPtr);
 		typename Channel::Deserializer deser(dataPtr);
-		auto data = Serialization::GenericDeserializer<typename Channel::Deserializer, TArg>::Deserialize(deser);
+		auto data = Serialization::GenericDeserializer<typename Channel::Deserializer, typename std::decay<TArg>::type>::Deserialize(deser);
 		(*event)(thiz, data);
 	}
 

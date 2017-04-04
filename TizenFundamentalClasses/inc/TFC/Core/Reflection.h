@@ -273,7 +273,7 @@ public:
 	void Raise(void* object, void* param) const override
 	{
 		auto obj = reinterpret_cast<DeclaringType*>(object);
-		auto arg = reinterpret_cast<EventArgType*>(param);
+		auto arg = reinterpret_cast<typename std::decay<EventArgType>::type*>(param);
 
 		(obj->*ptr)(obj, *arg);
 	}

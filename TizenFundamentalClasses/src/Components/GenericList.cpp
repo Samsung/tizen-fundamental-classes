@@ -92,9 +92,7 @@ LIBAPI TFC::Components::GenericListItemClassBase::~GenericListItemClassBase()
  * ================================================================================================================= */
 
 LIBAPI TFC::Components::GenericList::GenericList() :
-	genlist(nullptr), realBottom(nullptr), dataSource(nullptr), overscroll(false), underscroll(false),
-	DataSource(this), Overscroll(this), Underscroll(this),
-	IsLongClicked(this), BackToTopThreshold(this)
+	genlist(nullptr), realBottom(nullptr), dataSource(nullptr), overscroll(false), underscroll(false)
 {
 	eventScrolledInternal += EventHandler(GenericList::OnScrolledInternal);
 	eventScrolledDownInternal += EventHandler(GenericList::OnScrolledDownInternal);

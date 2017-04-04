@@ -232,7 +232,7 @@ protected:
 
 		void EventHandlerFunc(T* source, TArg value)
 		{
-			typedef Serialization::ObjectSerializer<Serializer, TArg> Serializer;
+			typedef Serialization::GenericSerializer<Serializer, typename std::decay<TArg>::type> Serializer;
 			auto serializedArg = Serializer::Serialize(value);
 			serverRef.NotifyEventRaised(eventRef.eventName, serializedArg);
 		}

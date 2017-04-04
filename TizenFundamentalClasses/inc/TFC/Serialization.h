@@ -141,6 +141,13 @@ struct GenericSerializer;
 template<typename TSerializerClass, typename TDeclaring>
 struct GenericSerializer<TSerializerClass, TDeclaring, typename std::enable_if<SerializationAvailable<TSerializerClass, TDeclaring>::value>::type>
 {
+	static auto Serialize(TDeclaring const& ptr)
+	{
+		TSerializerClass packer;
+		packer.Serialize(ptr);
+		return packer.EndPack();
+	}
+
 	static void Serialize(TSerializerClass& packer, TDeclaring const& ref)
 	{
 		packer.Serialize(ref);
