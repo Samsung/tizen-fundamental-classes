@@ -324,7 +324,6 @@ void TFC::Components::GenericList::PrependItemToGenlist(Adapter::AdapterItem* da
 
 
 	this->itemIndex.insert({ data, inserted });
-
 	/*
 	elm_object_item_signal_callback_add(realBottom, "*", "*", [] (void *data, Evas_Object *obj, const char *emission, const char *source) {
 			dlog_print(DLOG_DEBUG, "TFCFW-Signal", "Signal TFC %s, source %s", emission, source);
@@ -370,6 +369,7 @@ LIBAPI void TFC::Components::GenericList::OnItemRemove(Adapter* adapter, Adapter
 		realBottom = elm_genlist_item_prev_get(realBottom);
 
 	elm_object_item_del(genlistItem);
+	this->itemIndex.erase(data);
 	//data->objectItem = nullptr;
 
 	// If this is last, then just remove the dummy bottom
