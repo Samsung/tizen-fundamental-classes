@@ -171,6 +171,7 @@ public:
 	template<class T>
 	void RemoveItem(T* data);
 
+	void RemoveItem(std::list<AdapterItem>::iterator iter);
 
 	/**
 	 * Method to clear all items in the adapter's list.

@@ -58,6 +58,13 @@ LIBAPI void TFC::Components::Adapter::RemoveItemInternal(void* data)
 	}
 }
 
+LIBAPI void TFC::Components::Adapter::RemoveItem(std::list<AdapterItem>::iterator iter)
+{
+	auto& ref = *iter;
+	eventItemRemove(this, &ref);
+	adapterItems.erase(iter);
+}
+
 LIBAPI std::list<TFC::Components::Adapter::AdapterItem>& TFC::Components::Adapter::GetAll()
 {
 	return adapterItems;
