@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns="http://tizen.org/ns/packages" api-version="2.4" package="$(packageName)" version="1.0.0">
+	<profile name="$(packageProfile)" />
+	<ui-application appid="$(packageName)" exec="$(appNameLower)" type="capp" multiple="false" taskmanage="true" nodisplay="false" launch_mode="single">
+		<icon>$(appName).png</icon>
+		<label>$(appName)</label>
+	</ui-application>
+</manifest>

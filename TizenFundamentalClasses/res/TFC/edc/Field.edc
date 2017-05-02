@@ -1,0 +1,98 @@
+/*
+ * Tizen Fundamental Classes - TFC
+ * Copyright (c) 2016-2017 Samsung Electronics Co., Ltd. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ *    res/TFC/edc/Field.edc
+ *
+ * Created on:  Sep 27, 2016
+ * Author: 		Gilang Mentari Hamidy (g.hamidy@samsung.com)
+ * Contributor: Kevin Winata (k.winata@samsung.com)
+ */
+
+collections{
+ group { name: "main";
+      parts {
+         part { name: "background";
+            type: RECT;
+            description { state: "default" 0.0;
+               color: 0 0 0 0;
+            }
+         }
+         
+         part { name: "content";
+            type: SWALLOW;
+            description { state: "default" 0.0;
+               rel1 {
+                  relative: 0.0 0.0;
+                  to: "background";
+               }
+               rel2 {
+                  relative: 1.0 1.0;
+                  to: "background";
+               }
+            }
+         }
+         
+         part{ name: "bottom_border";
+            type: RECT;
+            description { state: "default" 0.0;
+               color: 70 70 70 255;
+;               rel1 {
+                  relative: 0.0 0.998;
+                  to: "content";
+               }
+               
+               rel2 {
+                 relative: 1.0 1.0;
+                  to: "content";
+               }
+            }
+         
+         }
+         
+      } //end of parts
+      
+      
+   } //end of group
+   
+   group { name: "no_border";
+      parts {
+         part { name: "background";
+            type: RECT;
+            description { state: "default" 0.0;
+               color: 0 0 0 0;
+            }
+         }
+         
+         part { name: "content";
+            type: SWALLOW;
+            description { state: "default" 0.0;
+               rel1 {
+                  relative: 0.0 0.0;
+                  to: "background";
+               }
+               rel2 {
+                  relative: 1.0 1.0;
+                  to: "background";
+               }
+            }
+         }
+         
+      } //end of parts
+      
+      
+   } //end of group
+   
+} //end of collections

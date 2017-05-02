@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Overview version="0.0.1">
+  <SampleName>Native App with SRIN C++ Framework</SampleName>
+  <SampleVersion>1.0</SampleVersion>
+  <PlatformList>
+    <Profile>
+      <ProfileName>Mobile</ProfileName>
+      <RequiredVersion>2.4</RequiredVersion>
+    </Profile>
+  </PlatformList>
+  <ProjectType>org.tizen.nativecore.buildArtefactType.app</ProjectType>
+  <HasOption>False</HasOption>
+  <CategoryList>
+    <Category>Template</Category>
+  </CategoryList>
+  <PreviewList>
+    <Preview>screenshot.png</Preview>
+  </PreviewList>
+  <Description>
+      This is a template project for utilizing SRIN C++ Framework
+  </Description>
+</Overview>
