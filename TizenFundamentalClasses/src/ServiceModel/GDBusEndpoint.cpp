@@ -1,10 +1,25 @@
 /*
- * GDBusEndpoint.cpp
+ * Tizen Fundamental Classes - TFC
+ * Copyright (c) 2016-2017 Samsung Electronics Co., Ltd. All rights reserved.
  *
- *  Created on: Dec 21, 2016
- *      Author: gilang
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ *    ServiceModel/GDBusEndpoint.cpp
+ *
+ * Created on:  Dec 21, 2016
+ * Author: 		Gilang Mentari Hamidy (g.hamidy@samsung.com)
+ * Contributor: Kevin Winata (k.winata@samsung.com)
  */
-
 
 #include "TFC/Core.h"
 #include "TFC/ServiceModel/GDBusEndpoint.h"
@@ -905,6 +920,11 @@ LIBAPI
 GVariantDeserializer TFC::ServiceModel::GVariantDeserializer::DeserializeScope()
 {
 	auto val = g_variant_iter_next_value(&iter);
+
+	auto str = g_variant_print(val, true);
+	dlog_print(DLOG_DEBUG, "TFC-RPC", "The value of scope is: %s", str);
+	g_free(str);
+
 	TFCAssert(g_variant_type_is_tuple(g_variant_get_type(val)), "Invalid value. Scope value is not tuple.");
 	return { val };
 }
@@ -955,8 +975,11 @@ void TFC::ServiceModel::GDBusServer::EventCaptureHandler(IServerObject<GDBusChan
 
 		g_dbus_connection_emit_signal(connection, nullptr, objPath.c_str(), ifaceName, eventInfo.eventName.c_str(), paramArg, &err);
 
+
+		dlog_print(DLOG_DEBUG, LOG_TAG, "Emit signal on connection");
 		if(err != nullptr)
 		{
+			dlog_print(DLOG_ERROR, LOG_TAG, "Error on emit signal to connection: %s", err->message);
 			g_error_free(err);
 		}
 	}
@@ -966,7 +989,10 @@ void TFC::ServiceModel::GDBusServer::EventCaptureHandler(IServerObject<GDBusChan
 
 void TFC::ServiceModel::GDBusClient::ReceiveEvent(const char* eventName,
 		GVariant* eventArg) {
-	std::cout << "Here in Event Received in Endpoint\n";
+	auto str = g_variant_print(eventArg, true);
+	dlog_print(DLOG_DEBUG, "TFC-RPC-EVENT", "The event arg of %s is: %s", eventName, str);
+	g_free(str);
+
 	this->eventEventReceived(this, { eventName, eventArg });
 }
 
