@@ -229,6 +229,7 @@ void TFC::Components::GenericList::SetDataSource(Adapter* newAdapter)
 	// Assign new adapter
 	this->dataSource = newAdapter;
 	firstRealize = true;
+	realBottom = nullptr;
 
 	// Append all existing item in adapter
 	auto& all = dataSource->GetAll();
