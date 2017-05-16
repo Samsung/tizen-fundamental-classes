@@ -22,7 +22,17 @@
 
 #include "TFC/Infrastructures/ScheduledEvent.h"
 
+TFC::Infrastructures::ScheduledEvent::ScheduledEvent() :
+	data(nullptr)
+{
+}
+
+void TFC::Infrastructures::ScheduledEvent::SetData(void* data)
+{
+	this->data = data;
+}
+
 void TFC::Infrastructures::ScheduledEvent::Run()
 {
-	eventRunTask(this, nullptr);
+	eventRunTask(this, data);
 }
