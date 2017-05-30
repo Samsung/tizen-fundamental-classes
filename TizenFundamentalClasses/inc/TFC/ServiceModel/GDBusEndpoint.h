@@ -469,6 +469,56 @@ struct GDBusSignatureFiller<TCurrent, TArgs...>
 	}
 };
 
+template<typename TTypeSerializationInfo>
+struct GDBusCompositeSignatureBuilder;
+
+template<typename TClass, typename... TFields>
+struct GDBusCompositeSignatureBuilderFunctor;
+
+template<typename TClass, typename TCurrentField, typename... TFields>
+struct GDBusCompositeSignatureBuilderFunctor<TClass, TCurrentField, TFields...>
+{
+	static void GetSignature(std::string& ref)
+	{
+		ref += GDBusTypeCode<typename TCurrentField::ValueType>::value;
+		GDBusCompositeSignatureBuilderFunctor<TClass, TFields...>::GetSignature(ref);
+	}
+};
+
+template<typename TClass>
+struct GDBusCompositeSignatureBuilderFunctor<TClass>
+{
+	static void GetSignature(std::string& ref)
+	{
+
+	}
+};
+
+
+template<typename TDeclaring, typename... TFields>
+struct GDBusCompositeSignatureBuilder<TFC::Serialization::TypeSerializationInfo<TDeclaring, TFields...>>
+{
+	static std::string GetSignature()
+	{
+		std::string ret { "(" };
+		GDBusCompositeSignatureBuilderFunctor<TDeclaring, TFields...>::GetSignature(ret);
+		ret += ")";
+		return ret;
+	}
+};
+
+
+
+template<typename TVectorType, typename... TArgs>
+struct GDBusSignatureFiller<std::vector<TVectorType>, TArgs...>
+{
+	static void GetSignature(std::vector<std::string>& param)
+	{
+		param.push_back("a" + GDBusCompositeSignatureBuilder<typename TFC::Serialization::TypeSerializationInfoSelector<TVectorType>::Type>::GetSignature());
+		GDBusSignatureFiller<TArgs...>::GetSignature(param);
+	}
+};
+
 template<>
 struct GDBusSignatureFiller<>
 {
