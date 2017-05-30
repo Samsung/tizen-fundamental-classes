@@ -933,8 +933,9 @@ void TFC::ServiceModel::GDBusServer::OnConnectionClosedCallback(
 		GDBusConnection* connection, gboolean remote_peer_vanished,
 		GError* error, gpointer user_data) {
 	auto thiz = static_cast<GDBusServer*>(user_data);
-
-	std::remove_if(thiz->connectionList.begin(), thiz->connectionList.end(), [user_data] (GDBusConnection* data) { return data == user_data; });
+	dlog_print(DLOG_DEBUG, "RPC-Test-Connection", "Connection is closed");
+	g_object_unref(connection);
+	std::remove_if(thiz->connectionList.begin(), thiz->connectionList.end(), [connection] (GDBusConnection* data) { return data == connection; });
 }
 
 void TFC::ServiceModel::GDBusServer::EventCaptureHandler(IServerObject<GDBusChannel>* source, IServerObject<GDBusChannel>::EventEmissionInfo const& eventInfo)
@@ -979,7 +980,7 @@ void TFC::ServiceModel::GDBusServer::EventCaptureHandler(IServerObject<GDBusChan
 		dlog_print(DLOG_DEBUG, LOG_TAG, "Emit signal on connection");
 		if(err != nullptr)
 		{
-			dlog_print(DLOG_ERROR, LOG_TAG, "Error on emit signal to connection: %s", err->message);
+			dlog_print(DLOG_ERROR, LOG_TAG, "Error on emit signal to connection: %s (%d)", err->message, err->code);
 			g_error_free(err);
 		}
 	}
