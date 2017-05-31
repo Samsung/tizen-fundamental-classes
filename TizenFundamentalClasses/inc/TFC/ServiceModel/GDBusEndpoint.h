@@ -514,7 +514,9 @@ struct GDBusSignatureFiller<std::vector<TVectorType>, TArgs...>
 {
 	static void GetSignature(std::vector<std::string>& param)
 	{
-		param.push_back("a" + GDBusCompositeSignatureBuilder<typename TFC::Serialization::TypeSerializationInfoSelector<TVectorType>::Type>::GetSignature());
+		std::string ret { "a" };
+		ret += GDBusTypeCode<TVectorType>::value;
+		param.push_back(ret);
 		GDBusSignatureFiller<TArgs...>::GetSignature(param);
 	}
 };
