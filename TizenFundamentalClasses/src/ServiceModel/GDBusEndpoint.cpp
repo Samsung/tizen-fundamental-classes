@@ -869,9 +869,10 @@ void TFC::ServiceModel::GVariantDeserializer::Deserialize(std::vector<uint8_t>& 
 LIBAPI
 void TFC::ServiceModel::GVariantDeserializer::Deserialize(std::vector<int32_t>& target) {
 	target.clear();
+	dlog_print(DLOG_DEBUG, "TFC-RPC", "Deserialize vector");
 	auto arrVariant = g_variant_iter_next_value(&iter);
 	auto arrIter = g_variant_iter_new(arrVariant);
-	uint8_t value;
+	int32_t value;
 	while (g_variant_iter_next(arrIter, "i", &value)) {
 		target.push_back(value);
 	}
@@ -883,7 +884,7 @@ void TFC::ServiceModel::GVariantDeserializer::Deserialize(std::vector<int64_t>& 
 	target.clear();
 	auto arrVariant = g_variant_iter_next_value(&iter);
 	auto arrIter = g_variant_iter_new(arrVariant);
-	uint8_t value;
+	int64_t value;
 	while (g_variant_iter_next(arrIter, "x", &value)) {
 		target.push_back(value);
 	}

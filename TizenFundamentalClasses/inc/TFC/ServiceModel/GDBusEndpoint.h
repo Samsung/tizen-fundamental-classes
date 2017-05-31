@@ -521,6 +521,12 @@ struct GDBusSignatureFiller<std::vector<TVectorType>, TArgs...>
 	}
 };
 
+template<typename TCurrent, typename... TArgs>
+struct GDBusSignatureFiller<TCurrent const&, TArgs...> : GDBusSignatureFiller<TCurrent, TArgs...>
+{
+
+};
+
 template<>
 struct GDBusSignatureFiller<>
 {
