@@ -105,6 +105,15 @@ public:
 	void SetCursorAtEnd();
 
 	/**
+	 * Set the maximum number of characters allowed to be input.
+	 *
+	 * @param int number of characters allowed.
+	 */
+	void SetCharLimit(int const& limit);
+	int	GetCharLimit() const;
+
+
+	/**
 	 * Event that will be triggered when user input return key.
 	 */
 	EvasSmartEvent eventReturnKeyClick;
@@ -121,6 +130,8 @@ private:
 
 	bool multiline;
 	bool bottomBorder;
+
+	Elm_Entry_Filter_Limit_Size limit_size;
 protected:
 	/**
 	 * Method overriden from ComponentBase, creates the UI elements of the component.

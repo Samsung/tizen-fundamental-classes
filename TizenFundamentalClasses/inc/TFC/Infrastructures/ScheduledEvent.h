@@ -26,15 +26,20 @@
 #define TFC_INFRASTRUCTURES_SCHEDULEDEVENT_H_
 
 #include "TFC/Infrastructures/ScheduledTask.h"
+#include <functional>
 
 namespace TFC {
 namespace Infrastructures {
 
 class LIBAPI ScheduledEvent : public ScheduledTask, public EventEmitterClass<ScheduledEvent>
 {
+private:
+	void* data;
 protected:
 	virtual void Run();
 public:
+	ScheduledEvent();
+	void SetData(void* data);
 	Event<void*> eventRunTask;
 };
 

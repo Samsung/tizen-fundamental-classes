@@ -160,6 +160,10 @@ void TFC::Components::ContextMenu::HideMenu()
 	BackButtonHandler::Release();
 }
 
+bool TFC::Components::ContextMenu::IsShow() {
+	return this->menuShown;
+}
+
 bool TFC::Components::ContextMenu::BackButtonClicked()
 {
 	elm_ctxpopup_dismiss(this->contextMenu);

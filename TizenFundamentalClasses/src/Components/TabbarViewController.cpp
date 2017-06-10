@@ -240,3 +240,7 @@ void TFC::Components::TabbarViewController::OnTabContentScrolled(
 void TFC::Components::TabbarViewController::OnReload(TFC::ObjectClass* param) {
 	this->tabs[this->currentTab].controller->Reload(param);
 }
+
+int TFC::Components::TabbarViewController::GetCurrentTab() {
+	return this->currentTab;
+}

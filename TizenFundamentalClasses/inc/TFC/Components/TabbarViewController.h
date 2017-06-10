@@ -51,6 +51,7 @@ class LIBAPI TabbarViewController:
 {
 public:
 	TabbarViewController(TFC::Framework::ControllerManager* m, char const* controllerName);
+	int GetCurrentTab();
 protected:
 	void AddTab(std::string text, Framework::ControllerBase& controller);
 	virtual Evas_Object* CreateView(Evas_Object* root) final;

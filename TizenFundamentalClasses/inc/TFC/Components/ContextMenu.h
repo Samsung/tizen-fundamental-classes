@@ -97,6 +97,21 @@ public:
 	void SetMenu(const std::vector<MenuItem*>& listOfMenus);
 
 	/**
+	 * Method to know if ContextMenu is showed.
+	 */
+	bool IsShow();
+
+	/**
+	 * Method to manually show ContextMenu.
+	 */
+	void ShowMenu();
+
+	/**
+	 * Method to manually hide ContextMenu.
+	 */
+	void HideMenu();
+
+	/**
 	 * Destructor of ContextMenu.
 	 */
 	virtual ~ContextMenu();
@@ -133,8 +148,6 @@ private:
 
 	void OnContextMenuButtonClicked(Evas_Object* obj, void* eventData);
 	void OnContextMenuDismissed(Evas_Object* obj, void* eventData);
-	void ShowMenu();
-	void HideMenu();
 
 	void RaiseOnClickEvent(MenuItem* menuItemRef);
 

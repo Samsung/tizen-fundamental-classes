@@ -96,6 +96,7 @@ LIBAPI void TFC::Infrastructures::ScheduledTask::Cancel() {
 		return;
 
 	ecore_timer_del(this->timer);
+	this->timer = nullptr;
 }
 
 

@@ -187,8 +187,11 @@ TFC::Components::GenericList::~GenericList()
 	evas_object_smart_callback_del(genlist, "unrealized", EFL::EvasSmartEventHandler);
 	*/
 
-	this->dataSource->eventItemAdd -= EventHandler(GenericList::OnItemAdd);
-	this->dataSource->eventItemRemove -= EventHandler(GenericList::OnItemRemove);
+	if(dataSource)
+	{
+		this->dataSource->eventItemAdd -= EventHandler(GenericList::OnItemAdd);
+		this->dataSource->eventItemRemove -= EventHandler(GenericList::OnItemRemove);
+	}
 }
 
 LIBAPI void TFC::Components::GenericList::ResetScroll(bool animated)
@@ -229,6 +232,7 @@ void TFC::Components::GenericList::SetDataSource(Adapter* newAdapter)
 	// Assign new adapter
 	this->dataSource = newAdapter;
 	firstRealize = true;
+	realBottom = nullptr;
 
 	// Append all existing item in adapter
 	auto& all = dataSource->GetAll();

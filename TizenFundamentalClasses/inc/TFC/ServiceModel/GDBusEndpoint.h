@@ -116,11 +116,12 @@ struct GVariantSerializer
 		else
 		{
 			GVariantBuilder arrayBuilder;
-			g_variant_builder_init(&arrayBuilder, G_VARIANT_TYPE_ARRAY);
+			g_variant_builder_init(&arrayBuilder, ((const GVariantType *) "av"));
 
 			for (auto& obj : args)
 			{
-				g_variant_builder_add_value(&arrayBuilder, GenericSerializer<GVariantSerializer, T>::Serialize(obj));
+				auto wrap = g_variant_new_variant(GenericSerializer<GVariantSerializer, T>::Serialize(obj));
+				g_variant_builder_add_value(&arrayBuilder, wrap);
 			}
 			tmp = g_variant_builder_end(&arrayBuilder);
 		}
@@ -190,11 +191,11 @@ struct GVariantDeserializer
 		auto arrIter = g_variant_iter_new(arrVariant);
 		while (auto value = g_variant_iter_next_value(arrIter))
 		{
-
 			typedef TFC::Serialization::GenericDeserializer<GVariantDeserializer, T> Deserializer;
-
-			GVariantDeserializer ser(value);
+			auto inner = g_variant_get_variant(value);
+			GVariantDeserializer ser(inner);
 			target.push_back(Deserializer::Deserialize(ser));
+			g_variant_unref(inner);
 			g_variant_unref(value);
 		}
 		g_variant_iter_free(arrIter);
@@ -258,7 +259,10 @@ struct GVariantDeserializer::DeserializerSelector<std::vector<T>,
 		for (auto current = g_variant_iter_next_value(iter); current != nullptr;
 				current = g_variant_iter_next_value(iter))
 		{
-			ret.push_back(GenericDeserializer<GVariantDeserializer, T>::Deserialize(current));
+			auto inner = g_variant_get_variant(current);
+			ret.push_back(GenericDeserializer<GVariantDeserializer, T>::Deserialize(inner));
+			g_variant_unref(inner);
+			g_variant_unref(current);
 		}
 
 		g_variant_iter_free(iter);
@@ -467,6 +471,64 @@ struct GDBusSignatureFiller<TCurrent, TArgs...>
 		param.push_back(GDBusTypeCode<TCurrent>::value);
 		GDBusSignatureFiller<TArgs...>::GetSignature(param);
 	}
+};
+
+template<typename TTypeSerializationInfo>
+struct GDBusCompositeSignatureBuilder;
+
+template<typename TClass, typename... TFields>
+struct GDBusCompositeSignatureBuilderFunctor;
+
+template<typename TClass, typename TCurrentField, typename... TFields>
+struct GDBusCompositeSignatureBuilderFunctor<TClass, TCurrentField, TFields...>
+{
+	static void GetSignature(std::string& ref)
+	{
+		ref += GDBusTypeCode<typename TCurrentField::ValueType>::value;
+		GDBusCompositeSignatureBuilderFunctor<TClass, TFields...>::GetSignature(ref);
+	}
+};
+
+template<typename TClass>
+struct GDBusCompositeSignatureBuilderFunctor<TClass>
+{
+	static void GetSignature(std::string& ref)
+	{
+
+	}
+};
+
+
+template<typename TDeclaring, typename... TFields>
+struct GDBusCompositeSignatureBuilder<TFC::Serialization::TypeSerializationInfo<TDeclaring, TFields...>>
+{
+	static std::string GetSignature()
+	{
+		std::string ret { "(" };
+		GDBusCompositeSignatureBuilderFunctor<TDeclaring, TFields...>::GetSignature(ret);
+		ret += ")";
+		return ret;
+	}
+};
+
+
+
+template<typename TVectorType, typename... TArgs>
+struct GDBusSignatureFiller<std::vector<TVectorType>, TArgs...>
+{
+	static void GetSignature(std::vector<std::string>& param)
+	{
+		std::string ret { "a" };
+		ret += GDBusTypeCode<TVectorType>::value;
+		param.push_back(ret);
+		GDBusSignatureFiller<TArgs...>::GetSignature(param);
+	}
+};
+
+template<typename TCurrent, typename... TArgs>
+struct GDBusSignatureFiller<TCurrent const&, TArgs...> : GDBusSignatureFiller<TCurrent, TArgs...>
+{
+
 };
 
 template<>
