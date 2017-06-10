@@ -116,11 +116,12 @@ struct GVariantSerializer
 		else
 		{
 			GVariantBuilder arrayBuilder;
-			g_variant_builder_init(&arrayBuilder, G_VARIANT_TYPE_ARRAY);
+			g_variant_builder_init(&arrayBuilder, ((const GVariantType *) "av"));
 
 			for (auto& obj : args)
 			{
-				g_variant_builder_add_value(&arrayBuilder, GenericSerializer<GVariantSerializer, T>::Serialize(obj));
+				auto wrap = g_variant_new_variant(GenericSerializer<GVariantSerializer, T>::Serialize(obj));
+				g_variant_builder_add_value(&arrayBuilder, wrap);
 			}
 			tmp = g_variant_builder_end(&arrayBuilder);
 		}
@@ -190,11 +191,11 @@ struct GVariantDeserializer
 		auto arrIter = g_variant_iter_new(arrVariant);
 		while (auto value = g_variant_iter_next_value(arrIter))
 		{
-
 			typedef TFC::Serialization::GenericDeserializer<GVariantDeserializer, T> Deserializer;
-
-			GVariantDeserializer ser(value);
+			auto inner = g_variant_get_variant(value);
+			GVariantDeserializer ser(inner);
 			target.push_back(Deserializer::Deserialize(ser));
+			g_variant_unref(inner);
 			g_variant_unref(value);
 		}
 		g_variant_iter_free(arrIter);
@@ -258,7 +259,10 @@ struct GVariantDeserializer::DeserializerSelector<std::vector<T>,
 		for (auto current = g_variant_iter_next_value(iter); current != nullptr;
 				current = g_variant_iter_next_value(iter))
 		{
-			ret.push_back(GenericDeserializer<GVariantDeserializer, T>::Deserialize(current));
+			auto inner = g_variant_get_variant(current);
+			ret.push_back(GenericDeserializer<GVariantDeserializer, T>::Deserialize(inner));
+			g_variant_unref(inner);
+			g_variant_unref(current);
 		}
 
 		g_variant_iter_free(iter);
