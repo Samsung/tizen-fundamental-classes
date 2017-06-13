@@ -519,7 +519,14 @@ struct GDBusSignatureFiller<std::vector<TVectorType>, TArgs...>
 	static void GetSignature(std::vector<std::string>& param)
 	{
 		std::string ret { "a" };
-		ret += GDBusTypeCode<TVectorType>::value;
+		auto type = GDBusTypeCode<TVectorType>::value;
+
+		// COMPATIBILITY FIX with new vector serialization mechanism
+		if(*type == 'r')
+			type = "v";
+
+		ret += type;
+
 		param.push_back(ret);
 		GDBusSignatureFiller<TArgs...>::GetSignature(param);
 	}
