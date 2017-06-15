@@ -75,6 +75,9 @@ public:
 	void operator-=(const EventDelegate& other);
 	void operator()(TObjectSource objSource, TEventData eventData) const;
 
+	EventObject(EventObject<TObjectSource, TEventData> const&) = delete;
+	EventObject<TObjectSource, TEventData>& operator= (EventObject<TObjectSource, TEventData> const&) = delete;
+
 private:
 	struct EventNode;
 	EventNode* first;

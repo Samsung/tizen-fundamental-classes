@@ -195,7 +195,7 @@ private:
 	void BuildStackTrace();
 
 public:
-	std::string& GetStackTrace() { return this->stackTrace; }
+	std::string const& GetStackTrace() const { return this->stackTrace; }
 };
 
 struct Color
@@ -244,6 +244,8 @@ inline void TFCAssertZero(int value, char const* message = "")
 		throw TExcept(std::move(msg));
 	}
 }
+
+long long GetCurrentTimeMillis();
 
 namespace Core {
 

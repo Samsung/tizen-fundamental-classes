@@ -31,6 +31,8 @@
 #include <execinfo.h>
 #include <cxxabi.h>
 
+#include <chrono>
+
 class TFC::ManagedClass::SharedHandle
 {
 public:
@@ -230,30 +232,36 @@ TFC::ManagedClass::SafePointer TFC::ManagedClass::GetSafePointer()
 	return { this->handle };
 }
 
+LIBAPI
 TFC::ManagedClass::SharedHandle::SharedHandle() : referenceCount(1), isDestructed(false) {
 	dlog_print(DLOG_DEBUG, LOG_TAG, "Shared handle created. Handle: %d", (int)this);
 }
 
+LIBAPI
 void TFC::ManagedClass::SharedHandle::IncrementReference() {
 	++this->referenceCount;
 	dlog_print(DLOG_DEBUG, LOG_TAG, "Increment reference. Handle: %d, ref: %d", (int)this, this->referenceCount);
 }
 
+LIBAPI
 bool TFC::ManagedClass::SharedHandle::DecrementReference() {
 	dlog_print(DLOG_DEBUG, LOG_TAG, "Decrement reference. Handle: %d, ref: %d", (int)this, this->referenceCount - 1);
 	return --this->referenceCount == 0;
 }
 
+LIBAPI
 bool TFC::ManagedClass::SharedHandle::NotifyDestruction() {
 	this->isDestructed = true;
 	dlog_print(DLOG_DEBUG, LOG_TAG, "The owner object is destroyed. Handle: %d", (int)this);
 	return --this->referenceCount == 0;
 }
 
+LIBAPI
 TFC::ManagedClass::SharedHandle::~SharedHandle() {
 	dlog_print(DLOG_DEBUG, LOG_TAG, "The shared handle is destroyed. Handle: %d", (int)this);
 }
 
+LIBAPI
 bool TFC::ManagedClass::SharedHandle::IsDestructed() {
 	return this->isDestructed;
 }
@@ -261,3 +269,12 @@ bool TFC::ManagedClass::SharedHandle::IsDestructed() {
 TFC_DefineTypeInfo(TFC::TFCException) {
 	{ TFC::Core::Constructor<TFC::TFCException, std::string>(), "StringDefault" }
 };
+
+LIBAPI
+long long TFC::GetCurrentTimeMillis()
+{
+	auto time = std::chrono::system_clock::now();
+	auto epoch = time.time_since_epoch();
+	auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(epoch);
+	return millis.count();
+}
