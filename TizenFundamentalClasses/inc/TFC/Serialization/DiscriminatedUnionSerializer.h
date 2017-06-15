@@ -133,13 +133,13 @@ struct DiscriminatedUnionSelector<TDUType>
 	template<typename TSerializerClass>
 	static void Serialize(TSerializerClass& ser, TDUType const& obj, uint32_t discriminator)
 	{
-
+		throw TFC::Serialization::SerializationException("No matching discriminated union type");
 	}
 
 	template<typename TDeserializerClass>
 	static void DeserializeAndSet(TDeserializerClass& ser, TDUType const& obj, uint32_t discriminator, int curIdx)
 	{
-
+		throw TFC::Serialization::SerializationException("No matching discriminated union type");
 	}
 };
 

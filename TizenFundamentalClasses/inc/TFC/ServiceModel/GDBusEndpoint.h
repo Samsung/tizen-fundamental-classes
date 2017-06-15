@@ -57,7 +57,7 @@ class GVariantSerializer;
 class GVariantDeserializer;
 class GDBusClient;
 class GDBusServer;
-class GDBusConfiguration;
+struct GDBusConfiguration;
 class GDBusInterfaceDefinition;
 
 struct GDBusChannel
@@ -81,10 +81,11 @@ public:
 	}
 };
 
-struct GVariantSerializer
+class GVariantSerializer
 {
 	GVariantBuilder builder;
 
+public:
 	typedef GVariant* SerializedType;
 	GVariantSerializer();
 
@@ -102,8 +103,8 @@ struct GVariantSerializer
 	GVariantSerializer CreateScope();
 	void Serialize(GVariantSerializer& p);
 
-	template<typename T>
-	void Serialize(std::vector<T> const& args)
+	template<template<typename, typename> class TContainer, typename T, typename TAlloc>
+	void Serialize(TContainer<T, TAlloc> const& args)
 	{
 		using namespace TFC::Serialization;
 
@@ -132,8 +133,9 @@ struct GVariantSerializer
 	SerializedType EndPack();
 };
 
-struct GVariantDeserializer
+class GVariantDeserializer
 {
+public:
 	typedef GVariant* SerializedType;
 	typedef std::unique_ptr<GVariant, GVariantDeleter> GVariantAutoPtr;
 
@@ -183,8 +185,8 @@ struct GVariantDeserializer
 	void Deserialize(std::vector<int32_t>& target);
 	void Deserialize(std::vector<int64_t>& target);
 
-	template<typename T>
-	void Deserialize(std::vector<T>& target)
+	template<template<typename, typename> class TContainer, typename T, typename TAlloc>
+	void Deserialize(TContainer<T, TAlloc>& target)
 	{
 		target.clear();
 		auto arrVariant = g_variant_iter_next_value(&iter);
