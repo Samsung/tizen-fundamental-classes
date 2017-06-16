@@ -73,13 +73,13 @@ LIBAPI bool UIApplicationBase::ApplicationCreate()
 {
 	currentInstance = this;
 
-	elm_config_accel_preference_set("3d");
+	elm_config_accel_preference_set("hw");
 
 	// Window
 	// Create and initialize elm_win.
 	// elm_win is mandatory to manipulate window.
 	this->win = elm_win_util_standard_add(packageName, packageName);
-
+	elm_win_conformant_set(this->win, EINA_TRUE);
 	elm_win_autodel_set(this->win, EINA_TRUE);
 
 	if (elm_win_wm_rotation_supported_get(this->win))
