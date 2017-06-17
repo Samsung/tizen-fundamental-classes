@@ -11,18 +11,26 @@
 #include <deque>
 #include <mutex>
 #include <condition_variable>
-
+#include <chrono>
+#include <dlog.h>
+#include <pthread.h>
 using namespace TFC;
 using namespace TFC::Infrastructures;
 
 struct DispatchQueue::Implementation
 {
 	std::deque<std::function<void()>> functionsToRun;
-	std::thread dispatchThread;
 	std::mutex sharedMutex;
 	std::condition_variable waitFlag;
 	bool exit { false };
 	void MessageLoop();
+	pthread_t threadInfo = 0;
+
+	static void* NativeThreadProc(void* data)
+	{
+		static_cast<Implementation*>(data)->MessageLoop();
+		return nullptr;
+	}
 };
 
 
@@ -32,25 +40,32 @@ DispatchQueue::DispatchQueue() : impl(new DispatchQueue::Implementation)
 
 DispatchQueue::~DispatchQueue()
 {
+	Stop();
 	delete impl;
 }
 
 void DispatchQueue::Start()
 {
-	std::thread newThread { [i = impl] { i->MessageLoop(); } };
-	impl->dispatchThread = std::move(newThread);
+	pthread_create(&impl->threadInfo, NULL, (Implementation::NativeThreadProc), impl);
+	return;
 }
 
 void DispatchQueue::Stop()
 {
-	this->impl->exit = true;
-	this->impl->dispatchThread.join();
+	if(impl->threadInfo)
+	{
+		this->impl->exit = true;
+		impl->waitFlag.notify_one();
+		pthread_join(this->impl->threadInfo, nullptr);
+	}
 }
 
 void DispatchQueue::Dispatch(std::function<void()>&& task)
 {
-	std::unique_lock<std::mutex> lock(impl->sharedMutex);
-	impl->functionsToRun.push_back(std::move(task));
+	{
+		std::unique_lock<std::mutex> lock(impl->sharedMutex);
+		impl->functionsToRun.push_back(std::move(task));
+	}
 	impl->waitFlag.notify_one();
 }
 
@@ -72,6 +87,7 @@ void DispatchQueue::Implementation::MessageLoop()
 		}
 
 		// Perform function
-		runThis();
+		if(runThis)
+			runThis();
 	}
 }
