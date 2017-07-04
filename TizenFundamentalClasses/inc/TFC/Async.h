@@ -756,7 +756,7 @@ struct CatchHandlerPayloadSelector
 	static constexpr AsyncHandlerPayload::FunctionType* catchHandlerFinalizeFunc = nullptr;
 
 	template<typename TAny>
-	static void* Data(TAny&& operand) { dlog_print(DLOG_DEBUG, "TFC-Debug", "Get None"); return nullptr; }
+	static void* Data(TAny& operand) { dlog_print(DLOG_DEBUG, "TFC-Debug", "Get None"); return nullptr; }
 };
 
 template<typename TCatchList>
@@ -782,14 +782,13 @@ struct CatchHandlerPayloadSelector<AsyncCompleteOperand<TLambdaComplete, TCatchL
 	static constexpr AsyncHandlerPayload::FunctionType* catchHandlerFinalizeFunc = FinalizeFunc;
 
 	template<typename TLambda>
-	static void* Data(AsyncOperand<TLambda, AsyncCompleteOperand<TLambdaComplete, TCatchList>>&& operand)
+	static void* Data(AsyncOperand<TLambda, AsyncCompleteOperand<TLambdaComplete, TCatchList>>& operand)
 	{
 		if(!operand.completeOperand.catchListValid)
 			return nullptr;
 
 		dlog_print(DLOG_DEBUG, "TFC-Debug", "Get Data");
-
-		return new CatchListType(operand.completeOperand.catchList);
+		return new CatchListType(std::move(operand.completeOperand.catchList));
 	}
 };
 
@@ -800,7 +799,7 @@ struct CatchHandlerPayloadSelector<AsyncCompleteOperand<TLambdaComplete, std::tu
 	static constexpr AsyncHandlerPayload::FunctionType* catchHandlerFinalizeFunc = nullptr;
 
 	template<typename TAny>
-	static void* Data(TAny&& operand) { dlog_print(DLOG_DEBUG, "TFC-Debug", "Get None"); return nullptr; }
+	static void* Data(TAny& operand) { dlog_print(DLOG_DEBUG, "TFC-Debug", "Get None"); return nullptr; }
 };
 
 struct AsyncBuilder
@@ -810,7 +809,8 @@ struct AsyncBuilder
 		-> AsyncTask<typename AsyncOperand<TLambda>::ReturnType>*
 	{
 		typedef typename AsyncOperand<TLambda>::ReturnType TReturnValue;
-
+		auto catchData = CatchHandlerPayloadSelector<TEvent>::Data(operand);
+		dlog_print(DLOG_DEBUG, "TFC-Debug", "AFter catch getting data");
 		auto packed = PackOperand(std::forward<AsyncOperand<TLambda, TEvent>>(operand));
 		dlog_print(DLOG_DEBUG, "TFC-Debug", "Build AsyncPayload");
 		AsyncHandlerPayload payload = {
@@ -821,7 +821,7 @@ struct AsyncBuilder
 			&packed->taskHandle,
 			packed->awaitable,
 			CatchHandlerPayloadSelector<TEvent>::catchHandler, // Catch Handler
-			CatchHandlerPayloadSelector<TEvent>::Data(std::move(operand)), // Catch Data
+			catchData, // Catch Data
 			CatchHandlerPayloadSelector<TEvent>::catchHandlerFinalizeFunc
 
 		};
@@ -1044,10 +1044,10 @@ auto operator+(std::tuple<TCatchList...>&& list, CatchOperand<TLambda>&& nextCat
 
 template<typename TLambdaComplete, typename... TCatchList, typename TCatchLambda>
 auto operator+(AsyncCompleteOperand<TLambdaComplete, std::tuple<TCatchList...>>&& operand, CatchOperand<TCatchLambda>&& nextCatchOperand)
-	-> AsyncCompleteOperand<TLambdaComplete, std::tuple<TCatchList..., CatchOperand<TCatchLambda>&&>>
+	-> AsyncCompleteOperand<TLambdaComplete, std::tuple<TCatchList..., CatchOperand<TCatchLambda>>>
 {
 	dlog_print(DLOG_DEBUG, "TFC-Debug", "Pack catch lambda");
-	return { std::move(operand.completeLambda), std::tuple_cat<std::tuple<TCatchList...>, std::tuple<CatchOperand<TCatchLambda>&&>>(std::move(operand.catchList), std::tuple<CatchOperand<TCatchLambda>&&>(std::move(nextCatchOperand))) };
+	return { std::move(operand.completeLambda), std::tuple_cat<std::tuple<TCatchList...>, std::tuple<CatchOperand<TCatchLambda>>>(std::move(operand.catchList), std::tuple<CatchOperand<TCatchLambda>>(std::move(nextCatchOperand))) };
 }
 
 template<typename TCatchOperand, typename... TTails>
