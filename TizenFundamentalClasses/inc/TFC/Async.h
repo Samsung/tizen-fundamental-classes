@@ -66,7 +66,7 @@ struct AsyncOperand
 	typedef TReturnValue											  ReturnType;
 	typedef AsyncTask<TReturnValue>									  AsyncTaskType;
 	typedef SharedEventObject<AsyncTask<TReturnValue>*, TReturnValue> EventType;
-	TLambda&& asyncFunc;
+	TLambda asyncFunc;
 
 	AsyncOperand(TLambda&& aLambda) :
 		asyncFunc(std::move(aLambda))
@@ -86,7 +86,7 @@ struct AsyncOperand<TLambda, void, void>
 	typedef AsyncTask<void>									AsyncTaskType;
 	typedef SharedEventObject<AsyncTask<void>*, void*> 		EventType;
 
-	TLambda&& asyncFunc;
+	TLambda asyncFunc;
 
 	AsyncOperand(TLambda&& aLambda) :
 		asyncFunc(std::move(aLambda))
@@ -152,7 +152,7 @@ struct AsyncCompleteOperand
 	static constexpr bool Valid = true;
 	static constexpr bool IsVoid = false;
 
-	TLambda&& completeLambda;
+	TLambda completeLambda;
 	bool catchListValid;
 	TCatchList catchList;
 
@@ -194,9 +194,9 @@ struct AsyncCompleteOperand<TLambda, TCatchList, TIntrospect, false, true>
 	static constexpr bool Valid = true;
 	static constexpr bool IsVoid = true;
 
-	TLambda&& completeLambda;
+	TLambda completeLambda;
 	bool catchListValid;
-	TCatchList&& catchList;
+	TCatchList catchList;
 
 	AsyncCompleteOperand(TLambda&& completeLambda) :
 		completeLambda(std::forward<TLambda>(completeLambda)), catchListValid(false), catchList(std::move(emptyTuple))
