@@ -192,6 +192,12 @@ TFC::Components::GenericList::~GenericList()
 		this->dataSource->eventItemAdd -= EventHandler(GenericList::OnItemAdd);
 		this->dataSource->eventItemRemove -= EventHandler(GenericList::OnItemRemove);
 	}
+
+	if(genlist)
+	{
+		elm_genlist_clear(genlist);
+		evas_object_del(genlist);
+	}
 }
 
 LIBAPI void TFC::Components::GenericList::ResetScroll(bool animated)
