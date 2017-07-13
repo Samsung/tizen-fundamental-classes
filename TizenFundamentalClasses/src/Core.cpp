@@ -70,6 +70,36 @@ TFC::TFCException::TFCException(char const* message) {
 
 void TFC::TFCException::BuildStackTrace()
 {
+	size_t allocSize = EXCEPTION_BT_BUFFERSIZE;
+
+Backtrace_Alloc:
+	void** buffer = new void*[allocSize];
+	auto cnt = backtrace(buffer, allocSize);
+
+	if(cnt == allocSize)
+	{
+		allocSize *= 2;
+		delete[] buffer;
+		goto Backtrace_Alloc;
+	}
+
+	this->symbolCount = cnt;
+	this->symbols = backtrace_symbols(buffer, cnt);
+
+	delete[] buffer;
+}
+
+LIBAPI
+TFC::TFCException::~TFCException()
+{
+	if(symbols)
+		free(symbols);
+}
+
+LIBAPI
+std::string TFC::TFCException::GetStackTrace() const
+{
+	std::string ret;
 	std::stringstream strBuf;
 
 	strBuf << "Exception of type: ";
@@ -88,65 +118,65 @@ void TFC::TFCException::BuildStackTrace()
 	strBuf << " (" << this->msg << ")\n";
 	strBuf << "Call trace:\n";
 
-	void* buffer[EXCEPTION_BT_BUFFERSIZE];
-
-	auto cnt = backtrace(buffer, EXCEPTION_BT_BUFFERSIZE);
-	auto symbols = backtrace_symbols(buffer, cnt);
-
-	// https://panthema.net/2008/0901-stacktrace-demangled/
-
-	for(int i = 2; i < cnt; i++)
+	if(symbols)
 	{
-		strBuf << (cnt - i) << ": ";
-
-		// Tokenize
-		char* beginFunc = nullptr;
-		char* beginOffset = nullptr;
-		char* endOffset = nullptr;
-
-		for(char* p = symbols[i]; *p; p++)
+		// https://panthema.net/2008/0901-stacktrace-demangled/
+		for(int i = 2; i < symbolCount; i++)
 		{
-			if(*p == '(')
-				beginFunc = p;
-			else if(*p == '+')
-				beginOffset = p;
-			else if(*p == ')' && beginOffset != nullptr)
-				endOffset = p;
-		}
+			strBuf << (symbolCount - i) << ": ";
 
-		if(beginFunc 		!= nullptr
-		   and beginOffset	!= nullptr
-		   and endOffset 	!= nullptr)
-		{
-			*beginFunc++ = '\0';
-			*beginOffset++ = '\0';
-			*endOffset++ = '\0';
+			// Tokenize
+			char* beginFunc = nullptr;
+			char* beginOffset = nullptr;
+			char* endOffset = nullptr;
 
-			char* ret = abi::__cxa_demangle(beginFunc, nullptr, nullptr, &status);
-
-			if(status == 0)
+			for(char* p = symbols[i]; *p; p++)
 			{
-				strBuf << symbols[i] << ": " << ret << " +" << beginOffset << endOffset << '\n';
+				if(*p == '(')
+					beginFunc = p;
+				else if(*p == '+')
+					beginOffset = p;
+				else if(*p == ')' && beginOffset != nullptr)
+					endOffset = p;
+			}
+
+			if(beginFunc 		!= nullptr
+			   and beginOffset	!= nullptr
+			   and endOffset 	!= nullptr)
+			{
+				*beginFunc++ = '\0';
+				*beginOffset++ = '\0';
+				*endOffset++ = '\0';
+
+				char* ret = abi::__cxa_demangle(beginFunc, nullptr, nullptr, &status);
+
+				if(status == 0)
+				{
+					strBuf << symbols[i] << ": " << ret << " +" << beginOffset << endOffset << '\n';
+				}
+				else
+				{
+					strBuf << symbols[i] << ": " << beginFunc << " +" << beginOffset << endOffset << '\n';
+				}
+
+				if(ret != nullptr)
+				{
+					free(ret);
+				}
 			}
 			else
 			{
-				strBuf << symbols[i] << ": " << beginFunc << " +" << beginOffset << endOffset << '\n';
+				strBuf << symbols[i] << '\n';
 			}
-
-			if(ret != nullptr)
-			{
-				free(ret);
-			}
-		}
-		else
-		{
-			strBuf << symbols[i] << '\n';
 		}
 	}
+	else
+	{
+		strBuf << "Call trace cannot be processed!\n";
+	}
 
-	free(symbols);
-
-	this->stackTrace = strBuf.str();
+	ret = strBuf.str();
+	return ret;
 }
 
 LIBAPI
@@ -164,7 +194,6 @@ TFC::TFCException::TFCException(std::string const& message) {
 LIBAPI
 char const* TFC::TFCException::what() const throw () {
 	return this->msg.c_str();
-
 }
 
 LIBAPI
@@ -278,3 +307,4 @@ long long TFC::GetCurrentTimeMillis()
 	auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(epoch);
 	return millis.count();
 }
+

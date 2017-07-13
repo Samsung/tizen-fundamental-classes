@@ -187,15 +187,21 @@ public:
 	explicit TFCException(std::string&& message);
 	explicit TFCException(std::string const& message);
 	virtual char const* what() const throw () final;
+	virtual ~TFCException();
+
+	std::string const& GetMessage() const { return msg; }
+protected:
+	void SetMessage(std::string const& what) { msg = what; }
 
 private:
 	std::string msg;
-	std::string stackTrace;
+	int symbolCount { 0 };
+	char** symbols { nullptr };
 
 	void BuildStackTrace();
 
 public:
-	std::string const& GetStackTrace() const { return this->stackTrace; }
+	std::string GetStackTrace() const;
 };
 
 struct Color

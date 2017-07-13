@@ -226,7 +226,7 @@ public:
 	{
 		try
 		{
-			dlog_print(DLOG_DEBUG, "RPC-Test", "Try cast");
+			//dlog_print(DLOG_DEBUG, "RPC-Test", "Try cast");
 
 			auto casted = dynamic_cast<FunctionInfoTemplate<T> const&>(other);
 			if(casted.ptr == this->ptr)
@@ -236,7 +236,7 @@ public:
 		}
 		catch(std::bad_cast& t)
 		{
-			dlog_print(DLOG_DEBUG, "RPC-Test", "Bad typeid");
+			//dlog_print(DLOG_DEBUG, "RPC-Test", "Bad typeid");
 			return false;
 		}
 	}
@@ -274,7 +274,7 @@ public:
 	{
 		try
 		{
-			dlog_print(DLOG_DEBUG, "RPC-Test", "Try cast");
+			//dlog_print(DLOG_DEBUG, "RPC-Test", "Try cast");
 
 			auto casted = dynamic_cast<EventInfoTemplate<T> const&>(other);
 			if(casted.ptr == this->ptr)
@@ -284,7 +284,7 @@ public:
 		}
 		catch(std::bad_cast& t)
 		{
-			dlog_print(DLOG_DEBUG, "RPC-Test", "Bad typeid");
+			//dlog_print(DLOG_DEBUG, "RPC-Test", "Bad typeid");
 			return false;
 		}
 	}
@@ -320,13 +320,13 @@ public:
 	{
 		try
 		{
-			dlog_print(DLOG_DEBUG, "RPC-Test", "Try cast");
+			//dlog_print(DLOG_DEBUG, "RPC-Test", "Try cast");
 			(void)(dynamic_cast<ConstructorInfoTemplate<TInfo> const&>(other));
 			return true;
 		}
 		catch(std::bad_cast& t)
 		{
-			dlog_print(DLOG_DEBUG, "RPC-Test", "Bad typeid");
+			//dlog_print(DLOG_DEBUG, "RPC-Test", "Bad typeid");
 			return false;
 		}
 	}
@@ -458,7 +458,7 @@ public:
 					ObjectClass*& ptr)
 			{
 				//ptr = new DestructorInfoTemplate<typename T::Type>();
-				dlog_print(DLOG_DEBUG, "RPC-Test", "Initialize event: %s", name);
+				//dlog_print(DLOG_DEBUG, "RPC-Test", "Initialize event: %s", name);
 				ptr = new EventInfoTemplate<T>(name, member);
 				kind = TypeMemberKind::Event;
 			}
@@ -485,7 +485,7 @@ public:
 	{
 		FunctionInfoTemplate<TMemPtr> prototype(nullptr, ptr);
 
-		dlog_print(DLOG_DEBUG, "RPC-Test", "GetFunctionNameByPointer");
+		//dlog_print(DLOG_DEBUG, "RPC-Test", "GetFunctionNameByPointer");
 
 		auto res = std::find_if(functionMap.begin(), functionMap.end(), [&] (typename decltype(functionMap)::value_type const& w)
 		{
