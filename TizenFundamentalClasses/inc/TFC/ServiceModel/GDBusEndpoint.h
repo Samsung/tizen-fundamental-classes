@@ -473,6 +473,11 @@ struct GDBusSignatureFiller<TCurrent, TArgs...>
 		param.push_back(GDBusTypeCode<TCurrent>::value);
 		GDBusSignatureFiller<TArgs...>::GetSignature(param);
 	}
+
+	static std::string GetSignature()
+	{
+		return GDBusTypeCode<TCurrent>::value;
+	}
 };
 
 template<typename TTypeSerializationInfo>
@@ -532,6 +537,20 @@ struct GDBusSignatureFiller<std::vector<TVectorType>, TArgs...>
 		param.push_back(ret);
 		GDBusSignatureFiller<TArgs...>::GetSignature(param);
 	}
+
+	static std::string GetSignature()
+	{
+		std::string ret { "a" };
+		auto type = GDBusTypeCode<TVectorType>::value;
+
+		// COMPATIBILITY FIX with new vector serialization mechanism
+		if(*type == 'r')
+			type = "v";
+
+		ret += type;
+
+		return ret;
+	}
 };
 
 template<typename TCurrent, typename... TArgs>
@@ -562,7 +581,7 @@ inline void TFC::ServiceModel::GDBusInterfaceDefinition::RegisterFunction(TFuncP
 
 	RegisterFunction(typeDescription.GetFunctionNameByPointer(ptr),
 			GDBusSignatureBuilder<typename Introspect::ArgsTuple>::GetSignatureList(),
-			GDBusTypeCode<typename Introspect::ReturnType>::value);
+			GDBusSignatureFiller<typename Introspect::ReturnType>::GetSignature());
 }
 
 template<typename TDeclaring, typename TArgs>
