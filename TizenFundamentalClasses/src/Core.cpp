@@ -113,7 +113,8 @@ std::string TFC::TFCException::GetStackTrace() const
 	else
 		strBuf << typeIdName;
 
-	free(execName);
+	if(execName)
+		free(execName);
 
 	strBuf << " (" << this->msg << ")\n";
 	strBuf << "Call trace:\n";

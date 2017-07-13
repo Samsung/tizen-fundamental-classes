@@ -36,6 +36,7 @@
 #include "TFC/Core.h"
 #endif
 
+#include <list>
 
 class TFC::EventClass
 {
@@ -67,12 +68,18 @@ public:
 	typedef TObjectSource 	SourceType;
 	typedef TEventData		EventDataType;
 
+	template<typename THandlerType>
 	class EventDelegate;
 
 	EventObject();
 	~EventObject();
-	void operator+=(const EventDelegate& other);
-	void operator-=(const EventDelegate& other);
+
+	template<typename THandlerType>
+	void operator+=(EventDelegate<THandlerType>&& other);
+
+	template<typename THandlerType>
+	void operator-=(const EventDelegate<THandlerType>& other);
+
 	void operator()(TObjectSource objSource, TEventData eventData) const;
 
 	EventObject(EventObject<TObjectSource, TEventData> const&) = delete;
@@ -80,7 +87,9 @@ public:
 
 private:
 	struct EventNode;
-	EventNode* first;
+
+	std::list<EventNode> eventList;
+	//EventNode* first;
 
 	void* operator new(size_t size) { return ::operator new(size); };
 
@@ -94,25 +103,44 @@ struct TFC::Core::EventObject<TObjectSource, TEventData>::EventNode
 {
 	void* instance;
 	EventHandlerInvokerFunc eventHandlerInvoker;
-	EventNode* next;
+	//EventNode* next;
+	ManagedClass::SafePointer safePointer;
+
+	EventNode(void* instance, EventHandlerInvokerFunc invoker, ManagedClass::SafePointer&& safePointer) :
+		instance(instance), eventHandlerInvoker(invoker), safePointer(std::move(safePointer))
+	{
+
+	}
+
+	void operator()(TObjectSource objSource, TEventData eventData) const
+	{
+		if(safePointer.Empty() || safePointer)
+		{
+			if(instance && eventHandlerInvoker)
+				eventHandlerInvoker(instance, objSource, eventData);
+		}
+	}
 };
 
 template<typename TObjectSource, typename TEventData>
+template<typename THandlerType>
 class TFC::Core::EventObject<TObjectSource, TEventData>::EventDelegate
 {
-	void* instance;
+	THandlerType* instance;
 	EventHandlerInvokerFunc eventHandlerInvoker;
 
-	EventDelegate(void* instance, EventHandlerInvokerFunc func) : instance(instance), eventHandlerInvoker(func) { }
+	EventDelegate(THandlerType* instance, EventHandlerInvokerFunc func) :
+		instance(instance), eventHandlerInvoker(func)
+	{ }
 
 public:
-	template<class TEventClass, typename EventHandlerTrait<TEventClass>::Type funcPtr>
-	static EventDelegate PackEventHandler(TEventClass* thisPtr);
+	template<typename EventHandlerTrait<THandlerType>::Type funcPtr>
+	static EventDelegate<THandlerType> PackEventHandler(THandlerType* thisPtr);
 
 	template<typename, typename>
 	friend class TFC::Core::EventObject;
 
-	template<typename TEventClass, typename EventHandlerTrait<TEventClass>::Type funcPtr>
+	template<typename EventHandlerTrait<THandlerType>::Type funcPtr>
 	static void EventHandlerInvoker(void*, TObjectSource source, TEventData data);
 
 
@@ -125,8 +153,12 @@ public:
 	typedef TFC::Core::EventObject<TObjectSource, TEventData> Type;
 	SharedEventObject();
 	SharedEventObject(std::nullptr_t);
-	void operator+=(const typename TFC::Core::EventObject<TObjectSource, TEventData>::EventDelegate& other);
-	void operator-=(const typename TFC::Core::EventObject<TObjectSource, TEventData>::EventDelegate& other);
+
+	template<typename THandlerType>
+	void operator+=(typename TFC::Core::EventObject<TObjectSource, TEventData>::template EventDelegate<THandlerType>&& other);
+
+	template<typename THandlerType>
+	void operator-=(const typename TFC::Core::EventObject<TObjectSource, TEventData>::template EventDelegate<THandlerType>& other);
 	void operator()(TObjectSource objSource, TEventData eventData) const;
 };
 
@@ -140,9 +172,9 @@ template<typename TPtrMemFunc, // <- Unfortunately we have to know the type of p
 		 typename TObjectSource  = typename TIntrospect::template Args<0>, // <- Inferring TObjectSource by parameter of function pointer
 		 typename TEventData 	 = typename TIntrospect::template Args<1>> // <- Inferring TEventData by parameter of function pointer
 auto EventHandlerFactory(TDeclaringType* thisPtr)
-	-> typename TFC::Core::EventObject<TObjectSource, TEventData>::EventDelegate
+	-> typename TFC::Core::EventObject<TObjectSource, TEventData>::template EventDelegate<TDeclaringType>
 {
-	return TFC::Core::EventObject<TObjectSource, TEventData>::EventDelegate::template PackEventHandler<TDeclaringType, ptr>(thisPtr);
+	return TFC::Core::EventObject<TObjectSource, TEventData>::template EventDelegate<TDeclaringType>::template PackEventHandler<ptr>(thisPtr);
 }
 
 }}
@@ -152,14 +184,14 @@ auto EventHandlerFactory(TDeclaringType* thisPtr)
 // TEMPLATE IMPLEMENTATION
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template<class TObjectSource, class TEventData>
-TFC::Core::EventObject<TObjectSource, TEventData>::EventObject() :
-	first(nullptr)
+TFC::Core::EventObject<TObjectSource, TEventData>::EventObject()
 {
 }
 
 template<class TObjectSource, class TEventData>
 TFC::Core::EventObject<TObjectSource, TEventData>::~EventObject()
 {
+	/* List will automatically destroy all this shit
 	auto current = this->first;
 
 	while(current != nullptr)
@@ -168,29 +200,36 @@ TFC::Core::EventObject<TObjectSource, TEventData>::~EventObject()
 		current = current->next;
 		delete deleted;
 	}
-
+	*/
 }
 
 
 template<class TObjectSource, class TEventData>
-template<class TEventClass, typename TFC::Core::EventObject<TObjectSource, TEventData>::template EventHandlerTrait<TEventClass>::Type funcPtr>
-auto TFC::Core::EventObject<TObjectSource, TEventData>::EventDelegate::PackEventHandler(TEventClass* thisPtr)
-	-> TFC::Core::EventObject<TObjectSource, TEventData>::EventDelegate
+template<class THandlerType>
+template<typename TFC::Core::EventObject<TObjectSource, TEventData>::template EventHandlerTrait<THandlerType>::Type funcPtr>
+auto TFC::Core::EventObject<TObjectSource, TEventData>::EventDelegate<THandlerType>::PackEventHandler(THandlerType* thisPtr)
+	-> TFC::Core::EventObject<TObjectSource, TEventData>::EventDelegate<THandlerType>
 {
-	return { thisPtr, EventHandlerInvoker<TEventClass, funcPtr> };
+	return { thisPtr, EventHandlerInvoker<funcPtr> };
 }
 
 
 template<class TObjectSource, class TEventData>
-void TFC::Core::EventObject<TObjectSource, TEventData>::operator+=(const EventDelegate& other)
+template<typename THandlerType>
+void TFC::Core::EventObject<TObjectSource, TEventData>::operator+=(EventDelegate<THandlerType>&& other)
 {
-	auto newNode = new EventNode({ other.instance, other.eventHandlerInvoker, this->first });
-	this->first = newNode;
+	//auto newNode = new EventNode({  });
+
+	eventList.emplace_back(other.instance, other.eventHandlerInvoker, TFC::ManagedClass::GetSafePointerFrom(other.instance));
+
+	//this->first = newNode;
 }
 
 template<class TObjectSource, class TEventData>
-void TFC::Core::EventObject<TObjectSource, TEventData>::operator-=(const EventDelegate& other)
+template<typename THandlerType>
+void TFC::Core::EventObject<TObjectSource, TEventData>::operator-=(const EventDelegate<THandlerType>& other)
 {
+	/*
 	auto current = this->first;
 
 	while(current != nullptr)
@@ -210,13 +249,18 @@ void TFC::Core::EventObject<TObjectSource, TEventData>::operator-=(const EventDe
 			current = current->next;
 		}
 	}
+	*/
+
+	// I should have done this hundred years ago
+	eventList.remove_if([&other] (auto& p) { return p.instance == other.instance && p.eventHandlerInvoker == other.eventHandlerInvoker; });
 }
 
 template<typename TObjectSource, typename TEventData>
-template<typename TEventClass, typename TFC::Core::EventObject<TObjectSource, TEventData>::template EventHandlerTrait<TEventClass>::Type funcPtr>
-void TFC::Core::EventObject<TObjectSource, TEventData>::EventDelegate::EventHandlerInvoker(void* ptr, TObjectSource source, TEventData data)
+template<typename THandlerType>
+template<typename TFC::Core::EventObject<TObjectSource, TEventData>::template EventHandlerTrait<THandlerType>::Type funcPtr>
+void TFC::Core::EventObject<TObjectSource, TEventData>::EventDelegate<THandlerType>::EventHandlerInvoker(void* ptr, TObjectSource source, TEventData data)
 {
-	auto thiz = reinterpret_cast<TEventClass*>(ptr);
+	auto thiz = reinterpret_cast<THandlerType*>(ptr);
 	(thiz->*funcPtr)(source, data);
 }
 
@@ -224,13 +268,18 @@ template<class TObjectSource, class TEventData>
 void TFC::Core::EventObject<TObjectSource, TEventData>::operator() (TObjectSource objSource,
 		TEventData eventData) const
 {
+	/*
 	auto current = this->first;
 
 	while(current != nullptr)
 	{
-		if(current->instance && current->eventHandlerInvoker)
-			current->eventHandlerInvoker(current->instance, objSource, eventData);
+
 		current = current->next;
+	}
+	*/
+	for(auto& event : eventList)
+	{
+		event(objSource, eventData);
 	}
 }
 
@@ -250,16 +299,18 @@ TFC::Core::SharedEventObject<TObjectSource, TEventData>::SharedEventObject(std::
 }
 
 template<typename TObjectSource, typename TEventData>
+template<typename THandlerType>
 void TFC::Core::SharedEventObject<TObjectSource, TEventData>::operator+=(
-		const typename TFC::Core::EventObject<TObjectSource, TEventData>::EventDelegate& other)
+		typename TFC::Core::EventObject<TObjectSource, TEventData>::template EventDelegate<THandlerType>&& other)
 {
 	// Forwarding the call to the EventObject stored inside this shared_ptr
-	this->get()->operator +=(other);
+	this->get()->operator +=(std::move(other));
 }
 
 template<typename TObjectSource, typename TEventData>
+template<typename THandlerType>
 void TFC::Core::SharedEventObject<TObjectSource, TEventData>::operator-=(
-		const typename TFC::Core::EventObject<TObjectSource, TEventData>::EventDelegate& other)
+		const typename TFC::Core::EventObject<TObjectSource, TEventData>::template EventDelegate<THandlerType>& other)
 {
 	// Same as above
 	this->get()->operator -=(other);

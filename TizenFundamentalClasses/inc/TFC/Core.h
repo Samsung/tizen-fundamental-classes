@@ -131,6 +131,7 @@ public:
 		SafePointer(SafePointer&& that);
 		SafePointer(SafePointer const& that);
 		operator bool() const { return TryAccess(); }
+		bool Empty() const { return !handle; }
 	private:
 		friend class ManagedClass;
 		SafePointer(SharedHandle* handle);
@@ -142,7 +143,7 @@ public:
 	template<typename T>
 	static SafePointer GetSafePointerFrom(T* what);
 
-	template<typename T, bool = std::is_base_of<ManagedClass, T>::value>
+	template<typename T, bool = std::is_convertible<T*, ManagedClass*>::value>
 	struct SafePointerGetter;
 
 	ManagedClass();
