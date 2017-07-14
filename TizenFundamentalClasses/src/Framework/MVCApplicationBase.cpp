@@ -38,7 +38,14 @@ LIBAPI MVCApplicationBase::MVCApplicationBase(char const* appPackage) :
 
 LIBAPI bool MVCApplicationBase::OnBackButtonPressed()
 {
-	return !this->NavigateBack();
+	try
+	{
+		return !this->NavigateBack();
+	}
+	catch(TFC::TFCException const& ex)
+	{
+		return false;
+	}
 }
 
 LIBAPI void MVCApplicationBase::OnApplicationCreated()
