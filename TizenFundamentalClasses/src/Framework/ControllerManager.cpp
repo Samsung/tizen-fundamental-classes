@@ -116,8 +116,8 @@ void TFC::Framework::StackingControllerManager::DoNavigateBackward()
 {
 	// Navigate back
 	ObjectClass* returnedData = this->CurrentController->Unload();
-	PopView();
 	bool popResult = PopController();
+	PopView();
 
 	if (popResult)
 	{
