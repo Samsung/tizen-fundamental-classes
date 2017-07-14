@@ -37,6 +37,7 @@
 #endif
 
 #include <list>
+#include <vector>
 
 class TFC::EventClass
 {
@@ -277,9 +278,13 @@ void TFC::Core::EventObject<TObjectSource, TEventData>::operator() (TObjectSourc
 		current = current->next;
 	}
 	*/
-	for(auto& event : eventList)
+	auto current = this->eventList.begin();
+	while(current != this->eventList.end())
 	{
-		event(objSource, eventData);
+		auto call = current; // Copy to local
+		current++; // Move forward
+
+		(*call)(objSource, eventData); // This call will perhaps invalidate the iterator
 	}
 }
 
