@@ -183,7 +183,7 @@ class EventEmitterClass;
 class LIBAPI TFCException : public std::exception
 {
 public:
-	explicit TFCException() { }
+	explicit TFCException() { BuildStackTrace(); }
 	explicit TFCException(char const* message);
 	explicit TFCException(std::string&& message);
 	explicit TFCException(std::string const& message);
