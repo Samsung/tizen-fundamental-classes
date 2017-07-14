@@ -197,7 +197,9 @@ protected:
 private:
 	std::string msg;
 	int symbolCount { 0 };
-	char** symbols { nullptr };
+
+	std::shared_ptr<char*> symbols;
+	//char** symbols { nullptr };
 
 	void BuildStackTrace();
 

@@ -84,7 +84,10 @@ Backtrace_Alloc:
 	}
 
 	this->symbolCount = cnt;
-	this->symbols = backtrace_symbols(buffer, cnt);
+
+	this->symbols.reset(backtrace_symbols(buffer, cnt), [] (char** p) {
+        free(p);
+    });
 
 	delete[] buffer;
 }
@@ -92,8 +95,7 @@ Backtrace_Alloc:
 LIBAPI
 TFC::TFCException::~TFCException()
 {
-	if(symbols)
-		free(symbols);
+
 }
 
 LIBAPI
@@ -119,8 +121,11 @@ std::string TFC::TFCException::GetStackTrace() const
 	strBuf << " (" << this->msg << ")\n";
 	strBuf << "Call trace:\n";
 
-	if(symbols)
+	if(this->symbols)
 	{
+		// Local symbols;
+		auto symbols = this->symbols.get();
+
 		// https://panthema.net/2008/0901-stacktrace-demangled/
 		for(int i = 2; i < symbolCount; i++)
 		{
