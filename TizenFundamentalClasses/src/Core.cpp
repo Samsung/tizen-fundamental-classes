@@ -30,7 +30,7 @@
 #include <dlog.h>
 #include <execinfo.h>
 #include <cxxabi.h>
-
+#include <atomic>
 #include <chrono>
 
 class TFC::ManagedClass::SharedHandle
@@ -43,8 +43,8 @@ public:
 	bool NotifyDestruction();
 	bool IsDestructed();
 private:
-	int referenceCount;
-	bool isDestructed;
+	std::atomic_uint referenceCount;
+	std::atomic_bool isDestructed;
 };
 
 LIBAPI TFC::Core::PropertyObjectBase::PropertyObjectBase(void* instance) : instance(instance)
@@ -205,10 +205,6 @@ char const* TFC::TFCException::what() const throw () {
 LIBAPI
 bool TFC::ManagedClass::SafePointer::TryAccess() const {
 	bool val = !(this->handle == nullptr || this->handle->IsDestructed());
-	if(val)
-		dlog_print(DLOG_DEBUG, LOG_TAG, "Try access the SafePointer: true");
-	else
-		dlog_print(DLOG_DEBUG, LOG_TAG, "Try access the SafePointer: false");
 	return val;
 }
 
@@ -239,6 +235,36 @@ TFC::ManagedClass::SafePointer::SafePointer(SafePointer&& that) {
 	that.handle = nullptr;
 
 	dlog_print(DLOG_DEBUG, LOG_TAG, "Safe pointer moved: %d, handle: %d", (int)this, (int)this->handle);
+}
+
+LIBAPI
+TFC::ManagedClass::SafePointer& TFC::ManagedClass::SafePointer::operator=(const SafePointer& that)
+{
+	if(this->handle != nullptr && this->handle->DecrementReference())
+		delete this->handle;
+
+	this->handle = that.handle;
+	this->handle->IncrementReference();
+
+	return *this;
+}
+
+LIBAPI
+TFC::ManagedClass::SafePointer& TFC::ManagedClass::SafePointer::operator=(SafePointer&& that)
+{
+	if(this->handle != nullptr && this->handle->DecrementReference())
+		delete this->handle;
+
+	this->handle = that.handle;
+	that.handle = nullptr;
+
+	return *this;
+}
+
+LIBAPI
+void TFC::ManagedClass::SafePointer::ThrowIfUnsafe()
+{
+	if(!TryAccess()) throw ObjectDeletedException();
 }
 
 LIBAPI
@@ -275,7 +301,7 @@ TFC::ManagedClass::SharedHandle::SharedHandle() : referenceCount(1), isDestructe
 LIBAPI
 void TFC::ManagedClass::SharedHandle::IncrementReference() {
 	++this->referenceCount;
-	dlog_print(DLOG_DEBUG, LOG_TAG, "Increment reference. Handle: %d, ref: %d", (int)this, this->referenceCount);
+	dlog_print(DLOG_DEBUG, LOG_TAG, "Increment reference. Handle: %d, ref: %d", (int)this, this->referenceCount.load());
 }
 
 LIBAPI
@@ -313,4 +339,5 @@ long long TFC::GetCurrentTimeMillis()
 	auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(epoch);
 	return millis.count();
 }
+
 

@@ -117,6 +117,8 @@ public:
 template<typename TClass>
 class PropertyClass;
 
+class ObjectDeletedException;
+
 class ManagedClass
 {
 public:
@@ -132,6 +134,10 @@ public:
 		SafePointer(SafePointer const& that);
 		operator bool() const { return TryAccess(); }
 		bool Empty() const { return !handle; }
+		void ThrowIfUnsafe();
+
+		SafePointer& operator=(SafePointer const& that);
+		SafePointer& operator=(SafePointer&& that);
 	private:
 		friend class ManagedClass;
 		SafePointer(SharedHandle* handle);
@@ -351,6 +357,7 @@ namespace TFC {
 
 TFC_ExceptionDeclare	(RuntimeException, TFCException);
 TFC_ExceptionDeclare	(ArgumentException, TFCException);
+TFC_ExceptionDeclare	(ObjectDeletedException, TFCException);
 
 namespace Core {
 
