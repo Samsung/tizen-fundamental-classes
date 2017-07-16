@@ -362,6 +362,7 @@ namespace Components {
 		EvasSmartEvent eventScrollingEndInternal;
 		EvasSmartEvent eventLongPressedInternal;
 		EvasSmartEvent eventItemUnrealized;
+		EvasObjectEvent eventGenlistDeleted;
 		ObjectItemEdjeSignalEvent eventItemSignalInternal;
 
 		void OnScrolledInternal(Evas_Object* obj, void* eventData);
@@ -375,6 +376,7 @@ namespace Components {
 		void OnLongPressedInternal(Evas_Object* obj, void* eventData);
 		void OnItemSignalEmit(Elm_Object_Item* obj, EFL::EdjeSignalInfo eventData);
 		void OnItemUnrealized(Evas_Object* obj, void* eventData);
+		void OnGenlistDeleted(EFL::EvasEventSourceInfo obj, void* param);
 		void ScrollToBottom();
 
 	public:

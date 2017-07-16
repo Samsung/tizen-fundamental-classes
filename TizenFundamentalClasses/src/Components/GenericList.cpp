@@ -118,6 +118,7 @@ LIBAPI TFC::Components::GenericList::GenericList() :
 	eventScrollingEndInternal += EventHandler(GenericList::OnScrollingEnd);
 	eventItemSignalInternal += EventHandler(GenericList::OnItemSignalEmit);
 	eventItemUnrealized += EventHandler(GenericList::OnItemUnrealized);
+	eventGenlistDeleted += EventHandler(GenericList::OnGenlistDeleted);
 
 	isScrolling = false;
 	longpressed = false;
@@ -437,6 +438,7 @@ LIBAPI Evas_Object* TFC::Components::GenericList::CreateComponent(Evas_Object* r
 	eventScrollingEndInternal.Bind(genlist, "scroll,drag,stop");
 	eventLongPressedInternal.Bind(genlist, "longpressed");
 	eventItemUnrealized.Bind(genlist, "unrealized");
+	eventGenlistDeleted.Bind(genlist, EVAS_CALLBACK_DEL);
 	
 	elm_genlist_highlight_mode_set(genlist, EINA_FALSE);
 	elm_genlist_select_mode_set(genlist, ELM_OBJECT_SELECT_MODE_ALWAYS);
@@ -703,4 +705,9 @@ void TFC::Components::GenericList::ListItem::SetSelected(const bool& sel)
 bool TFC::Components::GenericList::ListItem::GetSelected() const
 {
 	return elm_genlist_item_selected_get(item);
+}
+
+void TFC::Components::GenericList::OnGenlistDeleted(
+		EFL::EvasEventSourceInfo obj, void* param) {
+	this->genlist = nullptr;
 }
