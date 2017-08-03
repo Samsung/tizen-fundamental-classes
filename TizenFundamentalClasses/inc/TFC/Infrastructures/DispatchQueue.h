@@ -28,6 +28,19 @@ private:
 	Implementation* impl;
 };
 
+class LIBAPI PrioritizedDispatchQueue
+{
+public:
+	PrioritizedDispatchQueue();
+	~PrioritizedDispatchQueue();
+	void Start();
+	void Stop();
+	void Dispatch(int64_t priority, std::function<void()>&& task);
+private:
+	struct Implementation;
+	Implementation* impl;
+};
+
 }
 }
 
