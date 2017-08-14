@@ -49,6 +49,7 @@ public:
 	BinarySerializer(SerializedType* bufferRef);
 	void Serialize(uint32_t args);
 	void Serialize(int64_t args);
+	void Serialize(uint64_t args);
 	void Serialize(unsigned char args);
 	void Serialize(int args);
 	void Serialize(bool args);

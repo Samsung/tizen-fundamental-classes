@@ -50,6 +50,16 @@ void BinarySerializer::Serialize(int64_t args)
 }
 
 LIBAPI
+void BinarySerializer::Serialize(uint64_t args)
+{
+	dlog_print(DLOG_DEBUG, "BinSer", "Serialize uint64_t %d", args);
+	uint8_t* ref = (uint8_t*)&args;
+	for(size_t i = 0; i < sizeof(args); i++)
+		buffer->push_back(ref[i]);
+
+}
+
+LIBAPI
 void BinarySerializer::Serialize(int args)
 {
 	dlog_print(DLOG_DEBUG, "BinSer", "Serialize int32_t %d", args);
