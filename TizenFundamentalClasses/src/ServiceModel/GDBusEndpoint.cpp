@@ -64,6 +64,12 @@ void GVariantSerializer::Serialize(int64_t args)
 }
 
 LIBAPI
+void GVariantSerializer::Serialize(uint64_t args)
+{
+	g_variant_builder_add(&builder, "t", args);
+}
+
+LIBAPI
 void GVariantSerializer::Serialize(bool args)
 {
 	g_variant_builder_add(&builder, "b", args);

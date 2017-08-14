@@ -89,9 +89,10 @@ public:
 	typedef GVariant* SerializedType;
 	GVariantSerializer();
 
-	void Serialize(uint32_t args);
 	void Serialize(int64_t args);
 	void Serialize(int32_t args);
+	void Serialize(uint32_t args);
+	void Serialize(uint64_t args);
 	void Serialize(bool args);
 	void Serialize(double args);
 	void Serialize(std::string args);
