@@ -99,8 +99,13 @@ TFC::TFCException::~TFCException()
 }
 
 LIBAPI
-std::string TFC::TFCException::GetStackTrace() const
+std::string const& TFC::TFCException::GetStackTrace() const
 {
+	if(!stackTrace.empty())
+	{
+		return stackTrace;
+	}
+
 	std::string ret;
 	std::stringstream strBuf;
 
@@ -181,8 +186,9 @@ std::string TFC::TFCException::GetStackTrace() const
 		strBuf << "Call trace cannot be processed!\n";
 	}
 
-	ret = strBuf.str();
-	return ret;
+	stackTrace = strBuf.str();
+	this->symbols.reset();
+	return stackTrace;
 }
 
 LIBAPI

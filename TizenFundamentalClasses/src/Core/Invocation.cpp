@@ -32,7 +32,7 @@ std::string TFC::Core::GetInterfaceName(char const* prefix, std::type_info const
 	int status = 0;
 	auto realName = abi::__cxa_demangle(i.name(), nullptr, nullptr, &status);
 
-	if(status != 0) throw std::exception(); // Change exception
+	if(status != 0) throw TFC::Core::InvocationException("Failed getting interface name"); // Change exception
 
 	std::string ret;
 

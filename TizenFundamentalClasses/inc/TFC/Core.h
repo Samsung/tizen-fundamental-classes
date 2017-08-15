@@ -198,13 +198,15 @@ private:
 	std::string msg;
 	int symbolCount { 0 };
 
-	std::shared_ptr<char*> symbols;
+	mutable std::shared_ptr<char*> symbols;
 	//char** symbols { nullptr };
+
+	mutable std::string stackTrace;
 
 	void BuildStackTrace();
 
 public:
-	std::string GetStackTrace() const;
+	std::string const& GetStackTrace() const;
 };
 
 struct Color

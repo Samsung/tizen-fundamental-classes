@@ -25,6 +25,7 @@
 #include <dlog.h>
 #include <system_settings.h>
 #include <dlog.h>
+#include "TFC/Util/Logger.h"
 #define InlineApplicationEventHandler(HANDLERNAME) [] (app_event_info_h e, void* a) { reinterpret_cast<ServiceApplicationBase*>(a)-> HANDLERNAME (e); }
 
 void TFC::Framework::ServiceApplicationBase::ApplicationTerminate() {
@@ -109,6 +110,6 @@ try
 }
 catch(TFC::TFCException& ex)
 {
-	dlog_print(DLOG_ERROR, argv[0], "Exception occured (%s) => %s; Stack trace %s", typeid(ex).name(), ex.what(), ex.GetStackTrace().c_str());
+	TFC_Log(DLOG_ERROR, argv[0], "Exception occured (%s) => %s; Stack trace %s", typeid(ex).name(), ex.what(), ex.GetStackTrace().c_str());
 	throw;
 }
