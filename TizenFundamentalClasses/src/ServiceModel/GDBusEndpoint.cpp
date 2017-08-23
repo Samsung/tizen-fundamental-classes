@@ -339,7 +339,7 @@ GVariant* TFC::ServiceModel::GDBusClient::RemoteCall(const char* methodName, GVa
 
 				try
 				{
-					info.Throw(errMessage);
+					info.Throw(errMessage.c_str());
 				}
 				catch(Core::FunctionNotFoundException const& ex)
 				{
