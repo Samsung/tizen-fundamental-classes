@@ -48,7 +48,7 @@ struct SerializerExist
 template<typename TSerializerClass, typename TCurrent, typename = void, bool = SerializerExist<TSerializerClass, TCurrent>::Value>
 struct SerializerSelect
 {
-	static void Serialize(TSerializerClass& p, TCurrent t)
+	static void Serialize(TSerializerClass& p, TCurrent const& t)
 	{
 		p.Serialize(t);
 	}
@@ -57,7 +57,7 @@ struct SerializerSelect
 template<typename TSerializerClass, typename TCurrent>
 struct SerializerSelect<TSerializerClass, TCurrent, typename std::enable_if<std::is_enum<TCurrent>::value>::type, false>
 {
-	static void Serialize(TSerializerClass& p, TCurrent t)
+	static void Serialize(TSerializerClass& p, TCurrent const& t)
 	{
 		typedef typename std::underlying_type<TCurrent>::type CastedType;
 		p.Serialize(static_cast<CastedType>(t));
@@ -67,7 +67,7 @@ struct SerializerSelect<TSerializerClass, TCurrent, typename std::enable_if<std:
 template<typename TSerializerClass, typename TCurrent, typename TVoid>
 struct SerializerSelect<TSerializerClass, TCurrent, TVoid, false>
 {
-	static void Serialize(TSerializerClass& p, TCurrent t)
+	static void Serialize(TSerializerClass& p, TCurrent const& t)
 	{
 		TSerializerClass ip = p.CreateScope();
 		GenericSerializer<TSerializerClass, TCurrent>::Serialize(ip, t);

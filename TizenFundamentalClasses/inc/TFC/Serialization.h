@@ -49,6 +49,12 @@ TFC_ExceptionDeclare	(SerializationException, TFCException);
 template<typename TSerializerClass, typename... TArgs>
 struct SerializerFunctor;
 
+template<typename TSerializerClass, typename TDeclaring, typename = void>
+struct GenericSerializer;
+
+template<typename TSerializerClass, typename TDeclaring, typename = void>
+struct GenericDeserializer;
+
 template<typename TDeclaring, typename... TField>
 struct TypeSerializationInfo
 {
@@ -79,7 +85,11 @@ struct FieldInfo
 	static bool 			 Evaluate(TDeclaring const& ptr) 		{ return PredicateEvaluator<TPredicates>::Evaluate(ptr); }
 
 	template<typename TDeserializerClass>
-	static void DeserializeAndSet(TDeclaring& ptr, TDeserializerClass& deser) { deser.Deserialize(ptr.*memPtr); }
+	static void DeserializeAndSet(TDeclaring& ptr, TDeserializerClass& deser)
+	{
+		GenericDeserializer<TDeserializerClass, TValueType>::Deserialize(deser, ptr.*memPtr);
+		//deser.Deserialize(ptr.*memPtr);
+	}
 };
 
 template<typename TDeclaring,
@@ -155,8 +165,6 @@ public:
 	static constexpr bool value = sizeof(Test<TDeserializer, TValue>(0)) == sizeof(Correct);
 };
 
-template<typename TSerializerClass, typename TDeclaring, typename = void>
-struct GenericSerializer;
 
 template<typename TSerializerClass, typename TDeclaring>
 struct GenericSerializer<TSerializerClass, TDeclaring, typename std::enable_if<SerializationAvailable<TSerializerClass, TDeclaring>::value>::type>
@@ -183,8 +191,16 @@ struct GenericSerializer<TSerializerClass, TDeclaring, typename std::enable_if<s
 	}
 };
 
-template<typename TSerializerClass, typename TDeclaring, typename = void>
-struct GenericDeserializer;
+template<typename TSerializerClass, typename TDeclaring>
+struct GenericSerializer<TSerializerClass, std::unique_ptr<TDeclaring>, void>
+{
+	static void Serialize(TSerializerClass& packer, std::unique_ptr<TDeclaring> const& ref)
+	{
+		GenericSerializer<TSerializerClass, TDeclaring>::Serialize(packer, *ref.get());
+	}
+};
+
+
 
 template<typename TDeserializerClass, typename TDeclaring>
 struct GenericDeserializer<TDeserializerClass, TDeclaring, typename std::enable_if<DeserializationAvailable<TDeserializerClass, TDeclaring>::value>::type>
@@ -217,6 +233,24 @@ struct GenericDeserializer<TDeserializerClass, TDeclaring, typename std::enable_
 		typename std::underlying_type<TDeclaring>::type tmp;
 		deser.Deserialize(tmp);
 		ret = (TDeclaring)tmp;
+	}
+};
+
+
+template<typename TDeserializerClass, typename TDeclaring>
+struct GenericDeserializer<TDeserializerClass, std::unique_ptr<TDeclaring>, void>
+{
+	static std::unique_ptr<TDeclaring> Deserialize(TDeserializerClass& deser)
+	{
+		std::unique_ptr<TDeclaring> ret;
+		Deserialize(deser, ret);
+		return ret;
+	}
+
+	static void Deserialize(TDeserializerClass& deser, std::unique_ptr<TDeclaring>& ret)
+	{
+		ret.reset(new TDeclaring);
+		GenericDeserializer<TDeserializerClass, TDeclaring>::Deserialize(deser, *ret.get());
 	}
 };
 
