@@ -334,7 +334,7 @@ TValueType TFC::Serialization::ConstantValue<TValueType, theValue, TPredicates>:
 
 #define TFC_FieldInfo(MEMPTR, ...) TFC::Serialization::FieldInfo<typename TFC::Core::Introspect::MemberField<decltype( & MEMPTR )>::DeclaringType, decltype( MEMPTR ), & MEMPTR, std::tuple < __VA_ARGS__ > >
 
-#define TFC_ConstantValue(CONSTANT, ...) TFC::Serialization::ConstantValue< decltype( CONSTANT ), CONSTANT, std::tuple < __VA_ARGS__ > >
+#define TFC_ConstantValue(CONSTANT, ...) TFC::Serialization::ConstantValue< std::remove_const<decltype( CONSTANT )>::type, CONSTANT, std::tuple < __VA_ARGS__ > >
 
 
 #endif /* TFC_SERIALIZATION_H_ */
