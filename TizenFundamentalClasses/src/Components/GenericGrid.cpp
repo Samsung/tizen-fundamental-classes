@@ -256,7 +256,7 @@ LIBAPI Evas_Object* TFC::Components::GenericGrid::CreateComponent(Evas_Object* r
 	elm_gengrid_select_mode_set(gengrid, ELM_OBJECT_SELECT_MODE_ALWAYS);
 	elm_gengrid_align_set(gengrid, 0.5, 0.5);
 	elm_gengrid_horizontal_set(gengrid, horizontalMode);
-	elm_gengrid_item_size_set(gengrid, (int)(ELM_SCALE_SIZE(itemWidth)), (int)(ELM_SCALE_SIZE(itemHeight)));
+	elm_gengrid_item_size_set(gengrid, itemWidth, itemHeight);
 
 	return gengrid;
 }
