@@ -44,25 +44,31 @@ LIBAPI TFC::Infrastructures::ScheduledTask::~ScheduledTask() {
 }
 
 bool TFC::Infrastructures::ScheduledTask::TimerCallback() {
-	Run();
-
 	// Check if it is periodic
 	auto isPeriodic = this->interval != std::chrono::microseconds::zero();
+
 	if(isPeriodic && !this->firstStarted)
 	{
 		// If it is the first time it is started, recreate the new timer with the specifid interval
 		std::chrono::duration<double, std::ratio<1>> intervalInDouble = this->interval;
 		this->timer = ecore_timer_add(intervalInDouble.count(), ScheduledTaskDispatcherCallback, this);
 		this->firstStarted = true;
+
+		Run();
+
 		return false;
 	}
+	else
+	{
+		// If it is not periodic, firstStarted will still be false
+		// If it is periodic, and the second time, it will be true, which will renew the timer
+		if(!this->firstStarted)
+			this->timer = nullptr;
 
-	// If it is not periodic, firstStarted will still be false
-	// If it is periodic, and the second time, it will be true, which will renew the timer
-	if(!this->firstStarted)
-		this->timer = nullptr;
+		Run();
 
-	return this->firstStarted;
+		return this->firstStarted;
+	}
 }
 
 LIBAPI void TFC::Infrastructures::ScheduledTask::ScheduleOnce(
@@ -76,8 +82,10 @@ LIBAPI void TFC::Infrastructures::ScheduledTask::SchedulePeriodic(
 	if(this->timer != nullptr)
 		throw std::runtime_error("Timer already scheduled");
 
+	this->scheduledTime = startAt;
 	this->firstStarted = false;
 	this->interval = interval;
+
 	std::chrono::duration<double, std::ratio<1>> durationToScheduledTime = startAt - std::chrono::system_clock::now();
 
 	if(durationToScheduledTime.count() > 0)

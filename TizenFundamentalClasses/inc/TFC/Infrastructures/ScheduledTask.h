@@ -37,6 +37,7 @@ class LIBAPI ScheduledTask
 private:
 	Ecore_Timer* timer;
 	bool TimerCallback();
+	std::chrono::system_clock::time_point scheduledTime;
 	std::chrono::microseconds interval;
 	bool firstStarted;
 protected:
@@ -50,6 +51,7 @@ public:
 	void SchedulePeriodic(std::chrono::system_clock::time_point startAt, std::chrono::microseconds interval);
 	void Cancel();
 	bool IsScheduled() { return timer != nullptr; }
+	std::chrono::system_clock::time_point GetScheduledTime() { return scheduledTime; }
 };
 
 }
