@@ -99,6 +99,7 @@ public:
 
 	void Serialize(std::vector<uint8_t> const& args);
 	void Serialize(std::vector<int32_t> const& args);
+	void Serialize(std::vector<uint32_t> const& args);
 	void Serialize(std::vector<int64_t> const& args);
 
 	GVariantSerializer CreateScope();
