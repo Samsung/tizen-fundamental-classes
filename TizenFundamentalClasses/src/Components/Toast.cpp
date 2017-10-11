@@ -47,6 +47,7 @@ LIBAPI void TFC::Components::Toast::OnDismiss(Evas_Object* objSource, void* even
 }
 
 LIBAPI void TFC::Components::Toast::Show(const std::string& message, double timeout) {
+
 	auto uiApplicationBase = dynamic_cast<Framework::UIApplicationBase*>(Framework::UIApplicationBase::GetCurrentInstance());
 	auto popup = elm_popup_add(uiApplicationBase->GetApplicationConformant());
 
@@ -61,10 +62,16 @@ LIBAPI void TFC::Components::Toast::Show(const std::string& message, double time
 
 	//evas_object_smart_callback_add(popup, "block,clicked", EvasSmartEventHandler, &toastObj.eventDismiss);
 	//evas_object_smart_callback_add(popup, "timeout", EvasSmartEventHandler, &toastObj.eventDismiss);
+	try
+	{
+		toastObj.eventDismiss.Bind(popup, "block,clicked");
+		toastObj.eventTimeout.Bind(popup, "timeout");
 
-	toastObj.eventDismiss.Bind(popup, "block,clicked");
-	toastObj.eventTimeout.Bind(popup, "timeout");
-
-	evas_object_show(popup);
+		evas_object_show(popup);
+	}
+	catch(TFC::TFCException const& ex)
+	{
+		evas_object_del(popup); // For now cancel
+	}
 }
 
